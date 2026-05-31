@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>郭奕圻 YI-CHI KUO | Martech × AI Workflow × 專案經理</title>
+<meta name="description" content="郭奕圻個人作品集。9~10 年跨產業經驗，專注 Martech 行銷自動化、AI 生圖應用、AR 病毒濾鏡與活動專案管理。目前求職中。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS VARIABLES & RESET
+   ============================================ */
+:root {
+  /* Terminal Mode */
+  --term-bg: #0a0e14;
+  --term-bg2: #0d1117;
+  --term-bg3: #161b22;
+  --term-bg4: #21262d;
+  --term-border: #30363d;
+  --term-text: #c9d1d9;
+  --term-dim: #484f58;
+  --term-green: #3fb950;
+  --term-green-dim: #1a4a23;
+  --term-blue: #79c0ff;
+  --term-purple: #d2a8ff;
+  --term-orange: #ffa657;
+  --term-red: #f97583;
+  --term-white: #e6edf3;
+  --term-cyan: #39d0d8;
+
+  /* Dashboard Mode */
+  --dash-bg: #fafafa;
+  --dash-bg2: #f3f4f6;
+  --dash-bg3: #ffffff;
+  --dash-border: #e5e7eb;
+  --dash-text: #111827;
+  --dash-muted: #6b7280;
+  --dash-purple: #7c3aed;
+  --dash-purple-light: #ede9fe;
+  --dash-blue: #0891b2;
+  --dash-blue-light: #e0f2fe;
+  --dash-green: #16a34a;
+  --dash-green-light: #dcfce7;
+  --dash-orange: #d97706;
+  --dash-orange-light: #fef3c7;
+  --dash-gray: #6b7280;
+
+  /* Active mode vars (default: terminal) */
+  --bg: var(--term-bg);
+  --bg2: var(--term-bg2);
+  --bg3: var(--term-bg3);
+  --bg4: var(--term-bg4);
+  --border: var(--term-border);
+  --text: var(--term-text);
+  --text-dim: var(--term-dim);
+  --accent: var(--term-green);
+  --accent2: var(--term-purple);
+  --font-primary: 'JetBrains Mono', monospace;
+  --font-body: 'Noto Sans TC', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--term-bg);
+  color: var(--term-text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  transition: background 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   DASHBOARD MODE OVERRIDES
+   ============================================ */
+body.dashboard {
+  background: var(--dash-bg);
+  color: var(--dash-text);
+}
+
+body.dashboard .navbar {
+  background: rgba(250,250,250,0.9);
+  border-bottom: 1px solid var(--dash-border);
+}
+
+body.dashboard .nav-logo { color: var(--dash-purple); }
+body.dashboard .nav-logo span { color: var(--dash-text); }
+body.dashboard .nav-links a { color: var(--dash-muted); }
+body.dashboard .nav-links a:hover { color: var(--dash-purple); }
+body.dashboard .nav-status { color: var(--dash-green); border-color: var(--dash-green); }
+
+body.dashboard .hero-terminal { display: none; }
+body.dashboard .hero-dashboard { display: flex; }
+body.dashboard .hero-term { display: none; }
+
+body.dashboard .section-tag { 
+  background: var(--dash-purple-light); 
+  color: var(--dash-purple);
+  border: none;
+}
+body.dashboard .section-title { color: var(--dash-text); }
+body.dashboard .section-subtitle { color: var(--dash-muted); }
+
+body.dashboard .about-card {
+  background: var(--dash-bg3);
+  border: 1px solid var(--dash-border);
+}
+body.dashboard .about-text { color: var(--dash-text); }
+body.dashboard .tool-tag {
+  background: var(--dash-bg2);
+  border: 1px solid var(--dash-border);
+  color: var(--dash-text);
+}
+
+body.dashboard .exp-item {
+  border-left-color: var(--dash-purple);
+}
+body.dashboard .exp-company { color: var(--dash-text); }
+body.dashboard .exp-role { color: var(--dash-purple); }
+body.dashboard .exp-desc { color: var(--dash-muted); }
+body.dashboard .exp-period { color: var(--dash-muted); }
+
+body.dashboard .skill-card {
+  background: var(--dash-bg3);
+  border: 1px solid var(--dash-border);
+}
+body.dashboard .skill-category { color: var(--dash-purple); }
+body.dashboard .skill-tag {
+  background: var(--dash-bg2);
+  border: 1px solid var(--dash-border);
+  color: var(--dash-text);
+}
+
+body.dashboard .project-card {
+  background: var(--dash-bg3);
+  border: 1px solid var(--dash-border);
+}
+body.dashboard .project-card:hover {
+  border-color: var(--dash-purple);
+  box-shadow: 0 8px 30px rgba(124,58,237,0.1);
+}
+body.dashboard .project-title { color: var(--dash-text); }
+body.dashboard .project-desc { color: var(--dash-muted); }
+body.dashboard .project-tag {
+  background: var(--dash-bg2);
+  color: var(--dash-muted);
+  border: 1px solid var(--dash-border);
+}
+body.dashboard .metric-val { color: var(--dash-purple); }
+body.dashboard .metric-label { color: var(--dash-muted); }
+
+body.dashboard .filter-btn {
+  background: var(--dash-bg3);
+  border: 1px solid var(--dash-border);
+  color: var(--dash-muted);
+}
+body.dashboard .filter-btn.active {
+  background: var(--dash-purple);
+  color: white;
+  border-color: var(--dash-purple);
+}
+
+body.dashboard .footer {
+  background: var(--dash-bg2);
+  border-top: 1px solid var(--dash-border);
+}
+body.dashboard .footer-logo { color: var(--dash-purple); }
+body.dashboard .footer-text { color: var(--dash-muted); }
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(10,14,20,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--term-border);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--term-green);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.nav-logo .logo-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--term-green);
+  color: var(--term-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.nav-logo span { color: var(--term-text); }
+
+.nav-links {
+  display: flex;
+  gap: 0.2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--term-dim);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.nav-links a:hover { color: var(--term-green); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-green);
+  border: 1px solid var(--term-green);
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--term-green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Mode Switcher */
+.mode-switcher {
+  display: flex;
+  border: 1px solid var(--term-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mode-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 12px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--term-dim);
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+
+.mode-btn.active {
+  background: var(--term-green);
+  color: var(--term-bg);
+  font-weight: 700;
+}
+
+body.dashboard .mode-btn { color: var(--dash-muted); border-color: var(--dash-border); }
+body.dashboard .mode-btn.active { background: var(--dash-purple); color: white; }
+body.dashboard .mode-switcher { border-color: var(--dash-border); }
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.hamburger span {
+  width: 20px;
+  height: 2px;
+  background: var(--term-text);
+  transition: all 0.3s;
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 2rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(63,185,80,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(210,168,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+/* Terminal Hero */
+.hero-term {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.hero-term-window {
+  background: var(--term-bg2);
+  border: 1px solid var(--term-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.term-titlebar {
+  background: var(--term-bg3);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--term-border);
+}
+
+.term-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.term-dot.red { background: #ff5f57; }
+.term-dot.yellow { background: #febc2e; }
+.term-dot.green { background: #28c840; }
+
+.term-filename {
+  font-size: 11px;
+  color: var(--term-dim);
+  margin-left: auto;
+}
+
+.term-body {
+  padding: 24px;
+  font-size: 13px;
+  line-height: 2;
+}
+
+.term-prompt { color: var(--term-green); }
+.term-cmd { color: var(--term-blue); }
+.term-output { color: var(--term-text); margin: 8px 0; }
+.term-name { color: var(--term-white); font-size: 16px; font-weight: 700; }
+.term-title { color: var(--term-purple); }
+.term-arrow { color: var(--term-green); }
+.term-comment { color: var(--term-dim); }
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--term-green);
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Dashboard Hero */
+.hero-dashboard {
+  display: none;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--dash-purple);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-h1 {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  color: var(--dash-text);
+  line-height: 1.2;
+}
+
+.hero-h1 em {
+  font-style: normal;
+  color: var(--dash-purple);
+}
+
+.hero-sub {
+  font-size: 16px;
+  color: var(--dash-muted);
+  line-height: 1.7;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: var(--dash-purple);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--dash-purple);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid var(--dash-purple);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover { background: var(--dash-purple-light); }
+
+/* Hero Stats */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--term-border);
+}
+
+body.dashboard .hero-stats { border-top-color: var(--dash-border); }
+
+.stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--term-green);
+  display: block;
+}
+
+body.dashboard .stat-val { color: var(--dash-purple); }
+
+.stat-label {
+  font-size: 12px;
+  color: var(--term-dim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
+
+body.dashboard .stat-label { color: var(--dash-muted); }
+
+/* Hero Profile */
+.hero-profile {
+  display: flex;
+  justify-content: center;
+}
+
+.profile-frame {
+  position: relative;
+  width: 320px;
+  height: 400px;
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 12px;
+  filter: grayscale(20%);
+}
+
+.profile-badge {
+  position: absolute;
+  bottom: -16px;
+  right: -16px;
+  background: var(--term-bg3);
+  border: 1px solid var(--term-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+body.dashboard .profile-badge {
+  background: white;
+  border-color: var(--dash-border);
+}
+
+.badge-status {
+  color: var(--term-green);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.dashboard .badge-status { color: var(--dash-green); }
+
+.badge-role {
+  color: var(--term-dim);
+  margin-top: 4px;
+}
+
+body.dashboard .badge-role { color: var(--dash-muted); }
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+section {
+  padding: 5rem 2rem;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-green);
+  border: 1px solid var(--term-green-dim);
+  background: rgba(63,185,80,0.06);
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.2rem;
+}
+
+.section-title {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+  color: var(--term-white);
+  margin-bottom: 0.8rem;
+  line-height: 1.2;
+}
+
+.section-subtitle {
+  font-size: 15px;
+  color: var(--term-dim);
+  margin-bottom: 3rem;
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+/* ============================================
+   ABOUT
+   ============================================ */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.about-card {
+  background: var(--term-bg2);
+  border: 1px solid var(--term-border);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.about-text {
+  font-size: 15px;
+  color: var(--term-text);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+.tools-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-dim);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8rem;
+}
+
+.tools-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tool-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-blue);
+  background: rgba(121,192,255,0.08);
+  border: 1px solid rgba(121,192,255,0.2);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+/* Experience Timeline */
+.exp-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.exp-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 0;
+  width: 1px;
+  background: var(--term-border);
+}
+
+body.dashboard .exp-timeline::before { background: var(--dash-border); }
+
+.exp-item {
+  position: relative;
+  padding-left: 1.5rem;
+  padding-bottom: 2rem;
+  border-left: 2px solid transparent;
+}
+
+.exp-item::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--term-green);
+  border: 2px solid var(--term-bg);
+}
+
+body.dashboard .exp-item::before { background: var(--dash-purple); border-color: var(--dash-bg); }
+
+.exp-period {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-dim);
+  margin-bottom: 4px;
+}
+
+.exp-company {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--term-white);
+  margin-bottom: 2px;
+}
+
+.exp-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--term-green);
+  margin-bottom: 6px;
+}
+
+.exp-desc {
+  font-size: 13px;
+  color: var(--term-dim);
+  line-height: 1.6;
+}
+
+/* ============================================
+   SKILLS
+   ============================================ */
+.skills-section {
+  background: var(--term-bg2);
+  border-top: 1px solid var(--term-border);
+  border-bottom: 1px solid var(--term-border);
+}
+
+body.dashboard .skills-section {
+  background: var(--dash-bg2);
+  border-color: var(--dash-border);
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.skill-card {
+  background: var(--term-bg3);
+  border: 1px solid var(--term-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.skill-category {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-green);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skill-tag {
+  font-size: 12px;
+  color: var(--term-text);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--term-border);
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.skill-tag:hover {
+  border-color: var(--term-green);
+  color: var(--term-green);
+}
+
+body.dashboard .skill-tag:hover {
+  border-color: var(--dash-purple);
+  color: var(--dash-purple);
+}
+
+/* ============================================
+   PORTFOLIO
+   ============================================ */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.filter-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--term-border);
+  background: transparent;
+  color: var(--term-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.filter-btn:hover { border-color: var(--term-green); color: var(--term-green); }
+.filter-btn.active { background: var(--term-green); color: var(--term-bg); border-color: var(--term-green); font-weight: 700; }
+
+/* Terminal project table */
+.project-table-wrap {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.project-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.project-table th {
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 11px;
+  color: var(--term-dim);
+  border-bottom: 1px solid var(--term-border);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.project-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  vertical-align: top;
+}
+
+.project-table tr {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.project-table tr:hover { background: rgba(63,185,80,0.04); }
+
+.project-table tr.hidden { display: none; }
+
+.proj-name { color: var(--term-purple); font-weight: 500; }
+.proj-name-sub { color: var(--term-dim); font-size: 11px; margin-top: 2px; }
+.proj-type { padding: 2px 8px; border-radius: 3px; font-size: 11px; }
+.type-pm { background: rgba(210,168,255,0.12); color: var(--term-purple); }
+.type-ai { background: rgba(121,192,255,0.12); color: var(--term-blue); }
+.type-ar { background: rgba(57,208,216,0.12); color: var(--term-cyan); }
+.type-strategy { background: rgba(255,166,87,0.12); color: var(--term-orange); }
+.proj-impact { color: var(--term-orange); }
+.proj-stack { color: var(--term-dim); font-size: 12px; }
+
+/* Expand row */
+.expand-row { display: none; }
+.expand-row.open { display: table-row; }
+.expand-content {
+  background: var(--term-bg3);
+  border-left: 3px solid var(--term-green);
+  padding: 1.5rem;
+  margin: 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.expand-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.expand-label {
+  color: var(--term-dim);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.expand-val { color: var(--term-text); font-size: 13px; line-height: 1.7; }
+.expand-img { width: 100%; border-radius: 6px; margin-top: 8px; max-height: 180px; object-fit: cover; }
+.expand-links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.expand-link {
+  color: var(--term-blue);
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid rgba(121,192,255,0.3);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.expand-link:hover { background: rgba(121,192,255,0.08); }
+
+/* Dashboard project cards */
+.project-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.project-card {
+  background: var(--term-bg2);
+  border: 1px solid var(--term-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  border-color: var(--term-green);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(63,185,80,0.1);
+}
+
+.project-card.hidden { display: none; }
+
+.card-img {
+  height: 160px;
+  background: var(--term-bg3);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+}
+
+.card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--term-dim);
+}
+
+.card-type-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.card-body { padding: 1.2rem; }
+
+.project-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--term-white);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.project-desc {
+  font-size: 13px;
+  color: var(--term-dim);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.card-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 1rem;
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  border: 1px solid var(--term-border);
+}
+
+body.dashboard .card-metrics {
+  background: var(--dash-bg2);
+  border-color: var(--dash-border);
+}
+
+.metric-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--term-green);
+  display: block;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--term-dim);
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.project-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--term-dim);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--term-border);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--term-bg2);
+  border: 1px solid var(--term-border);
+  border-radius: 14px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: modalIn 0.25s ease;
+}
+
+body.dashboard .modal {
+  background: white;
+  border-color: var(--dash-border);
+}
+
+@keyframes modalIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--term-border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+body.dashboard .modal-header { border-color: var(--dash-border); }
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--term-white);
+  line-height: 1.3;
+}
+
+body.dashboard .modal-title { color: var(--dash-text); }
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--term-dim);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.modal-close:hover { color: var(--term-text); }
+
+.modal-body { padding: 1.5rem; }
+
+.modal-img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  max-height: 250px;
+  object-fit: cover;
+}
+
+.case-section {
+  margin-bottom: 1.5rem;
+}
+
+.case-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--term-green);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.dashboard .case-label { color: var(--dash-purple); }
+
+.case-text {
+  font-size: 14px;
+  color: var(--term-text);
+  line-height: 1.8;
+}
+
+body.dashboard .case-text { color: var(--dash-text); }
+
+.modal-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 1.5rem 0;
+}
+
+.modal-metric {
+  background: rgba(63,185,80,0.06);
+  border: 1px solid rgba(63,185,80,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+body.dashboard .modal-metric {
+  background: var(--dash-purple-light);
+  border-color: rgba(124,58,237,0.2);
+}
+
+.modal-metric-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--term-green);
+  display: block;
+}
+
+body.dashboard .modal-metric-val { color: var(--dash-purple); }
+
+.modal-metric-label {
+  font-size: 11px;
+  color: var(--term-dim);
+  margin-top: 4px;
+}
+
+body.dashboard .modal-metric-label { color: var(--dash-muted); }
+
+.modal-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.modal-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--term-blue);
+  text-decoration: none;
+  border: 1px solid rgba(121,192,255,0.3);
+  padding: 5px 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-link:hover { background: rgba(121,192,255,0.08); }
+
+/* ============================================
+   YOUTUBE SECTION
+   ============================================ */
+.youtube-section {
+  background: var(--term-bg2);
+  border-top: 1px solid var(--term-border);
+}
+
+body.dashboard .youtube-section {
+  background: var(--dash-bg2);
+  border-color: var(--dash-border);
+}
+
+.youtube-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.youtube-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.yt-stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--term-orange);
+  display: block;
+}
+
+body.dashboard .yt-stat-val { color: var(--dash-orange); }
+
+.yt-stat-label {
+  font-size: 12px;
+  color: var(--term-dim);
+}
+
+body.dashboard .yt-stat-label { color: var(--dash-muted); }
+
+.youtube-embed {
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+}
+
+.youtube-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+  background: var(--term-bg2);
+  border-top: 1px solid var(--term-border);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.footer-logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--term-green);
+  margin-bottom: 8px;
+}
+
+.footer-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--term-dim);
+  margin-bottom: 1rem;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--term-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover { color: var(--term-green); }
+body.dashboard .footer-link:hover { color: var(--dash-purple); }
+
+/* Back to top */
+.back-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 40px;
+  height: 40px;
+  background: var(--term-green);
+  color: var(--term-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 500;
+}
+
+.back-top.visible { display: flex; }
+.back-top:hover { transform: translateY(-3px); }
+body.dashboard .back-top { background: var(--dash-purple); color: white; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .navbar { padding: 0 1rem; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+
+  .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+  .hero-profile { display: none; }
+  .hero { padding: 80px 1rem 3rem; }
+
+  .about-grid { grid-template-columns: 1fr; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .project-cards { grid-template-columns: 1fr; }
+  .expand-grid { grid-template-columns: 1fr; }
+  .modal-metrics { grid-template-columns: repeat(2, 1fr); }
+  .youtube-inner { grid-template-columns: 1fr; }
+
+  section { padding: 3rem 1rem; }
+  .hero-stats { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .stat-val { font-size: 1.4rem; }
+}
+
+/* Fade in animation */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body id="top">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="#top" class="nav-logo">
+      <div class="logo-icon">&gt;_</div>
+      YI-CHI KUO <span>/ PORTFOLIO</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">// 關於我</a></li>
+      <li><a href="#skills">// 技能</a></li>
+      <li><a href="#portfolio">// 作品集</a></li>
+      <li><a href="#youtube">// YouTube</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status">求職中</div>
+    <div class="mode-switcher">
+      <button class="mode-btn active" id="btn-terminal" onclick="setMode('terminal')">Terminal</button>
+      <button class="mode-btn" id="btn-dashboard" onclick="setMode('dashboard')">Dashboard</button>
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-inner">
+    <!-- Terminal Mode Hero -->
+    <div class="hero-term">
+      <div class="hero-term-window">
+        <div class="term-titlebar">
+          <div class="term-dot red"></div>
+          <div class="term-dot yellow"></div>
+          <div class="term-dot green"></div>
+          <span class="term-filename">yiqi_whoami.sh</span>
+        </div>
+        <div class="term-body">
+          <div><span class="term-prompt">yichi@lab</span><span style="color:var(--term-dim)">:~$</span> <span class="term-cmd">whoami</span></div>
+          <div style="margin-top:12px">
+            <div class="term-name">郭奕圻 / Yi-Chi Kuo</div>
+            <div class="term-title">數位行銷 × Martech × AI Workflow 專案經理</div>
+          </div>
+          <div style="margin-top:12px">
+            <div><span class="term-arrow">&gt;</span> <span class="term-output">善於拆解問題、建立流程、整合資源，從 0 到 1，從想法走向落地</span></div>
+            <div><span class="term-arrow">&gt;</span> <span class="term-output">9~10 年跨產業經驗｜品牌端 × 代理商 × 新創 × 自創業</span></div>
+            <div><span class="term-arrow">&gt;</span> <span class="term-output">目前開放洽談 ── 產品經理 / 專案經理 / Martech 顧問</span></div>
+          </div>
+          <div style="margin-top:12px"><span class="term-prompt">yichi@lab</span><span style="color:var(--term-dim)">:~$</span> <span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <span class="stat-val">9-10</span>
+          <div class="stat-label">// 跨產業總年資</div>
+        </div>
+        <div>
+          <span class="stat-val">60萬+</span>
+          <div class="stat-label">// 濾鏡累計使用</div>
+        </div>
+        <div>
+          <span class="stat-val">0%</span>
+          <div class="stat-label">// S23U 客訴率</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Mode Hero -->
+    <div class="hero-dashboard">
+      <div class="hero-eyebrow">// MARTECH × AI WORKFLOW × PM</div>
+      <h1 class="hero-h1">善於拆解問題<br>建立流程，<em>從想法走向落地</em></h1>
+      <p class="hero-sub">數位行銷 × Martech × AI Workflow｜9~10 年跨產業經驗<br>品牌端 × 代理商 × 新創 × 自創業</p>
+      <div class="hero-cta">
+        <a href="#portfolio" class="btn-primary">查看作品集 →</a>
+        <a href="#about" class="btn-secondary">關於我</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <span class="stat-val">9-10</span>
+          <div class="stat-label">跨產業總年資</div>
+        </div>
+        <div>
+          <span class="stat-val">60萬+</span>
+          <div class="stat-label">濾鏡累計使用</div>
+        </div>
+        <div>
+          <span class="stat-val">0%</span>
+          <div class="stat-label">S23U 客訴率</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Photo -->
+    <div class="hero-profile">
+      <div class="profile-frame">
+        <img src="assets/profile.jpg" alt="郭奕圻 Yi-Chi Kuo" class="profile-img">
+        <div class="profile-badge">
+          <div class="badge-status">● 求職中</div>
+          <div class="badge-role">產品經理 / 專案經理<br>Martech 顧問</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="section-tag">// ABOUT ME</div>
+    <h2 class="section-title">關於我</h2>
+
+    <div class="about-grid fade-in">
+      <div class="about-card">
+        <p class="about-text">我具備多年數位行銷、專案管理與流程規劃經驗，工作歷程橫跨品牌端、廣告代理商、新創團隊與自主創業專案。過去我長期負責品牌策略、內容行銷、專案執行、跨部門協作、數據追蹤與數位工具應用，並習慣從需求整理、流程拆解到實際落地的角度推動工作。</p>
+        <p class="about-text">相較於單純執行行銷活動，我更擅長釐清問題本質、整合資源，並將模糊的商業需求轉換為具體可執行的流程與方案。</p>
+        <div class="tools-title">// 專長工具 / STACK & TOOLS</div>
+        <div class="tools-grid">
+          <span class="tool-tag">WordPress</span>
+          <span class="tool-tag">Cyberbiz</span>
+          <span class="tool-tag">Omnichat</span>
+          <span class="tool-tag">GA4</span>
+          <span class="tool-tag">UTM</span>
+          <span class="tool-tag">Looker Studio</span>
+          <span class="tool-tag">LINE OA</span>
+          <span class="tool-tag">ChatGPT</span>
+          <span class="tool-tag">n8n</span>
+          <span class="tool-tag">Zapier</span>
+          <span class="tool-tag">Google Apps Script</span>
+        </div>
+      </div>
+
+      <div class="exp-timeline">
+        <div class="exp-item">
+          <div class="exp-period">2026/1 ~ 至今</div>
+          <div class="exp-company">海森智能行銷顧問</div>
+          <div class="exp-role">數位行銷暨 Martech 專案經理</div>
+          <div class="exp-desc">負責數位行銷策略規劃與 Martech 工具應用，深度整合自動化工作流，協助企業降低重複性人力支出。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2025/6 ~ 2025/12 · 7個月</div>
+          <div class="exp-company">源點科技</div>
+          <div class="exp-role">新媒體專員兼任公關長特助</div>
+          <div class="exp-desc">負責新媒體社群內容產出、公關活動執行統籌，主導發現綠洲媒體公關活動後勤，作為內外部唯一執行窗口。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2024/5 ~ 2024/12 · 8個月</div>
+          <div class="exp-company">思巢有限公司</div>
+          <div class="exp-role">市場調查 / 市場分析</div>
+          <div class="exp-desc">進行精準的市場競爭對手研究、消費者行為洞察與數據分析，為品牌提供具備實操性的行銷定位建議。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2024/4 ~ 至今</div>
+          <div class="exp-company">S23U 手機租賃服務</div>
+          <div class="exp-role">創辦人</div>
+          <div class="exp-desc">從 0 到 1 創辦追星族手機租賃品牌，親自設計合約、風控機制、自動化客服流程與社群品牌形象，實現 10 個月完全回本。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2023/5 ~ 2024/6 · 1年1個月</div>
+          <div class="exp-company">星網股份有限公司</div>
+          <div class="exp-role">專案經理</div>
+          <div class="exp-desc">統籌執行 Panasonic LUMIX G9II 全台四場品牌體驗活動，一人負責場地、器材、餐點、報名與現場攝影，累計 200+ 參與者，獲 DIGIPHOTO 媒體直擊報導。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2021/12 ~ 2023/3 · 1年4個月</div>
+          <div class="exp-company">艾爾弗斯股份有限公司</div>
+          <div class="exp-role">專案經理</div>
+          <div class="exp-desc">在新創環境中獨立自主執行多元任務，涵蓋口碑行銷、影片審核、實體活動協作與內容產出，習慣在資源有限、流程尚未建立的情況下快速判斷並推進工作。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2020/12 ~ 2021/12 · 1年1個月</div>
+          <div class="exp-company">自由工作者</div>
+          <div class="exp-role">剪接師</div>
+          <div class="exp-desc">獨立承接各類商業廣告、KOL 合作影片與社群短影音剪輯，累積影音製作與內容節奏的實戰經驗。</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-period">2020/11 ~ 2020/12 · 2個月</div>
+          <div class="exp-company">聚明續果設計</div>
+          <div class="exp-role">軟體助理工程師</div>
+          <div class="exp-desc">協助前端切版與系統基礎功能開發，加深對程式碼邏輯與工程師協作的實戰經驗。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="skills-section" id="skills">
+  <div class="container">
+    <div class="section-tag">// SKILL STACK</div>
+    <h2 class="section-title">技能樹</h2>
+    <div class="skills-grid fade-in">
+      <div class="skill-card">
+        <div class="skill-category">⚡ Martech & Automation</div>
+        <div class="skill-tags">
+          <span class="skill-tag">WordPress</span>
+          <span class="skill-tag">Cyberbiz</span>
+          <span class="skill-tag">Omnichat</span>
+          <span class="skill-tag">FeverSocial</span>
+          <span class="skill-tag">GA4</span>
+          <span class="skill-tag">UTM</span>
+          <span class="skill-tag">Looker Studio</span>
+          <span class="skill-tag">LINE OA</span>
+          <span class="skill-tag">n8n</span>
+          <span class="skill-tag">Zapier</span>
+          <span class="skill-tag">Google Apps Script</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">🤖 AI & Generative</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Stable Diffusion</span>
+          <span class="skill-tag">Flux</span>
+          <span class="skill-tag">LoRA Training</span>
+          <span class="skill-tag">Midjourney</span>
+          <span class="skill-tag">Claude</span>
+          <span class="skill-tag">AI Workflow 導入</span>
+          <span class="skill-tag">AI 示意稿生成</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">🎨 Creative Tools</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Premiere Pro</span>
+          <span class="skill-tag">After Effects</span>
+          <span class="skill-tag">Photoshop</span>
+          <span class="skill-tag">Illustrator</span>
+          <span class="skill-tag">Spark AR</span>
+          <span class="skill-tag">攝影</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">📋 PM & Strategy</div>
+        <div class="skill-tags">
+          <span class="skill-tag">專案管理</span>
+          <span class="skill-tag">需求整理</span>
+          <span class="skill-tag">流程設計</span>
+          <span class="skill-tag">跨部門協作</span>
+          <span class="skill-tag">KPI 追蹤</span>
+          <span class="skill-tag">活動企劃與執行</span>
+          <span class="skill-tag">預算控管</span>
+          <span class="skill-tag">數據分析</span>
+          <span class="skill-tag">媒體公關</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <div class="container">
+    <div class="section-tag">// PORTFOLIO</div>
+    <h2 class="section-title">精選作品集</h2>
+    <p class="section-subtitle">每個專案都代表了我如何拆解模糊需求、建立高效流程，並運用 Martech 自動化與專案管理能力創造實質價值。</p>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterProjects('all', this)">全部</button>
+      <button class="filter-btn" onclick="filterProjects('pm', this)">專案管理</button>
+      <button class="filter-btn" onclick="filterProjects('ai', this)">AI</button>
+      <button class="filter-btn" onclick="filterProjects('ar', this)">AR</button>
+      <button class="filter-btn" onclick="filterProjects('strategy', this)">行銷策略</button>
+    </div>
+
+    <!-- Terminal Mode: Table -->
+    <div class="project-table-wrap" id="term-projects">
+      <table class="project-table">
+        <thead>
+          <tr>
+            <th>PROJECT</th>
+            <th>TYPE</th>
+            <th>IMPACT</th>
+            <th>STACK</th>
+          </tr>
+        </thead>
+        <tbody id="project-tbody">
+          <!-- Projects injected by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Dashboard Mode: Cards -->
+    <div class="project-cards" id="dash-projects" style="display:none">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- YOUTUBE -->
+<section class="youtube-section" id="youtube">
+  <div class="container">
+    <div class="youtube-inner fade-in">
+      <div>
+        <div class="section-tag">// BEFORE THE PM ERA</div>
+        <h2 class="section-title">企劃腦的起源</h2>
+        <p class="about-text">在做 PM 之前，我就在研究怎麼讓內容被人主動點開、主動傳播。以狂新聞剪輯風格經營 YouTube 頻道——估狗小姐配音、快速語氣、大量迷因梗，把遊戲教學包裝成讓人忍不住點開的短影音。</p>
+        <p class="about-text">這套「讓人主動點開、主動傳播」的內容直覺，後來直接用在 Spark AR 迷因濾鏡設計上——病毒行銷不是後天學的技能，是本來就有的腦袋。</p>
+        <div class="youtube-stats">
+          <div>
+            <span class="yt-stat-val">28K+</span>
+            <div class="yt-stat-label">單片最高觀看</div>
+          </div>
+          <div>
+            <span class="yt-stat-val">94%+</span>
+            <div class="yt-stat-label">平均按讚率</div>
+          </div>
+        </div>
+      </div>
+      <div class="youtube-embed">
+        <iframe src="https://www.youtube.com/embed/videoseries?list=UUYc2EZuTypCsubPyUCXXArQ" allowfullscreen title="Yi-Chi Kuo YouTube Channel"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">&gt;_ YI-CHI KUO</div>
+  <div class="footer-text">© 2026. All Rights Reserved.</div>
+  <div class="footer-links">
+    <a href="https://youtube.com/channel/UCYc2EZuTypCsubPyUCXXArQ/" target="_blank" class="footer-link">YouTube</a>
+    <span style="color:var(--term-dim)">•</span>
+    <a href="#top" class="footer-link">回到頂部</a>
+  </div>
+</footer>
+
+<!-- Back to Top -->
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-content">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title"></div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// PROJECT DATA
+// ============================================
+const projects = [
+  {
+    id: 'lumix',
+    name: 'LUMIX G9II 品牌體驗活動',
+    nameShort: 'panasonic_lumix_g9ii',
+    sub: 'Panasonic 全台四場巡迴',
+    type: 'pm',
+    typeLabel: 'PM',
+    impact: '200+ 參與者',
+    stack: '全流程統籌',
+    img: 'assets/panasonic_event.png',
+    metrics: [
+      { val: '200+', label: '累計參與者' },
+      { val: '4', label: '城市巡迴' },
+    ],
+    tags: ['活動企劃', '現場統籌', 'Premiere', '攝影'],
+    problem: '四城市（台北、台中、高雄、台南）巡迴活動，人力只有兩人，品牌方配合度低，高雄為首次合作場地，同時有報名人數與現場成交 KPI 壓力。',
+    solution: '一人統包所有協調——場地租借、講師安排、相機設備跨城市運送、餐點規劃、報名表單設計與名單管理、問卷製作、當天進場動線即時判斷。高雄場臨時被推上台講解現場優惠，即時應變完成。同時負責活動現場攝影（親自操刀）、攝影比賽照片整理與評審流程協調、KOL 腳本溝通與攝影方向規劃。全程主動追蹤時程與交付進度，確保活動如期完成。',
+    result: '四場順利完成，累計 200+ 參與者。獲 DIGIPHOTO 台灣最大攝影媒體現場直擊報導。',
+    links: [
+      { label: 'DIGIPHOTO 報導', url: 'https://digiphoto.techbang.com/posts/12431-create-a-new-realm-of-m4-3the-first-new-m4-3-machine-that-supports-phase-focusing-the-lumix-g9-ii-kaohsiung-experience-will-be-directly-reported' },
+      { label: 'Panasonic 官方新聞稿', url: 'https://www.panasonic.com/tw/consumer/news/202310-news-3.html' },
+    ]
+  },
+  {
+    id: 'oasis',
+    name: '發現綠洲媒體公關活動',
+    nameShort: 'oasis_media_event',
+    sub: '兩天一夜 · 台中洲際大飯店',
+    type: 'pm',
+    typeLabel: 'PM',
+    impact: '80萬預算 / 40家媒體',
+    stack: '公關活動PM',
+    img: 'assets/oasis_event.png',
+    metrics: [
+      { val: '80萬', label: '執行預算' },
+      { val: '40家', label: '媒體接待' },
+    ],
+    tags: ['媒體公關', '飯店接洽', '預算控管', '活動統籌'],
+    problem: '大型媒體公關活動，主管將所有媒體對接資訊獨攬，導致執行端資訊斷層、進度持續拖延。主管以「媒體不配合」為由無法推進，但問題實際上在內部流程。',
+    solution: '主動負責所有後勤執行——製作物設計、旗子、遊戲玩法規劃、台中洲際大飯店接洽、住宿安排（兩天一夜）、BBQ 晚宴、After Party、餐盒、還車協調、預算控管、財務勞報單、媒體名單追蹤與現場攝影紀錄。主動建立媒體資料表單，媒體配合度高全數完成填寫，直接解決主管聲稱的「媒體不配合」問題。全程主動追蹤時程確保活動如期推進。',
+    result: '活動順利完成，40 家媒體到場，新聞稿全數發出。活動流程：充電站點參訪 → 洲際飯店媒體見面會 → BBQ 晚宴 → After Party → 隔日退房。',
+    links: []
+  },
+  {
+    id: 's23u',
+    name: 'S23U 手機租賃服務',
+    nameShort: 's23u_rental_startup',
+    sub: '自主創業 · 從 0 到 1',
+    type: 'pm',
+    typeLabel: 'PM',
+    impact: '10月回本 / 客訴率0%',
+    stack: '創辦人',
+    img: 'assets/s23u_logo.png',
+    metrics: [
+      { val: '10月', label: '資本回收期' },
+      { val: '0%', label: '客訴率' },
+      { val: '100%', label: '首次體驗回購率' },
+    ],
+    tags: ['創業', 'LINE OA', 'CRM', '風控設計'],
+    problem: '追星族群對高倍變焦手機有短期租賃需求，市場上同行已存在但大多做不起來。研究後發現同行共同弱點：合約不完整、風控不足、流程粗糙、社群形象差。',
+    solution: '針對同行弱點逐一補強：嚴謹合約（對證件、試撥電話、未成年需家長）、精選 QA 降低溝通成本、貼文放韓星拍攝成果建立品牌信任感、加購 S24 分散機型壓力、回客優惠提高留存。發現演唱會現場損壞問題後迭代優化：加購手機綁帶、使用前教學、提醒避開雷射、自學貼保護貼降低維修成本。',
+    result: '10 個月回本、客訴率 0%、首次體驗回購率 100%。',
+    links: [
+      { label: '@s23u_256 Instagram', url: 'https://www.instagram.com/s23u_256/' },
+    ]
+  },
+  {
+    id: 'sparkar',
+    name: 'Spark AR 迷因濾鏡系列',
+    nameShort: 'spark_ar_series',
+    sub: '零廣告預算病毒行銷',
+    type: 'ar',
+    typeLabel: 'AR',
+    impact: '數十萬次累計',
+    stack: 'Spark AR',
+    img: 'assets/spark_ar_1.png',
+    metrics: [
+      { val: '10萬+', label: '單一濾鏡使用' },
+      { val: '35K+', label: 'AI降維打擊' },
+      { val: '$0', label: '廣告預算' },
+    ],
+    tags: ['Spark AR', 'Meta', '病毒行銷', '迷因'],
+    problem: 'IG 推出濾鏡新功能，想找到一個讓人主動分享的切入點，而不只是「好看的濾鏡」。',
+    solution: '把剪輯思維直接移植到濾鏡設計——幾秒一個 break、punchline、音效，搭配當時爆紅的「我怎麼這麼好看」借勢熱度。核心洞察：迷因簡單才有人用，複雜反而降低傳播率，使用門檻越低擴散越快。加入互動設計：手指觸控可自由滑動文字位置，Facebook 讚圖示點擊彈跳效果，讓使用者有「玩」的感覺。',
+    result: '「我怎麼這麼好看」單一濾鏡 10 萬次，AI 降維打擊 35,000+，全系列累計數十萬次使用，零廣告預算。注意：Spark AR 平台已於 2025 年關閉，以下為當時使用畫面。',
+    links: []
+  },
+  {
+    id: 'ai-image',
+    name: 'AI 商業形象圖生成',
+    nameShort: 'ai_commercial_image',
+    sub: '珍珍食品 · 中化健康',
+    type: 'ai',
+    typeLabel: 'AI',
+    impact: '商業廣告可用水準',
+    stack: 'SD / Flux / LoRA',
+    img: 'assets/ai_zhenzhen_kv.png',
+    metrics: [
+      { val: '2+', label: '服務品牌' },
+    ],
+    tags: ['Stable Diffusion', 'Flux', 'LoRA', 'Photoshop'],
+    problem: '品牌需要持續產出有內容深度的社群素材，傳統拍攝成本高、週期長，且企劃與設計師之間的溝通常常靠「嘴巴描述」，方向容易跑掉。',
+    solution: '建立「AI 示意稿」工作流：結合時事構想主題（追花季、國際日、品牌節慶等），用 AI 生圖做視覺示意稿，直接取代口頭描述。設計師參考示意稿完稿，大幅縮短溝通成本與修改次數。核心價值：不是用 AI 取代設計師，而是把「嘴巴描述需求」變成「視覺示意稿」。',
+    result: '為珍珍食品、中化健康（新樂樂）產出可直接投放的商業廣告素材，取代部分攝影棚拍攝需求。',
+    links: []
+  },
+  {
+    id: 'lora',
+    name: 'LoRA 模型訓練',
+    nameShort: 'lora_model_training',
+    sub: 'Cyberpunk × Minimalist',
+    type: 'ai',
+    typeLabel: 'AI',
+    impact: '自訓 2 款模型',
+    stack: 'SD / Flux',
+    img: 'assets/ai_cream_model.png',
+    metrics: [
+      { val: '2', label: '自訓模型款數' },
+    ],
+    tags: ['Stable Diffusion', 'Flux', 'LoRA Training'],
+    problem: '商業 AI 生圖需要精準控制打光風格、材質質感與品牌色調，通用模型無法滿足特定商業美學需求。',
+    solution: '親自篩選商業素材、調整權重參數，訓練兩款專屬 LoRA 模型：Cyberpunk 模型（科技感品牌，暗色調 + 電網綠光）、Minimalist 模型（高端質感商品，乾淨打光 + 極簡色調）。',
+    result: '能隨心所欲控制生成影像的打光、材質與品牌色調，直接應用於客戶商業素材製作。',
+    links: []
+  },
+  {
+    id: 'alain',
+    name: 'ALAIN DUCASSE 電商官網',
+    nameShort: 'alain_ducasse_ecommerce',
+    sub: '法國米其林品牌台灣電商',
+    type: 'strategy',
+    typeLabel: 'STRATEGY',
+    impact: '電商全站主導建置',
+    stack: 'Cyberbiz / GA4',
+    img: 'assets/alain_ducasse.png',
+    metrics: [],
+    tags: ['Cyberbiz', 'SEO', 'CSS', 'GA4'],
+    problem: '法國米其林名廚品牌 ALAIN DUCASSE 進入台灣市場，需建立電商官網，但客戶端能力不足，資料提供不完整，翻譯品質差，整個專案推進幾乎沒有甲方主動配合。',
+    solution: '主動承擔 PM 角色，建立完整專案推進機制：製作時程表、素材確認清單、商品資料盤點表。主導官網架構設計、商品頁建置、路徑規劃、SEO 設定。協助校稿客戶提供的中文翻譯，確保文案品質。前台版型客製（CSS）、購物流程整合。全程追蹤交付進度，在客戶失能情況下確保專案推進。',
+    result: '目前建置中。',
+    links: [
+      { label: '網站連結', url: 'https://alainducasse.cyberbiz.co/zh-TW' },
+    ]
+  },
+  {
+    id: 'crm',
+    name: 'CRM LINE 自動化設計',
+    nameShort: 'crm_line_automation',
+    sub: '虎勢 Hosset · 永續生活周',
+    type: 'strategy',
+    typeLabel: 'STRATEGY',
+    impact: '100+ 綁定 / 零人工',
+    stack: 'Omnichat / LINE',
+    img: 'assets/omnichat_flow.png',
+    metrics: [
+      { val: '100+', label: '現場綁定人數' },
+      { val: '0', label: '人工介入次數' },
+    ],
+    tags: ['Omnichat', 'LINE OA', 'Cyberbiz', 'QR Code'],
+    problem: '虎勢品牌永續生活周實體活動需要在現場完成新客綁定 LINE + 發放折價券，公司內部只有我一人會使用相關工具，其他人無法協助。',
+    solution: '確認需求後自行設計並測試完整自動化流程：現場展示 QR Code → 來賓掃碼自動跳入 LINE 聊天室，預填關鍵字 → 按下送出後 Omnichat 機器人即時觸發活動訊息 → 推送「立即領取」按鈕，導向 LINE 折價券頁面 → 來賓按下領取，出示給現場工作人員確認完成。整個流程來賓無需手動輸入任何資料，全程自動化。',
+    result: '現場成功引導 100+ 人完成 LINE 綁定，零人工介入，活動順利執行。',
+    links: [
+      { label: '虎勢官網', url: 'https://www.hosset.com.tw/' },
+    ]
+  },
+];
+
+// ============================================
+// MODE SWITCHING
+// ============================================
+function setMode(mode) {
+  const body = document.body;
+  const btnTerm = document.getElementById('btn-terminal');
+  const btnDash = document.getElementById('btn-dashboard');
+  const termProjects = document.getElementById('term-projects');
+  const dashProjects = document.getElementById('dash-projects');
+
+  if (mode === 'dashboard') {
+    body.classList.add('dashboard');
+    btnTerm.classList.remove('active');
+    btnDash.classList.add('active');
+    termProjects.style.display = 'none';
+    dashProjects.style.display = 'grid';
+  } else {
+    body.classList.remove('dashboard');
+    btnTerm.classList.add('active');
+    btnDash.classList.remove('active');
+    termProjects.style.display = 'block';
+    dashProjects.style.display = 'none';
+  }
+}
+
+// ============================================
+// PROJECT RENDERING
+// ============================================
+function renderProjects() {
+  // Terminal table
+  const tbody = document.getElementById('project-tbody');
+  tbody.innerHTML = '';
+
+  projects.forEach((p, i) => {
+    const typeClass = `type-${p.type}`;
+    // Main row
+    const tr = document.createElement('tr');
+    tr.dataset.type = p.type;
+    tr.onclick = () => toggleExpand(i);
+    tr.innerHTML = `
+      <td>
+        <div class="proj-name">${p.nameShort}</div>
+        <div class="proj-name-sub">${p.sub}</div>
+      </td>
+      <td><span class="proj-type ${typeClass}">${p.typeLabel}</span></td>
+      <td><span class="proj-impact">${p.impact}</span></td>
+      <td class="proj-stack">${p.stack}</td>
+    `;
+    tbody.appendChild(tr);
+
+    // Expand row
+    const expandTr = document.createElement('tr');
+    expandTr.className = 'expand-row';
+    expandTr.id = `expand-${i}`;
+    expandTr.dataset.type = p.type;
+    const imgHtml = p.img ? `<img src="${p.img}" alt="${p.name}" class="expand-img">` : '';
+    const linksHtml = p.links.length ? `<div class="expand-links">${p.links.map(l => `<a href="${l.url}" target="_blank" class="expand-link">↗ ${l.label}</a>`).join('')}</div>` : '';
+    expandTr.innerHTML = `
+      <td colspan="4">
+        <div class="expand-content">
+          <div class="expand-grid">
+            <div>
+              <div class="expand-label">// PROBLEM</div>
+              <div class="expand-val">${p.problem}</div>
+              <div class="expand-label" style="margin-top:1rem">// SOLUTION</div>
+              <div class="expand-val">${p.solution}</div>
+              <div class="expand-label" style="margin-top:1rem">// RESULT</div>
+              <div class="expand-val">${p.result}</div>
+              ${linksHtml}
+            </div>
+            <div>${imgHtml}</div>
+          </div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(expandTr);
+  });
+
+  // Dashboard cards
+  const dashContainer = document.getElementById('dash-projects');
+  dashContainer.innerHTML = '';
+
+  projects.forEach((p, i) => {
+    const typeColors = {
+      pm: { bg: 'rgba(210,168,255,0.15)', color: '#d2a8ff' },
+      ai: { bg: 'rgba(121,192,255,0.15)', color: '#79c0ff' },
+      ar: { bg: 'rgba(57,208,216,0.15)', color: '#39d0d8' },
+      strategy: { bg: 'rgba(255,166,87,0.15)', color: '#ffa657' },
+    };
+    const tc = typeColors[p.type];
+    const metricsHtml = p.metrics.length ? `
+      <div class="card-metrics">
+        ${p.metrics.map(m => `<div><span class="metric-val">${m.val}</span><div class="metric-label">${m.label}</div></div>`).join('')}
+      </div>` : '';
+
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.dataset.type = p.type;
+    card.onclick = () => openModal(i);
+    card.innerHTML = `
+      <div class="card-img">
+        ${p.img ? `<img src="${p.img}" alt="${p.name}">` : `<div class="card-img-placeholder">${p.nameShort}</div>`}
+        <span class="card-type-badge" style="background:${tc.bg};color:${tc.color}">${p.typeLabel}</span>
+      </div>
+      <div class="card-body">
+        <div class="project-title">${p.name}</div>
+        <div class="project-desc">${p.sub}</div>
+        ${metricsHtml}
+        <div class="card-tags">${p.tags.map(t => `<span class="project-tag">${t}</span>`).join('')}</div>
+      </div>
+    `;
+    dashContainer.appendChild(card);
+  });
+}
+
+let openExpand = null;
+
+function toggleExpand(i) {
+  const row = document.getElementById(`expand-${i}`);
+  if (openExpand !== null && openExpand !== i) {
+    document.getElementById(`expand-${openExpand}`).classList.remove('open');
+  }
+  row.classList.toggle('open');
+  openExpand = row.classList.contains('open') ? i : null;
+}
+
+// ============================================
+// FILTER
+// ============================================
+function filterProjects(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Terminal rows
+  document.querySelectorAll('#project-tbody tr').forEach(tr => {
+    if (type === 'all' || tr.dataset.type === type) {
+      tr.classList.remove('hidden');
+    } else {
+      tr.classList.add('hidden');
+    }
+  });
+
+  // Dashboard cards
+  document.querySelectorAll('#dash-projects .project-card').forEach(card => {
+    if (type === 'all' || card.dataset.type === type) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+// ============================================
+// MODAL
+// ============================================
+function openModal(i) {
+  const p = projects[i];
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modal-title');
+  const body = document.getElementById('modal-body');
+
+  title.textContent = p.name;
+
+  const metricsHtml = p.metrics.length ? `
+    <div class="modal-metrics">
+      ${p.metrics.map(m => `<div class="modal-metric"><span class="modal-metric-val">${m.val}</span><div class="modal-metric-label">${m.label}</div></div>`).join('')}
+    </div>` : '';
+
+  const imgHtml = p.img ? `<img src="${p.img}" alt="${p.name}" class="modal-img">` : '';
+  const linksHtml = p.links.length ? `<div class="modal-links">${p.links.map(l => `<a href="${l.url}" target="_blank" class="modal-link">↗ ${l.label}</a>`).join('')}</div>` : '';
+
+  body.innerHTML = `
+    ${imgHtml}
+    ${metricsHtml}
+    <div class="case-section">
+      <div class="case-label">// 問題 / PROBLEM</div>
+      <div class="case-text">${p.problem}</div>
+    </div>
+    <div class="case-section">
+      <div class="case-label">// 解法 / SOLUTION</div>
+      <div class="case-text">${p.solution}</div>
+    </div>
+    <div class="case-section">
+      <div class="case-label">// 結果 / RESULT</div>
+      <div class="case-text">${p.result}</div>
+    </div>
+    ${linksHtml}
+  `;
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModalDirect();
+});
+
+// ============================================
+// SCROLL & ANIMATIONS
+// ============================================
+window.addEventListener('scroll', () => {
+  const backTop = document.getElementById('backTop');
+  if (window.scrollY > 300) backTop.classList.add('visible');
+  else backTop.classList.remove('visible');
+
+  // Fade in
+  document.querySelectorAll('.fade-in').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight - 80) el.classList.add('visible');
+  });
+});
+
+function toggleMenu() {
+  const links = document.querySelector('.nav-links');
+  links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+}
+
+// ============================================
+// INIT
+// ============================================
+renderProjects();
+
+// Trigger fade-in for elements already in view
+setTimeout(() => {
+  document.querySelectorAll('.fade-in').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) el.classList.add('visible');
+  });
+}, 100);
+</script>
+</body>
+</html>
