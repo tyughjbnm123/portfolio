@@ -143,6 +143,48 @@ body.dashboard .project-card:hover {
   border-color: var(--dash-purple);
   box-shadow: 0 8px 30px rgba(124,58,237,0.1);
 }
+
+/* Dashboard hero background */
+body.dashboard .hero {
+  background: linear-gradient(135deg, #f8f6ff 0%, #faf9ff 50%, #f0f4ff 100%);
+}
+
+body.dashboard .hero::before {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(8,145,178,0.04) 0%, transparent 50%);
+}
+
+/* Dashboard section backgrounds alternating */
+body.dashboard #about { background: white; }
+body.dashboard .skills-section { background: #f8f6ff; }
+body.dashboard #portfolio { background: white; }
+body.dashboard .youtube-section { background: #f8f6ff; }
+
+/* Dashboard card hover effect */
+body.dashboard .project-card {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.dashboard .project-card:hover {
+  transform: translateY(-6px) scale(1.01);
+}
+
+/* Dashboard metric values larger */
+body.dashboard .metric-val {
+  font-size: 20px;
+}
+
+/* Dashboard skill tags colored */
+body.dashboard .skill-card:nth-child(1) .skill-category { color: #7c3aed; }
+body.dashboard .skill-card:nth-child(2) .skill-category { color: #0891b2; }
+body.dashboard .skill-card:nth-child(3) .skill-category { color: #d97706; }
+body.dashboard .skill-card:nth-child(4) .skill-category { color: #16a34a; }
+
+body.dashboard .skill-card:nth-child(1) { border-top: 3px solid #7c3aed; }
+body.dashboard .skill-card:nth-child(2) { border-top: 3px solid #0891b2; }
+body.dashboard .skill-card:nth-child(3) { border-top: 3px solid #d97706; }
+body.dashboard .skill-card:nth-child(4) { border-top: 3px solid #16a34a; }
 body.dashboard .project-title { color: var(--dash-text); }
 body.dashboard .project-desc { color: var(--dash-muted); }
 body.dashboard .project-tag {
@@ -930,7 +972,8 @@ body.dashboard .skill-tag:hover {
 .project-card.hidden { display: none; }
 
 .card-img {
-  height: 160px;
+  aspect-ratio: 16/9;
+  height: auto;
   background: var(--term-bg3);
   position: relative;
   overflow: hidden;
@@ -1359,6 +1402,7 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
       <li><a href="#about">// 關於我</a></li>
       <li><a href="#skills">// 技能</a></li>
       <li><a href="#portfolio">// 作品集</a></li>
+      <li><a href="#ai-tools">// AI 工具坊</a></li>
       <li><a href="#youtube">// YouTube</a></li>
     </ul>
   </div>
@@ -1526,7 +1570,7 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
         </div>
         <div class="exp-item">
           <div class="exp-period">2020/11 ~ 2020/12 · 2個月</div>
-          <div class="exp-company">聚明續果設計</div>
+          <div class="exp-company">黎明糖果設計</div>
           <div class="exp-role">軟體助理工程師</div>
           <div class="exp-desc">協助前端切版與系統基礎功能開發，加深對程式碼邏輯與工程師協作的實戰經驗。</div>
         </div>
@@ -1637,6 +1681,24 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
   </div>
 </section>
 
+<!-- AI TOOLS -->
+<section id="ai-tools" style="padding: 5rem 2rem;">
+  <div class="container">
+    <div class="section-tag">// AI WORKSHOP</div>
+    <h2 class="section-title">AI 工具坊</h2>
+    <p class="section-subtitle">我設計的 AI 輔助工具，將創作流程系統化。這款短影片分鏡卡片庫，能快速組合拍攝動作序列，一鍵生成 AI 影片生成工具的指令。</p>
+    <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--term-border); background: var(--term-bg2);">
+      <div style="padding: 10px 16px; background: var(--term-bg3); border-bottom: 1px solid var(--term-border); display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--term-dim);">
+        <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:#febc2e"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:#28c840"></div>
+        <span style="margin-left: 8px;">短影片分鏡卡片庫 // AI Video Prompt Generator</span>
+      </div>
+      <iframe src="ai-tools.html" style="width: 100%; height: 700px; border: none; display: block;" title="AI 短影片分鏡卡片庫"></iframe>
+    </div>
+  </div>
+</section>
+
 <!-- YOUTUBE -->
 <section class="youtube-section" id="youtube">
   <div class="container">
@@ -1669,7 +1731,7 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
   <div class="footer-logo">&gt;_ YI-CHI KUO</div>
   <div class="footer-text">© 2026. All Rights Reserved.</div>
   <div class="footer-links">
-    <a href="https://youtube.com/channel/UCYc2EZuTypCsubPyUCXXArQ/" target="_blank" class="footer-link">YouTube</a>
+    <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" class="footer-link">YouTube</a>
     <span style="color:var(--term-dim)">•</span>
     <a href="#top" class="footer-link">回到頂部</a>
   </div>
@@ -1804,21 +1866,21 @@ const projects = [
   },
   {
     id: 'lora',
-    name: 'LoRA 模型訓練',
-    nameShort: 'lora_model_training',
-    sub: 'Cyberpunk × Minimalist',
+    name: 'AI 生圖應用',
+    nameShort: 'ai_image_generation',
+    sub: 'Cyberpunk × Minimalist 風格控制',
     type: 'ai',
     typeLabel: 'AI',
     impact: '自訓 2 款模型',
     stack: 'SD / Flux',
     img: 'assets/ai_cream_model.png',
     metrics: [
-      { val: '2', label: '自訓模型款數' },
+      { val: '2+', label: '服務品牌' },
     ],
-    tags: ['Stable Diffusion', 'Flux', 'LoRA Training'],
-    problem: '商業 AI 生圖需要精準控制打光風格、材質質感與品牌色調，通用模型無法滿足特定商業美學需求。',
-    solution: '親自篩選商業素材、調整權重參數，訓練兩款專屬 LoRA 模型：Cyberpunk 模型（科技感品牌，暗色調 + 電網綠光）、Minimalist 模型（高端質感商品，乾淨打光 + 極簡色調）。',
-    result: '能隨心所欲控制生成影像的打光、材質與品牌色調，直接應用於客戶商業素材製作。',
+    tags: ['Stable Diffusion', 'Flux', 'Midjourney', 'Prompt 工程'],
+    problem: '品牌需要特定風格的 AI 生圖（科技感、極簡質感），通用模型生出來的結果不夠精準，風格、打光、色調難以控制，無法直接用於商業素材。',
+    solution: '深入研究 Stable Diffusion 與 Flux 生態，透過精準的 prompt 設計、風格參考素材與參數調整，穩定生成符合商業需求的影像。Cyberpunk 風格（暗色調 + 電網綠光，適合科技感品牌）、Minimalist 風格（乾淨打光 + 極簡色調，適合高端質感商品）。',
+    result: '能穩定產出商業廣告可用水準的 AI 生圖，直接應用於珍珍食品、中化健康等客戶的社群素材製作，取代部分傳統攝影棚拍攝需求。',
     links: []
   },
   {
@@ -1833,7 +1895,7 @@ const projects = [
     img: 'assets/alain_ducasse.png',
     metrics: [],
     tags: ['Cyberbiz', 'SEO', 'CSS', 'GA4'],
-    problem: '法國米其林名廚品牌 ALAIN DUCASSE 進入台灣市場，需建立電商官網，但客戶端能力不足，資料提供不完整，翻譯品質差，整個專案推進幾乎沒有甲方主動配合。',
+    problem: '法國米其林名廚品牌 ALAIN DUCASSE 進入台灣市場，需建立電商官網。專案面臨跨國溝通落差、素材與資料整備不完整、文案需要在地化等挑戰，需要有人主動建立推進機制並統整所有細節。',
     solution: '主動承擔 PM 角色，建立完整專案推進機制：製作時程表、素材確認清單、商品資料盤點表。主導官網架構設計、商品頁建置、路徑規劃、SEO 設定。協助校稿客戶提供的中文翻譯，確保文案品質。前台版型客製（CSS）、購物流程整合。全程追蹤交付進度，在客戶失能情況下確保專案推進。',
     result: '目前建置中。',
     links: [
@@ -2071,6 +2133,117 @@ document.addEventListener('keydown', e => {
 });
 
 // ============================================
+// COUNTER ANIMATION
+// ============================================
+const counters = [
+  { selector: '.stat-val', targets: ['9-10', '60萬+', '0%'] }
+];
+
+function animateCounter(el, target) {
+  // Extract number from string like "200+", "10月", "0%", "60萬+"
+  const isComplex = /[^\d.]/.test(target);
+  if (isComplex) {
+    // For complex strings, just do a fast reveal with scramble effect
+    let iterations = 0;
+    const chars = '0123456789';
+    const interval = setInterval(() => {
+      el.textContent = target.split('').map((char, i) => {
+        if (i < iterations) return target[i];
+        if (/\d/.test(char)) return chars[Math.floor(Math.random() * chars.length)];
+        return char;
+      }).join('');
+      iterations += 0.5;
+      if (iterations >= target.length) {
+        el.textContent = target;
+        clearInterval(interval);
+      }
+    }, 40);
+    return;
+  }
+  const end = parseFloat(target);
+  const duration = 1500;
+  const start = performance.now();
+  const animate = (now) => {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * end);
+    if (progress < 1) requestAnimationFrame(animate);
+    else el.textContent = target;
+  };
+  requestAnimationFrame(animate);
+}
+
+const countedEls = new Set();
+function checkCounters() {
+  document.querySelectorAll('.stat-val, .modal-metric-val').forEach(el => {
+    if (countedEls.has(el)) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight - 40) {
+      countedEls.add(el);
+      const original = el.textContent;
+      el.textContent = '0';
+      setTimeout(() => animateCounter(el, original), 200);
+    }
+  });
+}
+
+// ============================================
+// HOVER PREVIEW (Terminal Mode)
+// ============================================
+function addHoverPreview() {
+  const preview = document.createElement('div');
+  preview.id = 'hover-preview';
+  preview.style.cssText = `
+    position: fixed;
+    top: 50%;
+    right: 2rem;
+    transform: translateY(-50%);
+    width: 240px;
+    background: var(--term-bg3);
+    border: 1px solid var(--term-green);
+    border-radius: 10px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 0 30px rgba(63,185,80,0.15);
+  `;
+  preview.innerHTML = `
+    <img id="preview-img" src="" style="width:100%;height:140px;object-fit:cover;display:block;">
+    <div style="padding:10px 12px;">
+      <div id="preview-name" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--term-green);margin-bottom:4px;"></div>
+      <div id="preview-impact" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--term-orange);"></div>
+    </div>
+  `;
+  document.body.appendChild(preview);
+
+  document.querySelectorAll('#project-tbody tr:not(.expand-row)').forEach((tr, i) => {
+    const p = projects[i * 2 / 2]; // each project = 2 rows
+    if (!p) return;
+    tr.addEventListener('mouseenter', () => {
+      if (document.body.classList.contains('dashboard')) return;
+      const img = document.getElementById('preview-img');
+      const name = document.getElementById('preview-name');
+      const impact = document.getElementById('preview-impact');
+      if (p.img) {
+        img.src = p.img;
+        img.style.display = 'block';
+      } else {
+        img.style.display = 'none';
+      }
+      name.textContent = p.name;
+      impact.textContent = p.impact;
+      preview.style.opacity = '1';
+    });
+    tr.addEventListener('mouseleave', () => {
+      preview.style.opacity = '0';
+    });
+  });
+}
+
+// ============================================
 // SCROLL & ANIMATIONS
 // ============================================
 window.addEventListener('scroll', () => {
@@ -2083,6 +2256,9 @@ window.addEventListener('scroll', () => {
     const rect = el.getBoundingClientRect();
     if (rect.top < window.innerHeight - 80) el.classList.add('visible');
   });
+
+  // Counter
+  checkCounters();
 });
 
 function toggleMenu() {
@@ -2094,6 +2270,7 @@ function toggleMenu() {
 // INIT
 // ============================================
 renderProjects();
+addHoverPreview();
 
 // Trigger fade-in for elements already in view
 setTimeout(() => {
@@ -2101,7 +2278,8 @@ setTimeout(() => {
     const rect = el.getBoundingClientRect();
     if (rect.top < window.innerHeight) el.classList.add('visible');
   });
-}, 100);
+  checkCounters();
+}, 200);
 </script>
 </body>
 </html>
