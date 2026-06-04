@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>創意與 AI 實驗室 | 郭奕圻 YI-CHI KUO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans TC', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: {
+              DEFAULT: 'var(--primary)',
+              foreground: 'var(--primary-foreground)',
+            },
+            secondary: {
+              DEFAULT: 'var(--secondary)',
+              foreground: 'var(--secondary-foreground)',
+            },
+            muted: {
+              DEFAULT: 'var(--muted)',
+              foreground: 'var(--muted-foreground)',
+            },
+            accent: {
+              DEFAULT: 'var(--accent)',
+              foreground: 'var(--accent-foreground)',
+            },
+            card: {
+              DEFAULT: 'var(--card)',
+              foreground: 'var(--card-foreground)',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --background: #09090b;
+      --foreground: #ecf0f1;
+      --primary: #22c55e;
+      --primary-foreground: #09090b;
+      --secondary: #27272a;
+      --secondary-foreground: #fafafa;
+      --muted: #18181b;
+      --muted-foreground: #a1a1aa;
+      --accent: #22c55e;
+      --accent-foreground: #09090b;
+      --card: #121214;
+      --card-foreground: #ecf0f1;
+      --border: #27272a;
+      --ring: #22c55e;
+    }
+
+    html.light {
+      --background: #fafafa;
+      --foreground: #18181b;
+      --primary: #8b5cf6;
+      --primary-foreground: #ffffff;
+      --secondary: #f4f4f5;
+      --secondary-foreground: #18181b;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --accent: #8b5cf6;
+      --accent-foreground: #ffffff;
+      --card: #ffffff;
+      --card-foreground: #18181b;
+      --border: #e4e4e7;
+      --ring: #8b5cf6;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .bg-grid {
+      background-image: linear-gradient(to right, rgba(34, 197, 94, 0.02) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(34, 197, 94, 0.02) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    html.light .bg-grid {
+      background-image: linear-gradient(to right, rgba(139, 92, 246, 0.02) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(139, 92, 246, 0.02) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center space-x-2.5 group">
+        <div class="h-9 w-9 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <i data-lucide="terminal" class="h-5 w-5 text-primary"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold tracking-wider font-mono">YI-CHI KUO</span>
+          <span class="text-[10px] text-muted-foreground font-mono">TERMINAL LAB // PM</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center space-x-1">
+        <a href="index.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 首頁</a>
+        <a href="projects.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 作品集</a>
+        <a href="tech.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 技能沙盒</a>
+        <a href="creative.html" class="px-3 py-2 rounded-md text-sm font-medium text-primary border-b-2 border-primary font-mono">// 創意實驗室</a>
+        <a href="youtube.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// YouTube</a>
+      </nav>
+
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-1 p-1 rounded-full bg-muted border border-border">
+          <button id="btn-terminal" onclick="setTheme('dark')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+            <span>Terminal</span>
+          </button>
+          <button id="btn-dashboard" onclick="setTheme('light')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground">
+            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+            <span>Dashboard</span>
+          </button>
+        </div>
+
+        <a href="projects.html" class="hidden sm:flex items-center space-x-1 px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+          <span>求職中</span>
+        </a>
+
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground">
+          <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden border-b border-border bg-background px-4 pt-2 pb-4 space-y-1">
+      <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 首頁</a>
+      <a href="projects.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 作品集</a>
+      <a href="tech.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 技能沙盒</a>
+      <a href="creative.html" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10 font-mono">// 創意實驗室</a>
+      <a href="youtube.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// YouTube</a>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-20">
+    
+    <!-- 頂部說明 -->
+    <div class="text-center md:text-left space-y-4">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <span>CREATIVE AI LAB // 創意與 AI 實驗室</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight font-mono">
+        // 創意與 AI 實戰成果
+      </h1>
+      <p class="text-muted-foreground text-sm max-w-3xl leading-relaxed">
+        本實驗室展示了我如何將前沿的 AI 繪圖技術、LoRA 模型訓練、Spark AR 濾鏡開發應用於真實的商業專案中。
+        這不僅是我的個人興趣，更是為企業降低數十萬拍攝成本、創造數十萬裂變流量的行銷利器。
+      </p>
+    </div>
+
+    <!-- 區塊 1: LoRA 商業生圖與 Spark AR -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- 左側 6 欄：LoRA 模型權重 -->
+      <div class="lg:col-span-6 rounded-2xl border border-border bg-card p-6 md:p-8 shadow-xl space-y-6">
+        <div class="flex items-center space-x-2 border-b border-border pb-3">
+          <i data-lucide="brain-circuit" class="w-5 h-5 text-primary"></i>
+          <h2 class="text-lg font-bold font-mono text-foreground">// 1. 自訓練 LoRA 商業模型</h2>
+        </div>
+        
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          我利用 Stable Diffusion 訓練專屬的產品與風格 LoRA 模型，為品牌進行客製化、高品質的 AI 生圖，免去昂貴的棚拍費用。
+        </p>
+
+        <div class="space-y-4">
+          <!-- 模型 1 -->
+          <div class="p-4 rounded-xl border border-border bg-muted/40 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-mono text-primary">Lora_Model_01 // 中化健康四月追花季</span>
+              <span class="text-[10px] font-mono text-muted-foreground">Epoch: 120 / Loss: 0.04</span>
+            </div>
+            <div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+              <div class="bg-primary h-1.5 rounded-full" style="width: 100%"></div>
+            </div>
+            <p class="text-[11px] text-muted-foreground leading-relaxed">
+              訓練櫻花與花旗木的精準合成權重，生成完美的「四月追花季」粉嫩宣傳主視覺 KV。
+            </p>
+          </div>
+
+          <!-- 模型 2 -->
+          <div class="p-4 rounded-xl border border-border bg-muted/40 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold font-mono text-primary">Lora_Model_02 // 三星 S23U 烏薩奇吉祥物</span>
+              <span class="text-[10px] font-mono text-muted-foreground">Epoch: 80 / Loss: 0.06</span>
+            </div>
+            <div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+              <div class="bg-primary h-1.5 rounded-full" style="width: 100%"></div>
+            </div>
+            <p class="text-[11px] text-muted-foreground leading-relaxed">
+              自訓練 3D 質感烏薩奇吉祥物，無縫融入三星活動宣傳物料中，大幅提升視覺吸引力。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側 6 欄：Spark AR 濾鏡 -->
+      <div class="lg:col-span-6 rounded-2xl border border-border bg-card p-6 md:p-8 shadow-xl space-y-6">
+        <div class="flex items-center space-x-2 border-b border-border pb-3">
+          <i data-lucide="smartphone" class="w-5 h-5 text-primary"></i>
+          <h2 class="text-lg font-bold font-mono text-foreground">// 2. Spark AR 互動濾鏡成效</h2>
+        </div>
+
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          自主開發 IG 互動濾鏡，結合創意迷因與社群裂變機制，累計創造 <strong>10 萬+ 次</strong>使用量，協助品牌實現極低成本的爆發性曝光。
+        </p>
+
+        <!-- 數據大指標 -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl border border-border bg-muted/40 text-center">
+            <div class="text-[10px] text-muted-foreground font-mono">濾鏡累計使用次數</div>
+            <div class="text-xl font-bold text-primary font-mono mt-1">100,000+ 次</div>
+          </div>
+          <div class="p-4 rounded-xl border border-border bg-muted/40 text-center">
+            <div class="text-[10px] text-muted-foreground font-mono">社群裂變分享率</div>
+            <div class="text-xl font-bold text-primary font-mono mt-1">15.8%</div>
+          </div>
+        </div>
+
+        <!-- 濾鏡模擬器 -->
+        <div class="rounded-xl border border-border overflow-hidden bg-black relative aspect-[16/9] flex items-center justify-center group">
+          <img src="/manus-storage/pasted_file_2grd5p_image_4821d0aa.png" alt="濾鏡模擬" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500">
+          <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center space-y-2 p-4 text-center">
+            <div class="h-10 w-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary animate-pulse">
+              <i data-lucide="play" class="w-5 h-5"></i>
+            </div>
+            <span class="text-xs font-mono font-bold text-white">SPARK AR FILTER // 我怎麼這麼好看</span>
+            <span class="text-[10px] text-muted-foreground">結合美顏與彈幕特效，引爆社群自發分享</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 區塊 2: 真實 AI 商業生圖作品集 -->
+    <div class="space-y-6">
+      <div class="flex items-center space-x-2 border-b border-border pb-3">
+        <i data-lucide="image" class="w-5 h-5 text-primary"></i>
+        <h2 class="text-lg font-bold font-mono text-foreground">// 3. 真實 AI 商業生圖作品集</h2>
+      </div>
+
+      <p class="text-sm text-muted-foreground max-w-3xl leading-relaxed">
+        以下展示了我為 <strong>中化健康 (新樂樂)</strong>、<strong>珍珍食品</strong> 等客戶自訓練 LoRA 產出的真實 AI 商業宣傳圖與活動視覺。
+        點擊任何一張圖片，即可開啟高清大圖預覽。
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- 圖片 1: 追花季 -->
+        <div onclick="openLightbox('/manus-storage/ai_flower_season_6a884fbd.png')" class="rounded-2xl border border-border bg-card overflow-hidden group shadow-lg hover:border-primary/40 transition-all cursor-pointer">
+          <div class="relative aspect-[4/5] overflow-hidden bg-black/10">
+            <img src="/manus-storage/ai_flower_season_6a884fbd.png" alt="中化健康四月追花季" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <i data-lucide="maximize-2" class="w-6 h-6 text-white"></i>
+            </div>
+          </div>
+          <div class="p-4 space-y-1">
+            <div class="text-xs font-bold font-mono text-primary">// 中化健康新樂樂</div>
+            <h3 class="text-sm font-bold font-mono text-foreground">四月追花季活動 KV</h3>
+          </div>
+        </div>
+
+        <!-- 圖片 2: 珍珍 KV -->
+        <div onclick="openLightbox('/manus-storage/pasted_file_urgO1B_image_caac5531.png')" class="rounded-2xl border border-border bg-card overflow-hidden group shadow-lg hover:border-primary/40 transition-all cursor-pointer">
+          <div class="relative aspect-[4/5] overflow-hidden bg-black/10">
+            <img src="/manus-storage/pasted_file_urgO1B_image_caac5531.png" alt="珍珍零食廣告 KV" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <i data-lucide="maximize-2" class="w-6 h-6 text-white"></i>
+            </div>
+          </div>
+          <div class="p-4 space-y-1">
+            <div class="text-xs font-bold font-mono text-primary">// 珍珍食品</div>
+            <h3 class="text-sm font-bold font-mono text-foreground">AI 產品宣傳 KV</h3>
+          </div>
+        </div>
+
+        <!-- 圖片 3: AI 模特兒手持保養品乳霜 -->
+        <div onclick="openLightbox('/manus-storage/pasted_file_CV66iA_image_09f41857.png')" class="rounded-2xl border border-border bg-card overflow-hidden group shadow-lg hover:border-primary/40 transition-all cursor-pointer">
+          <div class="relative aspect-[4/5] overflow-hidden bg-black/10">
+            <img src="/manus-storage/pasted_file_CV66iA_image_09f41857.png" alt="AI 模特兒手持保養品乳霜" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <i data-lucide="maximize-2" class="w-6 h-6 text-white"></i>
+            </div>
+          </div>
+          <div class="p-4 space-y-1">
+            <div class="text-xs font-bold font-mono text-primary">// 美妝保養</div>
+            <h3 class="text-sm font-bold font-mono text-foreground">AI 模特兒手持乳霜</h3>
+          </div>
+        </div>
+
+        <!-- 圖片 4: Spark AR 讚讚彈跳 -->
+        <div onclick="openLightbox('/manus-storage/pasted_file_r5sER4_image_b3a359a5.png')" class="rounded-2xl border border-border bg-card overflow-hidden group shadow-lg hover:border-primary/40 transition-all cursor-pointer">
+          <div class="relative aspect-[4/5] overflow-hidden bg-black/10">
+            <img src="/manus-storage/pasted_file_r5sER4_image_b3a359a5.png" alt="Spark AR 讚讚彈跳" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <i data-lucide="maximize-2" class="w-6 h-6 text-white"></i>
+            </div>
+          </div>
+          <div class="p-4 space-y-1">
+            <div class="text-xs font-bold font-mono text-primary">// 互動濾鏡</div>
+            <h3 class="text-sm font-bold font-mono text-foreground">Spark AR 讚讚彈跳</h3>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- LIGHTBOX (大圖預覽) -->
+  <div id="lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden items-center justify-center p-4" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 text-white hover:text-primary transition-colors">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+    <img id="lightbox-img" src="" alt="放大預覽" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain">
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-border bg-card/40 backdrop-blur-md py-12 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex flex-col items-center md:items-start space-y-1">
+        <span class="text-sm font-bold font-mono tracking-wider text-primary">YI-CHI KUO</span>
+        <span class="text-xs text-muted-foreground font-mono">© 2026 YI-CHI KUO. All rights reserved.</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a href="https://www.youtube.com/@yichikuo" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="youtube" class="w-5 h-5"></i>
+        </a>
+        <a href="projects.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="briefcase" class="w-5 h-5"></i>
+        </a>
+        <a href="tech.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="cpu" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      setTheme(savedTheme);
+    }
+
+    function setTheme(theme) {
+      const html = document.documentElement;
+      const btnTerminal = document.getElementById('btn-terminal');
+      const btnDashboard = document.getElementById('btn-dashboard');
+
+      if (theme === 'light') {
+        html.classList.add('light');
+        localStorage.setItem('theme', 'light');
+        btnDashboard.className = "flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
+        btnTerminal.className = "flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
+      } else {
+        html.classList.remove('light');
+        localStorage.setItem('theme', 'dark');
+        btnTerminal.className = "flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
+        btnDashboard.className = "flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
+      }
+    }
+
+    initTheme();
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'x');
+      } else {
+        menu.classList.add('hidden');
+        icon.setAttribute('data-lucide', 'menu');
+      }
+      lucide.createIcons();
+    }
+
+    // Lightbox 控制
+    function openLightbox(url) {
+      const lightbox = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      img.src = url;
+      lightbox.classList.remove('hidden');
+      lightbox.classList.add('flex');
+    }
+
+    function closeLightbox() {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.classList.remove('flex');
+      lightbox.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

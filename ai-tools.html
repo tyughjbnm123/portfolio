@@ -191,19 +191,52 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
 </head>
 <body>
 <div class="wrap">
-<header>
-  <div class="hl">
-    <h1 data-i18n="title">短影片動作卡片庫</h1>
-    <p data-i18n="subtitle">為 Grok / AI 影片生成設計的鎖臉風險感知指令產生器</p>
-  </div>
-  <div class="htools">
-    <span class="hc" id="tc"></span>
-    <div class="langtog" id="langtog">
-      <button data-lang="zh" class="on">繁中</button>
-      <button data-lang="en">EN</button>
+  <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center space-x-2.5 group">
+        <div class="h-9 w-9 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <i data-lucide="terminal" class="h-5 w-5 text-primary"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold tracking-wider font-mono">YI-CHI KUO</span>
+          <span class="text-[10px] text-muted-foreground font-mono">TERMINAL LAB // PM</span>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center space-x-1">
+        <a href="index.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 首頁</a>
+        <a href="projects.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 作品集</a>
+        <a href="tech.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 技能沙盒</a>
+        <a href="creative.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 創意實驗室</a>
+        <a href="ai-tools.html" class="px-3 py-2 rounded-md text-sm font-medium text-primary border-b-2 border-primary font-mono">// AI 工具坊</a>
+        <a href="youtube.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// YouTube</a>
+      </nav>
+      <div class="flex items-center space-x-3">
+        <span class="hidden sm:flex items-center space-x-1.5 text-xs font-mono text-primary border border-primary/30 rounded-full px-3 py-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          <span>求職中</span>
+        </span>
+        <div class="flex items-center space-x-1 p-1 rounded-full bg-muted border border-border">
+          <button id="btn-terminal" onclick="setTheme('dark')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground">
+            <i data-lucide="terminal" class="w-3 h-3"></i><span>Terminal</span>
+          </button>
+          <button id="btn-dashboard" onclick="setTheme('light')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground">
+            <i data-lucide="sun" class="w-3 h-3"></i><span>Dashboard</span>
+          </button>
+        </div>
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-primary">
+          <i id="menu-icon" data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
     </div>
-  </div>
-</header>
+    <div id="mobile-menu" class="hidden md:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 space-y-1">
+      <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 首頁</a>
+      <a href="projects.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 作品集</a>
+      <a href="tech.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 技能沙盒</a>
+      <a href="creative.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 創意實驗室</a>
+      <a href="ai-tools.html" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10 font-mono">// AI 工具坊</a>
+      <a href="youtube.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// YouTube</a>
+    </div>
+  </header>
 
 <div class="info-bar" id="info-bar"></div>
 

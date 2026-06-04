@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube 頻道 | 郭奕圻 YI-CHI KUO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans TC', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: {
+              DEFAULT: 'var(--primary)',
+              foreground: 'var(--primary-foreground)',
+            },
+            secondary: {
+              DEFAULT: 'var(--secondary)',
+              foreground: 'var(--secondary-foreground)',
+            },
+            muted: {
+              DEFAULT: 'var(--muted)',
+              foreground: 'var(--muted-foreground)',
+            },
+            accent: {
+              DEFAULT: 'var(--accent)',
+              foreground: 'var(--accent-foreground)',
+            },
+            card: {
+              DEFAULT: 'var(--card)',
+              foreground: 'var(--card-foreground)',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    
+    :root {
+      --background: #09090b;
+      --foreground: #ecf0f1;
+      --primary: #22c55e;
+      --primary-foreground: #09090b;
+      --secondary: #27272a;
+      --secondary-foreground: #fafafa;
+      --muted: #18181b;
+      --muted-foreground: #a1a1aa;
+      --accent: #22c55e;
+      --accent-foreground: #09090b;
+      --card: #121214;
+      --card-foreground: #ecf0f1;
+      --border: #27272a;
+      --ring: #22c55e;
+    }
+    html.light {
+      --background: #fafafa;
+      --foreground: #18181b;
+      --primary: #8b5cf6;
+      --primary-foreground: #ffffff;
+      --secondary: #f4f4f5;
+      --secondary-foreground: #18181b;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --accent: #8b5cf6;
+      --accent-foreground: #ffffff;
+      --card: #ffffff;
+      --card-foreground: #18181b;
+      --border: #e4e4e7;
+      --ring: #8b5cf6;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .bg-grid {
+      background-image: linear-gradient(to right, rgba(34,197,94,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(34,197,94,0.02) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    html.light .bg-grid {
+      background-image: linear-gradient(to right, rgba(139,92,246,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(139,92,246,0.02) 1px, transparent 1px);
+    }
+
+  </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
+
+  <!-- NAVBAR -->
+    <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center space-x-2.5 group">
+        <div class="h-9 w-9 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <i data-lucide="terminal" class="h-5 w-5 text-primary"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold tracking-wider font-mono">YI-CHI KUO</span>
+          <span class="text-[10px] text-muted-foreground font-mono">TERMINAL LAB // PM</span>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center space-x-1">
+        <a href="index.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 首頁</a>
+        <a href="projects.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 作品集</a>
+        <a href="tech.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 技能沙盒</a>
+        <a href="creative.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 創意實驗室</a>
+        <a href="ai-tools.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// AI 工具坊</a>
+        <a href="youtube.html" class="px-3 py-2 rounded-md text-sm font-medium text-primary border-b-2 border-primary font-mono">// YouTube</a>
+      </nav>
+      <div class="flex items-center space-x-3">
+        <span class="hidden sm:flex items-center space-x-1.5 text-xs font-mono text-primary border border-primary/30 rounded-full px-3 py-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          <span>求職中</span>
+        </span>
+        <div class="flex items-center space-x-1 p-1 rounded-full bg-muted border border-border">
+          <button id="btn-terminal" onclick="setTheme('dark')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground">
+            <i data-lucide="terminal" class="w-3 h-3"></i><span>Terminal</span>
+          </button>
+          <button id="btn-dashboard" onclick="setTheme('light')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground">
+            <i data-lucide="sun" class="w-3 h-3"></i><span>Dashboard</span>
+          </button>
+        </div>
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-primary">
+          <i id="menu-icon" data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 space-y-1">
+      <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 首頁</a>
+      <a href="projects.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 作品集</a>
+      <a href="tech.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 技能沙盒</a>
+      <a href="creative.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 創意實驗室</a>
+      <a href="ai-tools.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// AI 工具坊</a>
+      <a href="youtube.html" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10 font-mono">// YouTube</a>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-20">
+    
+    <!-- 頂部說明 -->
+    <div class="text-center md:text-left space-y-4">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
+        <i data-lucide="youtube" class="w-3.5 h-3.5"></i>
+        <span>YOUTUBE CHANNEL // 個人影音頻道</span>
+      </div>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight font-mono">
+        // 企劃腦的起源
+      </h1>
+      <p class="text-muted-foreground text-sm max-w-3xl leading-relaxed">
+        在做 PM 之前，我就在研究怎麼讓內容被人主動點開、主動傳播。以狂新聞剪輯風格經營 YouTube 頻道——估狗小姐配音、快速語氣、大量迷因梗，把遊戲教學包裝成讓人忍不住點開的短影音。這套讓人主動點開、主動傳播的內容直覺，後來直接用在 Spark AR 迷因濾鏡設計上——病毒行銷不是後天學的技能，是本來就有的腦袋。
+      </p>
+    </div>
+
+    <!-- 頻道大數據 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center space-y-1">
+        <div class="text-xs text-muted-foreground font-mono">// 頻道訂閱人數</div>
+        <div class="text-3xl font-extrabold text-primary font-mono">28K+</div>
+        <div class="text-[10px] text-muted-foreground font-mono">單片最高觀看次數</div>
+      </div>
+      <div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center space-y-1">
+        <div class="text-xs text-muted-foreground font-mono">// 頻道定位</div>
+        <div class="text-lg font-bold text-foreground font-mono">遊戲教學 / 狂新聞風格</div>
+        <div class="text-[10px] text-muted-foreground font-mono">估狗小姐配音 × 大量迷因梗</div>
+      </div>
+      <div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center space-y-1">
+        <div class="text-xs text-muted-foreground font-mono">// 更新頻率</div>
+        <div class="text-lg font-bold text-foreground font-mono">94%+</div>
+        <div class="text-[10px] text-muted-foreground font-mono">平均按讚率</div>
+      </div>
+    </div>
+
+    <!-- 精選影片 (真實 Iframe 嵌入) -->
+    <div class="space-y-6">
+      <div class="flex items-center space-x-2 border-b border-border pb-3">
+        <i data-lucide="play-circle" class="w-5 h-5 text-primary"></i>
+        <h2 class="text-lg font-bold font-mono text-foreground">// 精選影片在線播放</h2>
+      </div>
+
+      <div class="rounded-2xl border border-border bg-card overflow-hidden shadow-xl">
+        <div class="relative aspect-video bg-black">
+          <iframe 
+            class="w-full h-full" 
+            src="https://www.youtube.com/embed/videoseries?list=UUYc2EZuTypCsubPyUCXXArQ" 
+            title="郭奕圻 YouTube 頻道" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- 頻道連結 CTA -->
+    <div class="p-8 rounded-2xl border border-primary/20 bg-primary/5 text-center space-y-4 max-w-2xl mx-auto shadow-xl">
+      <i data-lucide="sparkles" class="w-8 h-8 text-primary mx-auto animate-pulse"></i>
+      <h3 class="text-lg font-bold font-mono text-foreground">想看更多遊戲教學與創意內容？</h3>
+      <p class="text-xs text-muted-foreground max-w-md mx-auto">
+        動物王者 Zooba 系列教學，狂新聞式剪輯風格，單片最高 28,000+ 觀看。
+      </p>
+      <div class="pt-2">
+        <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-2 px-6 py-3 rounded-full text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+          <i data-lucide="youtube" class="w-4 h-4"></i>
+          <span>前往 YouTube 頻道</span>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-border bg-card/40 backdrop-blur-md py-12 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex flex-col items-center md:items-start space-y-1">
+        <span class="text-sm font-bold font-mono tracking-wider text-primary">YI-CHI KUO</span>
+        <span class="text-xs text-muted-foreground font-mono">© 2026 YI-CHI KUO. All rights reserved.</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="youtube" class="w-5 h-5"></i>
+        </a>
+        <a href="projects.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="briefcase" class="w-5 h-5"></i>
+        </a>
+        <a href="tech.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="cpu" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function initTheme() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      applyTheme(saved);
+    }
+    function setTheme(theme) {
+      localStorage.setItem('theme', theme);
+      applyTheme(theme);
+    }
+    function applyTheme(theme) {
+      const html = document.documentElement;
+      const btnT = document.getElementById('btn-terminal');
+      const btnD = document.getElementById('btn-dashboard');
+      if (theme === 'light') {
+        html.classList.add('light');
+        if (btnD) btnD.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground';
+        if (btnT) btnT.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground';
+      } else {
+        html.classList.remove('light');
+        if (btnT) btnT.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground';
+        if (btnD) btnD.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground';
+      }
+      lucide.createIcons();
+    }
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'x');
+      } else {
+        menu.classList.add('hidden');
+        icon.setAttribute('data-lucide', 'menu');
+      }
+      lucide.createIcons();
+    }
+    initTheme();
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'x');
+      } else {
+        menu.classList.add('hidden');
+        icon.setAttribute('data-lucide', 'menu');
+      }
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

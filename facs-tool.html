@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FACS 臉部表情控制器</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  min-height: 100vh;
+  padding: 1rem;
+}
+.app-header {
+  text-align: center;
+  padding: 0.8rem 0 1.2rem;
+  border-bottom: 1px solid #30363d;
+  margin-bottom: 1.2rem;
+}
+.app-title { font-size: 16px; font-weight: 700; color: #3fb950; font-family: monospace; letter-spacing: 0.05em; }
+.app-sub { font-size: 11px; color: #484f58; margin-top: 3px; font-family: monospace; }
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 210px 1fr 250px;
+  gap: 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 12px;
+}
+.panel-label {
+  font-size: 10px; color: #3fb950; font-family: monospace;
+  letter-spacing: 0.1em; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 5px;
+}
+.panel-label::before { content: '▶'; font-size: 8px; }
+
+/* Face selector */
+.face-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.face-opt {
+  aspect-ratio: 1;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.15s;
+  background: #0d1117;
+  overflow: hidden;
+}
+.face-opt:hover { border-color: #3fb950; }
+.face-opt.active { border-color: #3fb950; border-width: 2px; background: rgba(63,185,80,0.06); }
+.face-opt canvas { width: 100%; height: 100%; }
+.face-opt-label { font-size: 9px; color: #484f58; font-family: monospace; padding-bottom: 3px; }
+
+/* Main preview */
+.face-canvas-wrap {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  aspect-ratio: 3/4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+canvas#faceCanvas { width: 100%; height: 100%; }
+.face-note { font-size: 9px; color: #484f58; text-align: center; margin-top: 6px; font-family: monospace; line-height: 1.4; }
+
+/* Controls */
+.controls-panel { overflow-y: auto; max-height: 580px; }
+.ctrl-group { margin-bottom: 12px; }
+.ctrl-group-title { font-size: 10px; color: #3fb950; font-family: monospace; letter-spacing: 0.08em; margin-bottom: 7px; padding-bottom: 3px; border-bottom: 1px solid #21262d; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+.ctrl-label { font-size: 10px; color: #8b949e; width: 90px; flex-shrink: 0; font-family: monospace; }
+.ctrl-slider { flex: 1; height: 3px; -webkit-appearance: none; appearance: none; background: #21262d; border-radius: 2px; outline: none; cursor: pointer; }
+.ctrl-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #3fb950; cursor: pointer; }
+.ctrl-val { font-size: 10px; font-family: monospace; color: #ffa657; width: 24px; text-align: right; flex-shrink: 0; }
+
+.preset-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.preset-btn { font-size: 10px; font-family: monospace; padding: 3px 8px; border-radius: 4px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
+.preset-btn:hover { border-color: #3fb950; color: #3fb950; }
+.preset-btn.active { background: #3fb950; color: #0d1117; border-color: #3fb950; font-weight: 700; }
+
+.reset-btn { width: 100%; padding: 5px; background: transparent; border: 1px solid #30363d; border-radius: 6px; color: #484f58; font-family: monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; margin-top: 4px; }
+.reset-btn:hover { border-color: #f97583; color: #f97583; }
+
+/* JSON */
+.json-output { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 10px; color: #8b949e; flex: 1; overflow-y: auto; white-space: pre; line-height: 1.6; max-height: 420px; }
+.json-key { color: #79c0ff; }
+.json-num { color: #ffa657; }
+.json-str { color: #a5d6ff; }
+.copy-btn { margin-top: 8px; padding: 7px; background: #3fb950; color: #0d1117; border: none; border-radius: 6px; font-family: monospace; font-size: 11px; font-weight: 700; cursor: pointer; width: 100%; }
+.copy-btn:hover { background: #2ea043; }
+.copy-btn.copied { background: #1f6feb; color: white; }
+.usage-hint { margin-top: 8px; font-size: 10px; color: #484f58; font-family: monospace; line-height: 1.6; padding: 7px; background: #0d1117; border-radius: 6px; border: 1px solid #21262d; }
+
+@media (max-width: 700px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-title">🎭 FACS 臉部表情控制器 v1.1</div>
+  <div class="app-sub">FACIAL ACTION CODING SYSTEM // 選擇臉型 → 調整表情 → 生成 JSON</div>
+</div>
+
+<div class="main-grid">
+
+  <!-- LEFT: Face selector + preview -->
+  <div class="panel" style="display:flex;flex-direction:column;gap:10px;">
+    <div>
+      <div class="panel-label">選擇臉型角色</div>
+      <div class="face-selector" id="faceSelector"></div>
+    </div>
+    <div>
+      <div class="panel-label">即時預覽（Live View）</div>
+      <div class="face-canvas-wrap">
+        <canvas id="faceCanvas" width="180" height="240"></canvas>
+      </div>
+      <div class="face-note">※ 預覽為示意圖，實際效果依 AI 工具輸出為準</div>
+    </div>
+  </div>
+
+  <!-- MIDDLE: Controls -->
+  <div class="panel controls-panel">
+    <div class="panel-label">FACS 表情控制器</div>
+
+    <div style="margin-bottom:12px">
+      <div class="ctrl-group-title">▸ 預設表情</div>
+      <div class="preset-row">
+        <button class="preset-btn active" onclick="applyPreset('neutral',event)">😐 中性</button>
+        <button class="preset-btn" onclick="applyPreset('happy',event)">😊 開心</button>
+        <button class="preset-btn" onclick="applyPreset('sad',event)">😢 悲傷</button>
+        <button class="preset-btn" onclick="applyPreset('angry',event)">😠 憤怒</button>
+        <button class="preset-btn" onclick="applyPreset('surprised',event)">😮 驚訝</button>
+        <button class="preset-btn" onclick="applyPreset('disgust',event)">🤢 厭惡</button>
+        <button class="preset-btn" onclick="applyPreset('fear',event)">😨 恐懼</button>
+        <button class="preset-btn" onclick="applyPreset('contempt',event)">😏 輕蔑</button>
+      </div>
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-group-title">▸ 眉毛肌群</div>
+      <div class="ctrl-row"><span class="ctrl-label">內眉上抬</span><input type="range" class="ctrl-slider" id="AU1" min="0" max="5" step="0.1" value="0" oninput="update('AU1',this.value)"><span class="ctrl-val" id="v_AU1">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">外眉上抬</span><input type="range" class="ctrl-slider" id="AU2" min="0" max="5" step="0.1" value="0" oninput="update('AU2',this.value)"><span class="ctrl-val" id="v_AU2">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">眉毛皺眉</span><input type="range" class="ctrl-slider" id="AU4" min="0" max="5" step="0.1" value="0" oninput="update('AU4',this.value)"><span class="ctrl-val" id="v_AU4">0</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-group-title">▸ 眼部肌群</div>
+      <div class="ctrl-row"><span class="ctrl-label">上眼瞼收緊</span><input type="range" class="ctrl-slider" id="AU5" min="0" max="5" step="0.1" value="0" oninput="update('AU5',this.value)"><span class="ctrl-val" id="v_AU5">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">眼瞼下垂</span><input type="range" class="ctrl-slider" id="AU41" min="0" max="5" step="0.1" value="0" oninput="update('AU41',this.value)"><span class="ctrl-val" id="v_AU41">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">眼眶用力</span><input type="range" class="ctrl-slider" id="AU7" min="0" max="5" step="0.1" value="0" oninput="update('AU7',this.value)"><span class="ctrl-val" id="v_AU7">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">眨眼閉合</span><input type="range" class="ctrl-slider" id="AU46" min="0" max="5" step="0.1" value="0" oninput="update('AU46',this.value)"><span class="ctrl-val" id="v_AU46">0</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-group-title">▸ 鼻部肌群</div>
+      <div class="ctrl-row"><span class="ctrl-label">鼻翼收縮</span><input type="range" class="ctrl-slider" id="AU9" min="0" max="5" step="0.1" value="0" oninput="update('AU9',this.value)"><span class="ctrl-val" id="v_AU9">0</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-group-title">▸ 上唇肌群</div>
+      <div class="ctrl-row"><span class="ctrl-label">上唇抬起</span><input type="range" class="ctrl-slider" id="AU10" min="0" max="5" step="0.1" value="0" oninput="update('AU10',this.value)"><span class="ctrl-val" id="v_AU10">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">嘴唇向上</span><input type="range" class="ctrl-slider" id="AU13" min="0" max="5" step="0.1" value="0" oninput="update('AU13',this.value)"><span class="ctrl-val" id="v_AU13">0</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-group-title">▸ 嘴角與下唇</div>
+      <div class="ctrl-row"><span class="ctrl-label">嘴角上揚</span><input type="range" class="ctrl-slider" id="AU12" min="0" max="5" step="0.1" value="0" oninput="update('AU12',this.value)"><span class="ctrl-val" id="v_AU12">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">嘴角下拉</span><input type="range" class="ctrl-slider" id="AU15" min="0" max="5" step="0.1" value="0" oninput="update('AU15',this.value)"><span class="ctrl-val" id="v_AU15">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">下唇下拉</span><input type="range" class="ctrl-slider" id="AU16" min="0" max="5" step="0.1" value="0" oninput="update('AU16',this.value)"><span class="ctrl-val" id="v_AU16">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">嘴唇向外</span><input type="range" class="ctrl-slider" id="AU22" min="0" max="5" step="0.1" value="0" oninput="update('AU22',this.value)"><span class="ctrl-val" id="v_AU22">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">嘴巴張開</span><input type="range" class="ctrl-slider" id="AU26" min="0" max="5" step="0.1" value="0" oninput="update('AU26',this.value)"><span class="ctrl-val" id="v_AU26">0</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-group-title">▸ 下巴與臉頰</div>
+      <div class="ctrl-row"><span class="ctrl-label">臉頰上抬</span><input type="range" class="ctrl-slider" id="AU6" min="0" max="5" step="0.1" value="0" oninput="update('AU6',this.value)"><span class="ctrl-val" id="v_AU6">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">下巴下移</span><input type="range" class="ctrl-slider" id="AU27" min="0" max="5" step="0.1" value="0" oninput="update('AU27',this.value)"><span class="ctrl-val" id="v_AU27">0</span></div>
+      <div class="ctrl-row"><span class="ctrl-label">下巴顫抖</span><input type="range" class="ctrl-slider" id="AU17" min="0" max="5" step="0.1" value="0" oninput="update('AU17',this.value)"><span class="ctrl-val" id="v_AU17">0</span></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">↺ 重置所有參數</button>
+  </div>
+
+  <!-- RIGHT: JSON -->
+  <div class="panel" style="display:flex;flex-direction:column;">
+    <div class="panel-label">FACP 協議即時數據</div>
+    <div class="json-output" id="jsonOutput"></div>
+    <button class="copy-btn" id="copyBtn" onclick="copyJSON()">📋 複製 JSON → 貼到 AI 工具</button>
+    <div class="usage-hint">💡 使用方式：<br>1. 選擇臉型角色<br>2. 調整滑桿設定表情<br>3. 點「複製 JSON」<br>4. 貼到 Gemini / Claude<br>5. 加上「用建立圖像」指令<br><br>備註：也可用於修改已生成的圖片表情</div>
+  </div>
+
+</div>
+
+<script>
+const state = {
+  AU1:0,AU2:0,AU4:0,AU5:0,AU6:0,AU7:0,AU9:0,AU10:0,
+  AU12:0,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:0,AU27:0,AU41:0,AU46:0
+};
+
+const presets = {
+  neutral:   {AU1:0,AU2:0,AU4:0,AU5:0,AU6:0,AU7:0,AU9:0,AU10:0,AU12:0,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:0,AU27:0,AU41:0,AU46:0},
+  happy:     {AU1:0,AU2:0,AU4:0,AU5:0,AU6:3,AU7:0,AU9:0,AU10:0,AU12:4,AU13:2,AU15:0,AU16:0,AU17:0,AU22:0,AU26:1,AU27:0,AU41:0,AU46:0},
+  sad:       {AU1:3,AU2:0,AU4:2,AU5:0,AU6:0,AU7:0,AU9:0,AU10:0,AU12:0,AU13:0,AU15:3,AU16:2,AU17:2,AU22:0,AU26:1,AU27:0,AU41:2,AU46:0},
+  angry:     {AU1:0,AU2:0,AU4:4,AU5:2,AU6:0,AU7:3,AU9:2,AU10:0,AU12:0,AU13:0,AU15:2,AU16:0,AU17:0,AU22:0,AU26:1,AU27:0,AU41:0,AU46:0},
+  surprised: {AU1:4,AU2:4,AU4:0,AU5:4,AU6:0,AU7:0,AU9:0,AU10:0,AU12:0,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:4,AU27:3,AU41:0,AU46:0},
+  disgust:   {AU1:0,AU2:0,AU4:2,AU5:0,AU6:0,AU7:2,AU9:4,AU10:3,AU12:0,AU13:0,AU15:2,AU16:2,AU17:0,AU22:0,AU26:1,AU27:0,AU41:0,AU46:0},
+  fear:      {AU1:4,AU2:3,AU4:3,AU5:4,AU6:0,AU7:2,AU9:0,AU10:0,AU12:0,AU13:0,AU15:1,AU16:1,AU17:0,AU22:2,AU26:3,AU27:0,AU41:0,AU46:0},
+  contempt:  {AU1:0,AU2:0,AU4:0,AU5:0,AU6:0,AU7:1,AU9:0,AU10:0,AU12:2,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:0,AU27:0,AU41:1,AU46:0},
+};
+
+// Face types definition
+const faceTypes = [
+  { id:'young_f', label:'少女', skinTone:'#ffe0d0', hairColor:'#1a0a0a', hairStyle:'long_straight', eyeStyle:'big', faceShape:'oval', lipColor:'#e8748a' },
+  { id:'young_m', label:'青年', skinTone:'#f5c9a0', hairColor:'#2d1a0a', hairStyle:'short_side', eyeStyle:'normal', faceShape:'square', lipColor:'#c97860' },
+  { id:'cool_f',  label:'酷女', skinTone:'#f0d4c0', hairColor:'#0a0a1a', hairStyle:'bob', eyeStyle:'sharp', faceShape:'oval', lipColor:'#cc3355' },
+  { id:'mature_m',label:'成熟', skinTone:'#d4a870', hairColor:'#3d2010', hairStyle:'short_back', eyeStyle:'narrow', faceShape:'strong', lipColor:'#b06050' },
+  { id:'cute',    label:'可愛', skinTone:'#ffd0c0', hairColor:'#8b4513', hairStyle:'twin_tails', eyeStyle:'round', faceShape:'round', lipColor:'#ff8899' },
+  { id:'anime',   label:'動漫', skinTone:'#fff0e8', hairColor:'#6644aa', hairStyle:'long_wavy', eyeStyle:'anime', faceShape:'small', lipColor:'#ff6688' },
+];
+
+let currentFace = faceTypes[0];
+
+function drawFaceType(canvas, faceType, stateOverride) {
+  const s = stateOverride || state;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const cx = w/2;
+  const cy = h * 0.45;
+  const ft = faceType;
+
+  // Background
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0,0,w,h);
+
+
+  // === FACE SHAPE ===
+  const faceW = ft.faceShape === 'round' ? 58 : ft.faceShape === 'square' ? 55 : ft.faceShape === 'strong' ? 58 : ft.faceShape === 'small' ? 48 : 52;
+  const faceH = ft.faceShape === 'round' ? 62 : ft.faceShape === 'square' ? 70 : ft.faceShape === 'strong' ? 72 : ft.faceShape === 'small' ? 58 : 68;
+
+  // Face gradient
+  const grad = ctx.createRadialGradient(cx, cy-8, 10, cx, cy, faceW);
+  grad.addColorStop(0, lighten(ft.skinTone, 20));
+  grad.addColorStop(1, ft.skinTone);
+  ctx.beginPath();
+  if (ft.faceShape === 'square' || ft.faceShape === 'strong') {
+    // Jawline
+    ctx.moveTo(cx - faceW, cy - faceH*0.3);
+    ctx.lineTo(cx - faceW, cy + faceH*0.3);
+    ctx.quadraticCurveTo(cx - faceW*0.6, cy + faceH*0.55, cx, cy + faceH*0.55);
+    ctx.quadraticCurveTo(cx + faceW*0.6, cy + faceH*0.55, cx + faceW, cy + faceH*0.3);
+    ctx.lineTo(cx + faceW, cy - faceH*0.3);
+    ctx.ellipse(cx, cy - faceH*0.3, faceW, faceH*0.4, 0, Math.PI, 0);
+  } else {
+    ctx.ellipse(cx, cy, faceW, faceH, 0, 0, Math.PI*2);
+  }
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Cheek blush
+  const cheekBlush = (s.AU6 * 0.08) + 0.04;
+  ctx.beginPath(); ctx.ellipse(cx-faceW*0.65, cy+faceH*0.05, faceW*0.28, faceH*0.12, -0.2, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(255,140,140,${cheekBlush})`; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+faceW*0.65, cy+faceH*0.05, faceW*0.28, faceH*0.12, 0.2, 0, Math.PI*2);
+  ctx.fill();
+
+  // === EYEBROWS ===
+  const browY = cy - faceH*0.38;
+  const browLift = (s.AU1 + s.AU2) * 2.5;
+  const browFurrow = s.AU4 * 2;
+  const browThick = ft.eyeStyle === 'anime' ? 2 : ft.eyeStyle === 'sharp' ? 2.5 : 2;
+
+  // Left brow
+  ctx.beginPath();
+  ctx.moveTo(cx - faceW*0.65, browY - browLift + browFurrow*0.5);
+  ctx.quadraticCurveTo(cx - faceW*0.38, browY - browLift - s.AU1*2 - 5, cx - faceW*0.15, browY - browLift - s.AU2*1.5 + browFurrow);
+  ctx.strokeStyle = ft.hairColor === '#6644aa' ? '#9966dd' : lighten(ft.hairColor, 30);
+  ctx.lineWidth = browThick;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Right brow
+  ctx.beginPath();
+  ctx.moveTo(cx + faceW*0.15, browY - browLift - s.AU2*1.5 + browFurrow);
+  ctx.quadraticCurveTo(cx + faceW*0.38, browY - browLift - s.AU1*2 - 5, cx + faceW*0.65, browY - browLift + browFurrow*0.5);
+  ctx.stroke();
+
+  // === EYES ===
+  const eyeY = cy - faceH*0.18;
+  const eyeOpen = Math.max(0.05, 1 - s.AU41/5.5 - s.AU46/7);
+  const eyeWide = 1 + s.AU5/10;
+  const eyeW = ft.eyeStyle === 'big' ? 17 : ft.eyeStyle === 'anime' ? 19 : ft.eyeStyle === 'round' ? 16 : ft.eyeStyle === 'sharp' ? 14 : ft.eyeStyle === 'narrow' ? 13 : 15;
+  const eyeH = eyeW * 0.62 * eyeOpen * eyeWide;
+
+  [-1, 1].forEach(side => {
+    const ex = cx + side * faceW * 0.38;
+
+    // White
+    ctx.beginPath();
+    ctx.ellipse(ex, eyeY, eyeW, Math.max(1, eyeH), 0, 0, Math.PI*2);
+    ctx.fillStyle = '#fff8f5';
+    ctx.fill();
+
+    // Iris
+    const irisSize = eyeW * 0.62 * eyeOpen;
+    ctx.beginPath();
+    ctx.ellipse(ex, eyeY, irisSize, Math.max(0.5, irisSize * eyeOpen), 0, 0, Math.PI*2);
+    const irisGrad = ctx.createRadialGradient(ex, eyeY-irisSize*0.2, 1, ex, eyeY, irisSize);
+    irisGrad.addColorStop(0, '#4488cc');
+    irisGrad.addColorStop(0.6, '#2255aa');
+    irisGrad.addColorStop(1, '#112244');
+    ctx.fillStyle = irisGrad;
+    ctx.fill();
+
+    // Pupil
+    ctx.beginPath();
+    ctx.ellipse(ex, eyeY, irisSize*0.45, Math.max(0.3, irisSize*0.45*eyeOpen), 0, 0, Math.PI*2);
+    ctx.fillStyle = '#0a0a14';
+    ctx.fill();
+
+    // Highlight
+    ctx.beginPath();
+    ctx.arc(ex - irisSize*0.25, eyeY - irisSize*0.25, irisSize*0.18, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fill();
+
+    // Eyelid outline
+    ctx.beginPath();
+    ctx.ellipse(ex, eyeY, eyeW, Math.max(1, eyeH), 0, 0, Math.PI*2);
+    ctx.strokeStyle = darken(ft.skinTone, 40);
+    ctx.lineWidth = ft.eyeStyle === 'sharp' ? 1.5 : 1;
+    ctx.stroke();
+
+    // Lashes (top)
+    if (ft.eyeStyle !== 'narrow') {
+      for (let i = -3; i <= 3; i++) {
+        const lx = ex + i * (eyeW/3.5);
+        const ly = eyeY - eyeH;
+        ctx.beginPath();
+        ctx.moveTo(lx, ly);
+        ctx.lineTo(lx + i*0.8, ly - 4 - Math.abs(i)*0.5);
+        ctx.strokeStyle = '#1a0a0a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  });
+
+  // === NOSE ===
+  const noseY = cy + faceH*0.05;
+  const noseFlare = s.AU9 * 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx, noseY - 8);
+  ctx.quadraticCurveTo(cx - 4, noseY, cx - 6 - noseFlare, noseY + 5);
+  ctx.moveTo(cx, noseY - 8);
+  ctx.quadraticCurveTo(cx + 4, noseY, cx + 6 + noseFlare, noseY + 5);
+  ctx.strokeStyle = darken(ft.skinTone, 30);
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  // Nostril dots
+  ctx.beginPath(); ctx.arc(cx - 6 - noseFlare*0.3, noseY + 5, 1.5, 0, Math.PI*2);
+  ctx.fillStyle = darken(ft.skinTone, 35); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + 6 + noseFlare*0.3, noseY + 5, 1.5, 0, Math.PI*2);
+  ctx.fill();
+
+  // === MOUTH ===
+  const mouthY = cy + faceH*0.3;
+  const cornerUp = s.AU12 * 5 + s.AU13 * 2;
+  const cornerDown = s.AU15 * 5 + s.AU16 * 2;
+  const lipRaise = s.AU10 * 2;
+  const mouthOpen = s.AU26 * 4 + s.AU27 * 2;
+  const pucker = s.AU22 * 3;
+  const mW = 18 - pucker;
+
+  // Upper lip
+  ctx.beginPath();
+  ctx.moveTo(cx - mW, mouthY - lipRaise);
+  ctx.quadraticCurveTo(cx - mW*0.5, mouthY - cornerUp - 5 - lipRaise, cx, mouthY - 4 - lipRaise);
+  ctx.quadraticCurveTo(cx + mW*0.5, mouthY - cornerUp - 5 - lipRaise, cx + mW, mouthY - lipRaise);
+  ctx.fillStyle = ft.lipColor;
+  ctx.fill();
+  ctx.strokeStyle = darken(ft.lipColor, 20);
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  if (mouthOpen > 2) {
+    // Open mouth interior
+    ctx.beginPath();
+    ctx.moveTo(cx - mW, mouthY - lipRaise);
+    ctx.quadraticCurveTo(cx, mouthY + mouthOpen*0.8 + cornerDown, cx + mW, mouthY - lipRaise);
+    ctx.fillStyle = '#2a0a0a';
+    ctx.fill();
+    // Teeth hint
+    ctx.beginPath();
+    ctx.ellipse(cx, mouthY + mouthOpen*0.2, mW*0.6, mouthOpen*0.2, 0, 0, Math.PI);
+    ctx.fillStyle = '#f0e8e0';
+    ctx.fill();
+  }
+
+  // Lower lip
+  ctx.beginPath();
+  ctx.moveTo(cx - mW, mouthY - lipRaise);
+  ctx.quadraticCurveTo(cx, mouthY + cornerDown + 5 + (mouthOpen > 2 ? mouthOpen*0.5 : 0), cx + mW, mouthY - lipRaise);
+  ctx.fillStyle = darken(ft.lipColor, 10);
+  ctx.fill();
+  ctx.strokeStyle = darken(ft.lipColor, 25);
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+
+  // === NECK ===
+  ctx.beginPath();
+  ctx.moveTo(cx - 14, cy + faceH*0.52);
+  ctx.lineTo(cx - 12, cy + faceH*0.85);
+  ctx.lineTo(cx + 12, cy + faceH*0.85);
+  ctx.lineTo(cx + 14, cy + faceH*0.52);
+  ctx.fillStyle = ft.skinTone;
+  ctx.fill();
+}
+
+function drawHairBack(ctx, cx, cy, ft) {
+  ctx.fillStyle = ft.hairColor;
+  switch(ft.hairStyle) {
+    case 'long_straight':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - 40, 58, 30, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - 58, cy - 30);
+      ctx.quadraticCurveTo(cx - 70, cy + 80, cx - 50, cy + 160);
+      ctx.lineTo(cx - 20, cy + 160);
+      ctx.quadraticCurveTo(cx - 55, cy + 60, cx - 52, cy - 10);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx + 58, cy - 30);
+      ctx.quadraticCurveTo(cx + 70, cy + 80, cx + 50, cy + 160);
+      ctx.lineTo(cx + 20, cy + 160);
+      ctx.quadraticCurveTo(cx + 55, cy + 60, cx + 52, cy - 10);
+      ctx.fill();
+      break;
+    case 'long_wavy':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - 40, 56, 28, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - 56, cy - 25);
+      ctx.bezierCurveTo(cx - 75, cy + 20, cx - 60, cy + 60, cx - 68, cy + 100);
+      ctx.bezierCurveTo(cx - 76, cy + 140, cx - 55, cy + 150, cx - 45, cy + 160);
+      ctx.lineTo(cx - 20, cy + 160);
+      ctx.bezierCurveTo(cx - 50, cy + 80, cx - 52, cy + 30, cx - 50, cy);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx + 56, cy - 25);
+      ctx.bezierCurveTo(cx + 75, cy + 20, cx + 60, cy + 60, cx + 68, cy + 100);
+      ctx.bezierCurveTo(cx + 76, cy + 140, cx + 55, cy + 150, cx + 45, cy + 160);
+      ctx.lineTo(cx + 20, cy + 160);
+      ctx.bezierCurveTo(cx + 50, cy + 80, cx + 52, cy + 30, cx + 50, cy);
+      ctx.fill();
+      break;
+    case 'twin_tails':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - 42, 55, 28, 0, 0, Math.PI*2);
+      ctx.fill();
+      // Left tail
+      ctx.beginPath();
+      ctx.moveTo(cx - 52, cy - 45);
+      ctx.bezierCurveTo(cx - 80, cy - 60, cx - 85, cy, cx - 70, cy + 80);
+      ctx.bezierCurveTo(cx - 65, cy + 120, cx - 55, cy + 130, cx - 50, cy + 140);
+      ctx.lineTo(cx - 35, cy + 140);
+      ctx.bezierCurveTo(cx - 50, cy + 80, cx - 60, cy + 20, cx - 40, cy - 20);
+      ctx.fill();
+      // Right tail
+      ctx.beginPath();
+      ctx.moveTo(cx + 52, cy - 45);
+      ctx.bezierCurveTo(cx + 80, cy - 60, cx + 85, cy, cx + 70, cy + 80);
+      ctx.bezierCurveTo(cx + 65, cy + 120, cx + 55, cy + 130, cx + 50, cy + 140);
+      ctx.lineTo(cx + 35, cy + 140);
+      ctx.bezierCurveTo(cx + 50, cy + 80, cx + 60, cy + 20, cx + 40, cy - 20);
+      ctx.fill();
+      break;
+    default:
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - 40, 58, 30, 0, 0, Math.PI*2);
+      ctx.fill();
+  }
+}
+
+function drawHairFront(ctx, cx, cy, faceW, faceH, ft) {
+  ctx.fillStyle = ft.hairColor;
+  switch(ft.hairStyle) {
+    case 'long_straight':
+    case 'long_wavy':
+      // Top hair + bangs
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.08, faceH*0.32, 0, Math.PI, 0);
+      ctx.fill();
+      // Side bangs
+      ctx.beginPath();
+      ctx.moveTo(cx - faceW, cy - faceH*0.35);
+      ctx.quadraticCurveTo(cx - faceW*1.05, cy - faceH*0.1, cx - faceW*0.85, cy + faceH*0.05);
+      ctx.quadraticCurveTo(cx - faceW*0.7, cy - faceH*0.15, cx - faceW*0.55, cy - faceH*0.28);
+      ctx.fill();
+      break;
+    case 'bob':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.08, faceH*0.32, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - faceW*1.05, cy - faceH*0.1);
+      ctx.quadraticCurveTo(cx - faceW*1.1, cy + faceH*0.25, cx - faceW*0.9, cy + faceH*0.35);
+      ctx.lineTo(cx - faceW*0.6, cy + faceH*0.35);
+      ctx.lineTo(cx - faceW*0.5, cy - faceH*0.05);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx + faceW*1.05, cy - faceH*0.1);
+      ctx.quadraticCurveTo(cx + faceW*1.1, cy + faceH*0.25, cx + faceW*0.9, cy + faceH*0.35);
+      ctx.lineTo(cx + faceW*0.6, cy + faceH*0.35);
+      ctx.lineTo(cx + faceW*0.5, cy - faceH*0.05);
+      ctx.fill();
+      break;
+    case 'short_side':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.05, faceH*0.3, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - faceW*0.6, cy - faceH*0.4);
+      ctx.quadraticCurveTo(cx - faceW*0.2, cy - faceH*0.45, cx + faceW*0.3, cy - faceH*0.42);
+      ctx.quadraticCurveTo(cx + faceW*0.1, cy - faceH*0.28, cx - faceW*0.1, cy - faceH*0.26);
+      ctx.fill();
+      break;
+    case 'short_back':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.05, faceH*0.28, 0, Math.PI, 0);
+      ctx.fill();
+      break;
+    case 'twin_tails':
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.06, faceH*0.3, 0, Math.PI, 0);
+      ctx.fill();
+      // Bangs
+      ctx.beginPath();
+      ctx.moveTo(cx - faceW*0.7, cy - faceH*0.38);
+      ctx.quadraticCurveTo(cx - faceW*0.3, cy - faceH*0.5, cx, cy - faceH*0.44);
+      ctx.quadraticCurveTo(cx + faceW*0.3, cy - faceH*0.5, cx + faceW*0.7, cy - faceH*0.38);
+      ctx.quadraticCurveTo(cx + faceW*0.5, cy - faceH*0.22, cx, cy - faceH*0.24);
+      ctx.quadraticCurveTo(cx - faceW*0.5, cy - faceH*0.22, cx - faceW*0.7, cy - faceH*0.38);
+      ctx.fill();
+      // Hair ties
+      [-1,1].forEach(side => {
+        ctx.beginPath();
+        ctx.arc(cx + side * faceW * 0.88, cy - faceH*0.55, 5, 0, Math.PI*2);
+        ctx.fillStyle = '#ff6688';
+        ctx.fill();
+      });
+      ctx.fillStyle = ft.hairColor;
+      break;
+  }
+}
+
+function lighten(hex, amount) {
+  const num = parseInt(hex.replace('#',''), 16);
+  const r = Math.min(255, (num >> 16) + amount);
+  const g = Math.min(255, ((num >> 8) & 0xff) + amount);
+  const b = Math.min(255, (num & 0xff) + amount);
+  return `rgb(${r},${g},${b})`;
+}
+function darken(hex, amount) {
+  if (hex.startsWith('rgb')) {
+    const m = hex.match(/\d+/g);
+    return `rgb(${Math.max(0,+m[0]-amount)},${Math.max(0,+m[1]-amount)},${Math.max(0,+m[2]-amount)})`;
+  }
+  const num = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0, (num >> 16) - amount);
+  const g = Math.max(0, ((num >> 8) & 0xff) - amount);
+  const b = Math.max(0, (num & 0xff) - amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+// Build face selector thumbnails
+function buildSelector() {
+  const container = document.getElementById('faceSelector');
+  faceTypes.forEach((ft, i) => {
+    const div = document.createElement('div');
+    div.className = 'face-opt' + (i === 0 ? ' active' : '');
+    div.onclick = () => selectFace(ft, div);
+    const c = document.createElement('canvas');
+    c.width = 70; c.height = 90;
+    const label = document.createElement('div');
+    label.className = 'face-opt-label';
+    label.textContent = ft.label;
+    div.appendChild(c);
+    div.appendChild(label);
+    container.appendChild(div);
+    // Draw neutral thumbnail
+    drawFaceType(c, ft, presets.neutral);
+  });
+}
+
+function selectFace(ft, el) {
+  currentFace = ft;
+  document.querySelectorAll('.face-opt').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  drawFace();
+}
+
+function update(au, val) {
+  state[au] = parseFloat(val);
+  document.getElementById('v_' + au).textContent = parseFloat(val).toFixed(1);
+  renderJSON();
+  drawFace();
+  // Refresh thumbnails
+  document.querySelectorAll('.face-opt canvas').forEach((c, i) => {
+    drawFaceType(c, faceTypes[i], state);
+  });
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+}
+
+function applyPreset(name, e) {
+  const p = presets[name];
+  Object.entries(p).forEach(([au, val]) => {
+    state[au] = val;
+    const el = document.getElementById(au);
+    const valEl = document.getElementById('v_' + au);
+    if (el) el.value = val;
+    if (valEl) valEl.textContent = val.toFixed(1);
+  });
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  if (e) e.target.classList.add('active');
+  renderJSON();
+  drawFace();
+  document.querySelectorAll('.face-opt canvas').forEach((c, i) => {
+    drawFaceType(c, faceTypes[i], state);
+  });
+}
+
+function resetAll() {
+  applyPreset('neutral', null);
+  document.querySelector('.preset-btn').classList.add('active');
+}
+
+function drawFace() {
+  drawFaceType(document.getElementById('faceCanvas'), currentFace, state);
+}
+
+function renderJSON() {
+  const ts = Date.now();
+  const seq = Math.floor(Math.random() * 99999);
+  const aus = Object.entries(state).map(([k,v]) =>
+    `    <span class="json-key">"${k}"</span>: <span class="json-num">${v.toFixed(1)}</span>`
+  ).join(',\n');
+  document.getElementById('jsonOutput').innerHTML =
+    `<span class="json-key">"protocol_version"</span>: <span class="json-str">"FACP1.0"</span>,\n` +
+    `<span class="json-key">"timestamp"</span>: <span class="json-num">${ts}</span>,\n` +
+    `<span class="json-key">"sequence_id"</span>: <span class="json-num">${seq}</span>,\n` +
+    `<span class="json-key">"face_type"</span>: <span class="json-str">"${currentFace.id}"</span>,\n` +
+    `<span class="json-key">"action_units"</span>: {\n${aus}\n}`;
+}
+
+function copyJSON() {
+  const ts = Date.now();
+  const seq = Math.floor(Math.random() * 99999);
+  const aus = Object.entries(state).map(([k,v]) => `    "${k}": ${v.toFixed(1)}`).join(',\n');
+  const json = `{\n  "protocol_version": "FACP1.0",\n  "timestamp": ${ts},\n  "sequence_id": ${seq},\n  "face_type": "${currentFace.id}",\n  "action_units": {\n${aus}\n  }\n}`;
+  navigator.clipboard.writeText(json).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ 已複製！貼到 AI 工具使用';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 複製 JSON → 貼到 AI 工具';
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+
+buildSelector();
+renderJSON();
+drawFace();
+</script>
+</body>
+</html>

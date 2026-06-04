@@ -1360,9 +1360,14 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-  .navbar { padding: 0 1rem; }
+  .navbar { padding: 0 0.8rem; }
   .nav-links { display: none; }
   .hamburger { display: flex; }
+
+  /* Hide status dot on mobile, shrink mode switcher */
+  .nav-status { display: none; }
+  .nav-logo span { display: none; }
+  .mode-btn { padding: 4px 8px; font-size: 10px; }
 
   .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
   .hero-profile { display: none; }
@@ -1378,6 +1383,28 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
   section { padding: 3rem 1rem; }
   .hero-stats { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
   .stat-val { font-size: 1.4rem; }
+
+  /* On mobile, always show cards instead of table */
+  #term-projects { display: none !important; }
+  #dash-projects { display: grid !important; grid-template-columns: 1fr; }
+
+  /* Fix filter bar on mobile */
+  .filter-bar { gap: 6px; }
+  .filter-btn { font-size: 10px; padding: 5px 10px; }
+
+  /* Fix modal on mobile */
+  .modal { max-height: 95vh; margin: 0.5rem; border-radius: 10px; }
+  .modal-metrics { grid-template-columns: repeat(2, 1fr); }
+
+  /* AI tools iframe height on mobile */
+  #ai-tools iframe { height: 500px; }
+
+  /* Hero stats smaller on mobile */
+  .stat-val { font-size: 1.2rem; }
+  .stat-label { font-size: 10px; }
+
+  /* Section titles smaller */
+  .section-title { font-size: 1.6rem; }
 }
 
 /* Fade in animation */
@@ -1401,7 +1428,7 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
     <ul class="nav-links">
       <li><a href="#about">// 關於我</a></li>
       <li><a href="#skills">// 技能</a></li>
-      <li><a href="#portfolio">// 作品集</a></li>
+      <li><a href="projects.html">// 作品集</a></li>
       <li><a href="#ai-tools">// AI 工具坊</a></li>
       <li><a href="#youtube">// YouTube</a></li>
     </ul>
@@ -1467,7 +1494,7 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
       <h1 class="hero-h1">善於拆解問題<br>建立流程，<em>從想法走向落地</em></h1>
       <p class="hero-sub">數位行銷 × Martech × AI Workflow｜9~10 年跨產業經驗<br>品牌端 × 代理商 × 新創 × 自創業</p>
       <div class="hero-cta">
-        <a href="#portfolio" class="btn-primary">查看作品集 →</a>
+        <a href="projects.html" class="btn-primary">查看作品集 →</a>
         <a href="#about" class="btn-secondary">關於我</a>
       </div>
       <div class="hero-stats">
@@ -1686,15 +1713,22 @@ body.dashboard .back-top { background: var(--dash-purple); color: white; }
   <div class="container">
     <div class="section-tag">// AI WORKSHOP</div>
     <h2 class="section-title">AI 工具坊</h2>
-    <p class="section-subtitle">我設計的 AI 輔助工具，將創作流程系統化。這款短影片分鏡卡片庫，能快速組合拍攝動作序列，一鍵生成 AI 影片生成工具的指令。</p>
+    <p class="section-subtitle">我設計的 AI 輔助工具，將創作流程系統化。</p>
+
+    <!-- Tool Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+      <button id="tab-storyboard" onclick="switchTool('storyboard')" style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 16px;border-radius:6px;border:1px solid var(--term-green);background:var(--term-green);color:var(--term-bg);cursor:pointer;font-weight:700;">🎬 分鏡卡片庫</button>
+      <button id="tab-facs" onclick="switchTool('facs')" style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 16px;border-radius:6px;border:1px solid var(--term-border);background:transparent;color:var(--term-dim);cursor:pointer;">🎭 FACS 表情控制器</button>
+    </div>
+
     <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--term-border); background: var(--term-bg2);">
       <div style="padding: 10px 16px; background: var(--term-bg3); border-bottom: 1px solid var(--term-border); display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--term-dim);">
         <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></div>
         <div style="width:10px;height:10px;border-radius:50%;background:#febc2e"></div>
         <div style="width:10px;height:10px;border-radius:50%;background:#28c840"></div>
-        <span style="margin-left: 8px;">短影片分鏡卡片庫 // AI Video Prompt Generator</span>
+        <span id="tool-label" style="margin-left: 8px;">短影片分鏡卡片庫 // AI Video Prompt Generator</span>
       </div>
-      <iframe src="ai-tools.html" style="width: 100%; height: 700px; border: none; display: block;" title="AI 短影片分鏡卡片庫"></iframe>
+      <iframe id="tool-frame" src="ai-tools.html" style="width: 100%; height: 700px; border: none; display: block;" title="AI 工具"></iframe>
     </div>
   </div>
 </section>
@@ -2133,6 +2167,25 @@ document.addEventListener('keydown', e => {
 });
 
 // ============================================
+// TOOL SWITCHER
+function switchTool(tool) {
+  const frame = document.getElementById('tool-frame');
+  const label = document.getElementById('tool-label');
+  const tabS = document.getElementById('tab-storyboard');
+  const tabF = document.getElementById('tab-facs');
+  if (tool === 'storyboard') {
+    frame.src = 'ai-tools.html';
+    label.textContent = '短影片分鏡卡片庫 // AI Video Prompt Generator';
+    tabS.style.cssText = 'font-family:JetBrains Mono,monospace;font-size:12px;padding:6px 16px;border-radius:6px;border:1px solid var(--term-green);background:var(--term-green);color:var(--term-bg);cursor:pointer;font-weight:700;';
+    tabF.style.cssText = 'font-family:JetBrains Mono,monospace;font-size:12px;padding:6px 16px;border-radius:6px;border:1px solid var(--term-border);background:transparent;color:var(--term-dim);cursor:pointer;';
+  } else {
+    frame.src = 'facs-tool.html';
+    label.textContent = 'FACS 臉部表情控制器 // AI Portrait Expression Control';
+    tabF.style.cssText = 'font-family:JetBrains Mono,monospace;font-size:12px;padding:6px 16px;border-radius:6px;border:1px solid var(--term-green);background:var(--term-green);color:var(--term-bg);cursor:pointer;font-weight:700;';
+    tabS.style.cssText = 'font-family:JetBrains Mono,monospace;font-size:12px;padding:6px 16px;border-radius:6px;border:1px solid var(--term-border);background:transparent;color:var(--term-dim);cursor:pointer;';
+  }
+}
+
 // COUNTER ANIMATION
 // ============================================
 const counters = [
