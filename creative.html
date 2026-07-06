@@ -3,13 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>郭奕圻 YI-CHI KUO | 個人履歷與作品集</title>
+  <title>創意 AI 實驗室 | 郭奕圻 YI-CHI KUO</title>
+
+  <!-- 三模式（Dev/Visual/Brand）預先套用，避免切換閃爍(FOUC)；需在任何樣式渲染前同步執行 -->
+  <script>
+    (function () {
+      var MODES = ['dev', 'visual', 'brand'];
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var qMode = qs.get('mode');
+        var legacyMap = { terminal: 'dev', dashboard: 'visual', dev: 'dev', visual: 'visual', brand: 'brand' };
+        var mode = (qMode && legacyMap[qMode]) || localStorage.getItem('mode');
+        if (!mode) {
+          var legacyTheme = localStorage.getItem('theme');
+          mode = legacyTheme === 'light' ? 'visual' : 'dev';
+        }
+        if (MODES.indexOf(mode) === -1) mode = 'dev';
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dev');
+      }
+    })();
+  </script>
+
   <!-- Tailwind CSS v3 CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
@@ -21,7 +43,7 @@
         extend: {
           fontFamily: {
             sans: ['Noto Sans TC', 'sans-serif'],
-            mono: ['Fira Code', 'monospace'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
             border: 'var(--border)',
@@ -56,54 +78,107 @@
   </script>
 
   <style>
-    /* 雙模式 CSS 變數 */
-    
-    :root {
-      --background: #09090b;
-      --foreground: #ecf0f1;
-      --primary: #22c55e;
-      --primary-foreground: #09090b;
-      --secondary: #27272a;
-      --secondary-foreground: #fafafa;
-      --muted: #18181b;
-      --muted-foreground: #a1a1aa;
-      --accent: #22c55e;
-      --accent-foreground: #09090b;
-      --card: #121214;
-      --card-foreground: #ecf0f1;
-      --border: #27272a;
-      --ring: #22c55e;
+    /* 三模式 CSS 變數：Dev / Visual / Brand（規格見 design_handoff.html 第 04 節） */
+    :root,
+    html[data-theme="dev"] {
+      --background: #0a0e14;
+      --foreground: #e6edf3;
+      --primary: #3fb950;
+      --primary-foreground: #0a0e14;
+      --secondary: #161b22;
+      --secondary-foreground: #e6edf3;
+      --muted: #0d1117;
+      --muted-foreground: #8b949e;
+      --accent: #3fb950;
+      --accent-foreground: #0a0e14;
+      --card: #0d1117;
+      --card-foreground: #e6edf3;
+      --border: #1e2530;
+      --ring: #3fb950;
     }
-    html.light {
+
+    html[data-theme="visual"] {
       --background: #fafafa;
       --foreground: #18181b;
-      --primary: #8b5cf6;
+      --primary: #7c3aed;
       --primary-foreground: #ffffff;
       --secondary: #f4f4f5;
       --secondary-foreground: #18181b;
       --muted: #f4f4f5;
       --muted-foreground: #71717a;
-      --accent: #8b5cf6;
+      --accent: #7c3aed;
       --accent-foreground: #ffffff;
       --card: #ffffff;
       --card-foreground: #18181b;
-      --border: #e4e4e7;
-      --ring: #8b5cf6;
+      --border: #e5e7eb;
+      --ring: #7c3aed;
     }
+
+    html[data-theme="brand"] {
+      --background: #f7f5f0;
+      --foreground: #3d3935;
+      --primary: #5a5550;
+      --primary-foreground: #f7f5f0;
+      --secondary: #ece7e0;
+      --secondary-foreground: #3d3935;
+      --muted: #ece7e0;
+      --muted-foreground: #6b6358;
+      --accent: #8b7355;
+      --accent-foreground: #f7f5f0;
+      --card: #fbfaf7;
+      --card-foreground: #3d3935;
+      --border: #c8c4bc;
+      --ring: #5a5550;
+    }
+
     body {
       background-color: var(--background);
       color: var(--foreground);
       font-family: 'Noto Sans TC', sans-serif;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    .bg-grid {
-      background-image: linear-gradient(to right, rgba(34,197,94,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(34,197,94,0.02) 1px, transparent 1px);
-      background-size: 30px 30px;
-    }
-    html.light .bg-grid {
-      background-image: linear-gradient(to right, rgba(139,92,246,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(139,92,246,0.02) 1px, transparent 1px);
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
 
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--background);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    .bg-grid {
+      background-image: linear-gradient(to right, rgba(63, 185, 80, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(63, 185, 80, 0.025) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    html[data-theme="visual"] .bg-grid {
+      background-image: linear-gradient(to right, rgba(124, 58, 237, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(124, 58, 237, 0.025) 1px, transparent 1px);
+    }
+    html[data-theme="brand"] .bg-grid {
+      background-image: none;
+    }
+
+    html[data-theme="brand"] .font-mono {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+    html[data-theme="brand"] .font-bold {
+      font-weight: 500;
+    }
+    html[data-theme="brand"] .font-extrabold {
+      font-weight: 500;
+    }
+    html[data-theme="brand"] .tracking-tight {
+      letter-spacing: 0;
+    }
+    html[data-theme="brand"] .shadow-2xl,
+    html[data-theme="brand"] .shadow-xl {
+      box-shadow: 0 1px 2px rgba(61, 57, 53, 0.06), 0 1px 3px rgba(61, 57, 53, 0.05);
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
@@ -134,11 +209,17 @@
           <span>求職中</span>
         </span>
         <div class="flex items-center space-x-1 p-1 rounded-full bg-muted border border-border">
-          <button id="btn-terminal" onclick="setTheme('dark')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground">
-            <i data-lucide="terminal" class="w-3 h-3"></i><span>Terminal</span>
+          <button id="btn-dev" onclick="setMode('dev')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground" aria-pressed="true">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Dev</span>
           </button>
-          <button id="btn-dashboard" onclick="setTheme('light')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground">
-            <i data-lucide="sun" class="w-3 h-3"></i><span>Dashboard</span>
+          <button id="btn-visual" onclick="setMode('visual')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground" aria-pressed="false">
+            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Visual</span>
+          </button>
+          <button id="btn-brand" onclick="setMode('brand')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground" aria-pressed="false">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Brand</span>
           </button>
         </div>
         <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-primary">
@@ -158,233 +239,95 @@
 
   <!-- MAIN CONTENT -->
   <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-24">
-    
+
     <!-- HERO SECTION -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-      <div class="lg:col-span-7 space-y-6">
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
-          <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-          <span>DIGITAL WEAVER // 數位編織者</span>
-        </div>
-        
-        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight font-mono">
-          yichi@lab:~# <br class="md:hidden" />
-          Whoami // <span class="text-primary">郭奕圻</span>
-        </h1>
-
-        <p class="text-muted-foreground text-base md:text-lg leading-relaxed">
-          數位行銷 x Martech x AI Workflow 專案經理。擁有 <strong>9~10 年跨產業經驗</strong>，橫跨品牌端、代理商、新創與自主創業。擅長釐清問題本質、梳理模糊需求，並將模糊的商業需求轉換為具體可執行的流程與方案。
-        </p>
-
-        <div class="flex flex-wrap gap-4">
-          <a href="projects.html" class="px-6 py-3 rounded-xl font-bold bg-primary text-primary-foreground hover:opacity-95 transition-opacity flex items-center space-x-2">
-            <span>查看作品集</span>
-            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </a>
-          <a href="tech.html" class="px-6 py-3 rounded-xl font-bold bg-secondary text-secondary-foreground border border-border hover:bg-muted transition-colors flex items-center space-x-2">
-            <span>進入自動化沙盒</span>
-          </a>
-        </div>
-
-        <!-- 關鍵數據 -->
-        <div class="grid grid-cols-3 gap-6 pt-6 border-t border-border/60">
-          <div>
-            <div class="text-2xl md:text-3xl font-bold text-primary font-mono">9-10 年</div>
-            <div class="text-xs text-muted-foreground font-mono">// 跨產業總年資</div>
-          </div>
-          <div>
-            <div class="text-2xl md:text-3xl font-bold text-primary font-mono">數十萬+</div>
-            <div class="text-xs text-muted-foreground font-mono">// 濾鏡累計使用</div>
-          </div>
-          <div>
-            <div class="text-2xl md:text-3xl font-bold text-primary font-mono">0%</div>
-            <div class="text-xs text-muted-foreground font-mono">// S23U 客訴率</div>
-          </div>
-        </div>
+    <section class="space-y-6 max-w-3xl">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        <span>CREATIVE AI LAB // 創意 AI 實驗室</span>
       </div>
 
-      <!-- 終端機模擬卡片 -->
-      <div class="lg:col-span-5">
-        <div class="rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
-          <div class="bg-muted px-4 py-3 flex items-center justify-between border-b border-border">
-            <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-              <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-              <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-            </div>
-            <span class="text-xs text-muted-foreground font-mono">yichi_whoami.sh</span>
-          </div>
-          <div class="p-6 min-h-[280px] font-mono text-sm leading-relaxed flex flex-col justify-between">
-            <div id="terminal-text" class="text-primary whitespace-pre-wrap"></div>
-            <div class="flex items-center text-primary mt-4">
-              <span>yichi@lab:~$</span>
-              <span class="w-1.5 h-4 bg-primary ml-1.5 animate-pulse"></span>
-            </div>
-          </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight font-mono">
+        // LoRA 商業生圖 <span class="text-primary">×</span> Spark AR 濾鏡
+      </h1>
+
+      <p class="text-muted-foreground text-base md:text-lg leading-relaxed">
+        用 AI 生圖與互動濾鏡，同時解決「拍攝成本」跟「社群擴散」兩件事——訓練專屬 LoRA 模型取代部分商業攝影需求，開發 Spark AR 濾鏡讓品牌內容自然被分享出去。
+      </p>
+
+      <div class="grid grid-cols-3 gap-6 pt-6 border-t border-border/60">
+        <div>
+          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">2</div>
+          <div class="text-xs text-muted-foreground font-mono">// LoRA 風格模型</div>
+        </div>
+        <div>
+          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">數十萬+</div>
+          <div class="text-xs text-muted-foreground font-mono">// 濾鏡累計使用</div>
+        </div>
+        <div>
+          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">IG</div>
+          <div class="text-xs text-muted-foreground font-mono">// 互動濾鏡發布平台</div>
         </div>
       </div>
     </section>
 
-    <!-- RPG 雙棲進化技能樹 -->
+    <!-- LoRA 切換展示 -->
     <section class="space-y-8">
       <div class="text-center md:text-left space-y-2">
         <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <i data-lucide="gamepad-2" class="w-4 h-4"></i>
-          <span>SKILL EVOLUTION // 雙棲技能樹</span>
+          <i data-lucide="wand-2" class="w-4 h-4"></i>
+          <span>LORA SHOWCASE // 商業生圖</span>
         </div>
-        <h2 class="text-3xl font-bold tracking-tight font-mono">// RPG 雙棲進化技能樹</h2>
+        <h2 class="text-3xl font-bold tracking-tight font-mono">// LoRA 商業生圖</h2>
         <p class="text-muted-foreground text-sm max-w-2xl">
-          點擊高亮節點，即可逐步「解鎖」並進化我的技能路徑。這代表了我從自主創業到 Martech 自動化與專案管理解鎖的成長歷程。
+          訓練專屬 AI 模特兒與產品 LoRA，為品牌節省拍攝成本。點擊切換查看不同應用情境。
         </p>
       </div>
 
-      <!-- 技能樹容器 -->
-      <div class="relative rounded-2xl border border-border bg-card/20 backdrop-blur-md p-6 md:p-10 overflow-hidden shadow-xl">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
-          
-          <!-- 分類 1: 專案管理 -->
-          <div class="space-y-4">
-            <div class="flex items-center space-x-2 border-b border-border pb-2">
-              <i data-lucide="briefcase" class="w-4 h-4 text-primary"></i>
-              <h3 class="font-bold font-mono text-sm">1. 專案管理 (PM)</h3>
-            </div>
-            <div class="space-y-3">
-              <div onclick="toggleSkill('pm1')" id="skill-pm1" class="p-3 rounded-xl border border-primary bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
-                <div class="text-xs font-bold font-mono text-primary">// 專案時程控管</div>
-                <p class="text-[11px] text-muted-foreground mt-1">精準掌控專案節點，確保多專案並行時能如期、如質交付。</p>
-              </div>
-              <div onclick="toggleSkill('pm2')" id="skill-pm2" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// 跨部門溝通協調</div>
-                <p class="text-[11px] text-muted-foreground mt-1">作為工程、設計與行銷的橋樑，翻譯模糊需求為具體規格。</p>
-              </div>
-              <div onclick="toggleSkill('pm3')" id="skill-pm3" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// 預算與風險控管</div>
-                <p class="text-[11px] text-muted-foreground mt-1">控制專案成本與外包商進度，主動識別並排除潛在風險。</p>
-              </div>
-            </div>
-          </div>
+      <div class="rounded-2xl border border-border bg-card/20 backdrop-blur-md p-6 md:p-10 shadow-xl">
+        <div class="flex items-center flex-wrap gap-2 mb-8">
+          <button onclick="switchLora('cyberpunk')" id="lora-btn-cyberpunk" class="px-4 py-2 rounded-full text-sm font-mono font-bold transition-all bg-primary text-primary-foreground">
+            AI 商用產品視覺
+          </button>
+          <button onclick="switchLora('minimalist')" id="lora-btn-minimalist" class="px-4 py-2 rounded-full text-sm font-mono font-bold transition-all text-muted-foreground hover:text-foreground border border-border">
+            AI 時事議題視覺
+          </button>
+        </div>
 
-          <!-- 分類 2: 行銷與數據 -->
-          <div class="space-y-4">
-            <div class="flex items-center space-x-2 border-b border-border pb-2">
-              <i data-lucide="bar-chart-3" class="w-4 h-4 text-primary"></i>
-              <h3 class="font-bold font-mono text-sm">2. 行銷與數據</h3>
-            </div>
-            <div class="space-y-3">
-              <div onclick="toggleSkill('mkt1')" id="skill-skill-mkt1" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// 數據分析儀表板</div>
-                <p class="text-[11px] text-muted-foreground mt-1">串接 GA4、Looker Studio，建立即時營運與行銷成效看板。</p>
-              </div>
-              <div onclick="toggleSkill('mkt2')" id="skill-skill-mkt2" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// 廣告投放與優化</div>
-                <p class="text-[11px] text-muted-foreground mt-1">Meta、Google 廣告實戰，以 ROI 為導向持續迭代素材與受眾。</p>
-              </div>
-              <div onclick="toggleSkill('mkt3')" id="skill-skill-mkt3" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// 品牌公關與活動</div>
-                <p class="text-[11px] text-muted-foreground mt-1">主導線下體驗活動與媒體接待，控管預算並創造社群聲量。</p>
-              </div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div id="lora-preview-grid" class="grid grid-cols-3 gap-2">
           </div>
-
-          <!-- 分類 3: 自動化與 Martech -->
-          <div class="space-y-4">
-            <div class="flex items-center space-x-2 border-b border-border pb-2">
-              <i data-lucide="cpu" class="w-4 h-4 text-primary"></i>
-              <h3 class="font-bold font-mono text-sm">3. 自動化與 Martech</h3>
-            </div>
-            <div class="space-y-3">
-              <div onclick="toggleSkill('auto1')" id="skill-skill-auto1" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// LINE OA 自動化</div>
-                <p class="text-[11px] text-muted-foreground mt-1">利用 Omnichat 建立高轉化 LINE 機器人，整合 Cyberbiz 會員。</p>
-              </div>
-              <div onclick="toggleSkill('auto2')" id="skill-skill-auto2" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// No-code 工作流</div>
-                <p class="text-[11px] text-muted-foreground mt-1">使用 Make, n8n 串接 API，自動化處理跨平台資訊與通知。</p>
-              </div>
-              <div onclick="toggleSkill('auto3')" id="skill-skill-auto3" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// CRM 與會員經營</div>
-                <p class="text-[11px] text-muted-foreground mt-1">設計會員分眾標籤、自動化推播劇本，提升顧客終身價值。</p>
-              </div>
-            </div>
+          <div id="lora-desc" class="space-y-3">
+            <h3 class="text-lg font-bold font-mono text-primary">AI 商用產品視覺</h3>
+            <p class="text-sm text-muted-foreground">將產品賣點、使用情境與目標受眾轉化為可視化的廣告素材，透過 AI 快速產出商品情境圖、社群主視覺與電商行銷素材。</p>
           </div>
-
-          <!-- 分類 4: 創意 AI 實驗室 -->
-          <div class="space-y-4">
-            <div class="flex items-center space-x-2 border-b border-border pb-2">
-              <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i>
-              <h3 class="font-bold font-mono text-sm">4. 創意 AI 實驗室</h3>
-            </div>
-            <div class="space-y-3">
-              <div onclick="toggleSkill('ai1')" id="skill-skill-ai1" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// LoRA 商業生圖</div>
-                <p class="text-[11px] text-muted-foreground mt-1">訓練專屬 AI 模特兒與產品 LoRA，為品牌節省數十萬拍攝成本。</p>
-              </div>
-              <div onclick="toggleSkill('ai2')" id="skill-skill-ai2" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// Spark AR 濾鏡開發</div>
-                <p class="text-[11px] text-muted-foreground mt-1">自主開發 IG 互動濾鏡，結合社群裂變創造數十萬次使用量。</p>
-              </div>
-              <div onclick="toggleSkill('ai3')" id="skill-skill-ai3" class="p-3 rounded-xl border border-border bg-muted/40 cursor-pointer hover:bg-primary/5 transition-colors">
-                <div class="text-xs font-bold font-mono text-muted-foreground">// 影音企劃與剪輯</div>
-                <p class="text-[11px] text-muted-foreground mt-1">獨立完成 YouTube 影音企劃、腳本與後製，輸出結構化知識。</p>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </section>
 
-    <!-- 工作經歷時間軸 -->
+    <!-- Spark AR 濾鏡 -->
     <section class="space-y-8">
       <div class="text-center md:text-left space-y-2">
         <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <i data-lucide="history" class="w-4 h-4"></i>
-          <span>CAREER TIMELINE // 經歷時間軸</span>
+          <i data-lucide="scan-face" class="w-4 h-4"></i>
+          <span>SPARK AR // 互動濾鏡</span>
         </div>
-        <h2 class="text-3xl font-bold tracking-tight font-mono">// 工作經歷時間軸</h2>
+        <h2 class="text-3xl font-bold tracking-tight font-mono">// Spark AR 濾鏡開發</h2>
+        <p class="text-muted-foreground text-sm max-w-2xl">
+          自主開發 IG 互動濾鏡，結合社群裂變創造數十萬次使用量。
+        </p>
       </div>
 
-      <div class="relative border-l-2 border-border ml-4 md:ml-6 space-y-12">
-        <!-- 經歷 1 -->
-        <div class="relative pl-8 md:pl-10">
-          <div class="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-primary bg-background"></div>
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">2023.08 - 2024.01</span>
-              <h3 class="text-lg font-bold font-mono">台灣三星電子 (Samsung) - 專案經理 (PM)</h3>
-            </div>
-            <p class="text-sm text-muted-foreground">
-              負責三星旗艦機款 S23U 的全國巡迴體驗活動。主導專案進度、物料外包商管理與跨部門協調。在全台數十場活動中，實現了<strong>客訴率 0%</strong>、<strong>回收期 0 延遲</strong>的卓越專案執行成果。
-            </p>
-          </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div class="rounded-2xl border border-border overflow-hidden shadow-xl aspect-[3/4]">
+          <img src="spark-ar-demo-1.jpg" alt="Spark AR 濾鏡實際使用畫面 1" class="w-full h-full object-cover">
         </div>
-
-        <!-- 經歷 2 -->
-        <div class="relative pl-8 md:pl-10">
-          <div class="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-primary bg-background"></div>
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">2022.06 - 2023.06</span>
-              <h3 class="text-lg font-bold font-mono">發現綠洲 (露營品牌) - 專案經理 (PM)</h3>
-            </div>
-            <p class="text-sm text-muted-foreground">
-              主導兩天一夜的大型媒體公關活動。控管 <strong>80 萬公關預算</strong>，統籌外包商、硬體搭建與<strong> 40 家主流媒體</strong>的接待工作，在台中洲際大飯店成功創造品牌社群高度曝光。
-            </p>
-          </div>
+        <div class="rounded-2xl border border-border overflow-hidden shadow-xl aspect-[3/4]">
+          <img src="spark-ar-demo-2.jpg" alt="Spark AR 濾鏡實際使用畫面 2" class="w-full h-full object-cover">
         </div>
-
-        <!-- 經歷 3 -->
-        <div class="relative pl-8 md:pl-10">
-          <div class="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-primary bg-background"></div>
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">2021.05 - 2022.05</span>
-              <h3 class="text-lg font-bold font-mono">Panasonic LUMIX G9II 體驗活動 - 專案 PM</h3>
-            </div>
-            <p class="text-sm text-muted-foreground">
-              統籌 Panasonic LUMIX G9II 全台 4 場城市巡迴體驗活動。管理現場工作人員與器材物料，累計接待 <strong>200+ 名專業攝影師與創作者</strong>，順利達成活動高滿意度與品牌心智佔有率。
-            </p>
-          </div>
+        <div class="col-span-2 md:col-span-1 p-6 rounded-2xl border border-border bg-card shadow-xl text-center flex flex-col justify-center space-y-1">
+          <div class="text-3xl font-extrabold text-primary font-mono">數十萬+</div>
+          <div class="text-xs text-muted-foreground font-mono">// 濾鏡累計使用次數</div>
         </div>
       </div>
     </section>
@@ -402,7 +345,7 @@
       <!-- 底部社群連結 -->
       <div class="flex items-center space-x-6">
         <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
-          <i data-lucide="youtube" class="w-5 h-5"></i>
+          <i data-lucide="play-circle" class="w-5 h-5"></i>
         </a>
         <a href="projects.html" class="text-muted-foreground hover:text-primary transition-colors">
           <i data-lucide="briefcase" class="w-5 h-5"></i>
@@ -424,43 +367,35 @@
     // 1. 初始化 Lucide 圖標
     lucide.createIcons();
 
-    // 2. 雙模式 (Theme) 狀態管理
-    function initTheme() {
-      const saved = localStorage.getItem('theme') || 'dark';
-      applyTheme(saved);
+    // 2. 三模式 (Dev / Visual / Brand) 狀態管理
+    const MODES = ['dev', 'visual', 'brand'];
+    const MODE_BTN_ACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
+    const MODE_BTN_INACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
+
+    function setMode(mode) {
+      if (MODES.indexOf(mode) === -1) mode = 'dev';
+      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('mode', mode);
+      localStorage.setItem('theme', mode === 'dev' ? 'dark' : 'light');
+
+      MODES.forEach(function (m) {
+        const btn = document.getElementById('btn-' + m);
+        if (!btn) return;
+        btn.className = (m === mode) ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+      });
+
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('mode', mode);
+        window.history.replaceState({}, '', url);
+      } catch (e) { /* file:// 等環境下略過即可 */ }
     }
-    function setTheme(theme) {
-      localStorage.setItem('theme', theme);
-      applyTheme(theme);
+
+    function initMode() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dev';
+      setMode(current);
     }
-    function applyTheme(theme) {
-      const html = document.documentElement;
-      const btnT = document.getElementById('btn-terminal');
-      const btnD = document.getElementById('btn-dashboard');
-      if (theme === 'light') {
-        html.classList.add('light');
-        if (btnD) btnD.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground';
-        if (btnT) btnT.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground';
-      } else {
-        html.classList.remove('light');
-        if (btnT) btnT.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground';
-        if (btnD) btnD.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground';
-      }
-      lucide.createIcons();
-    }
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobile-menu');
-      const icon = document.getElementById('menu-icon');
-      if (menu.classList.contains('hidden')) {
-        menu.classList.remove('hidden');
-        icon.setAttribute('data-lucide', 'x');
-      } else {
-        menu.classList.add('hidden');
-        icon.setAttribute('data-lucide', 'menu');
-      }
-      lucide.createIcons();
-    }
-    initTheme();
 
     // 3. 手機版導覽選單切換
     function toggleMobileMenu() {
@@ -490,72 +425,54 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 5. 終端機模擬打字機效果
-    const terminalLines = [
-      "yichikuo@lab:~$ whoami",
-      "郭奕圻 / Yi-Chi Kuo",
-      "數位行銷 x Martech x AI Workflow 專案經理",
-      "跨越品牌端、代理商與自主創業，擅長釐清模糊需求",
-      "",
-      "yichikuo@lab:~$ cat core_skills.txt",
-      "• 專案管理 (PM) ── 跨部門溝通與時程風險控管",
-      "• Martech 自動化 ── LINE 機器人、Make/n8n 工作流",
-      "• 數據分析 ── GA4, Looker Studio 營運看板建置",
-      "• 創意 AI 實驗室 ── LoRA 商業生圖、Spark AR 濾鏡"
-    ];
-
-    let lineIndex = 0;
-    let charIndex = 0;
-    let currentText = "";
-    const terminalElement = document.getElementById('terminal-text');
-
-    function typeTerminal() {
-      if (lineIndex < terminalLines.length) {
-        const line = terminalLines[lineIndex];
-        if (charIndex < line.length) {
-          currentText += line[charIndex];
-          terminalElement.textContent = currentText;
-          charIndex++;
-          setTimeout(typeTerminal, 15);
-        } else {
-          currentText += "\n";
-          terminalElement.textContent = currentText;
-          lineIndex++;
-          charIndex = 0;
-          setTimeout(typeTerminal, 150);
-        }
+    // 5. LoRA 展示切換（AI 商用產品視覺 / AI 時事議題視覺）
+    const LORA_STYLES = {
+      cyberpunk: {
+        label: 'AI 商用產品視覺',
+        desc: '將產品賣點、使用情境與目標受眾轉化為可視化的廣告素材，透過 AI 快速產出商品情境圖、社群主視覺與電商行銷素材。',
+        images: [
+          { src: 'lora-cyberpunk-sample.jpg', alt: 'AI 商用產品視覺範例：戶外防蚊藥膏廣告' },
+          { src: 'lora-cream-sample.jpg', alt: 'AI 商用產品視覺範例：保濕乳液產品廣告' },
+          { src: 'lora-zhenzhen-sample.jpg', alt: 'AI 商用產品視覺範例：零食品牌社群主視覺' }
+        ]
+      },
+      minimalist: {
+        label: 'AI 時事議題視覺',
+        desc: '結合國際節日、健康議題與品牌溝通需求，透過 AI 快速生成具宣導感與社群傳播性的主視覺，適合衛教內容、節慶貼文、公益議題與品牌聲量操作。',
+        images: [
+          { src: 'lora-topical-sample.jpg', alt: 'AI 時事議題視覺範例：拒絕毒品衛教宣導視覺' },
+          { src: 'lora-flower-sample.jpg', alt: 'AI 時事議題視覺範例：四月追花季防護指南' }
+        ]
       }
+    };
+
+    function switchLora(style) {
+      if (!LORA_STYLES[style]) return;
+      const data = LORA_STYLES[style];
+
+      Object.keys(LORA_STYLES).forEach(function (s) {
+        const btn = document.getElementById('lora-btn-' + s);
+        if (!btn) return;
+        btn.className = (s === style)
+          ? "px-4 py-2 rounded-full text-sm font-mono font-bold transition-all bg-primary text-primary-foreground"
+          : "px-4 py-2 rounded-full text-sm font-mono font-bold transition-all text-muted-foreground hover:text-foreground border border-border";
+      });
+
+      const grid = document.getElementById('lora-preview-grid');
+      grid.innerHTML = data.images.map(function (img) {
+        return '<div class="aspect-square rounded-lg overflow-hidden border border-border">' +
+               '<img src="' + img.src + '" alt="' + img.alt + '" class="w-full h-full object-cover">' +
+               '</div>';
+      }).join('');
+
+      document.getElementById('lora-desc').innerHTML =
+        '<h3 class="text-lg font-bold font-mono text-primary">' + data.label + '</h3>' +
+        '<p class="text-sm text-muted-foreground">' + data.desc + '</p>';
     }
 
-    // 啟動打字機
-    setTimeout(typeTerminal, 500);
-
-    // 6. RPG 技能樹高亮解鎖互動邏輯
-    function toggleSkill(skillId) {
-      // 這邊是示範點擊高亮效果，並可以與其他節點產生解鎖連動
-      const skillEl = document.getElementById(`skill-${skillId}`);
-      if (!skillEl) return;
-
-      const isUnlocked = skillEl.classList.contains('border-primary');
-      
-      if (isUnlocked) {
-        // 如果已解鎖，點擊則鎖定 (還原樣式)
-        skillEl.classList.remove('border-primary', 'bg-primary/5');
-        skillEl.classList.add('border-border', 'bg-muted/40');
-        
-        const title = skillEl.querySelector('div');
-        title.classList.remove('text-primary');
-        title.classList.add('text-muted-foreground');
-      } else {
-        // 解鎖
-        skillEl.classList.remove('border-border', 'bg-muted/40');
-        skillEl.classList.add('border-primary', 'bg-primary/5');
-        
-        const title = skillEl.querySelector('div');
-        title.classList.remove('text-muted-foreground');
-        title.classList.add('text-primary');
-      }
-    }
+    // 三模式初始化放在腳本最後執行，確保上面用到的函式與元素都已就緒
+    initMode();
+    switchLora('cyberpunk');
   </script>
 </body>
 </html>

@@ -4,12 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>精選作品集 | 郭奕圻 YI-CHI KUO</title>
+  <!-- 三模式（Dev/Visual/Brand）預先套用，避免切換閃爍(FOUC)；需在任何樣式渲染前同步執行 -->
+  <script>
+    (function () {
+      var MODES = ['dev', 'visual', 'brand'];
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var qMode = qs.get('mode');
+        var legacyMap = { terminal: 'dev', dashboard: 'visual', dev: 'dev', visual: 'visual', brand: 'brand' };
+        var mode = (qMode && legacyMap[qMode]) || localStorage.getItem('mode');
+        if (!mode) {
+          var legacyTheme = localStorage.getItem('theme');
+          mode = legacyTheme === 'light' ? 'visual' : 'dev';
+        }
+        if (MODES.indexOf(mode) === -1) mode = 'dev';
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dev');
+      }
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -17,15 +38,34 @@
         extend: {
           fontFamily: {
             sans: ['Noto Sans TC', 'sans-serif'],
-            mono: ['Fira Code', 'monospace'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
             border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
             background: 'var(--background)',
             foreground: 'var(--foreground)',
-            primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)' },
-            muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
-            card: { DEFAULT: 'var(--card)', foreground: 'var(--card-foreground)' },
+            primary: {
+              DEFAULT: 'var(--primary)',
+              foreground: 'var(--primary-foreground)',
+            },
+            secondary: {
+              DEFAULT: 'var(--secondary)',
+              foreground: 'var(--secondary-foreground)',
+            },
+            muted: {
+              DEFAULT: 'var(--muted)',
+              foreground: 'var(--muted-foreground)',
+            },
+            accent: {
+              DEFAULT: 'var(--accent)',
+              foreground: 'var(--accent-foreground)',
+            },
+            card: {
+              DEFAULT: 'var(--card)',
+              foreground: 'var(--card-foreground)',
+            },
           },
         }
       }
@@ -33,63 +73,115 @@
   </script>
 
   <style>
-    
-    :root {
-      --background: #09090b;
-      --foreground: #ecf0f1;
-      --primary: #22c55e;
-      --primary-foreground: #09090b;
-      --secondary: #27272a;
-      --secondary-foreground: #fafafa;
-      --muted: #18181b;
-      --muted-foreground: #a1a1aa;
-      --accent: #22c55e;
-      --accent-foreground: #09090b;
-      --card: #121214;
-      --card-foreground: #ecf0f1;
-      --border: #27272a;
-      --ring: #22c55e;
+    /* 三模式 CSS 變數：Dev / Visual / Brand（規格見 design_handoff.html 第 04 節） */
+    :root,
+    html[data-theme="dev"] {
+      --background: #0a0e14;
+      --foreground: #e6edf3;
+      --primary: #3fb950;
+      --primary-foreground: #0a0e14;
+      --secondary: #161b22;
+      --secondary-foreground: #e6edf3;
+      --muted: #0d1117;
+      --muted-foreground: #8b949e;
+      --accent: #3fb950;
+      --accent-foreground: #0a0e14;
+      --card: #0d1117;
+      --card-foreground: #e6edf3;
+      --border: #1e2530;
+      --ring: #3fb950;
     }
-    html.light {
+
+    html[data-theme="visual"] {
       --background: #fafafa;
       --foreground: #18181b;
-      --primary: #8b5cf6;
+      --primary: #7c3aed;
       --primary-foreground: #ffffff;
       --secondary: #f4f4f5;
       --secondary-foreground: #18181b;
       --muted: #f4f4f5;
       --muted-foreground: #71717a;
-      --accent: #8b5cf6;
+      --accent: #7c3aed;
       --accent-foreground: #ffffff;
       --card: #ffffff;
       --card-foreground: #18181b;
-      --border: #e4e4e7;
-      --ring: #8b5cf6;
+      --border: #e5e7eb;
+      --ring: #7c3aed;
     }
+
+    html[data-theme="brand"] {
+      --background: #f7f5f0;
+      --foreground: #3d3935;
+      --primary: #5a5550;
+      --primary-foreground: #f7f5f0;
+      --secondary: #ece7e0;
+      --secondary-foreground: #3d3935;
+      --muted: #ece7e0;
+      --muted-foreground: #6b6358;
+      --accent: #8b7355;
+      --accent-foreground: #f7f5f0;
+      --card: #fbfaf7;
+      --card-foreground: #3d3935;
+      --border: #c8c4bc;
+      --ring: #5a5550;
+    }
+
     body {
       background-color: var(--background);
       color: var(--foreground);
       font-family: 'Noto Sans TC', sans-serif;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--background);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
     .bg-grid {
-      background-image: linear-gradient(to right, rgba(34,197,94,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(34,197,94,0.02) 1px, transparent 1px);
+      background-image: linear-gradient(to right, rgba(63, 185, 80, 0.025) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(63, 185, 80, 0.025) 1px, transparent 1px);
       background-size: 30px 30px;
     }
-    html.light .bg-grid {
-      background-image: linear-gradient(to right, rgba(139,92,246,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(139,92,246,0.02) 1px, transparent 1px);
+    html[data-theme="visual"] .bg-grid {
+      background-image: linear-gradient(to right, rgba(124, 58, 237, 0.025) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(124, 58, 237, 0.025) 1px, transparent 1px);
+    }
+    html[data-theme="brand"] .bg-grid {
+      background-image: none;
     }
 
-
-    /* Modal */
-    .modal-overlay { transition: opacity 0.2s ease; }
-    .modal-box { transition: transform 0.25s ease, opacity 0.25s ease; }
+    html[data-theme="brand"] .font-mono {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+    html[data-theme="brand"] .font-bold {
+      font-weight: 500;
+    }
+    html[data-theme="brand"] .font-extrabold {
+      font-weight: 500;
+    }
+    html[data-theme="brand"] .tracking-tight {
+      letter-spacing: 0;
+    }
+    html[data-theme="brand"] .shadow-2xl,
+    html[data-theme="brand"] .shadow-xl {
+      box-shadow: 0 1px 2px rgba(61, 57, 53, 0.06), 0 1px 3px rgba(61, 57, 53, 0.05);
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
 
   <!-- NAVBAR -->
-    <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+  <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <a href="index.html" class="flex items-center space-x-2.5 group">
         <div class="h-9 w-9 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -100,6 +192,7 @@
           <span class="text-[10px] text-muted-foreground font-mono">TERMINAL LAB // PM</span>
         </div>
       </a>
+
       <nav class="hidden md:flex items-center space-x-1">
         <a href="index.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 首頁</a>
         <a href="projects.html" class="px-3 py-2 rounded-md text-sm font-medium text-primary border-b-2 border-primary font-mono">// 作品集</a>
@@ -108,25 +201,34 @@
         <a href="ai-tools.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// AI 工具坊</a>
         <a href="youtube.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// YouTube</a>
       </nav>
-      <div class="flex items-center space-x-3">
-        <span class="hidden sm:flex items-center space-x-1.5 text-xs font-mono text-primary border border-primary/30 rounded-full px-3 py-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-          <span>求職中</span>
-        </span>
+
+      <div class="flex items-center space-x-4">
         <div class="flex items-center space-x-1 p-1 rounded-full bg-muted border border-border">
-          <button id="btn-terminal" onclick="setTheme('dark')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground">
-            <i data-lucide="terminal" class="w-3 h-3"></i><span>Terminal</span>
+          <button id="btn-dev" onclick="setMode('dev')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground" aria-pressed="true">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Dev</span>
           </button>
-          <button id="btn-dashboard" onclick="setTheme('light')" class="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground">
-            <i data-lucide="sun" class="w-3 h-3"></i><span>Dashboard</span>
+          <button id="btn-visual" onclick="setMode('visual')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground" aria-pressed="false">
+            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Visual</span>
+          </button>
+          <button id="btn-brand" onclick="setMode('brand')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground" aria-pressed="false">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Brand</span>
           </button>
         </div>
-        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-primary">
-          <i id="menu-icon" data-lucide="menu" class="w-5 h-5"></i>
+
+        <a href="projects.html" class="hidden sm:flex items-center space-x-1 px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+          <span>求職中</span>
+        </a>
+
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground">
+          <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
         </button>
       </div>
     </div>
-    <div id="mobile-menu" class="hidden md:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 space-y-1">
+
+    <div id="mobile-menu" class="hidden md:hidden border-b border-border bg-background px-4 pt-2 pb-4 space-y-1">
       <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 首頁</a>
       <a href="projects.html" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10 font-mono">// 作品集</a>
       <a href="tech.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 技能沙盒</a>
@@ -136,198 +238,181 @@
     </div>
   </header>
 
-  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-
-    <!-- Header -->
-    <div class="space-y-4">
-      <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-        <i data-lucide="folder-open" class="w-4 h-4"></i>
-        <span>PORTFOLIO // 精選作品集</span>
+  <!-- MAIN CONTENT -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-12">
+    
+    <!-- 頂部說明 -->
+    <div class="text-center md:text-left space-y-4">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
+        <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+        <span>PORTFOLIO // 專案作品精選</span>
       </div>
-      <h1 class="text-3xl md:text-4xl font-bold tracking-tight font-mono">// 精選專案與實戰 Case Study</h1>
-      <p class="text-muted-foreground text-sm max-w-2xl leading-relaxed">每個專案都代表了我如何拆解模糊需求、建立高效流程，並運用 Martech 自動化與專案管理能力為企業與客戶創造實質價值。</p>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight font-mono">
+        // 精選專案與實戰成果
+      </h1>
+      <p class="text-muted-foreground text-sm max-w-2xl">
+        這裡記錄了我歷年來主導的代表性專案，涵蓋旗艦產品巡迴、大型公關活動、自動化 Martech 工作流建置等。所有數據均為真實成果。
+      </p>
     </div>
 
-    <!-- Filter -->
+    <!-- 分類篩選按鈕 -->
     <div class="flex flex-wrap gap-2">
-      <button id="filter-all" onclick="filterProjects('all')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-primary bg-primary/10 text-primary transition-all">全部專案</button>
-      <button id="filter-pm" onclick="filterProjects('pm')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">專案管理 PM</button>
-      <button id="filter-martech" onclick="filterProjects('martech')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">Martech / 行銷策略</button>
-      <button id="filter-ai" onclick="filterProjects('ai')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">AI / 創意</button>
+      <button onclick="filterProjects('all')" id="filter-all" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-primary bg-primary/10 text-primary transition-all">
+        [ ALL_PROJECTS ]
+      </button>
+      <button onclick="filterProjects('pm')" id="filter-pm" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">
+        [ PROJECT_MANAGEMENT ]
+      </button>
+      <button onclick="filterProjects('martech')" id="filter-martech" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">
+        [ MARTECH_AUTOMATION ]
+      </button>
     </div>
 
-    <!-- Project Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="project-grid">
-
-      <!-- 1. LUMIX G9II -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="pm" onclick="openModal('lumix')">
+    <!-- 作品集網格 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="projects-grid">
+      
+      <!-- 專案 1: S23U 手機租賃服務 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="pm">
         <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/panasonic_event.png" alt="Panasonic LUMIX G9II 體驗活動" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <img src="s23u-logo.jpg" alt="S23U 手機租賃服務 Logo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
           <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
         </div>
         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
           <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">Panasonic LUMIX G9II 品牌體驗活動全國巡迴</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">擔任全程活動 PM，作為品牌與所有執行方的唯一窗口。台北、台中、高雄、台南四場巡迴，負責場地、器材、餐點、報名、現場攝影到後製剪輯全流程。</p>
-          </div>
-          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
-            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-              <i data-lucide="users" class="w-4 h-4"></i>
-              <span>累計 200+ 參與者</span>
-            </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
-              <span>查看 Case Study</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. 發現綠洲 -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="pm" onclick="openModal('oasis')">
-        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/oasis_event.png" alt="發現綠洲媒體公關活動" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
-        </div>
-        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">發現綠洲 兩天一夜媒體公關活動</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">在資訊不對稱的情況下主動承擔所有後勤執行。台中洲際大飯店、40 家媒體、80 萬預算，自建媒體資料表單解決進度卡關，確保活動如期完成。</p>
-          </div>
-          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
-            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-              <i data-lucide="dollar-sign" class="w-4 h-4"></i>
-              <span>80 萬預算 · 40 家媒體</span>
-            </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
-              <span>查看 Case Study</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3. S23U -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="pm" onclick="openModal('s23u')">
-        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/s23u_logo.png" alt="S23U 手機租賃服務" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">STARTUP_PM</span>
-        </div>
-        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">S23U 手機租賃服務</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">從 0 到 1 自主創辦追星族手機租賃服務。研究同行弱點後針對性補強，設計合約風控、自動化客服、社群品牌形象，10 個月內完全回本。</p>
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              S23U 手機租賃服務
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              自主創業，鎖定演唱會與追星情境的高倍變焦攝影器材短期租賃需求，從 0 到 1 建立商業模式、預約流程與風控機制，10 個月完成回本。
+            </p>
           </div>
           <div class="pt-4 border-t border-border/40 flex items-center justify-between">
             <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
               <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span>10 月回本 · 客訴率 0%</span>
+              <span>客訴率 0%</span>
             </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
+            <a href="projects-detail.html?slug=s23u-rental" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
               <span>查看 Case Study</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- 4. Spark AR -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="ai" onclick="openModal('sparkar')">
+      <!-- 專案 2: 虎勢 LINE CRM -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="martech">
         <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/spark_ar_1.png" alt="Spark AR 迷因濾鏡" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">AR_VIRAL</span>
+          <img src="omnichat-flow.jpg" alt="Hosset 虎勢 CRM LINE OA 自動化流程圖" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">MARTECH_AUTOMATION</span>
         </div>
         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
           <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">Spark AR 迷因濾鏡系列</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">把剪輯思維移植到濾鏡設計，借勢「我怎麼這麼好看」爆紅熱度，加入觸控互動設計。核心洞察：迷因簡單才有人用，門檻越低擴散越快。</p>
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              Hosset 虎勢 CRM LINE OA 自動化工作流
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              整合 Omnichat 與 Cyberbiz API，為企業量身打造線下掃碼、自動派券、會員 OpenID 綁定及 Looker Studio 數據同步的一條龍自動化方案。
+            </p>
           </div>
           <div class="pt-4 border-t border-border/40 flex items-center justify-between">
             <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
               <i data-lucide="trending-up" class="w-4 h-4"></i>
-              <span>單片 10 萬+ · 零廣告預算</span>
+              <span>轉換率提升 25%</span>
             </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
+            <a href="projects-detail.html?slug=hosset-crm" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
               <span>查看 Case Study</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- 5. AI 商業生圖 -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="ai" onclick="openModal('ai')">
+      <!-- 專案 3: Alain Ducasse 官網 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="martech">
         <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/ai_zhenzhen_kv.png" alt="AI 商業形象圖生成" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">AI_CREATIVE</span>
+          <img src="alain-ducasse.jpg" alt="ALAIN DUCASSE 官網畫面" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">MARTECH_AUTOMATION</span>
         </div>
         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
           <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">AI 商業形象圖生成</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">用 AI 生圖取代傳統示意稿，把「嘴巴描述需求」變成「視覺示意稿」，縮短企劃與設計師的溝通成本。服務珍珍食品、中化健康等品牌。</p>
-          </div>
-          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
-            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-              <i data-lucide="image" class="w-4 h-4"></i>
-              <span>商業廣告可用水準</span>
-            </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
-              <span>查看 Case Study</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 6. CRM LINE -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="martech" onclick="openModal('crm')">
-        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/omnichat_flow.png" alt="CRM LINE 自動化" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">MARTECH_AUTO</span>
-        </div>
-        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">虎勢 Hosset CRM LINE 自動化</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">為永續生活周實體活動設計完整 LINE 自動化流程。掃 QR Code → Omnichat 機器人觸發 → 自動派發折價券，全程零人工介入。</p>
-          </div>
-          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
-            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-              <i data-lucide="zap" class="w-4 h-4"></i>
-              <span>100+ 綁定 · 零人工介入</span>
-            </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
-              <span>查看 Case Study</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 7. ALAIN DUCASSE -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer" data-category="martech" onclick="openModal('alain')">
-        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/alain_ducasse.png" alt="ALAIN DUCASSE 電商官網" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">ECOMMERCE_PM</span>
-        </div>
-        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">ALAIN DUCASSE 台灣電商官網</h3>
-            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">主導法國米其林名廚品牌台灣市場 Cyberbiz 電商建置。面對跨國溝通落差與素材整備挑戰，主動建立時程表、素材清單，統整商品頁、SEO 設定與版型客製。</p>
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              ALAIN DUCASSE 台灣官網建置與自動化
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              主導法國精品巧克力品牌 ALAIN DUCASSE 台灣市場的 Cyberbiz 電商官網規劃與建置，涵蓋網站資訊架構、商品分類邏輯與前台版型客製。
+            </p>
           </div>
           <div class="pt-4 border-t border-border/40 flex items-center justify-between">
             <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
               <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
-              <span>建置中</span>
+              <span>專案進行中</span>
             </div>
-            <span class="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors flex items-center space-x-1">
+            <a href="projects-detail.html?slug=alain-ducasse" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
               <span>查看 Case Study</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-            </span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 專案 4: Panasonic 巡迴 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="pm">
+        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
+          <img src="panasonic-thumb.jpg" alt="Panasonic LUMIX G9II 體驗活動現場" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              Panasonic LUMIX G9II 體驗活動全國巡迴
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              獨立規劃執行 LUMIX G9II 全台 4 場城市巡迴體驗會，現場單日成交五單，累計 200+ 名專業攝影師與創作者到場，社群討論度提升 50%。
+            </p>
+          </div>
+          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+              <i data-lucide="users" class="w-4 h-4"></i>
+              <span>累計 200+ 人</span>
+            </div>
+            <a href="projects-detail.html?slug=panasonic-g9ii" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <span>查看 Case Study</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 專案 5: 發現綠洲 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="pm">
+        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
+          <img src="oasis-event.jpg" alt="發現綠洲 兩天一夜媒體公關活動現場" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              發現綠洲 兩天一夜媒體公關活動
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              在資訊不對稱環境下主動承擔所有後勤執行。80 萬預算、台中洲際大飯店、40 家媒體到場，負責製作物、路書、飯店接洽、預算控管與現場攝影紀錄，確保活動如期完成。
+            </p>
+          </div>
+          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+              <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+              <span>預算 80 萬</span>
+            </div>
+            <a href="projects-detail.html?slug=oasis-media" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <span>查看 Case Study</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
           </div>
         </div>
       </div>
 
     </div>
+
   </main>
 
   <!-- FOOTER -->
@@ -338,92 +423,53 @@
         <span class="text-xs text-muted-foreground font-mono">© 2026 YI-CHI KUO. All rights reserved.</span>
       </div>
       <div class="flex items-center space-x-6">
-        <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" class="text-muted-foreground hover:text-primary transition-colors">
-          <i data-lucide="youtube" class="w-5 h-5"></i>
+        <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="play-circle" class="w-5 h-5"></i>
         </a>
-        <a href="index.html" class="text-muted-foreground hover:text-primary transition-colors">
-          <i data-lucide="home" class="w-5 h-5"></i>
+        <a href="projects.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="briefcase" class="w-5 h-5"></i>
+        </a>
+        <a href="tech.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="cpu" class="w-5 h-5"></i>
         </a>
       </div>
     </div>
   </footer>
 
-  <!-- MODAL -->
-  <div id="modal-overlay" class="modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden opacity-0 flex items-center justify-center p-4" onclick="closeModalOutside(event)">
-    <div id="modal-box" class="modal-box bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto opacity-0 translate-y-4">
-      <div class="p-6 border-b border-border flex items-start justify-between gap-4">
-        <div>
-          <div id="modal-tag" class="text-[10px] font-mono font-bold text-primary mb-2"></div>
-          <h2 id="modal-title" class="text-xl font-bold font-mono"></h2>
-        </div>
-        <button onclick="closeModal()" class="text-muted-foreground hover:text-foreground transition-colors mt-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="p-6 space-y-6">
-        <img id="modal-img" src="" alt="" class="w-full rounded-xl aspect-[16/9] object-cover">
-        <div id="modal-metrics" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
-        <div class="space-y-4">
-          <div>
-            <div class="text-xs font-mono text-primary font-bold mb-2">// 問題 / PROBLEM</div>
-            <p id="modal-problem" class="text-sm text-muted-foreground leading-relaxed"></p>
-          </div>
-          <div>
-            <div class="text-xs font-mono text-primary font-bold mb-2">// 解法 / SOLUTION</div>
-            <p id="modal-solution" class="text-sm text-muted-foreground leading-relaxed"></p>
-          </div>
-          <div>
-            <div class="text-xs font-mono text-primary font-bold mb-2">// 結果 / RESULT</div>
-            <p id="modal-result" class="text-sm text-muted-foreground leading-relaxed"></p>
-          </div>
-        </div>
-        <div id="modal-links" class="flex flex-wrap gap-2"></div>
-      </div>
-    </div>
-  </div>
-
   <script>
     lucide.createIcons();
 
-    // Theme
-    function initTheme() {
-      const saved = localStorage.getItem('theme') || 'dark';
-      applyTheme(saved);
-    }
-    function setTheme(theme) {
-      localStorage.setItem('theme', theme);
-      applyTheme(theme);
-    }
-    function applyTheme(theme) {
-      const html = document.documentElement;
-      const btnT = document.getElementById('btn-terminal');
-      const btnD = document.getElementById('btn-dashboard');
-      if (theme === 'light') {
-        html.classList.add('light');
-        if (btnD) btnD.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground';
-        if (btnT) btnT.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground';
-      } else {
-        html.classList.remove('light');
-        if (btnT) btnT.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground';
-        if (btnD) btnD.className = 'flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground';
-      }
-      lucide.createIcons();
-    }
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobile-menu');
-      const icon = document.getElementById('menu-icon');
-      if (menu.classList.contains('hidden')) {
-        menu.classList.remove('hidden');
-        icon.setAttribute('data-lucide', 'x');
-      } else {
-        menu.classList.add('hidden');
-        icon.setAttribute('data-lucide', 'menu');
-      }
-      lucide.createIcons();
-    }
-    initTheme();
+    const MODES = ['dev', 'visual', 'brand'];
+    const MODE_BTN_ACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
+    const MODE_BTN_INACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
 
-    // Mobile menu
+    function setMode(mode) {
+      if (MODES.indexOf(mode) === -1) mode = 'dev';
+      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('mode', mode);
+      localStorage.setItem('theme', mode === 'dev' ? 'dark' : 'light');
+
+      MODES.forEach(function (m) {
+        const btn = document.getElementById('btn-' + m);
+        if (!btn) return;
+        btn.className = (m === mode) ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+      });
+
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('mode', mode);
+        window.history.replaceState({}, '', url);
+      } catch (e) { /* file:// 等環境下略過即可 */ }
+    }
+
+    function initMode() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dev';
+      setMode(current);
+    }
+
+    initMode();
+
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const icon = document.getElementById('menu-icon');
@@ -437,173 +483,33 @@
       lucide.createIcons();
     }
 
-    // Filter
+    // 作品集分類篩選邏輯
     function filterProjects(category) {
       const cards = document.querySelectorAll('.project-card');
-      ['all','pm','martech','ai'].forEach(c => {
-        const btn = document.getElementById('filter-' + c);
-        if (btn) btn.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all';
+      const btnAll = document.getElementById('filter-all');
+      const btnPm = document.getElementById('filter-pm');
+      const btnMartech = document.getElementById('filter-martech');
+
+      // 重設按鈕樣式
+      [btnAll, btnPm, btnMartech].forEach(btn => {
+        btn.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all";
       });
-      const active = document.getElementById('filter-' + category);
-      if (active) active.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold border border-primary bg-primary/10 text-primary transition-all';
+
+      // 設定高亮按鈕樣式
+      const activeBtn = document.getElementById(`filter-${category}`);
+      if (activeBtn) {
+        activeBtn.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold border border-primary bg-primary/10 text-primary transition-all";
+      }
+
+      // 篩選卡片
       cards.forEach(card => {
-        card.style.display = (category === 'all' || card.dataset.category === category) ? 'flex' : 'none';
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
       });
     }
-
-    // Project data
-    const projectData = {
-      lumix: {
-        tag: 'PROJECT_MANAGEMENT',
-        title: 'Panasonic LUMIX G9II 品牌體驗活動全國巡迴',
-        img: 'assets/panasonic_lecturer.png',
-        metrics: [
-          { val: '200+', label: '累計參與者' },
-          { val: '4', label: '城市巡迴' },
-        ],
-        problem: '四城市（台北、台中、高雄、台南）巡迴活動，人力只有兩人，高雄為首次合作場地，同時有報名人數與現場成交 KPI 壓力。',
-        solution: '一人統包所有協調——場地租借、講師安排、相機設備跨城市運送、餐點規劃、報名表單設計與名單管理、當天進場動線即時判斷。高雄場臨時被推上台講解現場優惠，即時應變完成。同時負責活動現場攝影（親自操刀）、攝影比賽照片整理、KOL 腳本溝通與攝影方向規劃。',
-        result: '四場順利完成，累計 200+ 參與者。獲 DIGIPHOTO 台灣最大攝影媒體現場直擊報導。',
-        links: [
-          { label: 'DIGIPHOTO 報導', url: 'https://digiphoto.techbang.com/posts/12431-create-a-new-realm-of-m4-3the-first-new-m4-3-machine-that-supports-phase-focusing-the-lumix-g9-ii-kaohsiung-experience-will-be-directly-reported' },
-          { label: 'Panasonic 官方新聞稿', url: 'https://www.panasonic.com/tw/consumer/news/202310-news-3.html' },
-        ]
-      },
-      oasis: {
-        tag: 'PROJECT_MANAGEMENT',
-        title: '發現綠洲 兩天一夜媒體公關活動',
-        img: 'assets/oasis_event.png',
-        metrics: [
-          { val: '80萬', label: '執行預算' },
-          { val: '40家', label: '媒體到場' },
-        ],
-        problem: '主管將媒體對接資訊獨攬，導致執行端資訊斷層、進度持續拖延。整個專案推進幾乎只有執行端在推。',
-        solution: '主動負責所有後勤執行——製作物、旗子、遊戲規劃、台中洲際大飯店接洽、住宿安排、BBQ 晚宴、After Party、餐盒、還車、預算控管、財務勞報單、媒體名單追蹤與現場攝影。主動建立媒體資料表單，媒體全數完成填寫，解決進度卡關問題。',
-        result: '活動順利完成，40 家媒體到場，新聞稿全數發出。活動流程：充電站參訪 → 洲際飯店媒體見面會 → BBQ 晚宴 → After Party → 隔日退房。',
-        links: []
-      },
-      s23u: {
-        tag: 'STARTUP_PM',
-        title: 'S23U 手機租賃服務',
-        img: 'assets/s23u_logo.png',
-        metrics: [
-          { val: '10月', label: '資本回收期' },
-          { val: '0%', label: '客訴率' },
-          { val: '100%', label: '首次體驗回購率' },
-        ],
-        problem: '追星族群對高倍變焦手機有短期租賃需求，市場同行做不起來的原因：合約不完整、風控不足、流程粗糙、社群形象差。',
-        solution: '針對同行弱點補強：嚴謹合約（對證件、試撥、未成年需家長）、精選 QA 降低溝通成本、貼文放韓星成果建立品牌信任感、加購 S24 分散機型壓力。演唱會現場損壞後迭代：加購手機綁帶、使用前教學、提醒避開雷射、自學貼保護貼降低維修成本。',
-        result: '10 個月回本、客訴率 0%、首次體驗回購率 100%。',
-        links: [{ label: '@s23u_256 Instagram', url: 'https://www.instagram.com/s23u_256/' }]
-      },
-      sparkar: {
-        tag: 'AR_VIRAL',
-        title: 'Spark AR 迷因濾鏡系列',
-        img: 'assets/spark_ar_1.png',
-        metrics: [
-          { val: '10萬+', label: '單一濾鏡使用' },
-          { val: '35K+', label: 'AI降維打擊' },
-          { val: '$0', label: '廣告預算' },
-        ],
-        problem: 'IG 推出濾鏡新功能，想找到讓人主動分享的切入點，不只是「好看的濾鏡」。',
-        solution: '把剪輯思維移植到濾鏡設計——幾秒一個 break、punchline、音效，搭配「我怎麼這麼好看」借勢熱度。核心洞察：迷因簡單才有人用，門檻越低擴散越快。加入觸控互動：手指可自由滑動文字位置，Facebook 讚圖示點擊彈跳效果。',
-        result: '單一濾鏡 10 萬次，AI 降維打擊 35,000+，全系列數十萬次。Spark AR 平台已於 2025 年關閉，以下為當時使用畫面。',
-        links: []
-      },
-      ai: {
-        tag: 'AI_CREATIVE',
-        title: 'AI 商業形象圖生成',
-        img: 'assets/ai_flower_season.png',
-        metrics: [
-          { val: '2+', label: '服務品牌' },
-        ],
-        problem: '品牌需要持續產出有內容深度的社群素材，傳統拍攝成本高，企劃與設計師之間的溝通常靠「嘴巴描述」，方向容易跑掉。',
-        solution: '建立「AI 示意稿」工作流：結合時事構想主題（追花季、國際日等），用 AI 生圖做視覺示意稿取代口頭描述。設計師參考示意稿完稿，大幅縮短溝通成本。',
-        result: '為珍珍食品、中化健康（新樂樂）產出可直接投放的商業廣告素材。',
-        links: []
-      },
-      crm: {
-        tag: 'MARTECH_AUTO',
-        title: '虎勢 Hosset CRM LINE 自動化',
-        img: 'assets/omnichat_flow.png',
-        metrics: [
-          { val: '100+', label: '現場綁定' },
-          { val: '0', label: '人工介入次數' },
-        ],
-        problem: '永續生活周實體活動需現場完成新客綁定 LINE + 發放折價券，公司內部只有我一人會用相關工具。',
-        solution: '自行設計並測試完整自動化流程：掃 QR Code → 自動跳入 LINE 聊天室預填關鍵字 → Omnichat 機器人觸發活動訊息 → 推送折價券頁面 → 出示給工作人員確認。全程來賓無需手動輸入任何資料。',
-        result: '現場 100+ 人完成 LINE 綁定，零人工介入，活動順利執行。',
-        links: [{ label: '虎勢官網', url: 'https://www.hosset.com.tw/' }]
-      },
-      alain: {
-        tag: 'ECOMMERCE_PM',
-        title: 'ALAIN DUCASSE 台灣電商官網',
-        img: 'assets/alain_ducasse.png',
-        metrics: [],
-        problem: '法國米其林名廚品牌進入台灣市場，需建立電商官網。面臨跨國溝通落差、素材整備不完整、文案需在地化等挑戰，需要有人主動推進整個流程。',
-        solution: '主動承擔 PM 角色：建立時程表、素材確認清單、商品資料盤點表。主導官網架構設計、商品頁建置、SEO 設定、前台版型客製（CSS）、購物流程整合。協助校稿翻譯確保文案品質。',
-        result: '目前建置中。',
-        links: [{ label: '網站連結', url: 'https://alainducasse.cyberbiz.co/zh-TW' }]
-      },
-    };
-
-    function openModal(id) {
-      const d = projectData[id];
-      if (!d) return;
-
-      document.getElementById('modal-tag').textContent = d.tag;
-      document.getElementById('modal-title').textContent = d.title;
-      document.getElementById('modal-img').src = d.img;
-      document.getElementById('modal-img').alt = d.title;
-      document.getElementById('modal-problem').textContent = d.problem;
-      document.getElementById('modal-solution').textContent = d.solution;
-      document.getElementById('modal-result').textContent = d.result;
-
-      const metricsEl = document.getElementById('modal-metrics');
-      metricsEl.innerHTML = d.metrics.map(m => `
-        <div class="bg-primary/5 border border-primary/20 rounded-xl p-3 text-center">
-          <div class="text-xl font-bold font-mono text-primary">${m.val}</div>
-          <div class="text-xs text-muted-foreground mt-1">${m.label}</div>
-        </div>`).join('');
-
-      const linksEl = document.getElementById('modal-links');
-      linksEl.innerHTML = d.links.map(l => `
-        <a href="${l.url}" target="_blank" class="text-xs font-mono text-primary border border-primary/30 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors flex items-center space-x-1">
-          <i data-lucide="external-link" class="w-3 h-3"></i><span>${l.label}</span>
-        </a>`).join('');
-
-      const overlay = document.getElementById('modal-overlay');
-      const box = document.getElementById('modal-box');
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-        box.style.opacity = '1';
-        box.style.transform = 'translateY(0)';
-      });
-
-      lucide.createIcons();
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-      const overlay = document.getElementById('modal-overlay');
-      const box = document.getElementById('modal-box');
-      overlay.style.opacity = '0';
-      box.style.opacity = '0';
-      box.style.transform = 'translateY(16px)';
-      setTimeout(() => {
-        overlay.classList.add('hidden');
-        overlay.classList.remove('flex');
-        document.body.style.overflow = '';
-      }, 250);
-    }
-
-    function closeModalOutside(e) {
-      if (e.target === document.getElementById('modal-overlay')) closeModal();
-    }
-
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   </script>
 </body>
 </html>
