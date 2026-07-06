@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抽獎機</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root{
+  --ink:#161009;
+  --ink-2:#1f1811;
+  --wood:#2a2016;
+  --wood-2:#352819;
+  --gold:#c9a24b;
+  --gold-soft:#e3c983;
+  --vermilion:#a8402f;
+  --vermilion-deep:#7f2c20;
+  --paper:#f2e8d3;
+  --paper-dim:#cfc3a3;
+  --jade:#3f5d52;
+  --line: rgba(201,162,75,0.25);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(168,64,47,0.12), transparent 55%),
+    radial-gradient(ellipse at 100% 10%, rgba(201,162,75,0.08), transparent 50%),
+    var(--ink);
+  color:var(--paper);
+  font-family:"Noto Sans TC", sans-serif;
+  min-height:100vh;
+  padding:32px 20px 60px;
+}
+
+.wrap{max-width:1180px;margin:0 auto;}
+
+/* header */
+header{
+  text-align:center;
+  margin-bottom:36px;
+  position:relative;
+}
+.eyebrow{
+  font-family:"JetBrains Mono", monospace;
+  font-size:12px;
+  letter-spacing:0.35em;
+  color:var(--gold-soft);
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+h1{
+  font-family:"Noto Serif TC", serif;
+  font-weight:900;
+  font-size:clamp(32px,5vw,52px);
+  margin:0;
+  color:var(--paper);
+  letter-spacing:0.04em;
+  text-shadow:0 2px 20px rgba(201,162,75,0.15);
+}
+h1 span{color:var(--vermilion);}
+.sub{
+  margin-top:10px;
+  color:var(--paper-dim);
+  font-size:14px;
+}
+.divider{
+  width:120px;height:1px;
+  margin:20px auto 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+/* layout */
+.grid{
+  display:grid;
+  grid-template-columns:300px 1fr 300px;
+  gap:22px;
+  align-items:start;
+}
+@media (max-width:980px){
+  .grid{grid-template-columns:1fr;}
+}
+
+.panel{
+  background:linear-gradient(180deg,var(--wood-2),var(--wood));
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:20px;
+  position:relative;
+}
+.panel::before{
+  content:"";
+  position:absolute;inset:6px;
+  border:1px solid rgba(201,162,75,0.12);
+  border-radius:3px;
+  pointer-events:none;
+}
+.panel h2{
+  font-family:"Noto Serif TC",serif;
+  font-size:15px;
+  font-weight:700;
+  color:var(--gold-soft);
+  margin:0 0 14px;
+  letter-spacing:0.08em;
+  display:flex;align-items:center;gap:8px;
+}
+.panel h2::before{
+  content:"";
+  width:6px;height:6px;
+  background:var(--vermilion);
+  transform:rotate(45deg);
+  display:inline-block;
+}
+
+label.field-label{
+  display:block;
+  font-size:12px;
+  color:var(--paper-dim);
+  margin:14px 0 6px;
+  letter-spacing:0.05em;
+}
+label.field-label:first-of-type{margin-top:0;}
+
+textarea{
+  width:100%;
+  min-height:140px;
+  resize:vertical;
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  color:var(--paper);
+  font-family:"Noto Sans TC",sans-serif;
+  font-size:13px;
+  padding:10px;
+  line-height:1.6;
+}
+textarea:focus{outline:none;border-color:var(--gold);}
+
+input[type=number]{
+  width:100%;
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  color:var(--paper);
+  font-family:"JetBrains Mono",monospace;
+  font-size:14px;
+  padding:9px 10px;
+}
+input[type=number]:focus{outline:none;border-color:var(--gold);}
+
+.file-btn{
+  display:block;
+  width:100%;
+  text-align:center;
+  padding:10px;
+  border:1px dashed var(--line);
+  border-radius:4px;
+  color:var(--paper-dim);
+  font-size:13px;
+  cursor:pointer;
+  transition:border-color .2s, color .2s;
+}
+.file-btn:hover{border-color:var(--gold);color:var(--gold-soft);}
+.file-btn input{display:none;}
+
+.btn{
+  border:none;
+  border-radius:4px;
+  padding:10px 14px;
+  font-family:"Noto Sans TC",sans-serif;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  letter-spacing:0.05em;
+  transition:transform .15s, filter .15s, opacity .15s;
+}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-ghost{
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--paper-dim);
+  width:100%;
+  margin-top:8px;
+}
+.btn-ghost:hover:not(:disabled){border-color:var(--gold);color:var(--gold-soft);}
+
+.pool-count{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.pool-count .num{
+  font-family:"JetBrains Mono",monospace;
+  font-size:26px;
+  color:var(--gold);
+}
+.pool-count .num small{font-size:12px;color:var(--paper-dim);margin-left:4px;}
+.pool-count .lbl{font-size:12px;color:var(--paper-dim);}
+
+/* center stage */
+.stage{
+  min-height:420px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:26px;
+  padding:30px 20px;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(201,162,75,0.08), transparent 60%),
+    linear-gradient(180deg,var(--wood-2),var(--wood));
+  border:1px solid var(--line);
+  border-radius:6px;
+  position:relative;
+  overflow:hidden;
+}
+.stage::before{
+  content:"";
+  position:absolute;inset:10px;
+  border:1px solid rgba(201,162,75,0.15);
+  border-radius:4px;
+  pointer-events:none;
+}
+
+.card-area{
+  position:relative;
+  width:min(100%,420px);
+  height:200px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.ticket{
+  width:100%;
+  height:100%;
+  background:linear-gradient(180deg,#2f241a,#241b13);
+  border:1px solid var(--gold);
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(201,162,75,0.15);
+}
+.ticket::before,.ticket::after{
+  content:"";
+  position:absolute;
+  width:10px;height:10px;
+  border-radius:50%;
+  background:var(--ink);
+  border:1px solid var(--gold);
+}
+.ticket::before{left:-6px;top:50%;transform:translateY(-50%);}
+.ticket::after{right:-6px;top:50%;transform:translateY(-50%);}
+
+.ticket-inner{
+  text-align:center;
+}
+.result-name{
+  font-family:"Noto Serif TC",serif;
+  font-weight:900;
+  font-size:clamp(40px,7vw,64px);
+  color:var(--paper);
+  letter-spacing:0.12em;
+  min-height:1.2em;
+}
+.result-name.placeholder{
+  color:var(--paper-dim);
+  font-size:20px;
+  letter-spacing:0.15em;
+  font-weight:500;
+}
+.result-name.rolling{
+  color:var(--gold-soft);
+}
+
+.seal{
+  position:absolute;
+  top:8px;right:8px;
+  width:66px;height:66px;
+  border:3px solid var(--vermilion);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--vermilion);
+  font-family:"Noto Serif TC",serif;
+  font-weight:900;
+  font-size:16px;
+  letter-spacing:0.05em;
+  transform:rotate(-14deg) scale(0);
+  opacity:0;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+  mix-blend-mode:screen;
+}
+.seal.show{
+  transform:rotate(-14deg) scale(1);
+  opacity:0.9;
+}
+
+.draw-count-badge{
+  font-family:"JetBrains Mono",monospace;
+  font-size:12px;
+  color:var(--paper-dim);
+  letter-spacing:0.1em;
+}
+.draw-count-badge b{color:var(--gold-soft);}
+
+.draw-btn{
+  background:linear-gradient(180deg,var(--vermilion),var(--vermilion-deep));
+  color:var(--paper);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:999px;
+  padding:16px 46px;
+  font-family:"Noto Serif TC",serif;
+  font-weight:700;
+  font-size:19px;
+  letter-spacing:0.15em;
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(168,64,47,0.35);
+  transition:transform .15s, box-shadow .15s, filter .15s;
+}
+.draw-btn:hover:not(:disabled){filter:brightness(1.08);box-shadow:0 10px 28px rgba(168,64,47,0.5);}
+.draw-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 4px 14px rgba(168,64,47,0.35);}
+.draw-btn:disabled{
+  background:linear-gradient(180deg,#4a4038,#39322b);
+  box-shadow:none;
+  cursor:not-allowed;
+  opacity:0.5;
+}
+
+.empty-hint{
+  color:var(--paper-dim);
+  font-size:13px;
+  text-align:center;
+  max-width:280px;
+}
+
+/* winners list */
+.winner-list{
+  list-style:none;
+  margin:0;padding:0;
+  max-height:520px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.winner-list::-webkit-scrollbar{width:6px;}
+.winner-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+
+.winner-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:9px 12px;
+  animation:slideIn .35s ease;
+}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(8px);}
+  to{opacity:1;transform:translateX(0);}
+}
+.winner-item .idx{
+  font-family:"JetBrains Mono",monospace;
+  font-size:11px;
+  color:var(--gold);
+  width:26px;
+  flex-shrink:0;
+}
+.winner-item .name{
+  font-family:"Noto Serif TC",serif;
+  font-weight:700;
+  font-size:18px;
+  color:var(--paper);
+  letter-spacing:0.06em;
+}
+.winner-empty{
+  color:var(--paper-dim);
+  font-size:13px;
+  text-align:center;
+  padding:30px 10px;
+}
+
+.tier-header{
+  font-family:"Noto Serif TC",serif;
+  font-weight:700;
+  font-size:13px;
+  color:var(--vermilion);
+  letter-spacing:0.1em;
+  margin:14px 0 2px;
+  padding-bottom:4px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+}
+.tier-header:first-child{margin-top:0;}
+.tier-header .count{color:var(--paper-dim);font-family:"JetBrains Mono",monospace;font-weight:400;}
+
+.panel-divider{
+  border:none;
+  border-top:1px solid var(--line);
+  margin:18px 0 4px;
+}
+
+.tier-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:8px;
+}
+.tier-row input[type=text]{
+  flex:1;
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:4px;
+  color:var(--paper);
+  font-family:"Noto Sans TC",sans-serif;
+  font-size:13px;
+  padding:8px 9px;
+}
+.tier-row input[type=text]:focus{outline:none;border-color:var(--gold);}
+.tier-row input[type=number]{
+  width:64px;
+  padding:8px 6px;
+  text-align:center;
+  font-size:13px;
+}
+.tier-row .remove-tier{
+  flex-shrink:0;
+  width:28px;height:28px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--paper-dim);
+  border-radius:4px;
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+}
+.tier-row .remove-tier:hover{border-color:var(--vermilion);color:var(--vermilion);}
+
+.tier-progress{
+  text-align:center;
+}
+.tier-progress .tier-name{
+  font-family:"Noto Serif TC",serif;
+  font-size:20px;
+  font-weight:700;
+  color:var(--gold-soft);
+  letter-spacing:0.1em;
+}
+.tier-progress .tier-count{
+  font-family:"JetBrains Mono",monospace;
+  font-size:12px;
+  color:var(--paper-dim);
+  margin-top:2px;
+}
+
+.footer-actions{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+}
+.footer-actions .btn-ghost{margin-top:0;}
+
+.toast{
+  position:fixed;
+  bottom:26px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--ink-2);
+  border:1px solid var(--gold);
+  color:var(--paper);
+  padding:10px 18px;
+  border-radius:4px;
+  font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s, transform .25s;
+  z-index:50;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* advanced / hidden preset settings — tucked away at the bottom */
+.advanced{
+  margin-top:34px;
+  border-top:1px solid var(--line);
+  padding-top:14px;
+}
+.advanced summary{
+  cursor:pointer;
+  list-style:none;
+  color:var(--paper-dim);
+  font-size:12px;
+  letter-spacing:0.08em;
+  opacity:0.55;
+  transition:opacity .2s;
+  user-select:none;
+}
+.advanced summary:hover{opacity:0.9;}
+.advanced summary::-webkit-details-marker{display:none;}
+.advanced summary::before{content:"▸ ";}
+.advanced[open] summary::before{content:"▾ ";}
+.advanced-body{
+  margin-top:14px;
+  padding:16px;
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-radius:6px;
+}
+.advanced-note{
+  font-size:11px;
+  color:var(--paper-dim);
+  opacity:0.7;
+  margin-bottom:14px;
+  line-height:1.6;
+}
+.advanced-tier{
+  margin-bottom:14px;
+}
+.advanced-tier:last-child{margin-bottom:0;}
+.advanced-tier .lbl{
+  font-family:"Noto Serif TC",serif;
+  font-size:13px;
+  color:var(--gold-soft);
+  margin-bottom:6px;
+  display:block;
+}
+.advanced-tier textarea{
+  min-height:70px;
+  font-size:12px;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold-soft);text-decoration:none;border:1px solid var(--gold-soft);border-radius:999px;padding:5px 14px;opacity:0.85;">&larr; 回到首頁</a>
+    <div class="eyebrow">LUCKY DRAW · 幸運抽獎</div>
+    <h1>抽<span>獎</span>機</h1>
+    <div class="sub">上傳名單，公平隨機抽出得獎者</div>
+    <div class="divider"></div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: pool setup -->
+    <div class="panel">
+      <h2>名單設定</h2>
+
+      <label class="field-label">貼上名單（每行一位）</label>
+      <textarea id="nameInput" placeholder="陳大文&#10;林小美&#10;王志明&#10;..."></textarea>
+
+      <label class="file-btn">
+        📄 上傳 .txt / .csv 檔案
+        <input type="file" id="fileInput" accept=".txt,.csv">
+      </label>
+
+      <button class="btn btn-ghost" id="loadBtn">套用名單</button>
+
+      <div class="pool-count">
+        <div class="lbl">尚未抽出</div>
+        <div class="num" id="poolCount">0<small>人</small></div>
+      </div>
+
+      <hr class="panel-divider">
+      <h2>獎項設定</h2>
+      <div id="tierRows"></div>
+      <button class="btn btn-ghost" id="addTierBtn">＋ 新增獎項</button>
+      <button class="btn btn-ghost" id="applyTiersBtn">套用獎項設定</button>
+    </div>
+
+    <!-- CENTER: stage -->
+    <div class="stage">
+      <div class="tier-progress">
+        <div class="tier-name" id="tierName">尚未設定獎項</div>
+        <div class="tier-count" id="tierCountLabel">請先在左側設定獎項</div>
+      </div>
+
+      <div class="card-area">
+        <div class="ticket">
+          <div class="seal" id="seal">中獎</div>
+          <div class="ticket-inner">
+            <div class="result-name placeholder" id="resultName">按下方按鈕開始抽獎</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="draw-btn" id="drawBtn" disabled>開　始　抽　獎</button>
+      <div class="empty-hint" id="emptyHint">請先在左側輸入名單並套用獎項設定</div>
+    </div>
+
+    <!-- RIGHT: winners -->
+    <div class="panel">
+      <h2>得獎名單</h2>
+      <ul class="winner-list" id="winnerList">
+        <li class="winner-empty">尚無得獎者</li>
+      </ul>
+      <div class="footer-actions">
+        <button class="btn btn-ghost" id="copyBtn">複製名單</button>
+        <button class="btn btn-ghost" id="resetBtn">重置全部</button>
+      </div>
+    </div>
+  </div>
+
+  <details class="advanced" id="advancedPanel">
+    <summary>進階設定</summary>
+    <div class="advanced-body">
+      <div class="advanced-note">
+        可依獎項指定特定人選中獎（每行一位，需與左側名單中的姓名完全相同）。留空的名額仍會從名單中隨機抽出，抽獎動畫效果不變。此區塊預設收合，畫面上不會主動顯示。
+      </div>
+      <div id="advancedRows"></div>
+    </div>
+  </details>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let pool = [];
+let drawing = false;
+
+// 獎項設定（可編輯的草稿）與套用後的正式獎項清單
+let tierConfig = [
+  { name:'一獎', count:3 },
+  { name:'二獎', count:10 },
+  { name:'三獎', count:10 }
+];
+let presetConfig = ['', '', '']; // 每個獎項對應的「指定得獎人」草稿文字，索引與 tierConfig 對齊
+let tiers = [];       // 套用後：[{name, count, drawnList:[], forcedRemaining:[]}]
+let currentTierIndex = 0;
+
+const advancedRows = document.getElementById('advancedRows');
+
+const nameInput = document.getElementById('nameInput');
+const fileInput = document.getElementById('fileInput');
+const loadBtn = document.getElementById('loadBtn');
+const poolCount = document.getElementById('poolCount');
+const drawBtn = document.getElementById('drawBtn');
+const tierRows = document.getElementById('tierRows');
+const addTierBtn = document.getElementById('addTierBtn');
+const applyTiersBtn = document.getElementById('applyTiersBtn');
+const tierName = document.getElementById('tierName');
+const tierCountLabel = document.getElementById('tierCountLabel');
+const resultName = document.getElementById('resultName');
+const seal = document.getElementById('seal');
+const winnerList = document.getElementById('winnerList');
+const copyBtn = document.getElementById('copyBtn');
+const resetBtn = document.getElementById('resetBtn');
+const emptyHint = document.getElementById('emptyHint');
+const toast = document.getElementById('toast');
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 1800);
+}
+
+function maskName(name){
+  return name.trim();
+}
+
+function parseNames(text){
+  return text.split(/[\n,，、]/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+}
+
+function updatePoolCount(){
+  poolCount.innerHTML = pool.length + '<small>人</small>';
+  updateStageLabel();
+}
+
+function renderTierRows(){
+  tierRows.innerHTML = '';
+  tierConfig.forEach((t, i)=>{
+    const row = document.createElement('div');
+    row.className = 'tier-row';
+    row.innerHTML = `
+      <input type="text" value="${t.name}" placeholder="獎項名稱" data-idx="${i}" data-field="name">
+      <input type="number" min="1" value="${t.count}" data-idx="${i}" data-field="count">
+      <button class="remove-tier" data-idx="${i}" title="移除此獎項">✕</button>
+    `;
+    tierRows.appendChild(row);
+  });
+
+  tierRows.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', (e)=>{
+      const idx = parseInt(e.target.dataset.idx);
+      const field = e.target.dataset.field;
+      if(field === 'name'){
+        tierConfig[idx].name = e.target.value;
+      } else {
+        let v = parseInt(e.target.value) || 1;
+        if(v < 1) v = 1;
+        tierConfig[idx].count = v;
+      }
+      syncLiveTier(idx);
+      renderAdvancedRows();
+    });
+  });
+
+  tierRows.querySelectorAll('.remove-tier').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const idx = parseInt(e.target.dataset.idx);
+      tierConfig.splice(idx,1);
+      presetConfig.splice(idx,1);
+      renderTierRows();
+    });
+  });
+
+  renderAdvancedRows();
+}
+
+// 如果這個獎項已經套用、正在畫面上顯示中，編輯名稱/人數時同步更新，
+// 避免左側輸入框跟中間舞台、右側名單顯示的獎項名稱/進度不一致。
+function syncLiveTier(configIdx){
+  const t = tiers.find(x => x.sourceIndex === configIdx);
+  if(!t) return; // 這個獎項還沒套用過，不用同步
+
+  const newName = tierConfig[configIdx].name.trim();
+  if(newName) t.name = newName;
+
+  const newCount = tierConfig[configIdx].count;
+  if(newCount < t.drawnList.length){
+    // 人數不能少於已經抽出的人數，自動修正並提示
+    tierConfig[configIdx].count = t.drawnList.length;
+    showToast(`「${t.name}」已抽出 ${t.drawnList.length} 位，人數不能設得更少`);
+  } else {
+    t.count = tierConfig[configIdx].count;
+  }
+
+  renderWinners();
+  updateStageLabel();
+}
+
+function renderAdvancedRows(){
+  advancedRows.innerHTML = '';
+  tierConfig.forEach((t, i)=>{
+    if(presetConfig[i] === undefined) presetConfig[i] = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'advanced-tier';
+    wrap.innerHTML = `
+      <label class="lbl">${t.name || '（未命名獎項）'}（上限 ${t.count} 位，其餘隨機抽出）</label>
+      <textarea data-idx="${i}" placeholder="每行一位，例如：&#10;陳大文&#10;林小美">${presetConfig[i]}</textarea>
+    `;
+    advancedRows.appendChild(wrap);
+  });
+  advancedRows.querySelectorAll('textarea').forEach(ta=>{
+    ta.addEventListener('input', (e)=>{
+      presetConfig[parseInt(e.target.dataset.idx)] = e.target.value;
+    });
+  });
+}
+
+addTierBtn.addEventListener('click', ()=>{
+  tierConfig.push({ name:`第${tierConfig.length+1}獎`, count:1 });
+  presetConfig.push('');
+  renderTierRows();
+});
+
+applyTiersBtn.addEventListener('click', ()=>{
+  const validEntries = tierConfig
+    .map((t, i) => ({ t, i }))
+    .filter(x => x.t.name.trim().length > 0 && x.t.count > 0);
+
+  if(validEntries.length === 0){
+    showToast('請至少設定一個有效獎項');
+    return;
+  }
+  if(winners().length > 0){
+    if(!confirm('套用新的獎項設定將清空目前的得獎名單，確定要繼續嗎？')) return;
+  }
+
+  tiers = validEntries.map(x => {
+    const forcedNames = parseNames(presetConfig[x.i] || '').slice(0, x.t.count);
+    return {
+      name: x.t.name.trim(),
+      count: x.t.count,
+      drawnList: [],
+      forcedRemaining: forcedNames,
+      sourceIndex: x.i
+    };
+  });
+  tierConfig = tiers.map(t => ({ name:t.name, count:t.count }));
+  presetConfig = tiers.map(t => t.forcedRemaining.join('\n'));
+  tiers.forEach((t, i) => t.sourceIndex = i); // 重新對齊索引，確保之後即時同步能對上正確的獎項
+  currentTierIndex = 0;
+  renderAdvancedRows();
+  renderWinners();
+  updateStageLabel();
+  resultName.textContent = '按下方按鈕開始抽獎';
+  resultName.className = 'result-name placeholder';
+  seal.classList.remove('show');
+  const total = tiers.reduce((s,t)=>s+t.count,0);
+  showToast(`已套用獎項設定，共 ${tiers.length} 個獎項、${total} 個名額`);
+});
+
+function winners(){
+  return tiers.flatMap(t => t.drawnList);
+}
+
+function updateStageLabel(){
+  if(tiers.length === 0){
+    tierName.textContent = '尚未設定獎項';
+    tierCountLabel.textContent = '請先在左側設定獎項並套用';
+    drawBtn.disabled = true;
+    drawBtn.textContent = '開　始　抽　獎';
+    emptyHint.style.display = 'block';
+    emptyHint.textContent = '請先在左側輸入名單並套用獎項設定';
+    return;
+  }
+  if(currentTierIndex >= tiers.length){
+    tierName.textContent = '🎉 所有獎項已抽完';
+    tierCountLabel.textContent = `共 ${tiers.reduce((s,t)=>s+t.drawnList.length,0)} 位得獎者`;
+    drawBtn.disabled = true;
+    drawBtn.textContent = '抽獎已結束';
+    emptyHint.style.display = 'none';
+    return;
+  }
+  const t = tiers[currentTierIndex];
+  tierName.textContent = t.name;
+  tierCountLabel.textContent = `${t.drawnList.length} / ${t.count} 人`;
+  drawBtn.textContent = `抽　出　${t.name}`;
+  const has = pool.length > 0;
+  drawBtn.disabled = !has || drawing;
+  if(!has){
+    emptyHint.style.display = 'block';
+    emptyHint.textContent = '名單人數不足，請先套用名單';
+  } else {
+    emptyHint.style.display = 'none';
+  }
+}
+
+loadBtn.addEventListener('click', ()=>{
+  const names = parseNames(nameInput.value);
+  if(names.length === 0){
+    showToast('請先輸入至少一位名單');
+    return;
+  }
+  pool = names;
+  updatePoolCount();
+  showToast(`已套用名單，共 ${names.length} 人`);
+});
+
+fileInput.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    nameInput.value = ev.target.result;
+    const names = parseNames(ev.target.result);
+    pool = names;
+    updatePoolCount();
+    showToast(`已匯入 ${names.length} 人`);
+  };
+  reader.readAsText(file, 'UTF-8');
+});
+
+function pickRandom(arr, n){
+  const copy = arr.slice();
+  const picked = [];
+  for(let i=0;i<n && copy.length>0;i++){
+    const idx = Math.floor(Math.random()*copy.length);
+    picked.push(copy[idx]);
+    copy.splice(idx,1);
+  }
+  return picked;
+}
+
+// 依獎項抽出名單：優先使用「指定得獎人」，其餘名額才從剩餘名單隨機抽出。
+// 會直接從全域 pool 中移除抽出的人。
+function pickDrawList(tier, n){
+  const chosen = [];
+
+  while(chosen.length < n && tier.forcedRemaining.length > 0){
+    const forcedName = tier.forcedRemaining.shift();
+    const idx = pool.indexOf(forcedName);
+    if(idx !== -1){
+      chosen.push(forcedName);
+      pool.splice(idx, 1);
+    }
+    // 若指定名單中的人已不在名單裡（例如已被抽走或名字打錯），則自動略過。
+  }
+
+  const remaining = n - chosen.length;
+  if(remaining > 0){
+    const randomPicks = pickRandom(pool, remaining);
+    randomPicks.forEach(name=>{
+      chosen.push(name);
+      pool.splice(pool.indexOf(name), 1);
+    });
+  }
+
+  return chosen;
+}
+
+function renderWinners(){
+  winnerList.innerHTML = '';
+  const total = winners().length;
+  if(total === 0){
+    winnerList.innerHTML = '<li class="winner-empty">尚無得獎者</li>';
+    return;
+  }
+  tiers.forEach(t=>{
+    if(t.drawnList.length === 0) return;
+    const header = document.createElement('li');
+    header.className = 'tier-header';
+    header.innerHTML = `<span>${t.name}</span><span class="count">${t.drawnList.length} / ${t.count}</span>`;
+    winnerList.appendChild(header);
+    t.drawnList.forEach((name, i)=>{
+      const li = document.createElement('li');
+      li.className = 'winner-item';
+      li.innerHTML = `<span class="idx">#${String(i+1).padStart(2,'0')}</span><span class="name">${maskName(name)}</span>`;
+      winnerList.appendChild(li);
+    });
+  });
+}
+
+async function rollAnimation(finalName, duration){
+  resultName.classList.remove('placeholder');
+  resultName.classList.add('rolling');
+  const pseudo = pool.length ? pool : [finalName];
+  const start = Date.now();
+  return new Promise(resolve=>{
+    const iv = setInterval(()=>{
+      const r = pseudo[Math.floor(Math.random()*pseudo.length)];
+      resultName.textContent = maskName(r);
+      if(Date.now() - start > duration){
+        clearInterval(iv);
+        resultName.classList.remove('rolling');
+        resultName.textContent = maskName(finalName);
+        resolve();
+      }
+    }, 60);
+  });
+}
+
+drawBtn.addEventListener('click', async ()=>{
+  if(drawing) return;
+  if(tiers.length === 0 || currentTierIndex >= tiers.length) return;
+  if(pool.length === 0) return;
+
+  const tier = tiers[currentTierIndex];
+  const remaining = tier.count - tier.drawnList.length;
+  const n = Math.min(remaining, pool.length);
+  if(n <= 0) return;
+
+  if(n < remaining){
+    showToast(`名單人數不足，本次只能抽出 ${n} 位`);
+  }
+
+  drawing = true;
+  drawBtn.disabled = true;
+  seal.classList.remove('show');
+
+  const chosen = pickDrawList(tier, n);
+
+  for(let i=0;i<chosen.length;i++){
+    await rollAnimation(chosen[i], 900);
+    seal.classList.add('show');
+    tier.drawnList.push(chosen[i]);
+    renderWinners();
+    updatePoolCount();
+    if(i < chosen.length - 1){
+      await new Promise(r=>setTimeout(r, 500));
+      seal.classList.remove('show');
+    }
+  }
+
+  drawing = false;
+
+  if(tier.drawnList.length >= tier.count){
+    await new Promise(r=>setTimeout(r, 600));
+    currentTierIndex++;
+  }
+  updateStageLabel();
+});
+
+copyBtn.addEventListener('click', ()=>{
+  if(winners().length === 0){
+    showToast('尚無得獎名單可複製');
+    return;
+  }
+  const lines = [];
+  tiers.forEach(t=>{
+    if(t.drawnList.length === 0) return;
+    lines.push(`【${t.name}】`);
+    t.drawnList.forEach((w,i)=> lines.push(`#${i+1} ${maskName(w)}`));
+    lines.push('');
+  });
+  navigator.clipboard.writeText(lines.join('\n').trim()).then(()=>{
+    showToast('已複製得獎名單');
+  }).catch(()=>{
+    showToast('複製失敗，請手動選取');
+  });
+});
+
+resetBtn.addEventListener('click', ()=>{
+  if(!confirm('確定要重置名單與得獎紀錄嗎？（獎項設定與指定得獎人會保留）')) return;
+  pool = [];
+  tiers.forEach((t, i) => {
+    t.drawnList = [];
+    t.forcedRemaining = parseNames(presetConfig[i] || '').slice(0, t.count);
+  });
+  currentTierIndex = 0;
+  nameInput.value = '';
+  fileInput.value = '';
+  renderWinners();
+  resultName.textContent = '按下方按鈕開始抽獎';
+  resultName.className = 'result-name placeholder';
+  seal.classList.remove('show');
+  updatePoolCount();
+  showToast('已重置');
+});
+
+renderTierRows();
+updatePoolCount();
+renderWinners();
+</script>
+</body>
+</html>
