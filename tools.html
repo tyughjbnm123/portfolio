@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>創意 AI 實驗室 | 郭奕圻 YI-CHI KUO</title>
-
+  <title>工具總覽 | 郭奕圻 YI-CHI KUO</title>
   <!-- 三模式（Dev/Visual/Brand）預先套用，避免切換閃爍(FOUC)；需在任何樣式渲染前同步執行 -->
   <script>
     (function () {
@@ -26,17 +25,13 @@
     })();
   </script>
 
-  <!-- Tailwind CSS v3 CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
+
   <script>
-    // Tailwind 自訂主題配置
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -151,11 +146,13 @@
     }
 
     .bg-grid {
-      background-image: linear-gradient(to right, rgba(63, 185, 80, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(63, 185, 80, 0.025) 1px, transparent 1px);
+      background-image: linear-gradient(to right, rgba(63, 185, 80, 0.025) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(63, 185, 80, 0.025) 1px, transparent 1px);
       background-size: 30px 30px;
     }
     html[data-theme="visual"] .bg-grid {
-      background-image: linear-gradient(to right, rgba(124, 58, 237, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(124, 58, 237, 0.025) 1px, transparent 1px);
+      background-image: linear-gradient(to right, rgba(124, 58, 237, 0.025) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(124, 58, 237, 0.025) 1px, transparent 1px);
     }
     html[data-theme="brand"] .bg-grid {
       background-image: none;
@@ -184,7 +181,7 @@
 <body class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
 
   <!-- NAVBAR -->
-    <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+  <header class="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <a href="index.html" class="flex items-center space-x-2.5 group">
         <div class="h-9 w-9 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -195,19 +192,17 @@
           <span class="text-[10px] text-muted-foreground font-mono">TERMINAL LAB // PM</span>
         </div>
       </a>
+
       <nav class="hidden md:flex items-center space-x-1">
         <a href="index.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 首頁</a>
         <a href="projects.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 作品集</a>
         <a href="tech.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 技能沙盒</a>
-        <a href="creative.html" class="px-3 py-2 rounded-md text-sm font-medium text-primary border-b-2 border-primary font-mono">// 創意實驗室</a>
-        <a href="tools.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 工具</a>
+        <a href="creative.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// 創意實驗室</a>
+        <a href="tools.html" class="px-3 py-2 rounded-md text-sm font-medium text-primary border-b-2 border-primary font-mono">// 工具</a>
         <a href="youtube.html" class="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-primary transition-colors font-mono">// YouTube</a>
       </nav>
-      <div class="flex items-center space-x-3">
-        <span class="hidden sm:flex items-center space-x-1.5 text-xs font-mono text-primary border border-primary/30 rounded-full px-3 py-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-          <span>求職中</span>
-        </span>
+
+      <div class="flex items-center space-x-4">
         <div class="flex items-center space-x-1 p-1 rounded-full bg-muted border border-border">
           <button id="btn-dev" onclick="setMode('dev')" class="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground" aria-pressed="true">
             <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
@@ -222,127 +217,100 @@
             <span class="hidden sm:inline">Brand</span>
           </button>
         </div>
-        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-primary">
-          <i id="menu-icon" data-lucide="menu" class="w-5 h-5"></i>
+
+        <a href="projects.html" class="hidden sm:flex items-center space-x-1 px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+          <span>求職中</span>
+        </a>
+
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground">
+          <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
         </button>
       </div>
     </div>
-    <div id="mobile-menu" class="hidden md:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 py-3 space-y-1">
+
+    <div id="mobile-menu" class="hidden md:hidden border-b border-border bg-background px-4 pt-2 pb-4 space-y-1">
       <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 首頁</a>
       <a href="projects.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 作品集</a>
       <a href="tech.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 技能沙盒</a>
-      <a href="creative.html" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10 font-mono">// 創意實驗室</a>
-      <a href="tools.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 工具</a>
+      <a href="creative.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// 創意實驗室</a>
+      <a href="tools.html" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10 font-mono">// 工具</a>
       <a href="youtube.html" class="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-primary font-mono">// YouTube</a>
     </div>
   </header>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-24">
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-12">
 
-    <!-- HERO SECTION -->
-    <section class="space-y-6 max-w-3xl">
+    <!-- 頂部說明 -->
+    <div class="text-center md:text-left space-y-4">
       <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
-        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-        <span>CREATIVE AI LAB // 創意 AI 實驗室</span>
+        <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+        <span>TOOLS // 工具總覽</span>
       </div>
-
-      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight font-mono">
-        // LoRA 商業生圖 <span class="text-primary">×</span> Spark AR 濾鏡
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight font-mono">
+        // 這裡放我做的小工具
       </h1>
-
-      <p class="text-muted-foreground text-base md:text-lg leading-relaxed">
-        用 AI 生圖與互動濾鏡，同時解決「拍攝成本」跟「社群擴散」兩件事——訓練專屬 LoRA 模型取代部分商業攝影需求，開發 Spark AR 濾鏡讓品牌內容自然被分享出去。
+      <p class="text-muted-foreground text-sm max-w-3xl leading-relaxed">
+        每個工具都是獨立開發的小專案，各自有自己的介面風格，不特別跟主站統一——工具重點是「好用」，不是「好看的一致性」。之後新增工具會持續加在這一頁。
       </p>
+    </div>
 
-      <div class="grid grid-cols-3 gap-6 pt-6 border-t border-border/60">
-        <div>
-          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">2</div>
-          <div class="text-xs text-muted-foreground font-mono">// LoRA 風格模型</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">數十萬+</div>
-          <div class="text-xs text-muted-foreground font-mono">// 濾鏡累計使用</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">IG</div>
-          <div class="text-xs text-muted-foreground font-mono">// 互動濾鏡發布平台</div>
-        </div>
-      </div>
-    </section>
+    <!-- 工具卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-    <!-- LoRA 切換展示 -->
-    <section class="space-y-8">
-      <div class="text-center md:text-left space-y-2">
-        <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <i data-lucide="wand-2" class="w-4 h-4"></i>
-          <span>LORA SHOWCASE // 商業生圖</span>
+      <a href="ai-tools.html" class="group p-6 rounded-2xl border border-border bg-card shadow-xl flex flex-col space-y-4 hover:border-primary/40 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <i data-lucide="clapperboard" class="w-6 h-6 text-primary"></i>
         </div>
-        <h2 class="text-3xl font-bold tracking-tight font-mono">// LoRA 商業生圖</h2>
-        <p class="text-muted-foreground text-sm max-w-2xl">
-          訓練專屬 AI 模特兒與產品 LoRA，為品牌節省拍攝成本。點擊切換查看不同應用情境。
-        </p>
-      </div>
+        <div class="space-y-1 flex-grow">
+          <h3 class="font-bold font-mono text-foreground group-hover:text-primary transition-colors">AI 工具坊</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">短影音動作卡片庫，上傳素材圖自動推薦分鏡動作，生成 AI 生圖指令。</p>
+        </div>
+        <div class="flex items-center space-x-1.5 text-xs font-mono font-bold text-primary">
+          <span>前往使用</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </div>
+      </a>
 
-      <div class="rounded-2xl border border-border bg-card/20 backdrop-blur-md p-6 md:p-10 shadow-xl">
-        <div class="flex items-center flex-wrap gap-2 mb-8">
-          <button onclick="switchLora('cyberpunk')" id="lora-btn-cyberpunk" class="px-4 py-2 rounded-full text-sm font-mono font-bold transition-all bg-primary text-primary-foreground">
-            AI 商用產品視覺
-          </button>
-          <button onclick="switchLora('minimalist')" id="lora-btn-minimalist" class="px-4 py-2 rounded-full text-sm font-mono font-bold transition-all text-muted-foreground hover:text-foreground border border-border">
-            AI 時事議題視覺
-          </button>
+      <a href="facs-tool.html" class="group p-6 rounded-2xl border border-border bg-card shadow-xl flex flex-col space-y-4 hover:border-primary/40 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <i data-lucide="smile" class="w-6 h-6 text-primary"></i>
         </div>
+        <div class="space-y-1 flex-grow">
+          <h3 class="font-bold font-mono text-foreground group-hover:text-primary transition-colors">表情控制器</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">FACS 臉部表情控制器，選擇臉型、調整表情，生成對應的表情控制 JSON。</p>
+        </div>
+        <div class="flex items-center space-x-1.5 text-xs font-mono font-bold text-primary">
+          <span>前往使用</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </div>
+      </a>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          <div id="lora-preview-grid" class="grid grid-cols-3 gap-2">
-          </div>
-          <div id="lora-desc" class="space-y-3">
-            <h3 class="text-lg font-bold font-mono text-primary">AI 商用產品視覺</h3>
-            <p class="text-sm text-muted-foreground">將產品賣點、使用情境與目標受眾轉化為可視化的廣告素材，透過 AI 快速產出商品情境圖、社群主視覺與電商行銷素材。</p>
-          </div>
+      <a href="raffle.html" class="group p-6 rounded-2xl border border-border bg-card shadow-xl flex flex-col space-y-4 hover:border-primary/40 transition-all">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <i data-lucide="gift" class="w-6 h-6 text-primary"></i>
         </div>
-      </div>
-    </section>
+        <div class="space-y-1 flex-grow">
+          <h3 class="font-bold font-mono text-foreground group-hover:text-primary transition-colors">抽獎機</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">上傳名單、設定獎項分級，公平隨機抽出得獎者，一鍵複製得獎名單。</p>
+        </div>
+        <div class="flex items-center space-x-1.5 text-xs font-mono font-bold text-primary">
+          <span>前往使用</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </div>
+      </a>
 
-    <!-- Spark AR 濾鏡 -->
-    <section class="space-y-8">
-      <div class="text-center md:text-left space-y-2">
-        <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <i data-lucide="scan-face" class="w-4 h-4"></i>
-          <span>SPARK AR // 互動濾鏡</span>
-        </div>
-        <h2 class="text-3xl font-bold tracking-tight font-mono">// Spark AR 濾鏡開發</h2>
-        <p class="text-muted-foreground text-sm max-w-2xl">
-          自主開發 IG 互動濾鏡，結合社群裂變創造數十萬次使用量。
-        </p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <div class="rounded-2xl border border-border overflow-hidden shadow-xl aspect-[3/4]">
-          <img src="assets/spark-ar-demo-1.jpg" alt="Spark AR 濾鏡實際使用畫面 1" class="w-full h-full object-cover">
-        </div>
-        <div class="rounded-2xl border border-border overflow-hidden shadow-xl aspect-[3/4]">
-          <img src="assets/spark-ar-demo-2.jpg" alt="Spark AR 濾鏡實際使用畫面 2" class="w-full h-full object-cover">
-        </div>
-        <div class="col-span-2 md:col-span-1 p-6 rounded-2xl border border-border bg-card shadow-xl text-center flex flex-col justify-center space-y-1">
-          <div class="text-3xl font-extrabold text-primary font-mono">數十萬+</div>
-          <div class="text-xs text-muted-foreground font-mono">// 濾鏡累計使用次數</div>
-        </div>
-      </div>
-    </section>
+    </div>
 
   </main>
 
   <!-- FOOTER -->
-  <footer class="border-t border-border bg-card/40 backdrop-blur-md py-12">
+  <footer class="border-t border-border bg-card/40 backdrop-blur-md py-12 mt-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
       <div class="flex flex-col items-center md:items-start space-y-1">
         <span class="text-sm font-bold font-mono tracking-wider text-primary">YI-CHI KUO</span>
         <span class="text-xs text-muted-foreground font-mono">© 2026 YI-CHI KUO. All rights reserved.</span>
       </div>
-      
-      <!-- 底部社群連結 -->
       <div class="flex items-center space-x-6">
         <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
           <i data-lucide="play-circle" class="w-5 h-5"></i>
@@ -357,17 +325,9 @@
     </div>
   </footer>
 
-  <!-- 回到頂部按鈕 -->
-  <button id="btn-back-to-top" onclick="scrollToTop()" class="fixed bottom-6 right-6 p-3 rounded-full bg-primary text-primary-foreground border border-primary/20 shadow-xl opacity-0 translate-y-10 pointer-events-none transition-all duration-300 z-50 hover:scale-105">
-    <i data-lucide="arrow-up" class="w-5 h-5"></i>
-  </button>
-
-  <!-- 全域主題與切換邏輯 JS -->
   <script>
-    // 1. 初始化 Lucide 圖標
     lucide.createIcons();
 
-    // 2. 三模式 (Dev / Visual / Brand) 狀態管理
     const MODES = ['dev', 'visual', 'brand'];
     const MODE_BTN_ACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
     const MODE_BTN_INACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
@@ -397,7 +357,8 @@
       setMode(current);
     }
 
-    // 3. 手機版導覽選單切換
+    initMode();
+
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
       const icon = document.getElementById('menu-icon');
@@ -410,69 +371,6 @@
       }
       lucide.createIcons();
     }
-
-    // 4. 浮動「回到頂部」按鈕邏輯
-    window.addEventListener('scroll', () => {
-      const btn = document.getElementById('btn-back-to-top');
-      if (window.scrollY > 300) {
-        btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-      } else {
-        btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-      }
-    });
-
-    function scrollToTop() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 5. LoRA 展示切換（AI 商用產品視覺 / AI 時事議題視覺）
-    const LORA_STYLES = {
-      cyberpunk: {
-        label: 'AI 商用產品視覺',
-        desc: '將產品賣點、使用情境與目標受眾轉化為可視化的廣告素材，透過 AI 快速產出商品情境圖、社群主視覺與電商行銷素材。',
-        images: [
-          { src: 'assets/lora-cyberpunk-sample.jpg', alt: 'AI 商用產品視覺範例：戶外防蚊藥膏廣告' },
-          { src: 'assets/lora-cream-sample.jpg', alt: 'AI 商用產品視覺範例：保濕乳液產品廣告' },
-          { src: 'assets/lora-zhenzhen-sample.jpg', alt: 'AI 商用產品視覺範例：零食品牌社群主視覺' }
-        ]
-      },
-      minimalist: {
-        label: 'AI 時事議題視覺',
-        desc: '結合國際節日、健康議題與品牌溝通需求，透過 AI 快速生成具宣導感與社群傳播性的主視覺，適合衛教內容、節慶貼文、公益議題與品牌聲量操作。',
-        images: [
-          { src: 'assets/lora-topical-sample.jpg', alt: 'AI 時事議題視覺範例：拒絕毒品衛教宣導視覺' },
-          { src: 'assets/lora-flower-sample.jpg', alt: 'AI 時事議題視覺範例：四月追花季防護指南' }
-        ]
-      }
-    };
-
-    function switchLora(style) {
-      if (!LORA_STYLES[style]) return;
-      const data = LORA_STYLES[style];
-
-      Object.keys(LORA_STYLES).forEach(function (s) {
-        const btn = document.getElementById('lora-btn-' + s);
-        if (!btn) return;
-        btn.className = (s === style)
-          ? "px-4 py-2 rounded-full text-sm font-mono font-bold transition-all bg-primary text-primary-foreground"
-          : "px-4 py-2 rounded-full text-sm font-mono font-bold transition-all text-muted-foreground hover:text-foreground border border-border";
-      });
-
-      const grid = document.getElementById('lora-preview-grid');
-      grid.innerHTML = data.images.map(function (img) {
-        return '<div class="aspect-square rounded-lg overflow-hidden border border-border">' +
-               '<img src="' + img.src + '" alt="' + img.alt + '" class="w-full h-full object-cover">' +
-               '</div>';
-      }).join('');
-
-      document.getElementById('lora-desc').innerHTML =
-        '<h3 class="text-lg font-bold font-mono text-primary">' + data.label + '</h3>' +
-        '<p class="text-sm text-muted-foreground">' + data.desc + '</p>';
-    }
-
-    // 三模式初始化放在腳本最後執行，確保上面用到的函式與元素都已就緒
-    initMode();
-    switchLora('cyberpunk');
   </script>
 </body>
 </html>

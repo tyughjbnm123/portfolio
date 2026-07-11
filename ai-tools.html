@@ -16,9 +16,6 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
 .hl p{font-size:13px;color:var(--text2);margin-top:3px}
 .htools{display:flex;align-items:center;gap:10px}
 .hc{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)}
-.langtog{display:flex;border:1px solid var(--border2);border-radius:99px;overflow:hidden}
-.langtog button{font-family:'DM Sans',sans-serif;font-size:11px;padding:4px 11px;border:none;background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
-.langtog button.on{background:var(--btn-bg);color:var(--btn-txt)}
 .info-bar{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:11px 15px;margin-bottom:1.25rem;font-size:12.5px;color:var(--text2);line-height:1.6}
 .info-bar b{color:var(--text);font-weight:500}
 .upload-zone{background:var(--surface);border:1.5px dashed var(--border2);border-radius:14px;padding:18px;margin-bottom:1.25rem;transition:border-color .15s}
@@ -206,8 +203,7 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
       <a href="projects.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">作品集</a>
       <a href="tech.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">技能沙盒</a>
       <a href="creative.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">創意實驗室</a>
-      <a href="ai-tools.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--accent);text-decoration:none;border-bottom:2px solid var(--accent);font-weight:500;white-space:nowrap;">AI 工具坊</a>
-      <a href="facs-tool.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">表情控制器</a>
+      <a href="tools.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">← 工具總覽</a>
       <a href="youtube.html" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;color:var(--text2);text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text2)'">YouTube</a>
     </nav>
     <!-- Right side -->
@@ -216,10 +212,6 @@ header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
         <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;"></span>
         求職中
       </span>
-      <div class="langtog">
-        <button id="langtog" onclick="setLang('zh')" class="on">繁中</button>
-        <button onclick="setLang('en')">EN</button>
-      </div>
     </div>
   </div>
 </header>
@@ -1149,15 +1141,6 @@ document.getElementById("reco-btn").onclick=()=>{
   safeScroll(document.querySelector(".sp"));
 };
 
-document.getElementById("langtog").addEventListener("click",e=>{
-  if(e.target.tagName!=="BUTTON")return;
-  lang=e.target.getAttribute("data-lang");outLang=lang;
-  document.querySelectorAll("#langtog button").forEach(b=>b.classList.remove("on"));
-  e.target.classList.add("on");
-  document.querySelectorAll("#oh-lang button").forEach(b=>b.classList.toggle("on",b.getAttribute("data-olang")===outLang));
-  applyI18n();
-  if(document.getElementById("op").classList.contains("show"))genPrompt();
-});
 document.getElementById("oh-lang").addEventListener("click",e=>{
   if(e.target.tagName!=="BUTTON")return;
   outLang=e.target.getAttribute("data-olang");
