@@ -168,6 +168,52 @@
       margin-bottom: 14px;
     }
 
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 360px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: 0 12px 30px var(--shadow);
+    }
+
+    .login-box h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .login-box .lead {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .login-error {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      font-size: 12.5px;
+      margin-bottom: 12px;
+    }
+
+    #appRoot.hidden {
+      display: none;
+    }
+
     label {
       display: block;
       margin-bottom: 7px;
@@ -538,10 +584,36 @@
   </style>
 </head>
 <body>
-  <main class="page">
+  <div id="loginOverlay" class="login-overlay" style="display:none;">
+    <div class="login-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <h2>登入管理</h2>
+        <button type="button" id="loginClose" class="button ghost small" aria-label="關閉">✕</button>
+      </div>
+      <p class="lead">只有登入後才能新增、編輯或刪除指令；瀏覽跟複製不用登入。</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" required autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="loginPassword">密碼</label>
+          <input id="loginPassword" type="password" required autocomplete="current-password">
+        </div>
+        <div id="loginError" class="login-error" hidden></div>
+        <button class="button primary" type="submit" id="loginSubmit">登入</button>
+      </form>
+    </div>
+  </div>
+
+  <main class="page" id="appRoot">
     <div class="topbar">
       <a href="tools.html" style="display:inline-block;margin-bottom:0.8rem;font-family:monospace;font-size:11px;color:#9aa8ad;text-decoration:none;border:1px solid #2a3540;border-radius:6px;padding:4px 10px;">← 回到工具總覽</a>
-      <div class="storage-note">資料只儲存在這個瀏覽器的 localStorage；換裝置或清除瀏覽器資料後會消失，建議定期匯出備份。</div>
+      <div class="storage-note">
+        <span>指令清單公開瀏覽，任何人都能搜尋跟複製；新增、編輯、刪除需要登入。</span>
+        <button type="button" id="loginOpenBtn" class="button ghost small" style="margin-left:10px;">登入管理</button>
+        <button type="button" id="logoutBtn" class="button ghost small" style="margin-left:10px;" hidden>登出</button>
+      </div>
     </div>
 
     <header>
@@ -562,50 +634,57 @@
     </header>
 
     <section class="layout">
-      <form class="panel" id="promptForm">
-        <div class="panel-head">
-          <h2 id="formTitle">新增指令</h2>
-          <button class="button ghost small" type="button" id="resetBtn">清空</button>
-        </div>
-        <div class="panel-body">
-          <input type="hidden" id="editingId">
-          <div class="field">
-            <label for="titleInput">標題／名稱</label>
-            <input id="titleInput" type="text" autocomplete="off" placeholder="例：部落格大綱生成器" required>
+      <div id="formSection">
+        <form class="panel" id="promptForm">
+          <div class="panel-head">
+            <h2 id="formTitle">新增指令</h2>
+            <button class="button ghost small" type="button" id="resetBtn">清空</button>
           </div>
-          <div class="field">
-            <label for="platformInput">平台</label>
-            <select id="platformInput">
-              <option value="GPT">GPT</option>
-              <option value="GROK">GROK</option>
-              <option value="GEMINI">GEMINI</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="tagsInput">標籤（選填，可用逗號或空白分隔）</label>
-            <input id="tagsInput" type="text" autocomplete="off" placeholder="例：寫作, SEO, 內容企劃">
-          </div>
-          <div class="field">
-            <label for="bodyInput">完整指令內文</label>
-            <textarea id="bodyInput" placeholder="在這裡貼上完整 prompt..." required></textarea>
-          </div>
-          <div class="field">
-            <label for="imageInput">成果圖（選填，會自動壓縮成縮圖存進 JSON）</label>
-            <div class="image-picker">
-              <label class="button" for="imageInput">選擇圖片</label>
-              <input class="file-input" id="imageInput" type="file" accept="image/*">
-              <div class="image-preview" id="imagePreview">
-                <img id="imagePreviewImg" alt="成果圖預覽">
+          <div class="panel-body">
+            <input type="hidden" id="editingId">
+            <div class="field">
+              <label for="titleInput">標題／名稱</label>
+              <input id="titleInput" type="text" autocomplete="off" placeholder="例：部落格大綱生成器" required>
+            </div>
+            <div class="field">
+              <label for="platformInput">平台</label>
+              <select id="platformInput">
+                <option value="GPT">GPT</option>
+                <option value="GROK">GROK</option>
+                <option value="GEMINI">GEMINI</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tagsInput">標籤（選填，可用逗號或空白分隔）</label>
+              <input id="tagsInput" type="text" autocomplete="off" placeholder="例：寫作, SEO, 內容企劃">
+            </div>
+            <div class="field">
+              <label for="bodyInput">完整指令內文</label>
+              <textarea id="bodyInput" placeholder="在這裡貼上完整 prompt..." required></textarea>
+            </div>
+            <div class="field">
+              <label for="imageInput">成果圖（選填，會自動壓縮成縮圖存進 JSON；也可以直接 Ctrl+V 貼上截圖）</label>
+              <div class="image-picker">
+                <label class="button" for="imageInput">選擇圖片</label>
+                <input class="file-input" id="imageInput" type="file" accept="image/*">
+                <div class="image-preview" id="imagePreview">
+                  <img id="imagePreviewImg" alt="成果圖預覽">
+                </div>
+                <button class="button ghost small" type="button" id="removeImageBtn" hidden>移除圖片</button>
               </div>
-              <button class="button ghost small" type="button" id="removeImageBtn" hidden>移除圖片</button>
+            </div>
+            <div class="actions">
+              <button class="button primary" type="submit" id="saveBtn">儲存指令</button>
+              <button class="button ghost" type="button" id="cancelEditBtn" hidden>取消編輯</button>
             </div>
           </div>
-          <div class="actions">
-            <button class="button primary" type="submit" id="saveBtn">儲存指令</button>
-            <button class="button ghost" type="button" id="cancelEditBtn" hidden>取消編輯</button>
-          </div>
+        </form>
+
+        <div class="panel" id="loginPlaceholder" style="padding:20px;" hidden>
+          <p class="lead" style="margin:0 0 12px;">登入後才能新增指令。</p>
+          <button type="button" class="button primary" id="loginOpenBtn2">登入管理</button>
         </div>
-      </form>
+      </div>
 
       <section>
         <div class="utility">
@@ -650,6 +729,89 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyByl0rQEYKVbhsGBKILvgaBr8EFw0AqO0E",
+      authDomain: "my-prompt-library-d15ff.firebaseapp.com",
+      projectId: "my-prompt-library-d15ff",
+      storageBucket: "my-prompt-library-d15ff.firebasestorage.app",
+      messagingSenderId: "32943955220",
+      appId: "1:32943955220:web:5d5ccc2ebf37bb4816b601"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 提供給下面那段非 module 的主程式使用
+    window.__firebase = { db, doc, getDoc, setDoc, signOut, auth };
+    window.__isLoggedIn = false;
+
+    // Firebase 準備好就先通知主程式載入公開資料，不用等登入
+    window.dispatchEvent(new CustomEvent("firebase-ready"));
+
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
+    const loginSubmit = document.getElementById("loginSubmit");
+    const loginClose = document.getElementById("loginClose");
+    const loginOpenBtn = document.getElementById("loginOpenBtn");
+    const loginOpenBtn2 = document.getElementById("loginOpenBtn2");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function openLogin() {
+      loginError.hidden = true;
+      loginForm.reset();
+      loginOverlay.style.display = "flex";
+    }
+    function closeLogin() {
+      loginOverlay.style.display = "none";
+    }
+
+    loginOpenBtn.addEventListener("click", openLogin);
+    if (loginOpenBtn2) loginOpenBtn2.addEventListener("click", openLogin);
+    loginClose.addEventListener("click", closeLogin);
+    loginOverlay.addEventListener("click", event => {
+      if (event.target === loginOverlay) closeLogin();
+    });
+
+    logoutBtn.addEventListener("click", () => signOut(auth));
+
+    loginForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      loginError.hidden = true;
+      loginSubmit.disabled = true;
+      loginSubmit.textContent = "登入中...";
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        closeLogin();
+      } catch (error) {
+        loginError.textContent = "登入失敗，請確認 email 跟密碼是否正確。";
+        loginError.hidden = false;
+      } finally {
+        loginSubmit.disabled = false;
+        loginSubmit.textContent = "登入";
+      }
+    });
+
+    onAuthStateChanged(auth, user => {
+      window.__isLoggedIn = !!user;
+      loginOpenBtn.hidden = !!user;
+      logoutBtn.hidden = !user;
+      window.dispatchEvent(new CustomEvent("auth-state-changed", { detail: { loggedIn: !!user } }));
+    });
+  </script>
+
   <script>
     const STORAGE_KEY = "aiPromptLibrary.v1";
     const APP_NAME = "AI Prompt Library";
@@ -682,10 +844,11 @@
       tagCount: document.getElementById("tagCount"),
       export: document.getElementById("exportBtn"),
       import: document.getElementById("importInput"),
-      toast: document.getElementById("toast")
+      toast: document.getElementById("toast"),
+      loginPlaceholder: document.getElementById("loginPlaceholder")
     };
 
-    let prompts = loadPrompts();
+    let prompts = [];
     let selectedTag = "全部";
     let toastTimer = null;
     let currentImageData = "";
@@ -697,31 +860,34 @@
       return `prompt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
-    function loadPrompts() {
+    async function loadPrompts() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        const items = Array.isArray(parsed) ? parsed : parsed.prompts;
-        return Array.isArray(items) ? items.map(normalizePrompt).filter(Boolean) : [];
+        const { db, doc, getDoc } = window.__firebase;
+        const snap = await getDoc(doc(db, "promptLibrary", "data"));
+        if (!snap.exists()) return [];
+        const data = snap.data();
+        const items = Array.isArray(data.prompts) ? data.prompts : [];
+        return items.map(normalizePrompt).filter(Boolean);
       } catch (error) {
         console.warn("Failed to load prompts:", error);
+        showToast("讀取雲端資料失敗，請檢查網路連線後重新整理頁面。");
         return [];
       }
     }
 
-    function savePrompts() {
+    async function savePrompts() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        const { db, doc, setDoc } = window.__firebase;
+        await setDoc(doc(db, "promptLibrary", "data"), {
           app: APP_NAME,
           version: DATA_VERSION,
           updatedAt: new Date().toISOString(),
           prompts
-        }));
+        });
         return true;
       } catch (error) {
         console.error(error);
-        showToast("儲存失敗：瀏覽器儲存空間可能已滿，請先匯出備份或移除較大的圖片。");
+        showToast("儲存失敗，請檢查網路連線後再試一次。");
         return false;
       }
     }
@@ -894,8 +1060,8 @@
               <div class="card-actions">
                 <button class="button small" type="button" data-action="toggle">展開</button>
                 <button class="button small" type="button" data-action="copy">複製</button>
-                <button class="button small" type="button" data-action="edit">編輯</button>
-                <button class="button small danger" type="button" data-action="delete">刪除</button>
+                ${window.__isLoggedIn ? '<button class="button small" type="button" data-action="edit">編輯</button>' : ''}
+                ${window.__isLoggedIn ? '<button class="button small danger" type="button" data-action="delete">刪除</button>' : ''}
               </div>
             </div>
             <div class="prompt-content">
@@ -923,7 +1089,7 @@
       elements.title.focus();
     }
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
       event.preventDefault();
 
       const title = elements.title.value.trim();
@@ -946,7 +1112,7 @@
         );
         const previousPrompts = prompts;
         prompts = nextPrompts;
-        if (!savePrompts()) {
+        if (!(await savePrompts())) {
           prompts = previousPrompts;
           return;
         }
@@ -964,7 +1130,7 @@
           updatedAt: new Date().toISOString()
         };
         prompts.unshift(nextPrompt);
-        if (!savePrompts()) {
+        if (!(await savePrompts())) {
           prompts.shift();
           return;
         }
@@ -1014,13 +1180,13 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function deletePrompt(prompt) {
+    async function deletePrompt(prompt) {
       const ok = confirm(`確定要刪除「${prompt.title}」嗎？`);
       if (!ok) return;
 
       const previousPrompts = prompts;
       prompts = prompts.filter(item => item.id !== prompt.id);
-      if (!savePrompts()) {
+      if (!(await savePrompts())) {
         prompts = previousPrompts;
         render();
         return;
@@ -1059,7 +1225,7 @@
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         try {
           const parsed = JSON.parse(reader.result);
           const importedItems = Array.isArray(parsed) ? parsed : parsed.prompts;
@@ -1079,7 +1245,7 @@
 
           const previousPrompts = prompts;
           prompts = [...merged, ...prompts];
-          if (!savePrompts()) {
+          if (!(await savePrompts())) {
             prompts = previousPrompts;
             return;
           }
@@ -1118,6 +1284,26 @@
       setImagePreview("");
       showToast("圖片已移除。");
     });
+
+    document.addEventListener("paste", async event => {
+      const items = event.clipboardData && event.clipboardData.items;
+      if (!items) return;
+      const imageItem = Array.from(items).find(item => item.type && item.type.startsWith("image/"));
+      if (!imageItem) return;
+
+      const file = imageItem.getAsFile();
+      if (!file) return;
+
+      event.preventDefault();
+      try {
+        const dataUrl = await compressImage(file);
+        setImagePreview(dataUrl);
+        showToast("已從剪貼簿貼上圖片。");
+      } catch (error) {
+        console.error(error);
+        showToast("貼上圖片失敗，請換一張試試。");
+      }
+    });
     elements.search.addEventListener("input", renderList);
     elements.platformFilter.addEventListener("change", renderList);
     elements.sort.addEventListener("change", renderList);
@@ -1149,7 +1335,22 @@
       if (action === "delete") deletePrompt(prompt);
     });
 
-    render();
+    let dataLoaded = false;
+    async function startAppOnFirebaseReady() {
+      if (dataLoaded) return;
+      dataLoaded = true;
+      prompts = await loadPrompts();
+      render();
+    }
+    window.addEventListener("firebase-ready", startAppOnFirebaseReady);
+
+    function updateAuthUI(loggedIn) {
+      elements.form.hidden = !loggedIn;
+      elements.loginPlaceholder.hidden = loggedIn;
+      if (dataLoaded) render();
+    }
+    window.addEventListener("auth-state-changed", event => updateAuthUI(event.detail.loggedIn));
+    updateAuthUI(false);
   </script>
 </body>
 </html>
