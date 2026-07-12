@@ -1,0 +1,1155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 指令蒐集工具</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --bg-warm: #17130f;
+      --panel: #121821;
+      --panel-soft: #171f2a;
+      --panel-raised: #1c2430;
+      --text: #edf4f7;
+      --muted: #9aa8ad;
+      --subtle: #6f7c83;
+      --border: #2a3540;
+      --border-strong: #3a4854;
+      --accent: #55c7b3;
+      --accent-deep: #24796d;
+      --accent-soft: rgba(85, 199, 179, 0.14);
+      --warn: #e7b55e;
+      --danger: #f07a75;
+      --danger-soft: rgba(240, 122, 117, 0.13);
+      --shadow: rgba(0, 0, 0, 0.36);
+      --radius: 8px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --sans: Inter, "Noto Sans TC", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top left, rgba(85, 199, 179, 0.12), transparent 34rem),
+        linear-gradient(135deg, var(--bg), var(--bg-warm) 64%, #0d1117);
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .page {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .storage-note {
+      max-width: 520px;
+      color: var(--subtle);
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.6;
+      text-align: right;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 5vw, 54px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(96px, 1fr));
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    .stat {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(18, 24, 33, 0.72);
+      box-shadow: 0 12px 34px var(--shadow);
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--accent);
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(18, 24, 33, 0.9);
+      box-shadow: 0 16px 44px var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      background: #0e141b;
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    input,
+    select {
+      min-height: 42px;
+      padding: 9px 11px;
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      padding: 11px;
+      line-height: 1.65;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: #101923;
+    }
+
+    .actions,
+    .toolbar,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .button {
+      min-height: 38px;
+      padding: 8px 13px;
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      background: var(--panel-raised);
+      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+      background: #22303c;
+    }
+
+    .button.primary {
+      color: #06110f;
+      border-color: var(--accent);
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    .button.primary:hover {
+      background: #76d8c7;
+    }
+
+    .button.ghost {
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .button.danger {
+      color: #ffd7d5;
+      border-color: rgba(240, 122, 117, 0.42);
+      background: var(--danger-soft);
+    }
+
+    .button.small {
+      min-height: 32px;
+      padding: 6px 9px;
+      font-size: 13px;
+    }
+
+    .utility {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(23, 31, 42, 0.62);
+    }
+
+    .utility-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) minmax(160px, 220px);
+      gap: 10px;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .image-picker {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(14, 20, 27, 0.6);
+    }
+
+    .image-preview {
+      display: none;
+      overflow: hidden;
+      border: 1px solid var(--border-strong);
+      border-radius: 7px;
+      background: #0b1117;
+      aspect-ratio: 16 / 10;
+    }
+
+    .image-preview.show {
+      display: block;
+    }
+
+    .image-preview img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      min-height: 34px;
+    }
+
+    .tag-filter,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      min-height: 26px;
+      padding: 4px 9px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(14, 20, 27, 0.9);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .tag-filter {
+      cursor: pointer;
+    }
+
+    .tag-filter.active {
+      color: #071210;
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+
+    .platform-badge {
+      color: #071210;
+      border-color: var(--accent);
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    .prompt-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .prompt-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(18, 24, 33, 0.82);
+      overflow: hidden;
+    }
+
+    .prompt-summary {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      padding: 14px;
+      align-items: start;
+    }
+
+    .prompt-thumb {
+      width: 116px;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #0b1117;
+    }
+
+    .prompt-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .prompt-title {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .prompt-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      color: var(--subtle);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .prompt-content {
+      display: none;
+      padding: 0 14px 14px;
+    }
+
+    .prompt-card.open .prompt-content {
+      display: block;
+    }
+
+    .prompt-image-full {
+      width: min(520px, 100%);
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #0b1117;
+    }
+
+    .prompt-image-full img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .prompt-text {
+      margin: 0;
+      padding: 13px;
+      max-height: 420px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #dce8eb;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #0b1117;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .empty {
+      padding: 36px 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius);
+      background: rgba(18, 24, 33, 0.58);
+    }
+
+    .empty strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
+      width: min(380px, calc(100% - 36px));
+      padding: 12px 14px;
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: #17212b;
+      box-shadow: 0 14px 38px var(--shadow);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 860px) {
+      .topbar,
+      header,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar,
+      header {
+        display: block;
+      }
+
+      .storage-note {
+        margin-top: 10px;
+        text-align: left;
+      }
+
+      .stats {
+        margin-top: 16px;
+        min-width: 0;
+      }
+
+      .utility-row,
+      .prompt-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .card-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        width: min(100% - 20px, 1160px);
+        padding-top: 16px;
+      }
+
+      .panel-body,
+      .panel-head {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .button {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <a href="tools.html" style="display:inline-block;margin-bottom:0.8rem;font-family:monospace;font-size:11px;color:#9aa8ad;text-decoration:none;border:1px solid #2a3540;border-radius:6px;padding:4px 10px;">← 回到工具總覽</a>
+      <div class="storage-note">資料只儲存在這個瀏覽器的 localStorage；換裝置或清除瀏覽器資料後會消失，建議定期匯出備份。</div>
+    </div>
+
+    <header>
+      <div>
+        <h1>AI 指令蒐集工具</h1>
+        <p class="lead">把常用 prompt 存成可搜尋、可篩選、可一鍵複製的小型資料庫。所有內容都留在你的瀏覽器裡，適合整理寫作、圖像生成、程式除錯或任何重複使用的 AI 指令。</p>
+      </div>
+      <div class="stats" aria-label="統計">
+        <div class="stat">
+          <strong id="promptCount">0</strong>
+          <span>prompts</span>
+        </div>
+        <div class="stat">
+          <strong id="tagCount">0</strong>
+          <span>tags</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="layout">
+      <form class="panel" id="promptForm">
+        <div class="panel-head">
+          <h2 id="formTitle">新增指令</h2>
+          <button class="button ghost small" type="button" id="resetBtn">清空</button>
+        </div>
+        <div class="panel-body">
+          <input type="hidden" id="editingId">
+          <div class="field">
+            <label for="titleInput">標題／名稱</label>
+            <input id="titleInput" type="text" autocomplete="off" placeholder="例：部落格大綱生成器" required>
+          </div>
+          <div class="field">
+            <label for="platformInput">平台</label>
+            <select id="platformInput">
+              <option value="GPT">GPT</option>
+              <option value="GROK">GROK</option>
+              <option value="GEMINI">GEMINI</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tagsInput">標籤（選填，可用逗號或空白分隔）</label>
+            <input id="tagsInput" type="text" autocomplete="off" placeholder="例：寫作, SEO, 內容企劃">
+          </div>
+          <div class="field">
+            <label for="bodyInput">完整指令內文</label>
+            <textarea id="bodyInput" placeholder="在這裡貼上完整 prompt..." required></textarea>
+          </div>
+          <div class="field">
+            <label for="imageInput">成果圖（選填，會自動壓縮成縮圖存進 JSON）</label>
+            <div class="image-picker">
+              <label class="button" for="imageInput">選擇圖片</label>
+              <input class="file-input" id="imageInput" type="file" accept="image/*">
+              <div class="image-preview" id="imagePreview">
+                <img id="imagePreviewImg" alt="成果圖預覽">
+              </div>
+              <button class="button ghost small" type="button" id="removeImageBtn" hidden>移除圖片</button>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="button primary" type="submit" id="saveBtn">儲存指令</button>
+            <button class="button ghost" type="button" id="cancelEditBtn" hidden>取消編輯</button>
+          </div>
+        </div>
+      </form>
+
+      <section>
+        <div class="utility">
+          <div class="utility-row">
+            <div>
+              <label for="searchInput">搜尋標題或內文</label>
+              <input id="searchInput" type="search" autocomplete="off" placeholder="輸入關鍵字...">
+            </div>
+            <div>
+              <label for="platformFilter">平台</label>
+              <select id="platformFilter">
+                <option value="全部">全部</option>
+                <option value="GPT">GPT</option>
+                <option value="GROK">GROK</option>
+                <option value="GEMINI">GEMINI</option>
+              </select>
+            </div>
+            <div>
+              <label for="sortSelect">排序</label>
+              <select id="sortSelect">
+                <option value="updated-desc">最近更新</option>
+                <option value="created-desc">最近新增</option>
+                <option value="title-asc">標題 A → Z</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label>標籤篩選</label>
+            <div class="tag-cloud" id="tagFilters"></div>
+          </div>
+          <div class="toolbar">
+            <button class="button" type="button" id="exportBtn">匯出 JSON</button>
+            <label class="button" for="importInput">匯入 JSON</label>
+            <input class="file-input" id="importInput" type="file" accept="application/json,.json">
+          </div>
+        </div>
+
+        <div class="prompt-list" id="promptList"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "aiPromptLibrary.v1";
+    const APP_NAME = "AI Prompt Library";
+    const DATA_VERSION = 3;
+    const PLATFORMS = ["GPT", "GROK", "GEMINI"];
+    const THUMBNAIL_MAX_SIZE = 640;
+    const THUMBNAIL_QUALITY = 0.74;
+
+    const elements = {
+      form: document.getElementById("promptForm"),
+      formTitle: document.getElementById("formTitle"),
+      editingId: document.getElementById("editingId"),
+      title: document.getElementById("titleInput"),
+      platform: document.getElementById("platformInput"),
+      tags: document.getElementById("tagsInput"),
+      body: document.getElementById("bodyInput"),
+      image: document.getElementById("imageInput"),
+      imagePreview: document.getElementById("imagePreview"),
+      imagePreviewImg: document.getElementById("imagePreviewImg"),
+      removeImage: document.getElementById("removeImageBtn"),
+      save: document.getElementById("saveBtn"),
+      reset: document.getElementById("resetBtn"),
+      cancelEdit: document.getElementById("cancelEditBtn"),
+      search: document.getElementById("searchInput"),
+      platformFilter: document.getElementById("platformFilter"),
+      sort: document.getElementById("sortSelect"),
+      tagFilters: document.getElementById("tagFilters"),
+      list: document.getElementById("promptList"),
+      promptCount: document.getElementById("promptCount"),
+      tagCount: document.getElementById("tagCount"),
+      export: document.getElementById("exportBtn"),
+      import: document.getElementById("importInput"),
+      toast: document.getElementById("toast")
+    };
+
+    let prompts = loadPrompts();
+    let selectedTag = "全部";
+    let toastTimer = null;
+    let currentImageData = "";
+
+    function createId() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+      return `prompt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function loadPrompts() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        const items = Array.isArray(parsed) ? parsed : parsed.prompts;
+        return Array.isArray(items) ? items.map(normalizePrompt).filter(Boolean) : [];
+      } catch (error) {
+        console.warn("Failed to load prompts:", error);
+        return [];
+      }
+    }
+
+    function savePrompts() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          app: APP_NAME,
+          version: DATA_VERSION,
+          updatedAt: new Date().toISOString(),
+          prompts
+        }));
+        return true;
+      } catch (error) {
+        console.error(error);
+        showToast("儲存失敗：瀏覽器儲存空間可能已滿，請先匯出備份或移除較大的圖片。");
+        return false;
+      }
+    }
+
+    function normalizePrompt(item) {
+      if (!item || typeof item !== "object") return null;
+      const title = String(item.title || "").trim();
+      const body = String(item.body || item.content || "").trim();
+      const platform = normalizePlatform(item.platform);
+      if (!title || !body) return null;
+
+      return {
+        id: String(item.id || createId()),
+        title,
+        platform,
+        body,
+        tags: Array.isArray(item.tags) ? cleanTags(item.tags.join(",")) : cleanTags(String(item.tags || "")),
+        imageData: typeof item.imageData === "string" ? item.imageData : "",
+        imageName: typeof item.imageName === "string" ? item.imageName : "",
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: item.updatedAt || item.createdAt || new Date().toISOString()
+      };
+    }
+
+    function setImagePreview(dataUrl) {
+      currentImageData = dataUrl || "";
+      elements.imagePreviewImg.src = currentImageData;
+      elements.imagePreview.classList.toggle("show", Boolean(currentImageData));
+      elements.removeImage.hidden = !currentImageData;
+    }
+
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith("image/")) {
+          reject(new Error("Invalid image file"));
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = reject;
+          image.onload = () => {
+            const scale = Math.min(1, THUMBNAIL_MAX_SIZE / Math.max(image.width, image.height));
+            const width = Math.max(1, Math.round(image.width * scale));
+            const height = Math.max(1, Math.round(image.height * scale));
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d");
+            context.drawImage(image, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", THUMBNAIL_QUALITY));
+          };
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function normalizePlatform(value) {
+      const platform = String(value || "GPT").trim().toUpperCase();
+      return PLATFORMS.includes(platform) ? platform : "GPT";
+    }
+
+    function cleanTags(value) {
+      return [...new Set(
+        String(value)
+          .split(/[,，、\n\t ]+/)
+          .map(tag => tag.trim())
+          .filter(Boolean)
+      )];
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 2200);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function getAllTags() {
+      return [...new Set(prompts.flatMap(prompt => prompt.tags))].sort((a, b) => a.localeCompare(b, "zh-Hant"));
+    }
+
+    function getFilteredPrompts() {
+      const keyword = elements.search.value.trim().toLowerCase();
+      const platformFilter = elements.platformFilter.value;
+      const sortMode = elements.sort.value;
+
+      return prompts
+        .filter(prompt => {
+          const matchesTag = selectedTag === "全部" || prompt.tags.includes(selectedTag);
+          const matchesPlatform = platformFilter === "全部" || prompt.platform === platformFilter;
+          const matchesKeyword = !keyword ||
+            prompt.title.toLowerCase().includes(keyword) ||
+            prompt.body.toLowerCase().includes(keyword) ||
+            prompt.platform.toLowerCase().includes(keyword);
+          return matchesTag && matchesPlatform && matchesKeyword;
+        })
+        .sort((a, b) => {
+          if (sortMode === "title-asc") return a.title.localeCompare(b.title, "zh-Hant");
+          if (sortMode === "created-desc") return new Date(b.createdAt) - new Date(a.createdAt);
+          return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+    }
+
+    function renderStats() {
+      elements.promptCount.textContent = prompts.length;
+      elements.tagCount.textContent = getAllTags().length;
+    }
+
+    function renderTagFilters() {
+      const tags = ["全部", ...getAllTags()];
+      if (!tags.includes(selectedTag)) selectedTag = "全部";
+
+      elements.tagFilters.innerHTML = tags.map(tag => (
+        `<button class="tag-filter${tag === selectedTag ? " active" : ""}" type="button" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`
+      )).join("");
+    }
+
+    function renderList() {
+      const visiblePrompts = getFilteredPrompts();
+
+      if (!visiblePrompts.length) {
+        const hasData = prompts.length > 0;
+        elements.list.innerHTML = `
+          <div class="empty">
+            <strong>${hasData ? "沒有符合條件的指令" : "還沒有儲存任何指令"}</strong>
+            <span>${hasData ? "試著清除搜尋字或切換標籤。" : "先在左側新增第一則 prompt。"}</span>
+          </div>
+        `;
+        return;
+      }
+
+      elements.list.innerHTML = visiblePrompts.map(prompt => {
+        const tags = prompt.tags.length
+          ? prompt.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")
+          : `<span class="tag">未分類</span>`;
+        const updatedDate = new Date(prompt.updatedAt).toLocaleDateString("zh-TW");
+        const thumb = prompt.imageData
+          ? `<div class="prompt-thumb"><img src="${escapeHtml(prompt.imageData)}" alt="${escapeHtml(prompt.title)} 成果圖"></div>`
+          : "";
+        const fullImage = prompt.imageData
+          ? `<div class="prompt-image-full"><img src="${escapeHtml(prompt.imageData)}" alt="${escapeHtml(prompt.title)} 成果圖"></div>`
+          : "";
+
+        return `
+          <article class="prompt-card" data-id="${escapeHtml(prompt.id)}">
+            <div class="prompt-summary">
+              ${thumb}
+              <div>
+                <h3 class="prompt-title">${escapeHtml(prompt.title)}</h3>
+                <div class="prompt-meta">
+                  <span class="tag platform-badge">${escapeHtml(prompt.platform)}</span>
+                  ${tags}
+                  <span>更新：${escapeHtml(updatedDate)}</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="button small" type="button" data-action="toggle">展開</button>
+                <button class="button small" type="button" data-action="copy">複製</button>
+                <button class="button small" type="button" data-action="edit">編輯</button>
+                <button class="button small danger" type="button" data-action="delete">刪除</button>
+              </div>
+            </div>
+            <div class="prompt-content">
+              ${fullImage}
+              <pre class="prompt-text">${escapeHtml(prompt.body)}</pre>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function render() {
+      renderStats();
+      renderTagFilters();
+      renderList();
+    }
+
+    function resetForm() {
+      elements.form.reset();
+      elements.editingId.value = "";
+      setImagePreview("");
+      elements.formTitle.textContent = "新增指令";
+      elements.save.textContent = "儲存指令";
+      elements.cancelEdit.hidden = true;
+      elements.title.focus();
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+
+      const title = elements.title.value.trim();
+      const platform = normalizePlatform(elements.platform.value);
+      const body = elements.body.value.trim();
+      const tags = cleanTags(elements.tags.value);
+      const imageData = currentImageData;
+      const imageName = elements.image.files[0] ? elements.image.files[0].name : "";
+      const editingId = elements.editingId.value;
+
+      if (!title || !body) {
+        showToast("請填寫標題和完整指令內文。");
+        return;
+      }
+
+      if (editingId) {
+        const nextPrompts = prompts.map(prompt => prompt.id === editingId
+          ? { ...prompt, title, platform, body, tags, imageData, imageName: imageData ? (imageName || prompt.imageName || "thumbnail.jpg") : "", updatedAt: new Date().toISOString() }
+          : prompt
+        );
+        const previousPrompts = prompts;
+        prompts = nextPrompts;
+        if (!savePrompts()) {
+          prompts = previousPrompts;
+          return;
+        }
+        showToast("指令已更新。");
+      } else {
+        const nextPrompt = {
+          id: createId(),
+          title,
+          platform,
+          body,
+          tags,
+          imageData,
+          imageName: imageData ? (imageName || "thumbnail.jpg") : "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        prompts.unshift(nextPrompt);
+        if (!savePrompts()) {
+          prompts.shift();
+          return;
+        }
+        showToast("指令已儲存。");
+      }
+
+      resetForm();
+      render();
+    }
+
+    async function copyPrompt(prompt, button) {
+      try {
+        await navigator.clipboard.writeText(prompt.body);
+      } catch (error) {
+        const helper = document.createElement("textarea");
+        helper.value = prompt.body;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        helper.remove();
+      }
+
+      const original = button.textContent;
+      button.textContent = "已複製";
+      button.classList.add("primary");
+      setTimeout(() => {
+        button.textContent = original;
+        button.classList.remove("primary");
+      }, 1200);
+    }
+
+    function startEdit(prompt) {
+      elements.editingId.value = prompt.id;
+      elements.title.value = prompt.title;
+      elements.platform.value = normalizePlatform(prompt.platform);
+      elements.tags.value = prompt.tags.join(", ");
+      elements.body.value = prompt.body;
+      elements.image.value = "";
+      setImagePreview(prompt.imageData || "");
+      elements.formTitle.textContent = "編輯指令";
+      elements.save.textContent = "更新指令";
+      elements.cancelEdit.hidden = false;
+      elements.title.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deletePrompt(prompt) {
+      const ok = confirm(`確定要刪除「${prompt.title}」嗎？`);
+      if (!ok) return;
+
+      const previousPrompts = prompts;
+      prompts = prompts.filter(item => item.id !== prompt.id);
+      if (!savePrompts()) {
+        prompts = previousPrompts;
+        render();
+        return;
+      }
+      if (elements.editingId.value === prompt.id) resetForm();
+      render();
+      showToast("指令已刪除。");
+    }
+
+    function exportJson() {
+      if (!prompts.length) {
+        showToast("目前沒有資料可以匯出。");
+        return;
+      }
+
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        app: APP_NAME,
+        version: DATA_VERSION,
+        prompts
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = `prompt-library-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("JSON 備份檔已匯出。");
+    }
+
+    function importJson(file) {
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const importedItems = Array.isArray(parsed) ? parsed : parsed.prompts;
+          if (!Array.isArray(importedItems)) throw new Error("Invalid prompt list");
+
+          const normalized = importedItems.map(normalizePrompt).filter(Boolean);
+          if (!normalized.length) {
+            showToast("找不到可匯入的指令資料。");
+            return;
+          }
+
+          const existingIds = new Set(prompts.map(prompt => prompt.id));
+          const merged = normalized.map(prompt => existingIds.has(prompt.id)
+            ? { ...prompt, id: createId(), importedAt: new Date().toISOString() }
+            : prompt
+          );
+
+          const previousPrompts = prompts;
+          prompts = [...merged, ...prompts];
+          if (!savePrompts()) {
+            prompts = previousPrompts;
+            return;
+          }
+          render();
+          showToast(`已匯入 ${merged.length} 則指令。`);
+        } catch (error) {
+          console.error(error);
+          showToast("匯入失敗，請確認檔案是有效的 JSON。");
+        } finally {
+          elements.import.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    elements.form.addEventListener("submit", handleSubmit);
+    elements.reset.addEventListener("click", resetForm);
+    elements.cancelEdit.addEventListener("click", resetForm);
+    elements.image.addEventListener("change", async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const dataUrl = await compressImage(file);
+        setImagePreview(dataUrl);
+        showToast("圖片已壓縮成縮圖。");
+      } catch (error) {
+        console.error(error);
+        elements.image.value = "";
+        setImagePreview("");
+        showToast("圖片處理失敗，請換一張圖片試試。");
+      }
+    });
+    elements.removeImage.addEventListener("click", () => {
+      elements.image.value = "";
+      setImagePreview("");
+      showToast("圖片已移除。");
+    });
+    elements.search.addEventListener("input", renderList);
+    elements.platformFilter.addEventListener("change", renderList);
+    elements.sort.addEventListener("change", renderList);
+    elements.export.addEventListener("click", exportJson);
+    elements.import.addEventListener("change", event => importJson(event.target.files[0]));
+
+    elements.tagFilters.addEventListener("click", event => {
+      const button = event.target.closest("[data-tag]");
+      if (!button) return;
+      selectedTag = button.dataset.tag;
+      render();
+    });
+
+    elements.list.addEventListener("click", event => {
+      const button = event.target.closest("[data-action]");
+      const card = event.target.closest(".prompt-card");
+      if (!button || !card) return;
+
+      const prompt = prompts.find(item => item.id === card.dataset.id);
+      if (!prompt) return;
+
+      const action = button.dataset.action;
+      if (action === "toggle") {
+        card.classList.toggle("open");
+        button.textContent = card.classList.contains("open") ? "收合" : "展開";
+      }
+      if (action === "copy") copyPrompt(prompt, button);
+      if (action === "edit") startEdit(prompt);
+      if (action === "delete") deletePrompt(prompt);
+    });
+
+    render();
+  </script>
+</body>
+</html>
