@@ -288,11 +288,17 @@
       background: var(--panel-raised);
       font-family: var(--sans);
       font-size: 14px;
+      text-align: center;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
       transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+
+    .button[hidden] {
+      display: none;
     }
 
     .json-btn {
@@ -518,6 +524,12 @@
       font-size: 14px;
       line-height: 1.7;
     }
+
+    .json-key { color: var(--accent); }
+    .json-string { color: var(--warn); }
+    .json-number { color: #7ab8f5; }
+    .json-boolean { color: #c98bf0; }
+    .json-null { color: var(--subtle); font-style: italic; }
 
     .empty {
       padding: 36px 20px;
@@ -996,6 +1008,34 @@
       }[char]));
     }
 
+    function syntaxHighlightJson(jsonText) {
+      return jsonText.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\btrue\b|\bfalse\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+        match => {
+          const safe = escapeHtml(match);
+          if (/^"/.test(match)) {
+            return `<span class="${/:$/.test(match) ? "json-key" : "json-string"}">${safe}</span>`;
+          }
+          if (match === "true" || match === "false") return `<span class="json-boolean">${safe}</span>`;
+          if (match === "null") return `<span class="json-null">${safe}</span>`;
+          return `<span class="json-number">${safe}</span>`;
+        }
+      );
+    }
+
+    function renderPromptBody(body) {
+      const trimmed = body.trim();
+      if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return syntaxHighlightJson(JSON.stringify(parsed, null, 2));
+        } catch (error) {
+          // 不是有效的 JSON，就照原本文字顯示
+        }
+      }
+      return escapeHtml(body);
+    }
+
     function getAllTags() {
       return [...new Set(prompts.flatMap(prompt => prompt.tags))].sort((a, b) => a.localeCompare(b, "zh-Hant"));
     }
@@ -1083,7 +1123,7 @@
             </div>
             <div class="prompt-content">
               ${fullImage}
-              <pre class="prompt-text">${escapeHtml(prompt.body)}</pre>
+              <pre class="prompt-text">${renderPromptBody(prompt.body)}</pre>
             </div>
           </article>
         `;
