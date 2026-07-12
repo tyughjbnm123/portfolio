@@ -51,6 +51,11 @@
 
     button {
       cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      border: none;
+      background: none;
+      margin: 0;
     }
 
     .page {
@@ -214,6 +219,15 @@
       display: none;
     }
 
+    .form-locked {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .form-locked * {
+      cursor: not-allowed !important;
+    }
+
     label {
       display: block;
       margin-bottom: 7px;
@@ -267,11 +281,22 @@
     .button {
       min-height: 38px;
       padding: 8px 13px;
+      margin: 0;
       color: var(--text);
       border: 1px solid var(--border-strong);
       border-radius: 7px;
       background: var(--panel-raised);
+      font-family: var(--sans);
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
       transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+
+    .json-btn {
+      width: 132px;
     }
 
     .button:hover {
@@ -679,11 +704,6 @@
             </div>
           </div>
         </form>
-
-        <div class="panel" id="loginPlaceholder" style="padding:20px;" hidden>
-          <p class="lead" style="margin:0 0 12px;">登入後才能新增指令。</p>
-          <button type="button" class="button primary" id="loginOpenBtn2">登入管理</button>
-        </div>
       </div>
 
       <section>
@@ -716,8 +736,8 @@
             <div class="tag-cloud" id="tagFilters"></div>
           </div>
           <div class="toolbar">
-            <button class="button" type="button" id="exportBtn">匯出 JSON</button>
-            <label class="button" for="importInput">匯入 JSON</label>
+            <button class="button json-btn" type="button" id="exportBtn">匯出 JSON</button>
+            <label class="button json-btn" for="importInput">匯入 JSON</label>
             <input class="file-input" id="importInput" type="file" accept="application/json,.json">
           </div>
         </div>
@@ -764,7 +784,6 @@
     const loginSubmit = document.getElementById("loginSubmit");
     const loginClose = document.getElementById("loginClose");
     const loginOpenBtn = document.getElementById("loginOpenBtn");
-    const loginOpenBtn2 = document.getElementById("loginOpenBtn2");
     const logoutBtn = document.getElementById("logoutBtn");
 
     function openLogin() {
@@ -777,7 +796,6 @@
     }
 
     loginOpenBtn.addEventListener("click", openLogin);
-    if (loginOpenBtn2) loginOpenBtn2.addEventListener("click", openLogin);
     loginClose.addEventListener("click", closeLogin);
     loginOverlay.addEventListener("click", event => {
       if (event.target === loginOverlay) closeLogin();
@@ -844,8 +862,7 @@
       tagCount: document.getElementById("tagCount"),
       export: document.getElementById("exportBtn"),
       import: document.getElementById("importInput"),
-      toast: document.getElementById("toast"),
-      loginPlaceholder: document.getElementById("loginPlaceholder")
+      toast: document.getElementById("toast")
     };
 
     let prompts = [];
@@ -1345,8 +1362,11 @@
     window.addEventListener("firebase-ready", startAppOnFirebaseReady);
 
     function updateAuthUI(loggedIn) {
-      elements.form.hidden = !loggedIn;
-      elements.loginPlaceholder.hidden = loggedIn;
+      elements.form.classList.toggle("form-locked", !loggedIn);
+      elements.form.title = loggedIn ? "" : "登入後才能新增指令";
+      elements.form.querySelectorAll("input, textarea, select, button").forEach(field => {
+        field.disabled = !loggedIn;
+      });
       if (dataLoaded) render();
     }
     window.addEventListener("auth-state-changed", event => updateAuthUI(event.detail.loggedIn));
