@@ -926,11 +926,10 @@
       const title = String(item.title || "").trim();
       const body = String(item.body || item.content || "").trim();
       const platform = normalizePlatform(item.platform);
-      if (!title || !body) return null;
 
       return {
         id: String(item.id || createId()),
-        title,
+        title: title || "（未命名指令）",
         platform,
         body,
         tags: Array.isArray(item.tags) ? cleanTags(item.tags.join(",")) : cleanTags(String(item.tags || "")),
