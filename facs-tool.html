@@ -24,9 +24,9 @@ body {
 
 .main-grid {
   display: grid;
-  grid-template-columns: 210px 1fr 250px;
+  grid-template-columns: 210px 1fr 270px;
   gap: 1rem;
-  max-width: 1000px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -51,23 +51,45 @@ body {
   margin-bottom: 10px;
 }
 .face-opt {
-  aspect-ratio: 1;
+  aspect-ratio: 3/4;
   border: 1px solid #30363d;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
   transition: all 0.15s;
   background: #0d1117;
   overflow: hidden;
 }
 .face-opt:hover { border-color: #3fb950; }
 .face-opt.active { border-color: #3fb950; border-width: 2px; background: rgba(63,185,80,0.06); }
-.face-opt canvas { width: 100%; height: 100%; }
-.face-opt-label { font-size: 9px; color: #484f58; font-family: monospace; padding-bottom: 3px; }
+.face-opt-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.face-opt-canvas-wrap canvas,
+.face-opt-canvas-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.face-opt-label {
+  flex-shrink: 0;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  color: #9099a3;
+  font-family: monospace;
+  border-top: 1px solid #21262d;
+  background: #0d1117;
+}
+.face-opt:focus-visible, .preset-btn:focus-visible, .intensity-btn:focus-visible,
+.ctrl-slider:focus-visible, .copy-btn:focus-visible, .reset-btn:focus-visible,
+.tab-btn:focus-visible, .adv-toggle:focus-visible {
+  outline: 2px solid #3fb950; outline-offset: 2px;
+}
 
 /* Main preview */
 .face-canvas-wrap {
@@ -75,44 +97,67 @@ body {
   border: 1px solid #21262d;
   border-radius: 8px;
   aspect-ratio: 3/4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   overflow: hidden;
 }
-canvas#faceCanvas { width: 100%; height: 100%; }
+canvas#faceCanvas, img#facePhoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.face-hidden { display: none !important; }
 .face-note { font-size: 9px; color: #484f58; text-align: center; margin-top: 6px; font-family: monospace; line-height: 1.4; }
 
 /* Controls */
-.controls-panel { overflow-y: auto; max-height: 580px; }
+.controls-panel { overflow-y: auto; max-height: 640px; }
 .ctrl-group { margin-bottom: 12px; }
 .ctrl-group-title { font-size: 10px; color: #3fb950; font-family: monospace; letter-spacing: 0.08em; margin-bottom: 7px; padding-bottom: 3px; border-bottom: 1px solid #21262d; }
-.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap; }
 .ctrl-label { font-size: 10px; color: #8b949e; width: 90px; flex-shrink: 0; font-family: monospace; }
-.ctrl-slider { flex: 1; height: 3px; -webkit-appearance: none; appearance: none; background: #21262d; border-radius: 2px; outline: none; cursor: pointer; }
+.ctrl-slider { flex: 1; min-width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: #21262d; border-radius: 2px; outline: none; cursor: pointer; }
 .ctrl-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #3fb950; cursor: pointer; }
+.ctrl-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #3fb950; cursor: pointer; border: none; }
 .ctrl-val { font-size: 10px; font-family: monospace; color: #ffa657; width: 24px; text-align: right; flex-shrink: 0; }
+.ctrl-intensity { font-size: 8.5px; font-family: monospace; color: #484f58; width: 100%; text-align: right; padding-right: 26px; margin-bottom: 4px; }
 
-.preset-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.preset-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
 .preset-btn { font-size: 10px; font-family: monospace; padding: 3px 8px; border-radius: 4px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
 .preset-btn:hover { border-color: #3fb950; color: #3fb950; }
 .preset-btn.active { background: #3fb950; color: #0d1117; border-color: #3fb950; font-weight: 700; }
 
+.intensity-row { display: flex; gap: 5px; margin-bottom: 12px; }
+.intensity-btn { flex: 1; font-size: 10px; font-family: monospace; padding: 4px 6px; border-radius: 4px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
+.intensity-btn:hover { border-color: #ffa657; color: #ffa657; }
+.intensity-btn.active { background: #ffa657; color: #0d1117; border-color: #ffa657; font-weight: 700; }
+
 .reset-btn { width: 100%; padding: 5px; background: transparent; border: 1px solid #30363d; border-radius: 6px; color: #484f58; font-family: monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; margin-top: 4px; }
 .reset-btn:hover { border-color: #f97583; color: #f97583; }
 
-/* JSON */
-.json-output { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 10px; color: #8b949e; flex: 1; overflow-y: auto; white-space: pre; line-height: 1.6; max-height: 420px; }
+/* Output tabs */
+.tab-row { display: flex; gap: 4px; margin-bottom: 8px; }
+.tab-btn { flex: 1; font-size: 10px; font-family: monospace; padding: 6px 4px; border-radius: 5px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
+.tab-btn:hover { border-color: #3fb950; color: #3fb950; }
+.tab-btn.active { background: rgba(63,185,80,0.12); color: #3fb950; border-color: #3fb950; font-weight: 700; }
+.tab-panel { display: none; }
+.tab-panel.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+.json-output { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 10px; color: #8b949e; flex: 1; overflow-y: auto; white-space: pre; line-height: 1.6; max-height: 340px; }
 .json-key { color: #79c0ff; }
 .json-num { color: #ffa657; }
 .json-str { color: #a5d6ff; }
+
+.desc-output { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 10px; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 12px; color: #c9d1d9; flex: 1; overflow-y: auto; line-height: 1.75; max-height: 340px; }
+
+.adv-toggle { margin-top: 8px; font-size: 9.5px; font-family: monospace; color: #484f58; background: transparent; border: 1px solid #21262d; border-radius: 6px; padding: 5px 8px; cursor: pointer; width: 100%; text-align: left; }
+.adv-toggle:hover { color: #8b949e; }
+.adv-content { display: none; margin-top: 6px; font-size: 9.5px; font-family: monospace; color: #6b7280; background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 7px; line-height: 1.6; }
+.adv-content.show { display: block; }
+
 .copy-btn { margin-top: 8px; padding: 7px; background: #3fb950; color: #0d1117; border: none; border-radius: 6px; font-family: monospace; font-size: 11px; font-weight: 700; cursor: pointer; width: 100%; }
 .copy-btn:hover { background: #2ea043; }
 .copy-btn.copied { background: #1f6feb; color: white; }
-.usage-hint { margin-top: 8px; font-size: 10px; color: #484f58; font-family: monospace; line-height: 1.6; padding: 7px; background: #0d1117; border-radius: 6px; border: 1px solid #21262d; }
+.usage-hint { margin-top: 8px; font-size: 10px; color: #484f58; font-family: monospace; line-height: 1.7; padding: 7px; background: #0d1117; border-radius: 6px; border: 1px solid #21262d; }
+.protocol-note { font-size: 9.5px; color: #58606b; font-family: monospace; line-height: 1.6; margin-bottom: 8px; padding: 6px 8px; background: rgba(255,166,87,0.06); border-left: 2px solid #ffa657; border-radius: 0 4px 4px 0; }
 
 @media (max-width: 700px) {
   .main-grid { grid-template-columns: 1fr; }
+  .controls-panel { max-height: none; }
 }
 </style>
 </head>
@@ -121,7 +166,7 @@ canvas#faceCanvas { width: 100%; height: 100%; }
 <div class="app-header">
   <a href="tools.html" style="display:inline-block;margin-bottom:0.6rem;font-family:monospace;font-size:11px;color:#8b949e;text-decoration:none;border:1px solid #30363d;border-radius:6px;padding:4px 10px;">&larr; 回到工具總覽</a>
   <div class="app-title">🎭 FACS 臉部表情控制器 v1.1</div>
-  <div class="app-sub">FACIAL ACTION CODING SYSTEM // 選擇臉型 → 調整表情 → 生成 JSON</div>
+  <div class="app-sub">FACIAL ACTION CODING SYSTEM // 調整臉部動作，建立表情參數</div>
 </div>
 
 <div class="main-grid">
@@ -129,15 +174,16 @@ canvas#faceCanvas { width: 100%; height: 100%; }
   <!-- LEFT: Face selector + preview -->
   <div class="panel" style="display:flex;flex-direction:column;gap:10px;">
     <div>
-      <div class="panel-label">選擇臉型角色</div>
+      <div class="panel-label">選擇角色臉型</div>
       <div class="face-selector" id="faceSelector"></div>
     </div>
     <div>
       <div class="panel-label">即時預覽（Live View）</div>
       <div class="face-canvas-wrap">
         <canvas id="faceCanvas" width="180" height="240"></canvas>
+        <img id="facePhoto" alt="角色基準臉照片">
       </div>
-      <div class="face-note">※ 預覽為示意圖，實際效果依 AI 工具輸出為準</div>
+      <div class="face-note">※ 中性狀態顯示參考照片；開始調整表情後會自動切換為可即時變形的示意圖。預覽用於呈現臉部動作方向，實際生成結果會依模型、參考圖與提示詞而不同。</div>
     </div>
   </div>
 
@@ -148,101 +194,144 @@ canvas#faceCanvas { width: 100%; height: 100%; }
     <div style="margin-bottom:12px">
       <div class="ctrl-group-title">▸ 預設表情</div>
       <div class="preset-row">
-        <button class="preset-btn active" onclick="applyPreset('neutral',event)">😐 中性</button>
-        <button class="preset-btn" onclick="applyPreset('happy',event)">😊 開心</button>
-        <button class="preset-btn" onclick="applyPreset('sad',event)">😢 悲傷</button>
-        <button class="preset-btn" onclick="applyPreset('angry',event)">😠 憤怒</button>
-        <button class="preset-btn" onclick="applyPreset('surprised',event)">😮 驚訝</button>
-        <button class="preset-btn" onclick="applyPreset('disgust',event)">🤢 厭惡</button>
-        <button class="preset-btn" onclick="applyPreset('fear',event)">😨 恐懼</button>
-        <button class="preset-btn" onclick="applyPreset('contempt',event)">😏 輕蔑</button>
+        <button class="preset-btn active" data-preset="neutral" onclick="applyPreset('neutral',event)">😐 中性</button>
+        <button class="preset-btn" data-preset="happy" onclick="applyPreset('happy',event)">😊 開心</button>
+        <button class="preset-btn" data-preset="sad" onclick="applyPreset('sad',event)">😢 悲傷</button>
+        <button class="preset-btn" data-preset="angry" onclick="applyPreset('angry',event)">😠 憤怒</button>
+        <button class="preset-btn" data-preset="surprised" onclick="applyPreset('surprised',event)">😮 驚訝</button>
+        <button class="preset-btn" data-preset="disgust" onclick="applyPreset('disgust',event)">🤢 厭惡</button>
+        <button class="preset-btn" data-preset="fear" onclick="applyPreset('fear',event)">😨 恐懼</button>
+        <button class="preset-btn" data-preset="contempt" onclick="applyPreset('contempt',event)">😏 輕蔑</button>
+      </div>
+      <div class="ctrl-group-title">▸ 表情強度</div>
+      <div class="intensity-row">
+        <button class="intensity-btn" data-intensity="mild" onclick="setIntensity('mild')">輕微</button>
+        <button class="intensity-btn active" data-intensity="natural" onclick="setIntensity('natural')">自然</button>
+        <button class="intensity-btn" data-intensity="strong" onclick="setIntensity('strong')">強烈</button>
       </div>
     </div>
 
-    <div class="ctrl-group">
-      <div class="ctrl-group-title">▸ 眉毛肌群</div>
-      <div class="ctrl-row"><span class="ctrl-label">內眉上抬</span><input type="range" class="ctrl-slider" id="AU1" min="0" max="5" step="0.1" value="0" oninput="update('AU1',this.value)"><span class="ctrl-val" id="v_AU1">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">外眉上抬</span><input type="range" class="ctrl-slider" id="AU2" min="0" max="5" step="0.1" value="0" oninput="update('AU2',this.value)"><span class="ctrl-val" id="v_AU2">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">眉毛皺眉</span><input type="range" class="ctrl-slider" id="AU4" min="0" max="5" step="0.1" value="0" oninput="update('AU4',this.value)"><span class="ctrl-val" id="v_AU4">0</span></div>
+    <div class="ctrl-group" id="group-brow">
+      <div class="ctrl-group-title">▸ 眉毛</div>
     </div>
-
-    <div class="ctrl-group">
-      <div class="ctrl-group-title">▸ 眼部肌群</div>
-      <div class="ctrl-row"><span class="ctrl-label">上眼瞼收緊</span><input type="range" class="ctrl-slider" id="AU5" min="0" max="5" step="0.1" value="0" oninput="update('AU5',this.value)"><span class="ctrl-val" id="v_AU5">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">眼瞼下垂</span><input type="range" class="ctrl-slider" id="AU41" min="0" max="5" step="0.1" value="0" oninput="update('AU41',this.value)"><span class="ctrl-val" id="v_AU41">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">眼眶用力</span><input type="range" class="ctrl-slider" id="AU7" min="0" max="5" step="0.1" value="0" oninput="update('AU7',this.value)"><span class="ctrl-val" id="v_AU7">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">眨眼閉合</span><input type="range" class="ctrl-slider" id="AU46" min="0" max="5" step="0.1" value="0" oninput="update('AU46',this.value)"><span class="ctrl-val" id="v_AU46">0</span></div>
+    <div class="ctrl-group" id="group-eye">
+      <div class="ctrl-group-title">▸ 眼部</div>
     </div>
-
-    <div class="ctrl-group">
-      <div class="ctrl-group-title">▸ 鼻部肌群</div>
-      <div class="ctrl-row"><span class="ctrl-label">鼻翼收縮</span><input type="range" class="ctrl-slider" id="AU9" min="0" max="5" step="0.1" value="0" oninput="update('AU9',this.value)"><span class="ctrl-val" id="v_AU9">0</span></div>
+    <div class="ctrl-group" id="group-nose">
+      <div class="ctrl-group-title">▸ 鼻部</div>
     </div>
-
-    <div class="ctrl-group">
-      <div class="ctrl-group-title">▸ 上唇肌群</div>
-      <div class="ctrl-row"><span class="ctrl-label">上唇抬起</span><input type="range" class="ctrl-slider" id="AU10" min="0" max="5" step="0.1" value="0" oninput="update('AU10',this.value)"><span class="ctrl-val" id="v_AU10">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">嘴唇向上</span><input type="range" class="ctrl-slider" id="AU13" min="0" max="5" step="0.1" value="0" oninput="update('AU13',this.value)"><span class="ctrl-val" id="v_AU13">0</span></div>
+    <div class="ctrl-group" id="group-upper">
+      <div class="ctrl-group-title">▸ 上唇與嘴角</div>
     </div>
-
-    <div class="ctrl-group">
-      <div class="ctrl-group-title">▸ 嘴角與下唇</div>
-      <div class="ctrl-row"><span class="ctrl-label">嘴角上揚</span><input type="range" class="ctrl-slider" id="AU12" min="0" max="5" step="0.1" value="0" oninput="update('AU12',this.value)"><span class="ctrl-val" id="v_AU12">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">嘴角下拉</span><input type="range" class="ctrl-slider" id="AU15" min="0" max="5" step="0.1" value="0" oninput="update('AU15',this.value)"><span class="ctrl-val" id="v_AU15">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">下唇下拉</span><input type="range" class="ctrl-slider" id="AU16" min="0" max="5" step="0.1" value="0" oninput="update('AU16',this.value)"><span class="ctrl-val" id="v_AU16">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">嘴唇向外</span><input type="range" class="ctrl-slider" id="AU22" min="0" max="5" step="0.1" value="0" oninput="update('AU22',this.value)"><span class="ctrl-val" id="v_AU22">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">嘴巴張開</span><input type="range" class="ctrl-slider" id="AU26" min="0" max="5" step="0.1" value="0" oninput="update('AU26',this.value)"><span class="ctrl-val" id="v_AU26">0</span></div>
-    </div>
-
-    <div class="ctrl-group">
-      <div class="ctrl-group-title">▸ 下巴與臉頰</div>
-      <div class="ctrl-row"><span class="ctrl-label">臉頰上抬</span><input type="range" class="ctrl-slider" id="AU6" min="0" max="5" step="0.1" value="0" oninput="update('AU6',this.value)"><span class="ctrl-val" id="v_AU6">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">下巴下移</span><input type="range" class="ctrl-slider" id="AU27" min="0" max="5" step="0.1" value="0" oninput="update('AU27',this.value)"><span class="ctrl-val" id="v_AU27">0</span></div>
-      <div class="ctrl-row"><span class="ctrl-label">下巴顫抖</span><input type="range" class="ctrl-slider" id="AU17" min="0" max="5" step="0.1" value="0" oninput="update('AU17',this.value)"><span class="ctrl-val" id="v_AU17">0</span></div>
+    <div class="ctrl-group" id="group-lower">
+      <div class="ctrl-group-title">▸ 下唇與下顎</div>
     </div>
 
     <button class="reset-btn" onclick="resetAll()">↺ 重置所有參數</button>
   </div>
 
-  <!-- RIGHT: JSON -->
+  <!-- RIGHT: Output -->
   <div class="panel" style="display:flex;flex-direction:column;">
-    <div class="panel-label">FACP 協議即時數據</div>
-    <div class="json-output" id="jsonOutput"></div>
-    <button class="copy-btn" id="copyBtn" onclick="copyJSON()">📋 複製 JSON → 貼到 AI 工具</button>
-    <div class="usage-hint">💡 使用方式：<br>1. 選擇臉型角色<br>2. 調整滑桿設定表情<br>3. 點「複製 JSON」<br>4. 貼到 Gemini / Claude<br>5. 加上「用建立圖像」指令<br><br>備註：也可用於修改已生成的圖片表情</div>
+    <div class="panel-label">自訂 FACP 表情參數</div>
+    <div class="protocol-note">FACP 是本站用於保存與傳遞表情設定的自訂格式，不是 AI 圖像工具的官方標準。</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" data-tab="json" onclick="switchTab('json')">結構化參數</button>
+      <button class="tab-btn" data-tab="desc" onclick="switchTab('desc')">AI 表情描述</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-json">
+      <div class="json-output" id="jsonOutput"></div>
+      <button class="adv-toggle" onclick="toggleAdvanced()" id="advToggleBtn">▸ 進階資料（timestamp / sequence_id）</button>
+      <div class="adv-content" id="advContent"></div>
+      <button class="copy-btn" id="copyJsonBtn" onclick="copyJSON()">📋 複製 JSON</button>
+    </div>
+
+    <div class="tab-panel" id="tab-desc">
+      <div class="desc-output" id="descOutput"></div>
+      <button class="copy-btn" id="copyDescBtn" onclick="copyDescription()">📋 複製 AI 表情描述</button>
+    </div>
+
+    <div class="usage-hint">💡 使用方式：<br>1. 選擇角色臉型<br>2. 選擇預設表情或調整動作單元<br>3. 查看表情預覽<br>4. 複製結構化參數或 AI 表情描述<br>5. 將描述加入圖像生成或圖片編輯指令</div>
   </div>
 
 </div>
 
 <script>
-const state = {
-  AU1:0,AU2:0,AU4:0,AU5:0,AU6:0,AU7:0,AU9:0,AU10:0,
-  AU12:0,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:0,AU27:0,AU41:0,AU46:0
+// ============ AU 定義：名稱、分組 ============
+const AU_INFO = {
+  AU1:  { name: '內眉上抬',   group: 'brow'  },
+  AU2:  { name: '外眉上抬',   group: 'brow'  },
+  AU4:  { name: '眉毛下壓',   group: 'brow'  },
+  AU5:  { name: '上眼瞼抬起', group: 'eye'   },
+  AU6:  { name: '臉頰上抬',   group: 'eye'   },
+  AU7:  { name: '眼瞼收緊',   group: 'eye'   },
+  AU41: { name: '上眼瞼下垂', group: 'eye'   },
+  AU46: { name: '單眼眨眼',   group: 'eye'   },
+  AU9:  { name: '皺鼻',       group: 'nose'  },
+  AU10: { name: '上唇抬起',   group: 'upper' },
+  AU12: { name: '嘴角上揚',   group: 'upper' },
+  AU13: { name: '嘴角加深',   group: 'upper' },
+  AU22: { name: '嘴唇向外翻', group: 'upper' },
+  AU15: { name: '嘴角下拉',   group: 'lower' },
+  AU16: { name: '下唇下拉',   group: 'lower' },
+  AU17: { name: '下巴抬起',   group: 'lower' },
+  AU26: { name: '下顎放鬆',   group: 'lower' },
+  AU27: { name: '嘴巴大幅張開', group: 'lower' },
 };
+const AU_ORDER = ['AU1','AU2','AU4','AU5','AU6','AU7','AU41','AU46','AU9','AU10','AU12','AU13','AU22','AU15','AU16','AU17','AU26','AU27'];
+const GROUP_LABELS = { brow: '眉毛', eye: '眼部', nose: '鼻部', upper: '上唇與嘴角', lower: '下唇與下顎' };
 
-const presets = {
-  neutral:   {AU1:0,AU2:0,AU4:0,AU5:0,AU6:0,AU7:0,AU9:0,AU10:0,AU12:0,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:0,AU27:0,AU41:0,AU46:0},
-  happy:     {AU1:0,AU2:0,AU4:0,AU5:0,AU6:3,AU7:0,AU9:0,AU10:0,AU12:4,AU13:2,AU15:0,AU16:0,AU17:0,AU22:0,AU26:1,AU27:0,AU41:0,AU46:0},
-  sad:       {AU1:3,AU2:0,AU4:2,AU5:0,AU6:0,AU7:0,AU9:0,AU10:0,AU12:0,AU13:0,AU15:3,AU16:2,AU17:2,AU22:0,AU26:1,AU27:0,AU41:2,AU46:0},
-  angry:     {AU1:0,AU2:0,AU4:4,AU5:2,AU6:0,AU7:3,AU9:2,AU10:0,AU12:0,AU13:0,AU15:2,AU16:0,AU17:0,AU22:0,AU26:1,AU27:0,AU41:0,AU46:0},
-  surprised: {AU1:4,AU2:4,AU4:0,AU5:4,AU6:0,AU7:0,AU9:0,AU10:0,AU12:0,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:4,AU27:3,AU41:0,AU46:0},
-  disgust:   {AU1:0,AU2:0,AU4:2,AU5:0,AU6:0,AU7:2,AU9:4,AU10:3,AU12:0,AU13:0,AU15:2,AU16:2,AU17:0,AU22:0,AU26:1,AU27:0,AU41:0,AU46:0},
-  fear:      {AU1:4,AU2:3,AU4:3,AU5:4,AU6:0,AU7:2,AU9:0,AU10:0,AU12:0,AU13:0,AU15:1,AU16:1,AU17:0,AU22:2,AU26:3,AU27:0,AU41:0,AU46:0},
-  contempt:  {AU1:0,AU2:0,AU4:0,AU5:0,AU6:0,AU7:1,AU9:0,AU10:0,AU12:2,AU13:0,AU15:0,AU16:0,AU17:0,AU22:0,AU26:0,AU27:0,AU41:1,AU46:0},
+const state = {};
+AU_ORDER.forEach(au => state[au] = 0);
+
+function intensityLabel(v) {
+  const labels = ['無','輕微','自然','明顯','誇張'];
+  const idx = Math.max(0, Math.min(4, Math.round(v)));
+  return labels[idx];
+}
+
+// ============ 預設表情（自然強度基準值，輕微/強烈由此換算）============
+const PRESETS_NATURAL = {
+  neutral:   {},
+  happy:     { AU6:1.2, AU7:0.3, AU12:1.8, AU13:0.4, AU26:0.2 },
+  sad:       { AU1:1.4, AU4:0.7, AU15:1.0, AU17:0.4, AU41:0.4 },
+  angry:     { AU4:1.7, AU5:0.3, AU7:1.1, AU9:0.2, AU15:0.3, AU17:0.3 },
+  surprised: { AU1:1.4, AU2:1.3, AU5:1.5, AU26:1.0, AU27:0.5 },
+  disgust:   { AU4:0.5, AU7:0.5, AU9:1.2, AU10:0.8, AU15:0.2 },
+  fear:      { AU1:1.1, AU2:0.8, AU4:0.5, AU5:1.3, AU7:0.4, AU15:0.4, AU26:0.7 },
+  contempt:  { AU7:0.3, AU12:0.7, AU13:0.8, AU15:0.2 },
 };
+const EXPR_LABEL_ZH = { neutral:'中性', happy:'開心', sad:'悲傷', angry:'憤怒', surprised:'驚訝', disgust:'厭惡', fear:'恐懼', contempt:'輕蔑' };
+const EXPR_LABEL_EN = { neutral:'neutral', happy:'happiness', sad:'sadness', angry:'anger', surprised:'surprise', disgust:'disgust', fear:'fear', contempt:'contempt' };
 
-// Face types definition
+function scaledPreset(name, intensity) {
+  const base = PRESETS_NATURAL[name] || {};
+  const factor = intensity === 'mild' ? 0.55 : intensity === 'strong' ? 1.55 : 1;
+  const full = {};
+  AU_ORDER.forEach(au => {
+    const raw = base[au] !== undefined ? base[au] * factor : 0;
+    full[au] = Math.min(4, Math.round(raw * 10) / 10);
+  });
+  return full;
+}
+
+let currentPresetName = 'neutral';
+let currentIntensity = 'natural';
+let isCustomState = false;
+
+// ============ 臉型定義 ============
 const faceTypes = [
-  { id:'young_f', label:'少女', skinTone:'#ffe0d0', hairColor:'#1a0a0a', hairStyle:'long_straight', eyeStyle:'big', faceShape:'oval', lipColor:'#e8748a' },
-  { id:'young_m', label:'青年', skinTone:'#f5c9a0', hairColor:'#2d1a0a', hairStyle:'short_side', eyeStyle:'normal', faceShape:'square', lipColor:'#c97860' },
-  { id:'cool_f',  label:'酷女', skinTone:'#f0d4c0', hairColor:'#0a0a1a', hairStyle:'bob', eyeStyle:'sharp', faceShape:'oval', lipColor:'#cc3355' },
-  { id:'mature_m',label:'成熟', skinTone:'#d4a870', hairColor:'#3d2010', hairStyle:'short_back', eyeStyle:'narrow', faceShape:'strong', lipColor:'#b06050' },
-  { id:'cute',    label:'可愛', skinTone:'#ffd0c0', hairColor:'#8b4513', hairStyle:'twin_tails', eyeStyle:'round', faceShape:'round', lipColor:'#ff8899' },
-  { id:'anime',   label:'動漫', skinTone:'#fff0e8', hairColor:'#6644aa', hairStyle:'long_wavy', eyeStyle:'anime', faceShape:'small', lipColor:'#ff6688' },
+  { id:'young_f', label:'少女', skinTone:'#ffe0d0', hairColor:'#1a0a0a', hairStyle:'long_straight', eyeStyle:'big', faceShape:'oval', lipColor:'#e8748a', thumb:'assets/facs-young-f.jpg' },
+  { id:'young_m', label:'青年', skinTone:'#f5c9a0', hairColor:'#2d1a0a', hairStyle:'short_side', eyeStyle:'normal', faceShape:'square', lipColor:'#c97860', thumb:'assets/facs-young-m.jpg' },
+  { id:'cool_f',  label:'酷女', skinTone:'#f0d4c0', hairColor:'#0a0a1a', hairStyle:'bob', eyeStyle:'sharp', faceShape:'oval', lipColor:'#cc3355', thumb:'assets/facs-cool-f.jpg' },
+  { id:'mature_m',label:'成熟', skinTone:'#d4a870', hairColor:'#3d2010', hairStyle:'short_back', eyeStyle:'narrow', faceShape:'strong', lipColor:'#b06050', thumb:'assets/facs-mature-m.jpg' },
+  { id:'cute',    label:'可愛', skinTone:'#ffd0c0', hairColor:'#8b4513', hairStyle:'twin_tails', eyeStyle:'round', faceShape:'round', lipColor:'#ff8899', thumb:'assets/facs-cute.jpg' },
+  { id:'anime',   label:'動漫', skinTone:'#fff0e8', hairColor:'#6644aa', hairStyle:'long_wavy', eyeStyle:'anime', faceShape:'small', lipColor:'#ff6688', thumb:'assets/facs-anime.jpg' },
 ];
-
 let currentFace = faceTypes[0];
 
+// ============ 繪製臉部（局部變形，不整臉縮放/旋轉）============
 function drawFaceType(canvas, faceType, stateOverride) {
   const s = stateOverride || state;
   const ctx = canvas.getContext('2d');
@@ -253,82 +342,109 @@ function drawFaceType(canvas, faceType, stateOverride) {
   const cy = h * 0.45;
   const ft = faceType;
 
-  // Background
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0,0,w,h);
 
+  // === 臉型（寬度 +8%、額頭 -8%、下巴 -10%、下顎弧線更自然）===
+  const baseW = ft.faceShape === 'round' ? 58 : ft.faceShape === 'square' ? 55 : ft.faceShape === 'strong' ? 58 : ft.faceShape === 'small' ? 48 : 52;
+  const baseH = ft.faceShape === 'round' ? 62 : ft.faceShape === 'square' ? 70 : ft.faceShape === 'strong' ? 72 : ft.faceShape === 'small' ? 58 : 68;
+  const faceW = baseW * 1.08;
+  const faceH = baseH * 0.98; // 額頭與下巴各自收短，整體略降
 
-  // === FACE SHAPE ===
-  const faceW = ft.faceShape === 'round' ? 58 : ft.faceShape === 'square' ? 55 : ft.faceShape === 'strong' ? 58 : ft.faceShape === 'small' ? 48 : 52;
-  const faceH = ft.faceShape === 'round' ? 62 : ft.faceShape === 'square' ? 70 : ft.faceShape === 'strong' ? 72 : ft.faceShape === 'small' ? 58 : 68;
-
-  // Face gradient
   const grad = ctx.createRadialGradient(cx, cy-8, 10, cx, cy, faceW);
   grad.addColorStop(0, lighten(ft.skinTone, 20));
   grad.addColorStop(1, ft.skinTone);
   ctx.beginPath();
   if (ft.faceShape === 'square' || ft.faceShape === 'strong') {
-    // Jawline
-    ctx.moveTo(cx - faceW, cy - faceH*0.3);
-    ctx.lineTo(cx - faceW, cy + faceH*0.3);
-    ctx.quadraticCurveTo(cx - faceW*0.6, cy + faceH*0.55, cx, cy + faceH*0.55);
-    ctx.quadraticCurveTo(cx + faceW*0.6, cy + faceH*0.55, cx + faceW, cy + faceH*0.3);
-    ctx.lineTo(cx + faceW, cy - faceH*0.3);
-    ctx.ellipse(cx, cy - faceH*0.3, faceW, faceH*0.4, 0, Math.PI, 0);
+    ctx.moveTo(cx - faceW, cy - faceH*0.28);
+    ctx.lineTo(cx - faceW, cy + faceH*0.24);
+    ctx.quadraticCurveTo(cx - faceW*0.72, cy + faceH*0.5, cx - faceW*0.3, cy + faceH*0.5);
+    ctx.quadraticCurveTo(cx, cy + faceH*0.5, cx, cy + faceH*0.5);
+    ctx.quadraticCurveTo(cx + faceW*0.3, cy + faceH*0.5, cx + faceW*0.72, cy + faceH*0.5);
+    ctx.quadraticCurveTo(cx + faceW, cy + faceH*0.24, cx + faceW, cy - faceH*0.28);
+    ctx.ellipse(cx, cy - faceH*0.32, faceW, faceH*0.38, 0, Math.PI, 0);
   } else {
-    ctx.ellipse(cx, cy, faceW, faceH, 0, 0, Math.PI*2);
+    // 下巴略收，弧線更圓潤不過尖
+    ctx.ellipse(cx, cy - faceH*0.06, faceW, faceH*0.56, 0, Math.PI, 0, true);
+    ctx.quadraticCurveTo(cx + faceW*0.98, cy + faceH*0.3, cx + faceW*0.55, cy + faceH*0.48);
+    ctx.quadraticCurveTo(cx + faceW*0.22, cy + faceH*0.58, cx, cy + faceH*0.58);
+    ctx.quadraticCurveTo(cx - faceW*0.22, cy + faceH*0.58, cx - faceW*0.55, cy + faceH*0.48);
+    ctx.quadraticCurveTo(cx - faceW*0.98, cy + faceH*0.3, cx - faceW, cy - faceH*0.06);
   }
   ctx.fillStyle = grad;
   ctx.fill();
 
-  // Cheek blush
-  const cheekBlush = (s.AU6 * 0.08) + 0.04;
-  ctx.beginPath(); ctx.ellipse(cx-faceW*0.65, cy+faceH*0.05, faceW*0.28, faceH*0.12, -0.2, 0, Math.PI*2);
-  ctx.fillStyle = `rgba(255,140,140,${cheekBlush})`; ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx+faceW*0.65, cy+faceH*0.05, faceW*0.28, faceH*0.12, 0.2, 0, Math.PI*2);
+  // 淡淡陰影：下巴、臉頰側邊
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + faceH*0.42, faceW*0.32, faceH*0.1, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
   ctx.fill();
 
-  // === EYEBROWS ===
-  const browY = cy - faceH*0.38;
-  const browLift = (s.AU1 + s.AU2) * 2.5;
-  const browFurrow = s.AU4 * 2;
-  const browThick = ft.eyeStyle === 'anime' ? 2 : ft.eyeStyle === 'sharp' ? 2.5 : 2;
+  // Cheek blush
+  const cheekBlush = (s.AU6 * 0.09) + 0.04;
+  ctx.beginPath(); ctx.ellipse(cx-faceW*0.62, cy+faceH*0.08, faceW*0.26, faceH*0.11, -0.2, 0, Math.PI*2);
+  ctx.fillStyle = `rgba(255,140,140,${cheekBlush})`; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx+faceW*0.62, cy+faceH*0.08, faceW*0.26, faceH*0.11, 0.2, 0, Math.PI*2);
+  ctx.fill();
 
-  // Left brow
-  ctx.beginPath();
-  ctx.moveTo(cx - faceW*0.65, browY - browLift + browFurrow*0.5);
-  ctx.quadraticCurveTo(cx - faceW*0.38, browY - browLift - s.AU1*2 - 5, cx - faceW*0.15, browY - browLift - s.AU2*1.5 + browFurrow);
-  ctx.strokeStyle = ft.hairColor === '#6644aa' ? '#9966dd' : lighten(ft.hairColor, 30);
-  ctx.lineWidth = browThick;
-  ctx.lineCap = 'round';
-  ctx.stroke();
-
-  // Right brow
-  ctx.beginPath();
-  ctx.moveTo(cx + faceW*0.15, browY - browLift - s.AU2*1.5 + browFurrow);
-  ctx.quadraticCurveTo(cx + faceW*0.38, browY - browLift - s.AU1*2 - 5, cx + faceW*0.65, browY - browLift + browFurrow*0.5);
-  ctx.stroke();
-
-  // === EYES ===
-  const eyeY = cy - faceH*0.18;
-  const eyeOpen = Math.max(0.05, 1 - s.AU41/5.5 - s.AU46/7);
-  const eyeWide = 1 + s.AU5/10;
-  const eyeW = ft.eyeStyle === 'big' ? 17 : ft.eyeStyle === 'anime' ? 19 : ft.eyeStyle === 'round' ? 16 : ft.eyeStyle === 'sharp' ? 14 : ft.eyeStyle === 'narrow' ? 13 : 15;
-  const eyeH = eyeW * 0.62 * eyeOpen * eyeWide;
+  // === 眉毛（完整眉型，AU1 內側/AU2 外側分別局部上抬，AU4 下壓並靠攏）===
+  const browY = cy - faceH*0.42;
+  const browIn = s.AU1 * 2.6;      // 內眉上抬（局部）
+  const browOut = s.AU2 * 2.2;     // 外眉上抬（局部）
+  const browDown = s.AU4 * 2.2;    // 眉毛下壓
+  const browConverge = s.AU4 * 1.6; // 下壓同時略微靠攏
+  const browThick = ft.eyeStyle === 'anime' ? 3 : ft.eyeStyle === 'sharp' ? 3.2 : 2.8;
+  const browColor = ft.hairColor === '#6644aa' ? '#8855cc' : darken(ft.hairColor, -10);
 
   [-1, 1].forEach(side => {
-    const ex = cx + side * faceW * 0.38;
+    const innerX = cx + side * (faceW*0.16 - browConverge*0.5);
+    const midX = cx + side * faceW*0.36;
+    const outerX = cx + side * faceW*0.62;
+    const innerY = browY - browIn + browDown*0.7;
+    const midY = browY - (browIn+browOut)*0.55 - 3;
+    const outerY = browY - browOut + browDown*0.3;
 
-    // White
+    // 眉毛為有厚度的填色形狀（不是單線）
     ctx.beginPath();
-    ctx.ellipse(ex, eyeY, eyeW, Math.max(1, eyeH), 0, 0, Math.PI*2);
-    ctx.fillStyle = '#fff8f5';
+    ctx.moveTo(innerX, innerY + 1.4);
+    ctx.quadraticCurveTo(midX, midY - browThick*0.5, outerX, outerY - 1);
+    ctx.quadraticCurveTo(midX, midY + browThick*0.6, innerX, innerY + browThick + 1.2);
+    ctx.closePath();
+    ctx.fillStyle = browColor;
+    ctx.fill();
+  });
+
+  // === 眼睛（縮小 22%、虹膜再縮小 15%、眼距略縮、睫毛減少、AU46 僅單眼）===
+  const eyeY = cy - faceH*0.20;
+  const eyeSpacing = faceW * 0.35; // 眼距略縮（原 0.38）
+  const eyeBaseW = (ft.eyeStyle === 'big' ? 17 : ft.eyeStyle === 'anime' ? 19 : ft.eyeStyle === 'round' ? 16 : ft.eyeStyle === 'sharp' ? 14 : ft.eyeStyle === 'narrow' ? 13 : 15) * 0.78;
+
+  [-1, 1].forEach(side => {
+    const ex = cx + side * eyeSpacing;
+    const isWinkEye = side === 1; // AU46 單眼眨眼，固定作用在右側（觀看者右手邊）
+
+    // AU5 上眼瞼抬起（睜大）；AU7 眼瞼收緊（瞇眼）；AU41 上眼瞼下垂；AU46 單眼閉合
+    const lidRaise = 1 + s.AU5 * 0.09;
+    const lidTighten = Math.max(0.25, 1 - s.AU7 * 0.16);
+    const lidDroop = Math.max(0.12, 1 - s.AU41 * 0.18);
+    const wink = isWinkEye ? Math.max(0.04, 1 - s.AU46 * 0.24) : 1;
+    // AU6 臉頰上抬，下眼瞼略微上移，眼睛從下方略收窄
+    const cheekSquint = Math.max(0.55, 1 - s.AU6 * 0.06);
+
+    const eyeOpen = lidRaise * lidTighten * lidDroop * wink * cheekSquint;
+    const eyeW = eyeBaseW;
+    const eyeH = eyeBaseW * 0.58 * eyeOpen;
+
+    // 眼白（縮小中性眼白面積，改用較窄的杏眼形）
+    ctx.beginPath();
+    ctx.ellipse(ex, eyeY, eyeW, Math.max(0.8, eyeH), 0, 0, Math.PI*2);
+    ctx.fillStyle = '#f5efe8';
     ctx.fill();
 
-    // Iris
-    const irisSize = eyeW * 0.62 * eyeOpen;
+    // 虹膜（再縮小 15%）
+    const irisSize = eyeW * 0.62 * 0.85 * Math.min(1, eyeOpen + 0.35);
     ctx.beginPath();
-    ctx.ellipse(ex, eyeY, irisSize, Math.max(0.5, irisSize * eyeOpen), 0, 0, Math.PI*2);
+    ctx.ellipse(ex, eyeY, irisSize, Math.max(0.5, irisSize * Math.min(1, eyeOpen+0.35)), 0, 0, Math.PI*2);
     const irisGrad = ctx.createRadialGradient(ex, eyeY-irisSize*0.2, 1, ex, eyeY, irisSize);
     irisGrad.addColorStop(0, '#4488cc');
     irisGrad.addColorStop(0.6, '#2255aa');
@@ -336,33 +452,39 @@ function drawFaceType(canvas, faceType, stateOverride) {
     ctx.fillStyle = irisGrad;
     ctx.fill();
 
-    // Pupil
+    // 瞳孔
     ctx.beginPath();
-    ctx.ellipse(ex, eyeY, irisSize*0.45, Math.max(0.3, irisSize*0.45*eyeOpen), 0, 0, Math.PI*2);
+    ctx.ellipse(ex, eyeY, irisSize*0.42, Math.max(0.3, irisSize*0.42*Math.min(1,eyeOpen+0.35)), 0, 0, Math.PI*2);
     ctx.fillStyle = '#0a0a14';
     ctx.fill();
 
-    // Highlight
+    // 高光
     ctx.beginPath();
-    ctx.arc(ex - irisSize*0.25, eyeY - irisSize*0.25, irisSize*0.18, 0, Math.PI*2);
+    ctx.arc(ex - irisSize*0.25, eyeY - irisSize*0.25, irisSize*0.17, 0, Math.PI*2);
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.fill();
 
-    // Eyelid outline
+    // 眼窩淡陰影
     ctx.beginPath();
-    ctx.ellipse(ex, eyeY, eyeW, Math.max(1, eyeH), 0, 0, Math.PI*2);
+    ctx.ellipse(ex, eyeY - eyeH - 1.5, eyeW*1.1, eyeH*1.3+2, 0, Math.PI, 0);
+    ctx.fillStyle = 'rgba(0,0,0,0.045)';
+    ctx.fill();
+
+    // 眼瞼外框
+    ctx.beginPath();
+    ctx.ellipse(ex, eyeY, eyeW, Math.max(0.8, eyeH), 0, 0, Math.PI*2);
     ctx.strokeStyle = darken(ft.skinTone, 40);
-    ctx.lineWidth = ft.eyeStyle === 'sharp' ? 1.5 : 1;
+    ctx.lineWidth = ft.eyeStyle === 'sharp' ? 1.4 : 1;
     ctx.stroke();
 
-    // Lashes (top)
-    if (ft.eyeStyle !== 'narrow') {
-      for (let i = -3; i <= 3; i++) {
-        const lx = ex + i * (eyeW/3.5);
+    // 睫毛（減少數量，弧線更自然）
+    if (ft.eyeStyle !== 'narrow' && eyeOpen > 0.2) {
+      for (let i = -2; i <= 2; i++) {
+        const lx = ex + i * (eyeW/2.6);
         const ly = eyeY - eyeH;
         ctx.beginPath();
         ctx.moveTo(lx, ly);
-        ctx.lineTo(lx + i*0.8, ly - 4 - Math.abs(i)*0.5);
+        ctx.quadraticCurveTo(lx + i*0.6, ly - 3, lx + i*1.1, ly - 3.6 - Math.abs(i)*0.4);
         ctx.strokeStyle = '#1a0a0a';
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -370,216 +492,106 @@ function drawFaceType(canvas, faceType, stateOverride) {
     }
   });
 
-  // === NOSE ===
-  const noseY = cy + faceH*0.05;
-  const noseFlare = s.AU9 * 1.5;
+  // === 鼻子（移除三角形線條感，改為柔和鼻樑+鼻翼，AU9 皺鼻在鼻樑處加細紋）===
+  const noseY = cy + faceH*0.04;
+  const noseFlare = s.AU9 * 1.2;
   ctx.beginPath();
-  ctx.moveTo(cx, noseY - 8);
-  ctx.quadraticCurveTo(cx - 4, noseY, cx - 6 - noseFlare, noseY + 5);
-  ctx.moveTo(cx, noseY - 8);
-  ctx.quadraticCurveTo(cx + 4, noseY, cx + 6 + noseFlare, noseY + 5);
-  ctx.strokeStyle = darken(ft.skinTone, 30);
+  ctx.moveTo(cx - 1.5, noseY - 9);
+  ctx.quadraticCurveTo(cx - 3, noseY - 2, cx - 5.5 - noseFlare, noseY + 4);
+  ctx.quadraticCurveTo(cx - 3, noseY + 6.5, cx, noseY + 5.5);
+  ctx.quadraticCurveTo(cx + 3, noseY + 6.5, cx + 5.5 + noseFlare, noseY + 4);
+  ctx.quadraticCurveTo(cx + 3, noseY - 2, cx + 1.5, noseY - 9);
+  ctx.strokeStyle = darken(ft.skinTone, 28);
   ctx.lineWidth = 0.8;
   ctx.stroke();
 
-  // Nostril dots
-  ctx.beginPath(); ctx.arc(cx - 6 - noseFlare*0.3, noseY + 5, 1.5, 0, Math.PI*2);
+  // 鼻孔
+  ctx.beginPath(); ctx.arc(cx - 5 - noseFlare*0.3, noseY + 4.5, 1.3, 0, Math.PI*2);
   ctx.fillStyle = darken(ft.skinTone, 35); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx + 6 + noseFlare*0.3, noseY + 5, 1.5, 0, Math.PI*2);
+  ctx.beginPath(); ctx.arc(cx + 5 + noseFlare*0.3, noseY + 4.5, 1.3, 0, Math.PI*2);
   ctx.fill();
 
-  // === MOUTH ===
-  const mouthY = cy + faceH*0.3;
-  const cornerUp = s.AU12 * 5 + s.AU13 * 2;
-  const cornerDown = s.AU15 * 5 + s.AU16 * 2;
-  const lipRaise = s.AU10 * 2;
-  const mouthOpen = s.AU26 * 4 + s.AU27 * 2;
-  const pucker = s.AU22 * 3;
-  const mW = 18 - pucker;
+  // AU9 皺鼻紋
+  if (s.AU9 > 0.15) {
+    ctx.strokeStyle = darken(ft.skinTone, 22);
+    ctx.lineWidth = 0.7;
+    [-1,1].forEach(side => {
+      ctx.beginPath();
+      ctx.moveTo(cx + side*3, noseY - 5);
+      ctx.lineTo(cx + side*4.5, noseY - 5 + s.AU9*1.2);
+      ctx.stroke();
+    });
+  }
 
-  // Upper lip
+  // === 嘴巴（寬度 -12%，上下唇與嘴角獨立控制）===
+  const mouthY = cy + faceH*0.30;
+  const mW = 18 * 0.88;
+
+  // 各 AU 對嘴角/嘴唇的獨立局部影響
+  const cornerUpY = s.AU12 * 3.6;      // AU12 嘴角上揚
+  const cornerUpX = s.AU12 * 1.4;      // 嘴角略微外移
+  const cornerDeepen = s.AU13 * 1.6;   // AU13 嘴角加深（拉得更開更深）
+  const cornerDownY = s.AU15 * 3.6;    // AU15 嘴角下拉
+  const lowerLipDown = s.AU16 * 2.2;   // AU16 下唇下拉
+  const chinRaise = s.AU17 * 1.6;      // AU17 下巴抬起：下唇略突出、嘴角略收
+  const upperLipRaise = s.AU10 * 2.2;  // AU10 上唇中央抬起
+  const funnel = s.AU22 * 2.2;         // AU22 嘴唇向外翻（收窄並外推的簡化示意）
+  const jawRelax = s.AU26 * 2.2;       // AU26 下顎放鬆（小幅張開）
+  const jawDrop = s.AU27 * 5.5;        // AU27 大幅張開
+
+  const mouthOpen = jawRelax + jawDrop;
+  const mWAdj = mW - funnel*0.6;
+  const leftCornerX = cx - mWAdj - cornerUpX*0.3 + cornerDeepen*0.4;
+  const rightCornerX = cx + mWAdj + cornerUpX*0.3 - cornerDeepen*0.4;
+  const leftCornerY = mouthY - cornerUpY + cornerDownY - chinRaise*0.3;
+  const rightCornerY = mouthY - cornerUpY + cornerDownY - chinRaise*0.3;
+
+  // 上唇
   ctx.beginPath();
-  ctx.moveTo(cx - mW, mouthY - lipRaise);
-  ctx.quadraticCurveTo(cx - mW*0.5, mouthY - cornerUp - 5 - lipRaise, cx, mouthY - 4 - lipRaise);
-  ctx.quadraticCurveTo(cx + mW*0.5, mouthY - cornerUp - 5 - lipRaise, cx + mW, mouthY - lipRaise);
+  ctx.moveTo(leftCornerX, leftCornerY);
+  ctx.quadraticCurveTo(cx - mWAdj*0.45, mouthY - 6 - upperLipRaise - cornerUpY*0.4, cx, mouthY - 4.5 - upperLipRaise);
+  ctx.quadraticCurveTo(cx + mWAdj*0.45, mouthY - 6 - upperLipRaise - cornerUpY*0.4, rightCornerX, rightCornerY);
   ctx.fillStyle = ft.lipColor;
   ctx.fill();
   ctx.strokeStyle = darken(ft.lipColor, 20);
-  ctx.lineWidth = 0.5;
+  ctx.lineWidth = 0.6;
   ctx.stroke();
 
-  if (mouthOpen > 2) {
-    // Open mouth interior
+  if (mouthOpen > 1.5) {
     ctx.beginPath();
-    ctx.moveTo(cx - mW, mouthY - lipRaise);
-    ctx.quadraticCurveTo(cx, mouthY + mouthOpen*0.8 + cornerDown, cx + mW, mouthY - lipRaise);
+    ctx.moveTo(leftCornerX, leftCornerY);
+    ctx.quadraticCurveTo(cx, mouthY + mouthOpen*0.85, rightCornerX, rightCornerY);
     ctx.fillStyle = '#2a0a0a';
     ctx.fill();
-    // Teeth hint
     ctx.beginPath();
-    ctx.ellipse(cx, mouthY + mouthOpen*0.2, mW*0.6, mouthOpen*0.2, 0, 0, Math.PI);
+    ctx.ellipse(cx, mouthY + mouthOpen*0.22, mWAdj*0.58, mouthOpen*0.18, 0, 0, Math.PI);
     ctx.fillStyle = '#f0e8e0';
     ctx.fill();
   }
 
-  // Lower lip
+  // 下唇
   ctx.beginPath();
-  ctx.moveTo(cx - mW, mouthY - lipRaise);
-  ctx.quadraticCurveTo(cx, mouthY + cornerDown + 5 + (mouthOpen > 2 ? mouthOpen*0.5 : 0), cx + mW, mouthY - lipRaise);
+  ctx.moveTo(leftCornerX, leftCornerY);
+  ctx.quadraticCurveTo(cx, mouthY + lowerLipDown + chinRaise*0.5 + (mouthOpen>1.5?mouthOpen*0.55:2), rightCornerX, rightCornerY);
   ctx.fillStyle = darken(ft.lipColor, 10);
   ctx.fill();
   ctx.strokeStyle = darken(ft.lipColor, 25);
-  ctx.lineWidth = 0.5;
+  ctx.lineWidth = 0.6;
   ctx.stroke();
 
-
-  // === NECK ===
+  // === 下巴淡陰影 + 頸部（略微加寬）===
   ctx.beginPath();
-  ctx.moveTo(cx - 14, cy + faceH*0.52);
-  ctx.lineTo(cx - 12, cy + faceH*0.85);
-  ctx.lineTo(cx + 12, cy + faceH*0.85);
-  ctx.lineTo(cx + 14, cy + faceH*0.52);
+  ctx.ellipse(cx, mouthY + faceH*0.22, faceW*0.22, faceH*0.06, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(0,0,0,0.04)';
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - 15, cy + faceH*0.5);
+  ctx.lineTo(cx - 13, cy + faceH*0.82);
+  ctx.lineTo(cx + 13, cy + faceH*0.82);
+  ctx.lineTo(cx + 15, cy + faceH*0.5);
   ctx.fillStyle = ft.skinTone;
   ctx.fill();
-}
-
-function drawHairBack(ctx, cx, cy, ft) {
-  ctx.fillStyle = ft.hairColor;
-  switch(ft.hairStyle) {
-    case 'long_straight':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - 40, 58, 30, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx - 58, cy - 30);
-      ctx.quadraticCurveTo(cx - 70, cy + 80, cx - 50, cy + 160);
-      ctx.lineTo(cx - 20, cy + 160);
-      ctx.quadraticCurveTo(cx - 55, cy + 60, cx - 52, cy - 10);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx + 58, cy - 30);
-      ctx.quadraticCurveTo(cx + 70, cy + 80, cx + 50, cy + 160);
-      ctx.lineTo(cx + 20, cy + 160);
-      ctx.quadraticCurveTo(cx + 55, cy + 60, cx + 52, cy - 10);
-      ctx.fill();
-      break;
-    case 'long_wavy':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - 40, 56, 28, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx - 56, cy - 25);
-      ctx.bezierCurveTo(cx - 75, cy + 20, cx - 60, cy + 60, cx - 68, cy + 100);
-      ctx.bezierCurveTo(cx - 76, cy + 140, cx - 55, cy + 150, cx - 45, cy + 160);
-      ctx.lineTo(cx - 20, cy + 160);
-      ctx.bezierCurveTo(cx - 50, cy + 80, cx - 52, cy + 30, cx - 50, cy);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx + 56, cy - 25);
-      ctx.bezierCurveTo(cx + 75, cy + 20, cx + 60, cy + 60, cx + 68, cy + 100);
-      ctx.bezierCurveTo(cx + 76, cy + 140, cx + 55, cy + 150, cx + 45, cy + 160);
-      ctx.lineTo(cx + 20, cy + 160);
-      ctx.bezierCurveTo(cx + 50, cy + 80, cx + 52, cy + 30, cx + 50, cy);
-      ctx.fill();
-      break;
-    case 'twin_tails':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - 42, 55, 28, 0, 0, Math.PI*2);
-      ctx.fill();
-      // Left tail
-      ctx.beginPath();
-      ctx.moveTo(cx - 52, cy - 45);
-      ctx.bezierCurveTo(cx - 80, cy - 60, cx - 85, cy, cx - 70, cy + 80);
-      ctx.bezierCurveTo(cx - 65, cy + 120, cx - 55, cy + 130, cx - 50, cy + 140);
-      ctx.lineTo(cx - 35, cy + 140);
-      ctx.bezierCurveTo(cx - 50, cy + 80, cx - 60, cy + 20, cx - 40, cy - 20);
-      ctx.fill();
-      // Right tail
-      ctx.beginPath();
-      ctx.moveTo(cx + 52, cy - 45);
-      ctx.bezierCurveTo(cx + 80, cy - 60, cx + 85, cy, cx + 70, cy + 80);
-      ctx.bezierCurveTo(cx + 65, cy + 120, cx + 55, cy + 130, cx + 50, cy + 140);
-      ctx.lineTo(cx + 35, cy + 140);
-      ctx.bezierCurveTo(cx + 50, cy + 80, cx + 60, cy + 20, cx + 40, cy - 20);
-      ctx.fill();
-      break;
-    default:
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - 40, 58, 30, 0, 0, Math.PI*2);
-      ctx.fill();
-  }
-}
-
-function drawHairFront(ctx, cx, cy, faceW, faceH, ft) {
-  ctx.fillStyle = ft.hairColor;
-  switch(ft.hairStyle) {
-    case 'long_straight':
-    case 'long_wavy':
-      // Top hair + bangs
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.08, faceH*0.32, 0, Math.PI, 0);
-      ctx.fill();
-      // Side bangs
-      ctx.beginPath();
-      ctx.moveTo(cx - faceW, cy - faceH*0.35);
-      ctx.quadraticCurveTo(cx - faceW*1.05, cy - faceH*0.1, cx - faceW*0.85, cy + faceH*0.05);
-      ctx.quadraticCurveTo(cx - faceW*0.7, cy - faceH*0.15, cx - faceW*0.55, cy - faceH*0.28);
-      ctx.fill();
-      break;
-    case 'bob':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.08, faceH*0.32, 0, Math.PI, 0);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx - faceW*1.05, cy - faceH*0.1);
-      ctx.quadraticCurveTo(cx - faceW*1.1, cy + faceH*0.25, cx - faceW*0.9, cy + faceH*0.35);
-      ctx.lineTo(cx - faceW*0.6, cy + faceH*0.35);
-      ctx.lineTo(cx - faceW*0.5, cy - faceH*0.05);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx + faceW*1.05, cy - faceH*0.1);
-      ctx.quadraticCurveTo(cx + faceW*1.1, cy + faceH*0.25, cx + faceW*0.9, cy + faceH*0.35);
-      ctx.lineTo(cx + faceW*0.6, cy + faceH*0.35);
-      ctx.lineTo(cx + faceW*0.5, cy - faceH*0.05);
-      ctx.fill();
-      break;
-    case 'short_side':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.05, faceH*0.3, 0, Math.PI, 0);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cx - faceW*0.6, cy - faceH*0.4);
-      ctx.quadraticCurveTo(cx - faceW*0.2, cy - faceH*0.45, cx + faceW*0.3, cy - faceH*0.42);
-      ctx.quadraticCurveTo(cx + faceW*0.1, cy - faceH*0.28, cx - faceW*0.1, cy - faceH*0.26);
-      ctx.fill();
-      break;
-    case 'short_back':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.05, faceH*0.28, 0, Math.PI, 0);
-      ctx.fill();
-      break;
-    case 'twin_tails':
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - faceH*0.42, faceW*1.06, faceH*0.3, 0, Math.PI, 0);
-      ctx.fill();
-      // Bangs
-      ctx.beginPath();
-      ctx.moveTo(cx - faceW*0.7, cy - faceH*0.38);
-      ctx.quadraticCurveTo(cx - faceW*0.3, cy - faceH*0.5, cx, cy - faceH*0.44);
-      ctx.quadraticCurveTo(cx + faceW*0.3, cy - faceH*0.5, cx + faceW*0.7, cy - faceH*0.38);
-      ctx.quadraticCurveTo(cx + faceW*0.5, cy - faceH*0.22, cx, cy - faceH*0.24);
-      ctx.quadraticCurveTo(cx - faceW*0.5, cy - faceH*0.22, cx - faceW*0.7, cy - faceH*0.38);
-      ctx.fill();
-      // Hair ties
-      [-1,1].forEach(side => {
-        ctx.beginPath();
-        ctx.arc(cx + side * faceW * 0.88, cy - faceH*0.55, 5, 0, Math.PI*2);
-        ctx.fillStyle = '#ff6688';
-        ctx.fill();
-      });
-      ctx.fillStyle = ft.hairColor;
-      break;
-  }
 }
 
 function lighten(hex, amount) {
@@ -591,7 +603,7 @@ function lighten(hex, amount) {
 }
 function darken(hex, amount) {
   if (hex.startsWith('rgb')) {
-    const m = hex.match(/\d+/g);
+    const m = hex.match(/-?\d+/g);
     return `rgb(${Math.max(0,+m[0]-amount)},${Math.max(0,+m[1]-amount)},${Math.max(0,+m[2]-amount)})`;
   }
   const num = parseInt(hex.replace('#',''), 16);
@@ -601,23 +613,49 @@ function darken(hex, amount) {
   return `rgb(${r},${g},${b})`;
 }
 
-// Build face selector thumbnails
+// ============ 動態產生滑桿 UI ============
+function buildControls() {
+  ['brow','eye','nose','upper','lower'].forEach(group => {
+    const container = document.getElementById('group-' + group);
+    AU_ORDER.filter(au => AU_INFO[au].group === group).forEach(au => {
+      const row = document.createElement('div');
+      row.innerHTML = `
+        <div class="ctrl-intensity" id="i_${au}">自然</div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">${AU_INFO[au].name}</span>
+          <input type="range" class="ctrl-slider" id="${au}" min="0" max="4" step="0.1" value="0" aria-label="${AU_INFO[au].name}（${au}）" oninput="update('${au}',this.value)">
+          <span class="ctrl-val" id="v_${au}">0.0</span>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  });
+}
+
+// ============ 臉型選單 ============
 function buildSelector() {
   const container = document.getElementById('faceSelector');
   faceTypes.forEach((ft, i) => {
     const div = document.createElement('div');
     div.className = 'face-opt' + (i === 0 ? ' active' : '');
+    div.tabIndex = 0;
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-label', '選擇臉型：' + ft.label);
     div.onclick = () => selectFace(ft, div);
-    const c = document.createElement('canvas');
-    c.width = 70; c.height = 90;
+    div.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFace(ft, div); } };
+    const img = document.createElement('img');
+    img.src = ft.thumb;
+    img.alt = ft.label + '角色基準臉';
+    img.loading = 'lazy';
+    const canvasWrap = document.createElement('div');
+    canvasWrap.className = 'face-opt-canvas-wrap';
+    canvasWrap.appendChild(img);
     const label = document.createElement('div');
     label.className = 'face-opt-label';
     label.textContent = ft.label;
-    div.appendChild(c);
+    div.appendChild(canvasWrap);
     div.appendChild(label);
     container.appendChild(div);
-    // Draw neutral thumbnail
-    drawFaceType(c, ft, presets.neutral);
   });
 }
 
@@ -628,78 +666,238 @@ function selectFace(ft, el) {
   drawFace();
 }
 
+// ============ 互動邏輯 ============
+function refreshAllViews() {
+  renderJSON();
+  renderDescription();
+  drawFace();
+}
+
 function update(au, val) {
   state[au] = parseFloat(val);
   document.getElementById('v_' + au).textContent = parseFloat(val).toFixed(1);
-  renderJSON();
-  drawFace();
-  // Refresh thumbnails
-  document.querySelectorAll('.face-opt canvas').forEach((c, i) => {
-    drawFaceType(c, faceTypes[i], state);
-  });
+  document.getElementById('i_' + au).textContent = intensityLabel(parseFloat(val));
+  isCustomState = true;
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  refreshAllViews();
 }
 
 function applyPreset(name, e) {
-  const p = presets[name];
-  Object.entries(p).forEach(([au, val]) => {
-    state[au] = val;
+  currentPresetName = name;
+  isCustomState = false;
+  const p = scaledPreset(name, currentIntensity);
+  AU_ORDER.forEach(au => {
+    state[au] = p[au];
     const el = document.getElementById(au);
     const valEl = document.getElementById('v_' + au);
-    if (el) el.value = val;
-    if (valEl) valEl.textContent = val.toFixed(1);
+    const iEl = document.getElementById('i_' + au);
+    if (el) el.value = p[au];
+    if (valEl) valEl.textContent = p[au].toFixed(1);
+    if (iEl) iEl.textContent = intensityLabel(p[au]);
   });
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-  if (e) e.target.classList.add('active');
-  renderJSON();
-  drawFace();
-  document.querySelectorAll('.face-opt canvas').forEach((c, i) => {
-    drawFaceType(c, faceTypes[i], state);
-  });
+  const targetBtn = e ? e.target : document.querySelector(`[data-preset="${name}"]`);
+  if (targetBtn) targetBtn.classList.add('active');
+  refreshAllViews();
+}
+
+function setIntensity(level) {
+  currentIntensity = level;
+  document.querySelectorAll('.intensity-btn').forEach(b => b.classList.toggle('active', b.dataset.intensity === level));
+  if (!isCustomState) {
+    applyPreset(currentPresetName, null);
+  }
 }
 
 function resetAll() {
+  currentIntensity = 'natural';
+  document.querySelectorAll('.intensity-btn').forEach(b => b.classList.toggle('active', b.dataset.intensity === 'natural'));
   applyPreset('neutral', null);
-  document.querySelector('.preset-btn').classList.add('active');
+}
+
+function isNeutralState() {
+  return AU_ORDER.every(au => state[au] <= 0.001);
 }
 
 function drawFace() {
-  drawFaceType(document.getElementById('faceCanvas'), currentFace, state);
+  const canvas = document.getElementById('faceCanvas');
+  const photo = document.getElementById('facePhoto');
+  drawFaceType(canvas, currentFace, state);
+
+  if (isNeutralState()) {
+    photo.src = currentFace.thumb;
+    photo.classList.remove('face-hidden');
+    canvas.classList.add('face-hidden');
+  } else {
+    photo.classList.add('face-hidden');
+    canvas.classList.remove('face-hidden');
+  }
+}
+
+// ============ 輸出：結構化參數 ============
+function buildActionUnitsObject() {
+  const obj = {};
+  AU_ORDER.forEach(au => obj[au] = Math.round(state[au]*10)/10);
+  return obj;
 }
 
 function renderJSON() {
-  const ts = Date.now();
-  const seq = Math.floor(Math.random() * 99999);
-  const aus = Object.entries(state).map(([k,v]) =>
-    `    <span class="json-key">"${k}"</span>: <span class="json-num">${v.toFixed(1)}</span>`
+  const aus = AU_ORDER.map(au =>
+    `    <span class="json-key">"${au}"</span>: <span class="json-num">${state[au].toFixed(1)}</span>`
   ).join(',\n');
   document.getElementById('jsonOutput').innerHTML =
-    `<span class="json-key">"protocol_version"</span>: <span class="json-str">"FACP1.0"</span>,\n` +
-    `<span class="json-key">"timestamp"</span>: <span class="json-num">${ts}</span>,\n` +
-    `<span class="json-key">"sequence_id"</span>: <span class="json-num">${seq}</span>,\n` +
-    `<span class="json-key">"face_type"</span>: <span class="json-str">"${currentFace.id}"</span>,\n` +
-    `<span class="json-key">"action_units"</span>: {\n${aus}\n}`;
+    `{\n` +
+    `  <span class="json-key">"protocol_version"</span>: <span class="json-str">"FACP1.1"</span>,\n` +
+    `  <span class="json-key">"face_type"</span>: <span class="json-str">"${currentFace.id}"</span>,\n` +
+    `  <span class="json-key">"expression_label"</span>: <span class="json-str">"${isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName]}"</span>,\n` +
+    `  <span class="json-key">"intensity"</span>: <span class="json-str">"${isCustomState ? 'custom' : currentIntensity}"</span>,\n` +
+    `  <span class="json-key">"action_units"</span>: {\n${aus}\n  }\n}`;
+
+  const ts = Date.now();
+  const seq = Math.floor(Math.random() * 99999);
+  document.getElementById('advContent').innerHTML =
+    `"timestamp": ${ts}<br>"sequence_id": ${seq}<br><span style="color:#3a4048">（此區資料不包含在主要 JSON 或複製內容中，僅供需要序列化紀錄時參考）</span>`;
+}
+
+function toggleAdvanced() {
+  const el = document.getElementById('advContent');
+  const btn = document.getElementById('advToggleBtn');
+  const show = !el.classList.contains('show');
+  el.classList.toggle('show', show);
+  btn.textContent = (show ? '▾' : '▸') + ' 進階資料（timestamp / sequence_id）';
 }
 
 function copyJSON() {
-  const ts = Date.now();
-  const seq = Math.floor(Math.random() * 99999);
-  const aus = Object.entries(state).map(([k,v]) => `    "${k}": ${v.toFixed(1)}`).join(',\n');
-  const json = `{\n  "protocol_version": "FACP1.0",\n  "timestamp": ${ts},\n  "sequence_id": ${seq},\n  "face_type": "${currentFace.id}",\n  "action_units": {\n${aus}\n  }\n}`;
+  const json = JSON.stringify({
+    protocol_version: 'FACP1.1',
+    face_type: currentFace.id,
+    expression_label: isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName],
+    intensity: isCustomState ? 'custom' : currentIntensity,
+    action_units: buildActionUnitsObject()
+  }, null, 2);
   navigator.clipboard.writeText(json).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✅ 已複製！貼到 AI 工具使用';
+    const btn = document.getElementById('copyJsonBtn');
+    const original = '📋 複製 JSON';
+    btn.textContent = '✅ 已複製！';
     btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = '📋 複製 JSON → 貼到 AI 工具';
-      btn.classList.remove('copied');
-    }, 2500);
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2200);
   });
 }
 
+// ============ 輸出：AI 表情描述（依目前 AU 自動產生）============
+function overallIntensityLabel() {
+  // 套用預設表情時，直接採用目前選擇的強度分級，確保跟按鈕、JSON 一致
+  if (!isCustomState) {
+    return currentIntensity === 'mild' ? '輕微' : currentIntensity === 'strong' ? '明顯' : '自然';
+  }
+  // 完全自訂調整時，沒有明確的分級可用，改用目前作用中 AU 的平均值估算
+  const active = AU_ORDER.map(au => state[au]).filter(v => v > 0.05);
+  if (!active.length) return '無';
+  const avg = active.reduce((a,b)=>a+b,0) / active.length;
+  return intensityLabel(avg);
+}
+
+function generateAIDescription() {
+  const overall = overallIntensityLabel();
+
+  if (!isCustomState && currentPresetName === 'neutral') {
+    return '維持中性表情，臉部肌肉自然放鬆，不需要額外調整動作單元，保持人物原本身份與五官比例。';
+  }
+
+  const emotionName = isCustomState ? null : EXPR_LABEL_ZH[currentPresetName];
+  const opening = emotionName
+    ? `將人物表情調整為${overall}程度的${emotionName}：`
+    : `將人物表情調整為以下自訂狀態（整體強度約為${overall}）：`;
+
+  const clauses = [];
+
+  // 眉毛
+  if (state.AU4 > 0.15) {
+    clauses.push('眉頭向下並略微靠攏');
+  } else if (state.AU1 > 0.15 && state.AU2 > 0.15) {
+    clauses.push('雙眉整體上揚');
+  } else if (state.AU1 > 0.15) {
+    clauses.push('眉頭內側略微上揚');
+  } else if (state.AU2 > 0.15) {
+    clauses.push('眉尾外側略微上揚');
+  }
+
+  // 眼部
+  if (state.AU7 > 0.15) {
+    clauses.push('眼瞼輕微收緊，目光較銳利');
+  } else if (state.AU5 > 0.15) {
+    clauses.push('上眼瞼略微抬起，眼神更開闊');
+  } else if (state.AU41 > 0.15) {
+    clauses.push('上眼瞼略微下垂，眼神較放鬆');
+  }
+  if (state.AU46 > 0.15) {
+    clauses.push('單眼輕輕閉合，帶出眨眼的神情');
+  }
+  if (state.AU6 > 0.15) {
+    clauses.push('臉頰略微上抬');
+  }
+
+  // 鼻部
+  if (state.AU9 > 0.15) {
+    clauses.push('鼻翼略微皺起');
+  }
+
+  // 嘴唇與嘴角
+  if (state.AU12 > 0.15) {
+    clauses.push('嘴角略微向上');
+  }
+  if (state.AU13 > 0.15) {
+    clauses.push('嘴角略微加深拉開');
+  }
+  if (state.AU10 > 0.15) {
+    clauses.push('上唇中央略微抬起');
+  }
+  if (state.AU22 > 0.15) {
+    clauses.push('嘴唇略微向外翻起');
+  }
+  if (state.AU15 > 0.15) {
+    clauses.push('嘴角略微向下');
+  }
+  if (state.AU16 > 0.15) {
+    clauses.push('下唇略微下拉');
+  }
+  if (state.AU17 > 0.15) {
+    clauses.push('下巴略微上抬');
+  }
+  if (state.AU26 > 0.15 || state.AU27 > 0.15) {
+    clauses.push(state.AU27 > 1 ? '嘴巴明顯張開' : '嘴巴略微張開');
+  }
+
+  const body = clauses.length ? clauses.join('，') : '臉部肌肉維持自然放鬆';
+
+  return `${opening}${body}。不要讓表情變得誇張或扭曲，保持人物原本身份與五官比例。`;
+}
+
+function renderDescription() {
+  document.getElementById('descOutput').textContent = generateAIDescription();
+}
+
+function copyDescription() {
+  const text = generateAIDescription();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyDescBtn');
+    const original = '📋 複製 AI 表情描述';
+    btn.textContent = '✅ 已複製！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2200);
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ============ 初始化 ============
+buildControls();
 buildSelector();
-renderJSON();
-drawFace();
+refreshAllViews();
 </script>
 </body>
 </html>
