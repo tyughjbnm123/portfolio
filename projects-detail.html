@@ -350,6 +350,74 @@
         solution: "1. 需求盤點與資訊架構：完整梳理商品線與內容需求，規劃符合品牌調性的網站資訊架構與商品分類邏輯。\n2. 前台版型客製：在 Cyberbiz 平台限制內進行前台版型與購物流程客製調整。\n3. 上線前檢核：基礎 SEO 設定、內容整理與上線前的完整檢查流程。",
         results: "• 協助海外精品品牌建立台灣市場官方電商官網。\n• 累積 Cyberbiz 電商平台建置、CMS 後台管理、SEO 基礎設定與跨部門專案管理經驗。"
       },
+      "alain-crm": {
+        title: "ALAIN DUCASSE Taiwan｜LINE CRM Foundation & POS Integration",
+        category: "MARTECH_AUTOMATION",
+        heroImage: "assets/alain-crm.jpg",
+        stats: [
+          { label: "目前階段", value: "Phase 1" },
+          { label: "落地範圍", value: "Tag Taxonomy" },
+          { label: "Roadmap", value: "共 4 階段" }
+        ],
+        role: "MarTech / CRM Project Manager",
+        timeline: "2026 - 至今",
+        budget: "品牌 CRM 基礎建設專案",
+        background: "品牌既有 LINE OA 作為會員溝通入口，但不同社群、官網與活動來源尚未形成一致的會員識別與標籤管理邏輯，後續難以進一步進行分眾、再行銷與自動化 Journey。本專案先從導流來源追蹤（Tracked Entry Link）與 Tag Taxonomy 著手，建立可持續擴充的 CRM Data Foundation。",
+        challenge: "1. 不同入口加入 LINE 後，難以辨識會員來源。\\n2. 標籤缺乏一致命名規則，長期容易重複、失控。\\n3. 尚未建立「來源 → 興趣 → 行為 → 購買」的會員資料層級。\\n4. 後續若要串 POS 消費資料，需要先定義會員識別方式與 Data Mapping。",
+        solution: "1.【已落地 / Phase 1】為 Instagram、Facebook、Website、Campaign 等入口規劃專屬 Tracked Entry Link，讓 MAAC 可辨識來源並寫入對應 Tag；建立 source_、campaign_ 為主的 Tag Taxonomy，並訂出 category_value 命名規則。\\n2.【規劃中 / Phase 2-3】規劃 interest_、behavior_、member_、purchase_ 標籤延伸，以及 Segment Rule 與 Welcome Journey、Retargeting 等 Marketing Automation。\\n3.【評估中 / Phase 4】參與鳳新 POS × MAAC Open API 串接評估，盤點 Member ID / Phone / LINE UID 識別方式與 Transaction 資料 Mapping 需求。",
+        results: "• 建立可辨識會員來源的 CRM 基礎與一致的 Tag 命名邏輯。\\n• 將「導流」由單純加好友轉為可追蹤的會員資料來源。\\n• 為後續 Segment、Journey Automation 與 POS 資料整合預留架構。\\n• 目前僅 Phase 1（Data Foundation）已落地上線，Phase 2-4 為規劃／評估階段，尚未實作。"
+      },
+      "n8n-attendance": {
+        title: "n8n｜內部打卡系統與流程自動化",
+        category: "SYSTEM_AUTOMATION",
+        heroImage: "assets/n8n-attendance.jpg",
+        stats: [
+          { label: "觸發方式", value: "LINE Webhook" },
+          { label: "資料儲存", value: "Google Sheets" },
+          { label: "狀態管理", value: "3 種狀態" }
+        ],
+        role: "Workflow / Automation Designer",
+        timeline: "內部專案／持續維護",
+        budget: "內部工具專案，無外部預算",
+        background: "內部出勤流程需要降低人工紀錄與行政處理成本，因此以 n8n 建立可由 LINE 觸發的打卡與出勤管理 Workflow：LINE User → Webhook → User ID Validation → Action Detection（Clock In / Clock Out / Attendance Query / Missing Punch Request）→ Google Sheets → Response / Status Update。",
+        challenge: "1. 如何確認打卡者身份，避免只靠使用者輸入姓名。\\n2. 如何判斷上班、下班、查詢與補打卡等不同 Intent。\\n3. 補打卡流程需包含申請、審核、狀態更新與資料回寫。\\n4. Workflow 需考慮重複打卡、找不到員工、資料缺漏等異常情境。",
+        solution: "1. 使用 LINE User ID 作為身份識別依據，取代手動輸入姓名。\\n2. 透過 n8n 條件節點進行 Intent / Action 分流（上班、下班、查詢、補打卡）。\\n3. 以 Google Sheets 作為初期資料儲存與查詢來源。\\n4. 建立補打卡狀態機制，區分 Pending / Approved / Rejected。\\n5. 增加錯誤處理與防呆邏輯，處理重複打卡與資料缺漏情境。",
+        results: "• 將人工出勤紀錄轉為可追蹤的自動化 Workflow。\\n• 建立身份識別、條件判斷、資料寫入與狀態管理完整流程。\\n• 累積 Webhook、Data Mapping、Branch Logic 與 Error Handling 實務經驗。"
+      },
+      "mirror-shop-automation": {
+        title: "鏡好買｜電商訂單與供應商 Workflow Automation",
+        category: "SYSTEM_AUTOMATION",
+        heroImage: "assets/mirror-shop-automation.jpg",
+        stats: [
+          { label: "核心邏輯", value: "Supplier Routing" },
+          { label: "工具", value: "n8n" },
+          { label: "處理範圍", value: "訂單拆分與通知" }
+        ],
+        role: "Automation / Workflow PM",
+        timeline: "內部專案／持續維護",
+        budget: "內部工具專案，無外部預算",
+        background: "既有電商營運流程包含大量人工整理、訂單分類與通知作業，且不同供應商需接收不同訂單資訊，因此重新設計以供應商為核心的自動化 Workflow：Order Data → Parse Items → Supplier Mapping → Group by Supplier → Conditional Logic（供應商通知 / 消費者通知 / 異常處理）→ Status / Log。",
+        challenge: "1. 原流程偏商品單位處理，供應商收到資訊分散。\\n2. 同筆訂單可能包含不同供應商商品，需要拆分與 Routing。\\n3. 供應商與消費者通知條件不同。\\n4. 物流狀態、假日／工作日與異常情境需納入流程。\\n5. 必須避免重複通知、漏單或資料 Mapping 錯誤。",
+        solution: "1. Order Parsing：讀取訂單資料並拆解商品、數量、供應商與消費者資訊。\\n2. Supplier Routing：將訂單依供應商重新 Group，讓每個 Vendor 只收到自己的訂單內容。\\n3. Conditional Workflow：依訂單狀態、供應商、物流條件建立 Branch Logic。\\n4. Notification Automation：分別產生供應商與消費者通知內容。\\n5. Error Handling：針對缺少供應商資料、空值、異常訂單與重複執行建立防呆。",
+        results: "• 將原本人工分類流程轉為系統化 Workflow。\\n• 建立 Supplier-based Routing 與自動通知邏輯。\\n• 降低人工整理與重複操作。\\n• 累積 Order Data、Data Mapping、Loop／Branch、Notification Automation 與 Exception Handling 實務。"
+      },
+      "chc-health360-web": {
+        title: "中化健康 360｜自架品牌官網建置與網站移轉",
+        category: "PROJECT_MANAGEMENT",
+        heroImage: "assets/chc-health360.jpg",
+        stats: [
+          { label: "內容規模", value: "49 篇文章" },
+          { label: "產品數", value: "11 項" },
+          { label: "範疇", value: "全站移轉" }
+        ],
+        role: "Digital / Web Project Manager",
+        timeline: "內部專案／持續維護",
+        budget: "品牌官網建置專案",
+        background: "中化健康 360 既有網站需進行重建與內容移轉，專案需同時處理網站架構、既有內容、後台維護需求、SEO 資產延續與上線技術設定。",
+        challenge: "1. 既有網站內容量大，需要重新整理內容結構並避免移轉後資訊混亂。\\n2. 前台內容呈現與後台維護需求需同時考量。\\n3. 網站移轉需兼顧 DNS、301、GSC 與 SEO 資產延續。\\n4. FormWeb 與網站信箱需確認表單送出、收件與異常流程。\\n5. 專案涉及客戶、設計、前後端工程與外部系統，多方溝通成本高。",
+        solution: "1. Information Architecture：重新整理文章、產品與頁面層級，建立 Sitemap 與內容分類邏輯。\\n2. Requirement Translation：將客戶營運需求轉為前後台功能需求、內容維護流程與測試項目，協助工程師確認實作邏輯。\\n3. Form / Mail Flow：規劃網站聯絡表單、FormWeb 與信箱通知流程，並進行測試與異常情境確認。\\n4. Migration / Technical Setup：處理 DNS、Cloudflare、301 Redirect、Google Search Console、GA4 與基礎 SEO 設定。\\n5. QA / Go-live：執行前台、後台、表單與網址移轉測試，整理 Issue 並追蹤修正至正式上線。",
+        results: "• 完成 49 篇文章與 11 項產品內容之架構整理與移轉。\\n• 建立網站前後台需求與內容維護邏輯。\\n• 完成網站移轉、追蹤與搜尋資產相關設定。\\n• 累積完整 Web Project 從需求、工程協作、測試到 Go-live 經驗。"
+      },
       "panasonic-g9ii": {
         title: "Panasonic LUMIX G9II 體驗會全國巡迴",
         category: "PROJECT_MANAGEMENT",

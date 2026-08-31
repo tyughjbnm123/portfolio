@@ -249,7 +249,7 @@
         // 精選專案與實戰成果
       </h1>
       <p class="text-muted-foreground text-sm max-w-2xl">
-        這裡記錄了我歷年來主導的代表性專案，涵蓋旗艦產品巡迴、大型公關活動、自動化 Martech 工作流建置等。所有數據均為真實成果。
+        這裡記錄我從需求定義、系統規劃到實際落地的代表專案，涵蓋 Workflow Automation、CRM / MarTech、Web System、API Integration 與 0→1 商業專案。所有數據均為真實成果。
       </p>
     </div>
 
@@ -257,6 +257,9 @@
     <div class="flex flex-wrap gap-2">
       <button onclick="filterProjects('all')" id="filter-all" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-primary bg-primary/10 text-primary transition-all">
         [ ALL_PROJECTS ]
+      </button>
+      <button onclick="filterProjects('system')" id="filter-system" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">
+        [ SYSTEM_AUTOMATION ]
       </button>
       <button onclick="filterProjects('pm')" id="filter-pm" class="px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all">
         [ PROJECT_MANAGEMENT ]
@@ -268,28 +271,83 @@
 
     <!-- 作品集網格 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="projects-grid">
-      
-      <!-- 專案 1: S23U 手機租賃服務 -->
-      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="pm">
+      <!-- 專案: n8n 內部打卡系統 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="system">
         <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
-          <img src="assets/s23u-logo.jpg" alt="S23U 手機租賃服務 Logo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
+          <img src="assets/n8n-attendance.jpg" alt="n8n 內部打卡系統與流程自動化" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">SYSTEM_AUTOMATION</span>
         </div>
         <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
           <div class="space-y-2">
             <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
-              S23U 手機租賃服務
+              n8n｜內部打卡系統與流程自動化
             </h3>
             <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-              自主創業，鎖定演唱會與追星情境的高倍變焦攝影器材短期租賃需求，從 0 到 1 建立商業模式、預約流程與風控機制，10 個月完成回本。
+              使用 n8n 建立內部出勤 Workflow，串接 LINE Bot、Webhook 與 Google Sheets，完成員工識別、上下班打卡、補打卡審核、狀態追蹤與資料回寫。
             </p>
           </div>
           <div class="pt-4 border-t border-border/40 flex items-center justify-between">
             <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-              <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span>客訴率 0%</span>
+              <i data-lucide="workflow" class="w-4 h-4"></i>
+              <span>Workflow Automation</span>
             </div>
-            <a href="projects-detail.html?slug=s23u-rental" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+            <a href="projects-detail.html?slug=n8n-attendance" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <span>查看 Case Study</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 專案: 鏡好買 Workflow Automation -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="system">
+        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
+          <img src="assets/mirror-shop-automation.jpg" alt="鏡好買電商訂單與供應商 Workflow Automation" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">SYSTEM_AUTOMATION</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              鏡好買｜電商訂單與供應商 Workflow Automation
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              以 n8n 重構電商營運流程，依訂單與供應商資料自動分流，觸發供應商與消費者通知，降低人工整理與重複操作。
+            </p>
+          </div>
+          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+              <i data-lucide="route" class="w-4 h-4"></i>
+              <span>Order Routing Automation</span>
+            </div>
+            <a href="projects-detail.html?slug=mirror-shop-automation" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <span>查看 Case Study</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 專案 2.5: ALAIN DUCASSE LINE CRM Foundation -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="martech">
+        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
+          <img src="assets/alain-crm.jpg" alt="ALAIN DUCASSE LINE CRM Foundation" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">MARTECH_AUTOMATION</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              ALAIN DUCASSE Taiwan｜LINE CRM Foundation & POS Integration
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              規劃品牌 LINE OA × MAAC CRM 基礎架構，從導流來源追蹤、Tag Taxonomy、命名規則到後續 Segment / Journey Roadmap，並參與鳳新 POS × MAAC Open API 串接評估與資料需求盤點。
+            </p>
+          </div>
+          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+              <span>Phase 1 已落地</span>
+            </div>
+            <a href="projects-detail.html?slug=alain-crm" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
               <span>查看 Case Study</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </a>
@@ -325,6 +383,34 @@
         </div>
       </div>
 
+      <!-- 專案: 中化健康 360 網站建置與移轉 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="pm">
+        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
+          <img src="assets/chc-health360.jpg" alt="中化健康 360 自架官網建置與網站移轉" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              中化健康 360｜自架官網建置與網站移轉
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              負責中化健康 360 自架品牌官網建置與既有內容移轉，涵蓋資訊架構、Sitemap、前後台需求、FormWeb / Mail Flow、DNS / Cloudflare / 301、GA4、SEO、測試與正式上線。
+            </p>
+          </div>
+          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+              <i data-lucide="layout-template" class="w-4 h-4"></i>
+              <span>49 篇文章 / 11 項產品</span>
+            </div>
+            <a href="projects-detail.html?slug=chc-health360-web" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <span>查看 Case Study</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- 專案 3: Alain Ducasse 官網 -->
       <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="martech">
         <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
@@ -346,6 +432,34 @@
               <span>專案進行中</span>
             </div>
             <a href="projects-detail.html?slug=alain-ducasse" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
+              <span>查看 Case Study</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 專案 1: S23U 手機租賃服務 -->
+      <div class="project-card bg-card border border-border rounded-2xl overflow-hidden group shadow-lg hover:border-primary/40 transition-all flex flex-col h-full" data-category="pm">
+        <div class="relative aspect-[16/10] overflow-hidden border-b border-border">
+          <img src="assets/s23u-logo.jpg" alt="S23U 手機租賃服務 Logo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <span class="absolute top-3 left-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/70 text-primary border border-primary/20">PROJECT_MANAGEMENT</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <h3 class="font-bold text-lg font-mono text-foreground leading-snug group-hover:text-primary transition-colors">
+              S23U 手機租賃服務
+            </h3>
+            <p class="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+              自主創業，鎖定演唱會與追星情境的高倍變焦攝影器材短期租賃需求，從 0 到 1 建立商業模式、預約流程與風控機制，10 個月完成回本。
+            </p>
+          </div>
+          <div class="pt-4 border-t border-border/40 flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>客訴率 0%</span>
+            </div>
+            <a href="projects-detail.html?slug=s23u-rental" class="text-xs font-mono font-bold text-muted-foreground hover:text-primary transition-colors flex items-center space-x-1">
               <span>查看 Case Study</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </a>
@@ -482,11 +596,12 @@
     function filterProjects(category) {
       const cards = document.querySelectorAll('.project-card');
       const btnAll = document.getElementById('filter-all');
+      const btnSystem = document.getElementById('filter-system');
       const btnPm = document.getElementById('filter-pm');
       const btnMartech = document.getElementById('filter-martech');
 
       // 重設按鈕樣式
-      [btnAll, btnPm, btnMartech].forEach(btn => {
+      [btnAll, btnSystem, btnPm, btnMartech].forEach(btn => {
         btn.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold border border-border bg-card/20 text-muted-foreground hover:text-foreground transition-all";
       });
 
