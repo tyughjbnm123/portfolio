@@ -370,7 +370,8 @@
       "n8n-attendance": {
         title: "n8n｜內部打卡系統與流程自動化",
         category: "SYSTEM_AUTOMATION",
-        heroImage: "assets/n8n-attendance.jpg",
+        heroImage: "assets/n8n-attendance-architecture.png",
+        diagramImage: "assets/n8n-attendance-workflow.png",
         stats: [
           { label: "觸發方式", value: "LINE Webhook" },
           { label: "資料儲存", value: "Google Sheets" },
@@ -896,6 +897,8 @@
           </table>
         </div>
 
+        ${diagramMedia}
+
         <!-- 詳細 Case Study 內容 -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6">
           <!-- 左側 8 欄：詳細內容 -->
@@ -923,8 +926,6 @@
               </h2>
               <div class="space-y-2">${formatText(data.solution)}</div>
             </div>
-
-            ${diagramMedia}
           </div>
 
           <!-- 右側 4 欄：成果與影響 -->
