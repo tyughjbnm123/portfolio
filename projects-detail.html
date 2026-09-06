@@ -387,7 +387,8 @@
       "mirror-shop-automation": {
         title: "鏡好買｜電商訂單與供應商 Workflow Automation",
         category: "SYSTEM_AUTOMATION",
-        heroImage: "assets/mirror-shop-automation.jpg",
+        heroImage: "assets/mirror-shop-architecture.png",
+        diagramImage: "assets/mirror-shop-workflow.png",
         stats: [
           { label: "自動化模組", value: "4 個" },
           { label: "資料紀錄層", value: "n8n Data Table" },
@@ -840,6 +841,18 @@
              </div>
            </div>`;
 
+      const diagramMedia = data.diagramImage
+        ? `<div class="space-y-3">
+             <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
+               <span class="w-1.5 h-4 bg-primary rounded-full"></span>
+               <span>// 系統流程圖</span>
+             </h2>
+             <div class="rounded-xl border border-border overflow-hidden bg-card">
+               <img src="${data.diagramImage}" alt="${data.title} 系統流程圖" class="w-full h-auto">
+             </div>
+           </div>`
+        : '';
+
       container.innerHTML = `
         <!-- 專案大圖與標題 -->
         <div class="space-y-6">
@@ -910,6 +923,8 @@
               </h2>
               <div class="space-y-2">${formatText(data.solution)}</div>
             </div>
+
+            ${diagramMedia}
           </div>
 
           <!-- 右側 4 欄：成果與影響 -->
