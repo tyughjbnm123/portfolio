@@ -389,17 +389,17 @@
         category: "SYSTEM_AUTOMATION",
         heroImage: "assets/mirror-shop-automation.jpg",
         stats: [
-          { label: "核心邏輯", value: "Supplier Routing" },
-          { label: "工具", value: "n8n" },
-          { label: "處理範圍", value: "訂單拆分與通知" }
+          { label: "自動化模組", value: "4 個" },
+          { label: "資料紀錄層", value: "n8n Data Table" },
+          { label: "整合系統", value: "Cyberbiz + Sheets" }
         ],
         role: "Automation / Workflow PM",
         timeline: "內部專案／持續維護",
         budget: "內部工具專案，無外部預算",
-        background: "既有電商營運流程包含大量人工整理、訂單分類與通知作業，且不同供應商需接收不同訂單資訊，因此重新設計以供應商為核心的自動化 Workflow：Order Data → Parse Items → Supplier Mapping → Group by Supplier → Conditional Logic（供應商通知 / 消費者通知 / 異常處理）→ Status / Log。",
-        challenge: "1. 原流程偏商品單位處理，供應商收到資訊分散。\n2. 同筆訂單可能包含不同供應商商品，需要拆分與 Routing。\n3. 供應商與消費者通知條件不同。\n4. 物流狀態、假日／工作日與異常情境需納入流程。\n5. 必須避免重複通知、漏單或資料 Mapping 錯誤。",
-        solution: "1. Order Parsing：讀取訂單資料並拆解商品、數量、供應商與消費者資訊。\n2. Supplier Routing：將訂單依供應商重新 Group，讓每個 Vendor 只收到自己的訂單內容。\n3. Conditional Workflow：依訂單狀態、供應商、物流條件建立 Branch Logic。\n4. Notification Automation：分別產生供應商與消費者通知內容。\n5. Error Handling：針對缺少供應商資料、空值、異常訂單與重複執行建立防呆。",
-        results: "• 將原本人工分類流程轉為系統化 Workflow。\n• 建立 Supplier-based Routing 與自動通知邏輯。\n• 降低人工整理與重複操作。\n• 累積 Order Data、Data Mapping、Loop／Branch、Notification Automation 與 Exception Handling 實務。"
+        background: "鏡好買既有電商營運仰賴人工比對 Cyberbiz 訂單與供應商資料，容易發生通知延遲、標籤缺漏與物流回報斷點。以 n8n 建立正式自動化系統，串接 Cyberbiz Webhook／API、Google Sheet（營運總表、訂單列表、產品資訊列表）與 n8n Data Table，將訂單事件、排程健康檢查、供應商商品標籤與物流回寫整合為四個自動化模組。",
+        challenge: "1. Cyberbiz 即時訂單事件（付款／取消／退款）需要即時分流並通知對應供應商，避免人工延遲。\n2. 供應商、商品與訂單資料分散在多張 Google Sheet，需要建立一致的比對與回填邏輯，例如商品標籤與 Cyberbiz 商品 ID 對照。\n3. 供應商回報出貨仰賴人工填寫 Google Sheet，需要機制定時偵測「確認出貨」狀態並觸發後續 API 呼叫。\n4. 需要區分正式排程健康檢查與即時事件處理，避免兩種流程互相干擾或重複觸發。\n5. 異常情境（標籤缺漏、供應商對照不到、出貨 API 錯誤）需要明確的通知與紀錄機制。",
+        solution: "1. 訂單事件整合（Cyberbiz Webhook）：依 paid／cancelled／refunded 三種事件即時分流，觸發對應供應商 Email 通知，並將執行紀錄 Upsert 至 n8n Data Table（Webhook Log）與 Google Sheet 訂單列表。\n2. 排程更新與健康檢查（Schedule Trigger）：定時取得所有訂單、更新狀態、比對供應商主檔，並將缺漏與異常整理成健康檢查 Email 報告。\n3. 供應商主檔與商品標籤管理：同步 Google Sheet 營運總表與 n8n Data Table 供應商對照，每日檢查商品供應商標籤並回填 Cyberbiz 商品 ID，標籤異常另發送報告 Email。\n4. 物流資料接收與出貨回寫：供應商於 Google Sheet 訂單列表填寫物流資料並標記「確認出貨」，Google Apps Script 定時掃描並觸發 n8n Webhook，呼叫 Cyberbiz 出貨 API 後將結果回寫 Google Sheet 並發送內部通知。",
+        results: "• 建立涵蓋訂單事件、排程健康檢查、供應商商品標籤與物流回寫的 4 個自動化模組。\n• 以 n8n Data Table 與 3 張 Google Sheet（營運總表、訂單列表、產品資訊列表）分工管理不同資料類型，取代原本仰賴人工比對的流程。\n• 建立標籤缺漏、供應商對照失敗與出貨異常的自動通知機制。\n• 系統依技術交接文件建立並持續核對中，排程時間與部分欄位規格仍在確認與優化。"
       },
       "chc-health360-web": {
         title: "中化健康 360｜自架品牌官網建置與網站移轉",
