@@ -3,173 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FACS 臉部表情控制器</title>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: #0d1117;
-  color: #c9d1d9;
-  min-height: 100vh;
-  padding: 1rem;
-}
-.app-header {
-  text-align: center;
-  padding: 0.8rem 0 1.2rem;
-  border-bottom: 1px solid #30363d;
-  margin-bottom: 1.2rem;
-}
-.app-title { font-size: 16px; font-weight: 700; color: #3fb950; font-family: monospace; letter-spacing: 0.05em; }
-.app-sub { font-size: 11px; color: #484f58; margin-top: 3px; font-family: monospace; }
+<title>表情控制器｜郭奕圻的工具房</title>
+<link rel="stylesheet" href="assets/facs-tool.css">
+<link rel="stylesheet" href="assets/site-theme.css"><script src="assets/site-shell.js"></script></head>
+<body class="yk-tool-page" data-tool-page="facs-tool">
 
-.main-grid {
-  display: grid;
-  grid-template-columns: 210px 1fr 270px;
-  gap: 1rem;
-  max-width: 1040px;
-  margin: 0 auto;
-}
-
-.panel {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 10px;
-  padding: 12px;
-}
-.panel-label {
-  font-size: 10px; color: #3fb950; font-family: monospace;
-  letter-spacing: 0.1em; margin-bottom: 10px;
-  display: flex; align-items: center; gap: 5px;
-}
-.panel-label::before { content: '▶'; font-size: 8px; }
-
-/* Face selector */
-.face-selector {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  margin-bottom: 10px;
-}
-.face-opt {
-  aspect-ratio: 3/4;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.15s;
-  background: #0d1117;
-  overflow: hidden;
-}
-.face-opt:hover { border-color: #3fb950; }
-.face-opt.active { border-color: #3fb950; border-width: 2px; background: rgba(63,185,80,0.06); }
-.face-opt-canvas-wrap {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.face-opt-canvas-wrap canvas,
-.face-opt-canvas-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.face-opt-label {
-  flex-shrink: 0;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9.5px;
-  color: #9099a3;
-  font-family: monospace;
-  border-top: 1px solid #21262d;
-  background: #0d1117;
-}
-.face-opt:focus-visible, .preset-btn:focus-visible, .intensity-btn:focus-visible,
-.ctrl-slider:focus-visible, .copy-btn:focus-visible, .reset-btn:focus-visible,
-.tab-btn:focus-visible, .adv-toggle:focus-visible {
-  outline: 2px solid #3fb950; outline-offset: 2px;
-}
-
-/* Main preview */
-.face-canvas-wrap {
-  background: #0d1117;
-  border: 1px solid #21262d;
-  border-radius: 8px;
-  aspect-ratio: 3/4;
-  position: relative;
-  overflow: hidden;
-}
-canvas#faceCanvas, img#facePhoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.face-hidden { display: none !important; }
-.face-note { font-size: 9px; color: #484f58; text-align: center; margin-top: 6px; font-family: monospace; line-height: 1.4; }
-
-/* Controls */
-.controls-panel { overflow-y: auto; max-height: 640px; }
-.ctrl-group { margin-bottom: 12px; }
-.ctrl-group-title { font-size: 10px; color: #3fb950; font-family: monospace; letter-spacing: 0.08em; margin-bottom: 7px; padding-bottom: 3px; border-bottom: 1px solid #21262d; }
-.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap; }
-.ctrl-label { font-size: 10px; color: #8b949e; width: 90px; flex-shrink: 0; font-family: monospace; }
-.ctrl-slider { flex: 1; min-width: 60px; height: 3px; -webkit-appearance: none; appearance: none; background: #21262d; border-radius: 2px; outline: none; cursor: pointer; }
-.ctrl-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #3fb950; cursor: pointer; }
-.ctrl-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #3fb950; cursor: pointer; border: none; }
-.ctrl-val { font-size: 10px; font-family: monospace; color: #ffa657; width: 24px; text-align: right; flex-shrink: 0; }
-.ctrl-intensity { font-size: 8.5px; font-family: monospace; color: #484f58; width: 100%; text-align: right; padding-right: 26px; margin-bottom: 4px; }
-
-.preset-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
-.preset-btn { font-size: 10px; font-family: monospace; padding: 3px 8px; border-radius: 4px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
-.preset-btn:hover { border-color: #3fb950; color: #3fb950; }
-.preset-btn.active { background: #3fb950; color: #0d1117; border-color: #3fb950; font-weight: 700; }
-
-.intensity-row { display: flex; gap: 5px; margin-bottom: 12px; }
-.intensity-btn { flex: 1; font-size: 10px; font-family: monospace; padding: 4px 6px; border-radius: 4px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
-.intensity-btn:hover { border-color: #ffa657; color: #ffa657; }
-.intensity-btn.active { background: #ffa657; color: #0d1117; border-color: #ffa657; font-weight: 700; }
-
-.reset-btn { width: 100%; padding: 5px; background: transparent; border: 1px solid #30363d; border-radius: 6px; color: #484f58; font-family: monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; margin-top: 4px; }
-.reset-btn:hover { border-color: #f97583; color: #f97583; }
-
-/* Output tabs */
-.tab-row { display: flex; gap: 4px; margin-bottom: 8px; }
-.tab-btn { flex: 1; font-size: 10px; font-family: monospace; padding: 6px 4px; border-radius: 5px; border: 1px solid #30363d; background: transparent; color: #8b949e; cursor: pointer; transition: all 0.15s; }
-.tab-btn:hover { border-color: #3fb950; color: #3fb950; }
-.tab-btn.active { background: rgba(63,185,80,0.12); color: #3fb950; border-color: #3fb950; font-weight: 700; }
-.tab-panel { display: none; }
-.tab-panel.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-
-.json-output { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 8px; font-family: monospace; font-size: 10px; color: #8b949e; flex: 1; overflow-y: auto; white-space: pre; line-height: 1.6; max-height: 340px; }
-.json-key { color: #79c0ff; }
-.json-num { color: #ffa657; }
-.json-str { color: #a5d6ff; }
-
-.desc-output { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 10px; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 12px; color: #c9d1d9; flex: 1; overflow-y: auto; line-height: 1.75; max-height: 340px; }
-
-.adv-toggle { margin-top: 8px; font-size: 9.5px; font-family: monospace; color: #484f58; background: transparent; border: 1px solid #21262d; border-radius: 6px; padding: 5px 8px; cursor: pointer; width: 100%; text-align: left; }
-.adv-toggle:hover { color: #8b949e; }
-.adv-content { display: none; margin-top: 6px; font-size: 9.5px; font-family: monospace; color: #6b7280; background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 7px; line-height: 1.6; }
-.adv-content.show { display: block; }
-
-.copy-btn { margin-top: 8px; padding: 7px; background: #3fb950; color: #0d1117; border: none; border-radius: 6px; font-family: monospace; font-size: 11px; font-weight: 700; cursor: pointer; width: 100%; }
-.copy-btn:hover { background: #2ea043; }
-.copy-btn.copied { background: #1f6feb; color: white; }
-.usage-hint { margin-top: 8px; font-size: 10px; color: #484f58; font-family: monospace; line-height: 1.7; padding: 7px; background: #0d1117; border-radius: 6px; border: 1px solid #21262d; }
-.protocol-note { font-size: 9.5px; color: #58606b; font-family: monospace; line-height: 1.6; margin-bottom: 8px; padding: 6px 8px; background: rgba(255,166,87,0.06); border-left: 2px solid #ffa657; border-radius: 0 4px 4px 0; }
-
-@media (max-width: 700px) {
-  .main-grid { grid-template-columns: 1fr; }
-  .controls-panel { max-height: none; }
-}
-</style>
-</head>
-<body>
-
-<div class="app-header">
-  <a href="tools.html" style="display:inline-block;margin-bottom:0.6rem;font-family:monospace;font-size:11px;color:#8b949e;text-decoration:none;border:1px solid #30363d;border-radius:6px;padding:4px 10px;">&larr; 回到工具總覽</a>
-  <div class="app-title">🎭 FACS 臉部表情控制器 v1.1</div>
-  <div class="app-sub">FACIAL ACTION CODING SYSTEM // 調整臉部動作，建立表情參數</div>
-</div>
-
-<div class="main-grid">
+<a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" aria-current="page"><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html"><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html"><span>07</span>廣告分鏡工作台</a></nav><main id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 02 — EXPRESSION LAB</p><h1>表情控制器</h1><p class="yk-tool-description">選擇角色、調整臉部動作，把表情轉成可用的描述。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>02</b></span></div><a class="yk-storyboard-link" href="ad-storyboard.html">試用整合版：把動作、表情與運鏡放進廣告分鏡工作台 ↗</a><div class="main-grid">
 
   <!-- LEFT: Face selector + preview -->
   <div class="panel" style="display:flex;flex-direction:column;gap:10px;">
@@ -257,7 +96,7 @@ canvas#faceCanvas, img#facePhoto { position: absolute; inset: 0; width: 100%; he
 
 </div>
 
-<script>
+</main><script>
 // ============ AU 定義：名稱、分組 ============
 const AU_INFO = {
   AU1:  { name: '內眉上抬',   group: 'brow'  },
@@ -899,5 +738,5 @@ buildControls();
 buildSelector();
 refreshAllViews();
 </script>
-</body>
+<footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer></body>
 </html>

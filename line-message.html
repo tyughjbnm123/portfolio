@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LINE 訊息編排器｜郭奕圻的工具房</title>
+  <meta name="description" content="編排 LINE 商品卡片與輪播訊息，即時預覽、加入 UTM 並匯出 Flex Message JSON。">
+  <link rel="stylesheet" href="assets/site-theme.css"><link rel="stylesheet" href="assets/line-message.css">
+  <script src="assets/site-shell.js"></script><script defer src="assets/line-message-core.js"></script><script defer src="assets/line-message.js"></script>
+</head>
+<body class="yk-tool-page" data-tool-page="line-message">
+  <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" ><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html" aria-current="page"><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html"><span>07</span>廣告分鏡工作台</a></nav>
+  <main id="tool-workspace">
+    <div class="yk-tool-heading lc-heading">
+      <div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 06 — MESSAGE STUDIO</p><h1>LINE 訊息編排器</h1><p class="yk-tool-description">把圖片、文案與連結，編成一則想點開的訊息。</p></div>
+      <a class="lc-guide-link" href="#lc-export">匯出訊息 ↗</a>
+    </div>
+    <noscript><p class="lc-alert">請開啟 JavaScript，才能使用編輯與即時預覽功能。</p></noscript>
+    <div class="lc-workbench">
+      <section class="lc-editor" aria-label="編輯訊息">
+        <div class="lc-editor-top"><div><span class="lc-overline">YOUR MESSAGE</span><h2>編排卡片 <span id="card-count">1 / 12</span></h2></div><button type="button" class="lc-button" id="add-card">＋ 新增卡片</button></div>
+        <div class="lc-card-strip" id="card-strip" role="group" aria-label="選擇要編輯的卡片"></div>
+        <div class="lc-card-tools"><p id="editing-label">正在編輯第 1 張</p><div><button type="button" class="lc-icon-button" id="move-left" aria-label="卡片往前移">←</button><button type="button" class="lc-icon-button" id="move-right" aria-label="卡片往後移">→</button><button type="button" class="lc-text-button" id="duplicate-card">複製卡片</button><button type="button" class="lc-text-button" id="delete-card">刪除</button></div></div>
+        <div class="lc-tabs" role="tablist" aria-label="編輯項目"><button type="button" role="tab" id="tab-content" aria-selected="true" aria-controls="panel-content" data-panel="content">01 內容</button><button type="button" role="tab" id="tab-style" aria-selected="false" aria-controls="panel-style" data-panel="style" tabindex="-1">02 版型</button><button type="button" role="tab" id="tab-links" aria-selected="false" aria-controls="panel-links" data-panel="links" tabindex="-1">03 按鈕與追蹤</button></div>
+        <form id="composer-form" novalidate>
+          <section id="panel-content" role="tabpanel" aria-labelledby="tab-content" class="lc-form-panel">
+            <div class="lc-template-row"><span>套用至這張</span><button type="button" data-template="product">商品介紹</button><button type="button" data-template="event">活動邀請</button><button type="button" data-template="notice">純文字公告</button></div>
+            <div class="lc-field"><label for="card-eyebrow">小標籤 <span>選填</span></label><input id="card-eyebrow" data-card="eyebrow" maxlength="2000" placeholder="例：本週精選、會員專屬"></div>
+            <div class="lc-field"><label for="card-title">卡片標題 <span class="lc-required">必填</span></label><input id="card-title" data-card="title" maxlength="2000" placeholder="寫下一眼能看懂的主題" required></div>
+            <div class="lc-field"><label for="card-description">內文 <span>可換行</span></label><textarea id="card-description" data-card="description" maxlength="2000" rows="4" placeholder="介紹商品、活動或想分享的消息"></textarea></div>
+            <div class="lc-field"><label for="card-detail">重點資訊 <span>選填</span></label><input id="card-detail" data-card="detail" maxlength="2000" placeholder="例：NT$ 890 ／ 10.15 台北場"></div>
+          </section>
+          <section id="panel-style" role="tabpanel" aria-labelledby="tab-style" class="lc-form-panel" hidden>
+            <div class="lc-field"><label for="card-image">圖片網址 <span>留空可做純文字卡片</span></label><input id="card-image" data-card="image" type="url" maxlength="2000" placeholder="https://example.com/product.jpg" aria-describedby="image-help image-status"><p class="lc-help" id="image-help">使用免登入、可公開讀取的 HTTPS 圖片直連（JPEG／PNG）。</p><p id="image-status" class="lc-help" aria-live="polite"></p></div>
+            <div class="lc-field-row"><div class="lc-field"><label for="card-ratio">圖片比例</label><select id="card-ratio" data-card="ratio"><option value="20:13">橫式 20:13</option><option value="1:1">正方形 1:1</option><option value="16:9">寬幅 16:9</option><option value="4:3">橫式 4:3</option></select></div><div class="lc-field"><label for="card-fit">圖片呈現</label><select id="card-fit" data-card="fit"><option value="cover">填滿畫面（裁切）</option><option value="contain">保留完整圖片</option></select></div></div>
+            <div class="lc-section-rule"></div>
+            <div class="lc-field"><label for="message-accent">訊息主色 <span>套用全部卡片</span></label><div class="lc-color-row"><div class="lc-swatches" role="group" aria-label="主色選擇"><button type="button" data-color="#536F35" style="--swatch:#536F35" aria-label="森林綠" aria-pressed="true"></button><button type="button" data-color="#176B59" style="--swatch:#176B59" aria-label="深青綠" aria-pressed="false"></button><button type="button" data-color="#2D5B91" style="--swatch:#2D5B91" aria-label="靛藍" aria-pressed="false"></button><button type="button" data-color="#7B506B" style="--swatch:#7B506B" aria-label="莓紫" aria-pressed="false"></button><button type="button" data-color="#333B36" style="--swatch:#333B36" aria-label="石墨灰" aria-pressed="false"></button></div><input id="message-accent" value="#536F35" maxlength="7" autocomplete="off" spellcheck="false" aria-label="自訂六碼色碼"></div><p class="lc-help">主色會用在標籤、重點文字與按鈕；選深色可保持白色按鈕文字清晰。</p></div>
+          </section>
+          <section id="panel-links" role="tabpanel" aria-labelledby="tab-links" class="lc-form-panel" hidden>
+            <fieldset><legend>主要按鈕</legend><div class="lc-field-row lc-link-row"><div class="lc-field"><label for="card-button1Label">按鈕文字 <span>最多 40 字</span></label><input id="card-button1Label" data-card="button1Label" maxlength="40" placeholder="例：立即選購"></div><div class="lc-field"><label for="card-button1Url">前往網址</label><input id="card-button1Url" data-card="button1Url" type="url" placeholder="https://..."></div></div></fieldset>
+            <fieldset><legend>第二個按鈕 <span>選填；兩欄留空即可移除</span></legend><div class="lc-field-row lc-link-row"><div class="lc-field"><label for="card-button2Label">按鈕文字</label><input id="card-button2Label" data-card="button2Label" maxlength="40" placeholder="例：了解更多"></div><div class="lc-field"><label for="card-button2Url">前往網址</label><input id="card-button2Url" data-card="button2Url" type="url" placeholder="https://..."></div></div></fieldset>
+            <div class="lc-section-rule"></div>
+            <label class="lc-toggle" for="utm-enabled"><input id="utm-enabled" type="checkbox"><span>加入 UTM 追蹤參數<small>套用全部卡片的按鈕連結</small></span></label>
+            <div id="utm-fields" hidden><div class="lc-field-row"><div class="lc-field"><label for="utm-source">來源</label><input id="utm-source" data-tracking="source" placeholder="line"></div><div class="lc-field"><label for="utm-medium">媒介</label><input id="utm-medium" data-tracking="medium" placeholder="social"></div></div><div class="lc-field"><label for="utm-campaign">活動名稱</label><input id="utm-campaign" data-tracking="campaign" placeholder="例：2026_autumn"></div><div class="lc-field"><label for="utm-content">素材識別前綴 <span>選填</span></label><input id="utm-content" data-tracking="content" placeholder="例：member"><p class="lc-help">自動附加卡片與按鈕序號，方便比較不同入口的成效。既有同名 UTM 參數會更新。</p></div></div>
+            <div class="lc-link-results" id="link-results"></div>
+          </section>
+        </form>
+        <div class="lc-notification"><label for="message-alt">通知摘要 <span id="alt-count">0 / 1500</span></label><textarea id="message-alt" maxlength="1500" rows="2" placeholder="顧客在 LINE 通知與聊天列表會看到的文字" aria-describedby="alt-help"></textarea><p id="alt-help" class="lc-help">顯示於通知與聊天列表，不會加在卡片內。</p></div>
+      </section>
+      <aside class="lc-preview" aria-label="手機訊息預覽">
+        <div class="lc-preview-head"><span><i></i> 即時預覽</span><span id="preview-format">單張卡片</span></div>
+        <div class="lc-phone">
+          <div class="lc-phone-top"><span aria-hidden="true">‹</span><strong>你的品牌</strong><span aria-hidden="true">☰</span></div>
+          <div class="lc-chat-date">訊息預覽</div>
+          <div class="lc-chat-label"><span class="lc-avatar" aria-hidden="true">B</span><span>你的品牌<small>範例官方帳號</small></span></div>
+          <div class="lc-phone-viewport" id="phone-cards" tabindex="0" aria-label="左右捲動查看輪播卡片"></div>
+          <div class="lc-preview-pagination" id="preview-pagination" role="group" aria-label="選擇預覽卡片"></div>
+          <div class="lc-chat-input" aria-hidden="true"><span>＋</span><span>輸入訊息</span><span>☺</span></div>
+        </div>
+        <p class="lc-preview-note">此為版面示意；實際字型、換行與高度依 LINE 裝置而異。</p>
+        <p id="preview-action" class="lc-action-result" aria-live="polite" hidden></p>
+        <a class="lc-simulator-link" href="https://developers.line.biz/flex-simulator/" target="_blank" rel="noopener noreferrer">在 LINE 官方模擬器確認 ↗</a>
+      </aside>
+    </div>
+    <section id="lc-export" class="lc-export" aria-labelledby="export-title">
+      <div class="lc-export-head"><div><span class="lc-overline">READY TO USE</span><h2 id="export-title">帶走你的訊息</h2></div><span id="validation-status" role="status">正在建立訊息…</span></div>
+      <ul id="validation-errors" class="lc-errors" hidden></ul>
+      <div class="lc-export-bar"><div class="lc-segment" role="group" aria-label="選擇匯出格式"><button type="button" data-output="message" aria-pressed="true">完整訊息</button><button type="button" data-output="contents" aria-pressed="false">模擬器版型</button></div><div class="lc-export-actions"><button class="lc-button" type="button" id="download-json">下載 JSON</button><button class="lc-button lc-primary" type="button" id="copy-json">複製 JSON ↗</button></div></div>
+      <p class="lc-help" id="output-help">完整訊息可放入 Messaging API 的 messages 陣列；此工具不會發送訊息。</p>
+      <p class="lc-help">編輯內容保留在目前頁面，重新整理前請先下載 JSON。</p>
+      <details class="lc-code-details"><summary>查看 JSON <span id="json-size"></span></summary><pre id="json-output" tabindex="0" aria-label="產生的 JSON"></pre></details>
+      <p class="lc-reference">依 <a href="https://developers.line.biz/en/reference/messaging-api/nojs/#flex-message" target="_blank" rel="noopener noreferrer">LINE Flex Message 規格</a>檢查文字、網址與容量；實際發送前仍需在 LINE 平台驗證。</p>
+    </section>
+  </main>
+  <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer>
+  <div class="lc-toast" id="lc-toast" role="status" aria-live="polite"></div>
+</body>
+</html>
