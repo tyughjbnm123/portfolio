@@ -1,0 +1,37 @@
+html[data-theme] {
+  --background:var(--yk-bg);--foreground:var(--yk-ink);--primary:var(--yk-accent);--primary-foreground:var(--yk-on-accent);--secondary:var(--yk-soft);--secondary-foreground:var(--yk-ink);--muted:var(--yk-soft);--muted-foreground:var(--yk-muted);--accent:var(--yk-accent);--accent-foreground:var(--yk-on-accent);--card:var(--yk-surface);--card-foreground:var(--yk-ink);--border:var(--yk-line);--ring:var(--yk-accent)
+}
+body[data-content-page] {background-image:none;padding:0 32px;font-family:var(--yk-font);font-size:16px;line-height:1.75}
+body[data-content-page] *,body[data-content-page] *::before,body[data-content-page] *::after {box-sizing:border-box}
+body[data-content-page]>.yk-site-nav {width:100%;flex-shrink:0}
+body[data-content-page] .yk-content-nav {width:100%;max-width:1320px;margin:20px auto 0;display:flex;flex-wrap:wrap;gap:7px;font:14px/1.4 var(--yk-font)}
+.yk-content-nav a {display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;color:var(--yk-muted);text-decoration:none;border:1px solid transparent;transition:background .25s,color .25s,transform .25s}
+.yk-content-nav a span {font-size:11px;opacity:.65}
+.yk-content-nav a:hover {background:var(--yk-soft);color:var(--yk-ink);transform:translateY(-2px)}
+.yk-content-nav a[aria-current=page] {background:var(--yk-ink);color:var(--yk-bg);border-color:var(--yk-ink)}
+body[data-content-page] .font-mono {font-family:var(--yk-font)}
+body[data-content-page] main {max-width:1320px;width:100%;padding:45px 0 60px}
+body[data-content-page] .rounded-xl,body[data-content-page] .rounded-2xl {border-radius:18px}
+body[data-content-page] .bg-card {box-shadow:none}
+body[data-content-page] h1 {font-size:clamp(28px,3vw,38px);line-height:1.4;font-weight:500!important;letter-spacing:-.03em!important}
+body[data-content-page] h2 {font-weight:500;letter-spacing:-.02em}
+body[data-content-page] main :is(p,li),body[data-content-page] #case-study-container .leading-relaxed {font-size:16px;line-height:1.85}
+body[data-content-page] main .text-xs {font-size:13px}
+body[data-content-page] main .text-\[10px\] {font-size:12px}
+body[data-content-page] .yk-content-intro {max-width:850px;text-align:left}
+body[data-content-page] .yk-content-intro>div:first-child {padding:0;border:0;background:none;font-size:11px;letter-spacing:.11em}
+body[data-content-page] .yk-content-intro>div:first-child svg {width:6px;height:6px;border-radius:50%;background:var(--yk-accent);stroke:none;animation:yk-breathe 3s ease-in-out infinite}
+body[data-content-page] .yk-content-intro h1 {margin-top:12px}
+body[data-content-page] .project-card {transition:transform .3s,border-color .3s,box-shadow .3s;background:var(--yk-surface)}
+body[data-content-page] .project-card>div:first-child>span {color:#eef1e6;background:#1b2820e6;border-color:transparent;font-weight:500}
+.yk-case-title {max-width:1000px}
+.yk-case-title>span {letter-spacing:.1em}
+.yk-case-hero {aspect-ratio:21/9;overflow:hidden;border:1px solid var(--yk-line);border-radius:18px;background:var(--yk-surface)}
+.yk-case-hero img {opacity:1}
+.yk-case-hero[data-case-kind=SYSTEM_AUTOMATION] img {object-fit:contain}
+body[data-content-page] button[id^=filter-] {font-size:14px;font-weight:400;border-radius:999px;min-height:40px;padding:9px 18px}
+body[data-content-page] footer {background:transparent;width:100%;max-width:1320px;margin:40px auto 0;padding:28px 0}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){body[data-content-page] .project-card:hover {transform:translateY(-5px);border-color:var(--yk-accent);box-shadow:var(--yk-shadow)}}
+@media(prefers-reduced-motion:reduce){.yk-content-nav a,body[data-content-page] .project-card {transition:none}.yk-content-nav a:hover {transform:none}}
+body[data-content-page] :is(a,button):focus-visible {outline:2px solid var(--yk-accent);outline-offset:4px}
+@media(max-width:700px){body[data-content-page]{padding:0 18px}body[data-content-page] main{padding-top:30px}.yk-content-nav a{padding:9px 12px}body[data-content-page] #case-study-container th{width:100px;padding:12px}body[data-content-page] #case-study-container td{padding:12px;overflow-wrap:anywhere}}
