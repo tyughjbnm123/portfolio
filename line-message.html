@@ -31,7 +31,8 @@
           </section>
           <section id="panel-style" role="tabpanel" aria-labelledby="tab-style" class="lc-form-panel" hidden>
             <div class="lc-field"><label for="card-image">圖片網址 <span>留空可做純文字卡片</span></label><input id="card-image" data-card="image" type="url" maxlength="2000" placeholder="https://example.com/product.jpg" aria-describedby="image-help image-status"><p class="lc-help" id="image-help">使用免登入、可公開讀取的 HTTPS 圖片直連（JPEG／PNG）。</p><p id="image-status" class="lc-help" aria-live="polite"></p></div>
-            <div class="lc-field-row"><div class="lc-field"><label for="card-ratio">圖片比例</label><select id="card-ratio" data-card="ratio"><option value="20:13">橫式 20:13</option><option value="1:1">正方形 1:1</option><option value="16:9">寬幅 16:9</option><option value="4:3">橫式 4:3</option></select></div><div class="lc-field"><label for="card-fit">圖片呈現</label><select id="card-fit" data-card="fit"><option value="cover">填滿畫面（裁切）</option><option value="contain">保留完整圖片</option></select></div></div>
+            <div class="lc-field-row"><div class="lc-field"><label for="card-ratio">圖片比例</label><select id="card-ratio" data-card="ratio"><option value="20:13">橫式 20:13</option><option value="1:1">正方形 1:1</option><option value="16:9">寬幅 16:9</option><option value="4:3">橫式 4:3</option><option value="4:5">直式 4:5</option><option value="9:16">直式 9:16</option></select></div><div class="lc-field"><label for="card-fit">圖片呈現</label><select id="card-fit" data-card="fit"><option value="cover">填滿畫面（裁切）</option><option value="contain">保留完整圖片</option></select></div></div>
+            <p id="image-size-help" class="lc-help lc-size-help">圖片建議 1000 × 1000 px。</p>
             <div class="lc-section-rule"></div>
             <div class="lc-field"><label for="message-accent">訊息主色 <span>套用全部卡片</span></label><div class="lc-color-row"><div class="lc-swatches" role="group" aria-label="主色選擇"><button type="button" data-color="#536F35" style="--swatch:#536F35" aria-label="森林綠" aria-pressed="true"></button><button type="button" data-color="#176B59" style="--swatch:#176B59" aria-label="深青綠" aria-pressed="false"></button><button type="button" data-color="#2D5B91" style="--swatch:#2D5B91" aria-label="靛藍" aria-pressed="false"></button><button type="button" data-color="#7B506B" style="--swatch:#7B506B" aria-label="莓紫" aria-pressed="false"></button><button type="button" data-color="#333B36" style="--swatch:#333B36" aria-label="石墨灰" aria-pressed="false"></button></div><input id="message-accent" value="#536F35" maxlength="7" autocomplete="off" spellcheck="false" aria-label="自訂六碼色碼"></div><p class="lc-help">主色會用在標籤、重點文字與按鈕；選深色可保持白色按鈕文字清晰。</p></div>
           </section>
@@ -48,6 +49,7 @@
       </section>
       <aside class="lc-preview" aria-label="手機訊息預覽">
         <div class="lc-preview-head"><span><i></i> 即時預覽</span><span id="preview-format">單張卡片</span></div>
+        <p id="preview-image-size" class="lc-preview-dimensions">圖片框 280 × 280 px · 1:1</p>
         <div class="lc-phone">
           <div class="lc-phone-top"><span aria-hidden="true">‹</span><strong>你的品牌</strong><span aria-hidden="true">☰</span></div>
           <div class="lc-chat-date">訊息預覽</div>

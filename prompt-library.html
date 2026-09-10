@@ -262,6 +262,9 @@
     let selectedTag = "全部";
     let toastTimer = null;
     let currentImageData = "";
+    let loadState = "loading";
+    let loadError = "";
+    let loadVersion = 0;
 
     function createId() {
       if (window.crypto && typeof window.crypto.randomUUID === "function") {
@@ -271,21 +274,19 @@
     }
 
     async function loadPrompts() {
-      try {
         const { db, doc, getDoc } = window.__firebase;
         const snap = await getDoc(doc(db, "promptLibrary", "data"));
         if (!snap.exists()) return [];
         const data = snap.data();
         const items = Array.isArray(data.prompts) ? data.prompts : [];
         return items.map(normalizePrompt).filter(Boolean);
-      } catch (error) {
-        console.warn("Failed to load prompts:", error);
-        showToast("讀取雲端資料失敗，請檢查網路連線後重新整理頁面。");
-        return [];
-      }
     }
 
     async function savePrompts() {
+      if (loadState !== "ready" || !window.__isLoggedIn) {
+        showToast("請先登入並成功讀取資料，再進行修改。");
+        return false;
+      }
       try {
         const { db, doc, setDoc } = window.__firebase;
         await setDoc(doc(db, "promptLibrary", "data"), {
@@ -443,8 +444,8 @@
     }
 
     function renderStats() {
-      elements.promptCount.textContent = prompts.length;
-      elements.tagCount.textContent = getAllTags().length;
+      elements.promptCount.textContent = loadState === "ready" ? prompts.length : "—";
+      elements.tagCount.textContent = loadState === "ready" ? getAllTags().length : "—";
     }
 
     function renderTagFilters() {
@@ -457,6 +458,12 @@
     }
 
     function renderList() {
+      if (loadState !== "ready") {
+        elements.list.innerHTML = loadState === "error"
+          ? `<div class="empty" role="alert"><strong>指令庫暫時無法讀取</strong><span>${escapeHtml(loadError)}</span><button class="button" type="button" data-retry>重新讀取</button></div>`
+          : '<div class="empty" role="status"><strong>正在讀取指令庫…</strong><span>完成後即可搜尋與複製。</span></div>';
+        return;
+      }
       const visiblePrompts = getFilteredPrompts();
 
       if (!visiblePrompts.length) {
@@ -464,7 +471,7 @@
         elements.list.innerHTML = `
           <div class="empty">
             <strong>${hasData ? "沒有符合條件的指令" : "還沒有儲存任何指令"}</strong>
-            <span>${hasData ? "試著清除搜尋字或切換標籤。" : "先在左側新增第一則 prompt。"}</span>
+            <span>${hasData ? "試著清除搜尋字或切換標籤。" : window.__isLoggedIn ? "可使用新增指令表單建立第一則內容。" : "目前尚未有可瀏覽的內容。"}</span>
           </div>
         `;
         return;
@@ -755,6 +762,10 @@
     });
 
     elements.list.addEventListener("click", event => {
+      if (event.target.closest("[data-retry]")) {
+        startAppOnFirebaseReady();
+        return;
+      }
       const button = event.target.closest("[data-action]");
       const card = event.target.closest(".prompt-card");
       if (!button || !card) return;
@@ -772,25 +783,54 @@
       if (action === "delete") deletePrompt(prompt);
     });
 
-    let dataLoaded = false;
     async function startAppOnFirebaseReady() {
-      if (dataLoaded) return;
-      dataLoaded = true;
-      prompts = await loadPrompts();
-      render();
+      const version = ++loadVersion;
+      loadState = "loading";
+      updateAuthUI(!!window.__isLoggedIn);
+      let timeout;
+      try {
+        if (!window.__firebase) throw new Error("Firebase unavailable");
+        const items = await Promise.race([
+          loadPrompts(),
+          new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error("Read timeout")), 20000); })
+        ]);
+        if (version !== loadVersion) return;
+        prompts = items;
+        loadState = "ready";
+      } catch (error) {
+        if (version !== loadVersion) return;
+        console.warn("Failed to load prompts:", error);
+        loadState = "error";
+        loadError = error.code === "permission-denied"
+          ? "目前無法公開讀取內容。管理者需確認 Firebase 的讀取權限；這不代表指令資料已清空。"
+          : "目前無法連接指令庫，請確認網路後重新讀取。原有資料不會因此清空。";
+      } finally {
+        clearTimeout(timeout);
+        if (version === loadVersion) updateAuthUI(!!window.__isLoggedIn);
+      }
     }
     window.addEventListener("firebase-ready", startAppOnFirebaseReady);
 
     function updateAuthUI(loggedIn) {
-      elements.form.classList.toggle("form-locked", !loggedIn);
-      elements.form.title = loggedIn ? "" : "登入後才能新增指令";
+      const canEdit = loggedIn && loadState === "ready";
+      elements.form.classList.toggle("form-locked", !canEdit);
+      elements.form.title = !loggedIn ? "登入後才能新增指令" : canEdit ? "" : "成功讀取指令庫後才能編輯";
       elements.form.querySelectorAll("input, textarea, select, button").forEach(field => {
-        field.disabled = !loggedIn;
+        field.disabled = !canEdit;
       });
-      if (dataLoaded) render();
+      elements.import.disabled = !canEdit;
+      elements.export.disabled = loadState !== "ready";
+      render();
     }
-    window.addEventListener("auth-state-changed", event => updateAuthUI(event.detail.loggedIn));
+    window.addEventListener("auth-state-changed", event => {
+      updateAuthUI(event.detail.loggedIn);
+      if (window.__firebase) startAppOnFirebaseReady();
+    });
     updateAuthUI(false);
+    if (window.__firebase) startAppOnFirebaseReady();
+    setTimeout(() => {
+      if (!window.__firebase && loadState === "loading") startAppOnFirebaseReady();
+    }, 15000);
   </script>
 <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer></body>
 </html>
