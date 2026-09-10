@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  if(!globalThis.Storyboard||!globalThis.StoryboardData){const warning=document.createElement('p');warning.className='sb-warnings';warning.setAttribute('role','alert');warning.textContent='分鏡工具未能載入，請重新整理頁面；若持續出現，請聯絡網站維護者。';document.querySelector('main').prepend(warning);document.querySelectorAll('main button,main input,main select,main textarea').forEach(el=>el.disabled=true);document.querySelector('.sb-workspace').hidden=true;return;}
   const S=globalThis.Storyboard,D=S.D,$=id=>document.getElementById(id),all=q=>Array.from(document.querySelectorAll(q));
   let project=S.demo(),selected=project.shots[0].id,filter='all',playing=false,elapsed=0,started=0,raf=0,toastTimer,dragId=null;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -31,7 +32,7 @@
     const rows=S.timeline(project);
     project.shots.forEach((s,i)=>{
       const b=node('button','sb-shot-card');b.type='button';b.dataset.id=s.id;b.draggable=true;b.setAttribute('aria-pressed',String(s.id===selected));b.setAttribute('aria-label',`編輯第 ${i+1} 鏡 ${s.name}，${s.duration} 秒`);
-      const thumb=node('div','sb-shot-thumb'),img=node('img');img.src=s.image;img.alt='';img.draggable=false;img.style.objectPosition=`${s.focusX}% ${s.focusY}%`;thumb.append(img,node('span','',pad(i+1)),node('span','',`${s.duration.toFixed(1)}s`));
+      const thumb=node('div','sb-shot-thumb'),img=node('img');img.src=s.image;img.alt='';img.draggable=false;img.style.objectFit='contain';thumb.append(img,node('span','',pad(i+1)),node('span','',`${s.duration.toFixed(1)}s`));
       const info=node('div','sb-shot-card-info');info.append(node('strong','',s.name||'未命名分鏡'),node('small','',`${rows[i].start.toFixed(1)}–${rows[i].end.toFixed(1)}s · ${S.STAGES[s.stage]}`));b.append(thumb,info);
       b.addEventListener('click',()=>choose(s.id,true));b.addEventListener('dragstart',e=>{stop();dragId=s.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',s.id);});
       b.addEventListener('dragover',e=>{if(dragId&&dragId!==s.id){e.preventDefault();e.dataTransfer.dropEffect='move';b.classList.add('is-drag-over');}});
@@ -50,19 +51,23 @@
     const duration=S.total(project),s=current(),row=S.timeline(project)[index()],progress=Math.max(0,Math.min(1,(elapsed-row.start)/s.duration));
     $('sb-scrubber').value=elapsed;$('sb-playhead').style.left=`${duration?elapsed/duration*100:0}%`;$('sb-transport-time').textContent=`${time(elapsed)} / ${time(duration)}`;$('sb-frame-time').textContent=time(elapsed);
     let scale=s.zoom,x=0,y=0;
-    if(!reduced.matches){if(s.camera==='pushPull')scale*=1+.08*progress;if(s.camera==='orbit'||s.camera==='side'){scale*=1.06;x=(progress-.5)*3;}if(s.camera==='lowAngle'||s.camera==='highAngle'){scale*=1.06;y=(progress-.5)*3*(s.camera==='lowAngle'?-1:1);}}
+    if(s.imageFit==='contain')scale=1;
+    else if(!reduced.matches){if(s.camera==='pushPull')scale*=1+.08*progress;if(s.camera==='orbit'||s.camera==='side'){scale*=1.06;x=(progress-.5)*3;}if(s.camera==='lowAngle'||s.camera==='highAngle'){scale*=1.06;y=(progress-.5)*3*(s.camera==='lowAngle'?-1:1);}}
     $('sb-stage-image').style.transform=`translate(${x}%,${y}%) scale(${scale})`;
   }
   function preview(){
     const s=current(),img=$('sb-stage-image');
     if(img.getAttribute('src')!==s.image){$('sb-image-error').hidden=true;img.hidden=false;img.src=s.image;}
-    img.alt=s.imageLabel;img.style.objectPosition=`${s.focusX}% ${s.focusY}%`;img.style.transformOrigin=`${s.focusX}% ${s.focusY}%`;
+    img.alt=s.imageLabel;img.style.objectFit=s.imageFit;img.style.objectPosition=s.imageFit==='contain'?'50% 50%':`${s.focusX}% ${s.focusY}%`;img.style.transformOrigin=`${s.focusX}% ${s.focusY}%`;
+    for(const id of ['sb-shot-zoom','sb-shot-focusX','sb-shot-focusY'])$(id).disabled=s.imageFit==='contain';
     $('sb-stage-shell').dataset.ratio=project.ratio;$('sb-preview-info').textContent=`SHOT ${pad(index()+1)} / ${pad(project.shots.length)}`;$('sb-stage-number').textContent=pad(index()+1);
     $('sb-stage-frame').textContent=`${S.FRAME_LABELS[s.frame]} / ${S.CAM_LABELS[s.camera]}`;$('sb-stage-caption').textContent=s.caption;
     $('sb-action-cue').textContent=S.actionText(s);$('sb-expression-cue').textContent=S.expressionText(s);
     $('sb-edit-number').textContent='SHOT '+pad(index()+1);$('sb-edit-title').textContent=s.name||'未命名分鏡';$('sb-zoom-value').textContent=s.zoom.toFixed(2)+'×';$('sb-image-name').textContent=s.imageLabel;
     paintProgress();
+    requestAnimationFrame(imageInfo);
   }
+  function imageInfo(){const box=$('sb-stage').getBoundingClientRect(),img=$('sb-stage-image'),size={'16:9':'1920 × 1080','9:16':'1080 × 1920','1:1':'1080 × 1080'}[project.ratio];$('sb-preview-size').textContent=`預覽 ${Math.round(box.width)} × ${Math.round(box.height)} px · ${project.ratio}`;$('sb-image-size-help').textContent=`建議素材 ${size} px。${img.naturalWidth?'原圖 '+img.naturalWidth+' × '+img.naturalHeight+' px。':''}${current().imageFit==='contain'?'完整顯示保留全圖，預演時不做放大或位移。':'填滿畫面會依比例、位置與放大程度裁切。'}`;}
   function actionList(){
     const s=current(),search=$('sb-action-search').value.trim().toLowerCase(),list=$('sb-action-list'),scroll=list.scrollTop;list.replaceChildren();
     const matches=D.ACTIONS.filter(a=>(filter==='all'||a.cat.includes(filter))&&(!search||`${a.zh} ${a.en}`.toLowerCase().includes(search)));
@@ -117,11 +122,12 @@
       if(!S.validImage(data))throw Error('invalid image');
       const draftSize=JSON.stringify(project).length-target.image.length+data.length;if(draftSize>28000000){notify('此專案圖片總量已接近上限，請先縮小圖片。');return;}
       if(!project.shots.includes(target)){notify('原分鏡已移除，請重新選擇圖片。');return;}
-      stop();target.image=data;target.imageLabel=file.name;target.focusX=50;target.focusY=50;target.zoom=1;choose(target.id);notify('這一鏡的參考圖已更新');
+      stop();target.image=data;target.imageLabel=file.name;target.imageFit='contain';target.focusX=50;target.focusY=50;target.zoom=1;choose(target.id);notify('這一鏡的參考圖已更新，先以完整圖片顯示');
     }catch{notify('圖片無法讀取，請換一個檔案。');}
   });
   $('sb-stage-image').addEventListener('error',()=>{$('sb-stage-image').hidden=true;$('sb-image-error').hidden=false;});
-  $('sb-stage-image').addEventListener('load',()=>{$('sb-stage-image').hidden=false;$('sb-image-error').hidden=true;});
+  $('sb-stage-image').addEventListener('load',()=>{$('sb-stage-image').hidden=false;$('sb-image-error').hidden=true;imageInfo();});
+  new ResizeObserver(imageInfo).observe($('sb-stage'));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   syncForm();render();
 })();

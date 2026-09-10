@@ -232,8 +232,8 @@ body.yk-tool-page {
   .yk-site-nav {min-height:80px;gap:12px}
   .yk-site-nav-actions {gap:12px}
   .yk-site-brand {font-size:15px!important}
-  .yk-tool-nav {gap:5px}
-  .yk-tool-nav a {font-size:13px;padding:8px 11px;gap:5px}
+  .yk-tool-nav {gap:5px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--yk-line) transparent;padding-block:4px 8px}
+  .yk-tool-nav a {font-size:13px;padding:8px 11px;gap:5px;flex:0 0 auto;white-space:nowrap}
   .yk-tool-heading {padding:28px 0 24px}
   .yk-orbit {display:none}
   .yk-tool-kicker {font-size:10px;letter-spacing:.09em}
@@ -246,6 +246,8 @@ body.yk-tool-page {
   [data-tool-page=facs-tool] .face-opt-label {font-size:11px}
   [data-tool-page=facs-tool] .face-canvas-wrap {width:min(100%,260px);margin:0 auto;max-height:none}
   [data-tool-page=ai-tools] .mat-body {grid-template-columns:1fr}
+  [data-tool-page=ai-tools] .bp-field {min-width:0}
+  [data-tool-page=ai-tools] .bp-input-grp,[data-tool-page=ai-tools] .bp-presets {min-width:0;flex-wrap:wrap}
   [data-tool-page=ai-tools] .mat-head-tools {flex-wrap:wrap;max-width:100%}
   [data-tool-page=prompt-library] .storage-note {text-align:left}
   [data-tool-page=prompt-library] .panel {padding:0}

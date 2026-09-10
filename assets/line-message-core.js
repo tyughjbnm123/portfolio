@@ -5,13 +5,14 @@
 })(globalThis,function(){
   'use strict';
   const LIMITS={cards:12,altText:1500,label:40,uri:1000,image:2000,bubble:30000,carousel:50000};
+  const IMAGE_SIZES={'20:13':[1000,650],'1:1':[1000,1000],'16:9':[1024,576],'4:3':[1000,750],'4:5':[800,1000],'9:16':[576,1024]};
   const clean=v=>String(v??'').trim();
   const size=v=>new TextEncoder().encode(JSON.stringify(v)).length;
   const asset='https://tyughjbnm123.github.io/portfolio/assets/';
   const target='https://tyughjbnm123.github.io/portfolio/';
   function card(kind='product'){
-    const common={eyebrow:'本週精選',title:'日常保養，從今天開始',description:'用一張卡片介紹商品特色，讓顧客輕鬆找到想了解的內容。',detail:'',image:asset+'lora-cream-sample.jpg',ratio:'20:13',fit:'cover',button1Label:'查看示範作品',button1Url:target+'creative.html',button2Label:'',button2Url:''};
-    if(kind==='event')return {...common,eyebrow:'活動邀請',title:'一起探索影像創作',description:'介紹活動主題、適合參加的對象與報名方式。把重要資訊，放進一則訊息。',detail:'日期・地點請在此填寫',image:asset+'panasonic-hero.jpg',button1Label:'查看活動案例',button1Url:target+'projects.html'};
+    const common={eyebrow:'本週精選',title:'好友相聚，零食上桌',description:'用一張卡片介紹聚會零食，把商品資訊與活動連結一起分享。',detail:'',image:asset+'lora-zhenzhen-sample.jpg',ratio:'1:1',fit:'contain',button1Label:'查看示範作品',button1Url:target+'creative.html',button2Label:'',button2Url:''};
+    if(kind==='event')return {...common,eyebrow:'活動邀請',title:'一起探索影像創作',description:'介紹活動主題、適合參加的對象與報名方式。把重要資訊，放進一則訊息。',detail:'日期・地點請在此填寫',image:asset+'panasonic-thumb.jpg',button1Label:'查看活動案例',button1Url:target+'projects.html'};
     if(kind==='notice')return {...common,eyebrow:'品牌公告',title:'有件新鮮事，想告訴你',description:'在這裡寫下你的品牌消息。\n\n可加入服務異動、會員通知，或一段想分享給顧客的內容。',image:'',button1Label:'了解更多',button1Url:target};
     if(kind==='blank')return {...common,eyebrow:'',title:'新卡片',description:'',image:'',button1Label:'',button1Url:''};
     return common;
@@ -42,7 +43,7 @@
     if(clean(c.description))contents.push({type:'text',text:clean(c.description),size:'sm',color:'#646F5D',wrap:true});
     if(clean(c.detail))contents.push({type:'text',text:clean(c.detail),size:'lg',weight:'bold',color:accent,wrap:true});
     const b={type:'bubble',size:'mega',body:{type:'box',layout:'vertical',spacing:'md',paddingAll:'20px',contents}};
-    if(clean(c.image))b.hero={type:'image',url:webUrl(c.image,true),size:'full',aspectRatio:c.ratio,aspectMode:c.fit};
+    if(clean(c.image))b.hero={type:'image',url:webUrl(c.image,true),size:'full',aspectRatio:c.ratio,aspectMode:c.fit==='contain'?'fit':'cover',backgroundColor:'#FFFFFF'};
     const buttons=[];
     for(let i=1;i<=2;i++)if(clean(c['button'+i+'Label'])||clean(c['button'+i+'Url']))buttons.push({type:'button',style:i===1?'primary':'link',height:'sm',color:accent,action:{type:'uri',label:clean(c['button'+i+'Label']),uri:link(c['button'+i+'Url'],tracking,index,i-1)}});
     if(buttons.length)b.footer={type:'box',layout:'vertical',spacing:'sm',paddingAll:'20px',paddingTop:'0px',contents:buttons};
@@ -64,7 +65,7 @@
       if(!clean(c.title))at('title','請填寫卡片標題。');
       for(const field of ['eyebrow','title','description','detail'])if(clean(c[field]).length>2000)at(field,'單一文字區塊請控制在 2,000 字內。');
       if(clean(c.image)&&(!webUrl(c.image,true)||webUrl(c.image,true).length>LIMITS.image))at('image','請使用 2,000 字內的 HTTPS 圖片網址。');
-      if(!['20:13','1:1','16:9','4:3'].includes(c.ratio))at('ratio','圖片比例設定不正確。');
+      if(!Object.hasOwn(IMAGE_SIZES,c.ratio))at('ratio','圖片比例設定不正確。');
       if(!['cover','contain'].includes(c.fit))at('fit','圖片裁切設定不正確。');
       for(let i=1;i<=2;i++){
         const label=clean(c['button'+i+'Label']),raw=clean(c['button'+i+'Url']);
@@ -85,5 +86,5 @@
   }
   // Reordering uses stable array positions; moving past an edge keeps the original order.
   function move(cards,index,delta){const next=index+delta;if(index<0||index>=cards.length||next<0||next>=cards.length)return index;[cards[index],cards[next]]=[cards[next],cards[index]];return next;}
-  return {LIMITS,card,initial,webUrl,link,contrastWhite,compile,move};
+  return {LIMITS,IMAGE_SIZES,card,initial,webUrl,link,contrastWhite,compile,move};
 });

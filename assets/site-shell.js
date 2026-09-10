@@ -19,6 +19,8 @@
   system.addEventListener('change',apply);
   document.addEventListener('DOMContentLoaded', () => {
     apply();
+    const toolNav=document.querySelector('.yk-tool-nav'),activeTool=toolNav?.querySelector('[aria-current="page"]');
+    if(toolNav&&activeTool&&matchMedia('(max-width:780px)').matches){const bounds=toolNav.getBoundingClientRect(),item=activeTool.getBoundingClientRect();toolNav.scrollLeft=Math.max(0,item.left-bounds.left-(toolNav.clientWidth-item.width)/2);}
     document.querySelectorAll('.yk-theme-toggle').forEach(b => b.addEventListener('click',()=>{
       mode = doc.dataset.ykTheme === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem('yichi-color-scheme',mode); } catch {}

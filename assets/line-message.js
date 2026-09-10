@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const C=globalThis.LineComposer;
+  if(!C){const warning=document.createElement('p');warning.className='lc-alert';warning.setAttribute('role','alert');warning.textContent='編排器未能載入，請重新整理頁面；若持續出現，請聯絡網站維護者。';document.querySelector('main').prepend(warning);document.querySelectorAll('main button,main input,main select,main textarea').forEach(el=>el.disabled=true);return;}
   const $=id=>document.getElementById(id);
   const all=selector=>Array.from(document.querySelectorAll(selector));
   const state=C.initial();
@@ -35,10 +36,15 @@
     $('move-left').disabled=selected===0;$('move-right').disabled=selected===state.cards.length-1;
   }
   function imageStatus(){
-    const raw=state.cards[selected].image.trim(),url=C.webUrl(raw,true),result=imageStates.get(url);
-    $('image-status').dataset.state=raw&&(!url||result==='error')?'error':'ok';
-    $('image-status').textContent=!raw?'目前為純文字卡片。':!url?'請輸入有效的 HTTPS 圖片直連。':result==='error'?'圖片未能載入，請確認網址可公開讀取且確實是圖片。':result==='loaded'?'預覽圖片已載入；LINE 仍會自行讀取此網址。':'正在讀取圖片…';
+    const card=state.cards[selected],raw=card.image.trim(),url=C.webUrl(raw,true),info=imageStates.get(url),result=info?.status;
+    const size=C.IMAGE_SIZES[card.ratio]||C.IMAGE_SIZES['1:1'];
+    $('image-size-help').textContent=`${card.ratio} 圖片建議 ${size[0]} × ${size[1]} px；LINE 圖片寬、高均不可超過 1024 px。`;
+    const oversize=info?.width>1024||info?.height>1024;
+    $('image-status').dataset.state=raw&&(!url||result==='error'||oversize)?'error':'ok';
+    const crop=info?.width&&card.fit==='cover'&&Math.abs(info.width/info.height-Number(card.ratio.split(':')[0])/Number(card.ratio.split(':')[1]))>.03;
+    $('image-status').textContent=!raw?'目前為純文字卡片。':!url?'請輸入有效的 HTTPS 圖片直連。':result==='error'?'圖片未能載入，請確認網址可公開讀取且確實是圖片。':result==='loaded'?`原圖 ${info.width} × ${info.height} px。${oversize?'請先等比例縮小至 1024 × 1024 px 以內，再上傳圖片。':crop?'目前會裁切；可改成「保留完整圖片」或更接近原圖的比例。':'預覽已載入；LINE 仍會自行讀取此網址。'}`:'正在讀取圖片…';
   }
+  function previewSize(){const hero=$('phone-cards').children[selected]?.querySelector('.lc-hero');$('preview-image-size').textContent=hero?`圖片框 ${Math.round(hero.clientWidth)} × ${Math.round(hero.clientHeight)} px · ${state.cards[selected].ratio}`:'純文字卡片';}
   function preview(){
     const viewport=$('phone-cards');
     const accent=/^#[0-9a-f]{6}$/i.test(state.accent)?state.accent:'#536F35';
@@ -46,13 +52,14 @@
     state.cards.forEach((card,index)=>{
       const article=node('article','lc-message-card');article.style.setProperty('--message-accent',accent);article.setAttribute('aria-label',`第 ${index+1} 張訊息卡片`);
       if(card.image.trim()){
-        const hero=node('div','lc-hero');hero.style.aspectRatio=['20:13','1:1','16:9','4:3'].includes(card.ratio)?card.ratio.replace(':','/'):'20/13';
+        const hero=node('div','lc-hero');hero.style.aspectRatio=Object.hasOwn(C.IMAGE_SIZES,card.ratio)?card.ratio.replace(':','/'):'1/1';
         const placeholder=node('span','', '圖片載入中…');hero.append(placeholder);
         const url=C.webUrl(card.image,true);
         if(url){
           const img=node('img');img.alt=card.title.trim()||'訊息圖片';img.style.objectFit=card.fit==='contain'?'contain':'cover';img.decoding='async';img.referrerPolicy='no-referrer';
-          img.addEventListener('load',()=>{imageStates.set(url,'loaded');placeholder.hidden=true;if(state.cards[selected].image.trim()===card.image.trim())imageStatus();});
-          img.addEventListener('error',()=>{imageStates.set(url,'error');img.hidden=true;placeholder.hidden=false;placeholder.textContent='圖片無法載入，請檢查圖片網址';imageStatus();});
+          placeholder.hidden=imageStates.get(url)?.status==='loaded';
+          img.addEventListener('load',()=>{imageStates.set(url,{status:'loaded',width:img.naturalWidth,height:img.naturalHeight});placeholder.hidden=true;imageStatus();renderExport();});
+          img.addEventListener('error',()=>{imageStates.set(url,{status:'error'});img.hidden=true;placeholder.hidden=false;placeholder.textContent='圖片無法載入，請檢查圖片網址';imageStatus();renderExport();});
           img.src=url;hero.append(img);
         }else placeholder.textContent='請加入有效的 HTTPS 圖片網址';
         article.append(hero);
@@ -72,7 +79,7 @@
     const pagination=$('preview-pagination');pagination.replaceChildren();
     state.cards.forEach((_,i)=>{const dot=node('button');dot.type='button';dot.setAttribute('aria-label',`預覽並編輯第 ${i+1} 張`);dot.setAttribute('aria-pressed',String(i===selected));dot.addEventListener('click',()=>{selectCard(i);$('preview-pagination').children[i].focus();});pagination.append(dot);});
     $('preview-format').textContent=state.cards.length===1?'單張卡片':`${state.cards.length} 張輪播`;
-    requestAnimationFrame(()=>{const card=viewport.children[selected];if(card)viewport.scrollLeft=card.offsetLeft-viewport.children[0].offsetLeft;});
+    requestAnimationFrame(()=>{const card=viewport.children[selected];if(card)viewport.scrollLeft=card.offsetLeft-viewport.children[0].offsetLeft;previewSize();});
     imageStatus();
   }
   function fieldElement(error){
@@ -91,6 +98,9 @@
   }
   function renderExport(){
     compiled=C.compile(state);
+    state.cards.forEach((card,cardIndex)=>{const url=C.webUrl(card.image,true);if(url&&!imageStates.has(url))compiled.errors.push({field:'image',cardIndex,message:`第 ${cardIndex+1} 張圖片正在讀取，完成尺寸檢查後即可匯出。`});});
+    state.cards.forEach((card,cardIndex)=>{const info=imageStates.get(C.webUrl(card.image,true));if(info?.status==='error')compiled.errors.push({field:'image',cardIndex,message:`第 ${cardIndex+1} 張圖片無法載入，請更換可公開讀取的圖片網址。`});else if(info?.width>1024||info?.height>1024)compiled.errors.push({field:'image',cardIndex,message:`第 ${cardIndex+1} 張原圖為 ${info.width} × ${info.height} px，請縮小至寬、高均不超過 1024 px。`});});
+    compiled.valid=compiled.errors.length===0;
     const status=$('validation-status');status.dataset.valid=String(compiled.valid);status.textContent=compiled.valid?'✓ 格式檢查通過':`${compiled.errors.length} 項需要修正`;
     const errors=$('validation-errors');errors.replaceChildren();errors.hidden=compiled.valid;
     all('[aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
@@ -123,7 +133,7 @@
   for(const [id,delta] of [['move-left',-1],['move-right',1]])$(id).addEventListener('click',()=>{selected=C.move(state.cards,selected,delta);fillForm();render();toast(`已移到第 ${selected+1} 張`);});
   all('[data-output]').forEach(b=>b.addEventListener('click',()=>{outputMode=b.dataset.output;renderExport();}));
   $('copy-json').addEventListener('click',async()=>{
-    compiled=C.compile(state);if(!compiled.valid)return;
+    renderExport();if(!compiled.valid)return;
     const json=JSON.stringify(compiled[outputMode],null,2);
     let copied=false;
     try{await navigator.clipboard.writeText(json);copied=true;}catch{
@@ -134,10 +144,11 @@
     else {document.querySelector('.lc-code-details').open=true;const range=document.createRange();range.selectNodeContents($('json-output'));const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);toast('無法自動複製，已選取 JSON，請按 Ctrl/Cmd + C');}
   });
   $('download-json').addEventListener('click',()=>{
-    compiled=C.compile(state);if(!compiled.valid)return;
+    renderExport();if(!compiled.valid)return;
     const blob=new Blob([JSON.stringify(compiled[outputMode],null,2)+'\n'],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob);
     const a=node('a');a.href=url;a.download=outputMode==='message'?'line-flex-message.json':'line-flex-contents.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('JSON 下載已準備');
   });
   $('phone-cards').addEventListener('keydown',event=>{if(event.target!==$('phone-cards'))return;if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();selectCard(Math.max(0,Math.min(state.cards.length-1,selected+(event.key==='ArrowRight'?1:-1))));}});
+  new ResizeObserver(previewSize).observe($('phone-cards'));
   fillForm();render();
 })();

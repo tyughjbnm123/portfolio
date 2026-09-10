@@ -1,0 +1,101 @@
+.yk-index-page #yk-world .yk-resume-intro {grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:40px;align-items:center}
+.yk-index-page #yk-world .yk-resume-intro .yk-detail-portrait {width:100%;height:auto;aspect-ratio:4 / 5;object-fit:cover;object-position:center 15%;border-radius:16px}
+.yk-index-page #yk-world .yk-resume-intro h3 {font-size:26px;line-height:1.4;margin:0 0 8px;font-weight:600}
+.yk-index-page #yk-world .yk-resume-intro h3 span {font-size:20px;font-weight:400}
+.yk-index-page #yk-world .yk-resume-intro .yk-resume-role {color:var(--yk-accent);font-size:18px;margin:0 0 18px}
+.yk-index-page #yk-world .yk-resume-intro p {margin:12px 0;line-height:1.85}
+.yk-index-page #yk-world .yk-resume-source {display:inline-flex;gap:12px;align-items:center;margin-top:10px;padding:9px 0;color:var(--yk-ink);font-size:14px;text-decoration:none;border-bottom:1px solid var(--yk-accent)}
+.yk-index-page #yk-world .yk-resume-source:hover {color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-resume-highlights {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:36px 0 0;border-block:1px solid var(--yk-line);padding:24px 0}
+.yk-index-page #yk-world .yk-resume-highlights>div {display:flex;flex-direction:column;padding:0 22px;border-right:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-resume-highlights>div:first-child {padding-left:0}
+.yk-index-page #yk-world .yk-resume-highlights>div:last-child {border:0}
+.yk-index-page #yk-world .yk-resume-highlights dt {font-size:14px;color:var(--yk-ink)}
+.yk-index-page #yk-world .yk-resume-highlights dd:not(.yk-resume-caption) {font-size:36px;line-height:1.4;letter-spacing:-1px;color:var(--yk-accent);margin:7px 0 0;order:0}
+.yk-index-page #yk-world .yk-resume-highlights dd span {font-size:16px;letter-spacing:0}
+.yk-index-page #yk-world .yk-resume-highlights .yk-resume-caption {font-size:13px;line-height:1.65;margin:4px 0 0;color:var(--yk-muted)}
+.yk-index-page #yk-world .yk-resume-section {margin-top:48px}
+.yk-index-page #yk-world .yk-resume-section h3 {font-size:23px;font-weight:500;line-height:1.5;margin:0 0 10px}
+.yk-index-page #yk-world .yk-resume-section-heading {display:flex;align-items:baseline;gap:24px;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.yk-index-page #yk-world .yk-resume-section-heading h3,.yk-index-page #yk-world .yk-resume-section-heading p {margin:0}
+.yk-index-page #yk-world .yk-resume-section-heading p {font-size:14px}
+.yk-index-page #yk-world .yk-resume-career {margin-top:0;border-bottom:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-resume-career summary {display:grid;grid-template-columns:158px minmax(0,1fr) 20px;gap:20px;align-items:start;padding:21px 4px;cursor:pointer;list-style:none}
+.yk-index-page #yk-world .yk-resume-career summary::-webkit-details-marker {display:none}
+.yk-index-page #yk-world .yk-resume-career summary small {font-size:13px;min-width:0;padding-top:3px;color:var(--yk-muted)}
+.yk-index-page #yk-world .yk-resume-career summary strong {display:block;font-size:16px;font-weight:500;color:var(--yk-ink);line-height:1.6}
+.yk-index-page #yk-world .yk-resume-career summary em {display:block;font-size:14px;font-style:normal;color:var(--yk-muted);margin-top:3px;line-height:1.6}
+.yk-index-page #yk-world .yk-resume-career summary>span {font-size:20px;color:var(--yk-accent);transition:transform .2s;margin:0;line-height:1.5}
+.yk-index-page #yk-world .yk-career-context {font-size:16px;line-height:1.8;margin:0 0 24px;color:var(--yk-muted);max-width:850px}
+.yk-index-page #yk-world .yk-resume-career .yk-career-entry summary {padding-block:26px}
+.yk-index-page #yk-world .yk-resume-career .yk-career-entry summary strong {font-size:19px;font-weight:600}
+.yk-index-page #yk-world .yk-resume-career .yk-career-entry summary em {font-size:16px;color:var(--yk-accent);margin-top:5px}
+.yk-index-page #yk-world .yk-resume-career .yk-career-kind {display:inline-block;font-size:13px;line-height:1.5;color:var(--yk-muted);margin-bottom:8px}
+.yk-index-page #yk-world .yk-resume-career .yk-career-snapshot {font-size:16px;font-weight:400;line-height:1.8;margin:12px 0 0;max-width:850px;color:var(--yk-ink)}
+.yk-index-page #yk-world .yk-resume-career .yk-career-detail-cue {display:block;margin-top:12px;font-size:14px;color:var(--yk-muted);line-height:1.6}
+.yk-index-page #yk-world .yk-career-entry .yk-career-cue-open,.yk-index-page #yk-world .yk-career-entry[open] .yk-career-cue-closed {display:none}
+.yk-index-page #yk-world .yk-career-entry[open] .yk-career-cue-open {display:inline}
+.yk-index-page #yk-world .yk-career-entry[open] summary>span {transform:rotate(45deg)}
+.yk-index-page #yk-world .yk-resume-career summary:hover strong {color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-resume-career details[open] summary em {color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-career-content {padding:0 40px 22px 182px}
+.yk-index-page #yk-world .yk-career-content p {margin:0 0 14px;font-size:16px;color:var(--yk-ink)}
+.yk-index-page #yk-world .yk-career-content ul {padding-left:20px;margin:0;display:grid;gap:10px}
+.yk-index-page #yk-world .yk-career-content li {font-size:16px;line-height:1.8;color:var(--yk-muted);padding-left:3px}
+.yk-index-page #yk-world .yk-career-content li::marker {color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-resume-projects {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.yk-index-page #yk-world .yk-resume-projects>a {display:flex;flex-direction:column;min-width:0;border:1px solid var(--yk-line);border-radius:16px;padding:24px;text-decoration:none;color:var(--yk-ink);background:var(--yk-surface);transition:transform .2s,border-color .2s}
+.yk-index-page #yk-world .yk-resume-projects>a:hover {transform:translateY(-4px);border-color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-resume-project-type {font-size:13px;color:var(--yk-muted);line-height:1.6}
+.yk-index-page #yk-world .yk-resume-projects h4 {font-size:19px;font-weight:500;line-height:1.45;margin:13px 0 0}
+.yk-index-page #yk-world .yk-resume-projects p {font-size:16px;line-height:1.8;margin:14px 0 20px}
+.yk-index-page #yk-world .yk-resume-project-result {font-size:14px;line-height:1.7;color:var(--yk-ink);margin-top:auto}
+.yk-index-page #yk-world .yk-resume-project-link {display:flex;justify-content:space-between;border-top:1px solid var(--yk-line);margin-top:20px;padding-top:15px;font-size:14px;color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-resume-skills {border-top:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-resume-skills>div {display:grid;grid-template-columns:180px minmax(0,1fr);gap:24px;border-bottom:1px solid var(--yk-line);padding:22px 0}
+.yk-index-page #yk-world .yk-resume-skills h4 {font-size:16px;line-height:1.8;font-weight:500;margin:0;color:var(--yk-ink)}
+.yk-index-page #yk-world .yk-resume-skills p {font-size:16px;line-height:1.8;margin:0}
+.yk-index-page #yk-world .yk-resume-background {display:grid;grid-template-columns:1fr 1.4fr;gap:64px}
+.yk-index-page #yk-world .yk-resume-education {padding:18px 0;border-bottom:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-resume-education h4 {font-size:17px;font-weight:500;margin:0}
+.yk-index-page #yk-world .yk-resume-education p {margin:6px 0;font-size:16px}
+.yk-index-page #yk-world .yk-resume-education small {color:var(--yk-muted);font-size:13px}
+.yk-index-page #yk-world .yk-resume-language {font-size:14px;margin:18px 0 0}
+.yk-index-page #yk-world .yk-resume-certificates {padding:0;list-style:none;margin:0}
+.yk-index-page #yk-world .yk-resume-certificates li {padding:14px 0;border-bottom:1px solid var(--yk-line);line-height:1.8}
+.yk-index-page #yk-world .yk-resume-certificates strong {font-size:16px;font-weight:400}
+.yk-index-page #yk-world .yk-resume-certificates span {display:block;font-size:13px;color:var(--yk-muted);margin-top:3px}
+.yk-index-page #yk-world .yk-resume-methods {border-top:1px solid var(--yk-line);padding-top:28px}
+.yk-index-page #yk-world .yk-resume-methods .yk-step-buttons button {font-size:14px}
+.yk-index-page #yk-world .yk-resume-methods .yk-method-answer {min-height:120px}
+.yk-index-page #yk-world .yk-resume-methods .yk-method-answer strong {font-size:16px}
+.yk-index-page #yk-world .yk-resume-source:focus-visible,.yk-index-page #yk-world .yk-resume-career summary:focus-visible,.yk-index-page #yk-world .yk-resume-projects>a:focus-visible {outline:2px solid var(--yk-accent);outline-offset:5px}
+.yk-index-page #yk-world .yk-sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:850px){
+  .yk-index-page #yk-world .yk-resume-projects {grid-template-columns:1fr}
+  .yk-index-page #yk-world .yk-resume-background {gap:32px}
+  .yk-index-page #yk-world .yk-resume-intro {grid-template-columns:minmax(220px,38%) minmax(0,1fr);gap:24px}
+  .yk-index-page #yk-world .yk-resume-career summary {grid-template-columns:135px minmax(0,1fr) 20px;gap:14px}
+  .yk-index-page #yk-world .yk-career-content {padding-left:153px;padding-right:0}
+}
+@media(max-width:600px){
+  .yk-index-page #yk-world .yk-resume-intro {grid-template-columns:1fr;gap:22px}
+  .yk-index-page #yk-world .yk-resume-intro .yk-detail-portrait {width:min(100%,320px);justify-self:center}
+  .yk-index-page #yk-world .yk-resume-intro h3 {font-size:24px}
+  .yk-index-page #yk-world .yk-resume-intro h3 span {font-size:18px}
+  .yk-index-page #yk-world .yk-resume-highlights {grid-template-columns:1fr;gap:18px;padding:22px 0}
+  .yk-index-page #yk-world .yk-resume-highlights>div {border:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 8px}
+  .yk-index-page #yk-world .yk-resume-highlights dd:not(.yk-resume-caption) {grid-column:2;grid-row:1 / 3;margin:0;font-size:28px}
+  .yk-index-page #yk-world .yk-resume-highlights .yk-resume-caption {grid-column:1}
+  .yk-index-page #yk-world .yk-resume-career summary {grid-template-columns:minmax(0,1fr) 20px;gap:6px 12px;padding:18px 0}
+  .yk-index-page #yk-world .yk-resume-career summary small {grid-column:1;min-width:0}
+  .yk-index-page #yk-world .yk-resume-career .yk-resume-position {grid-column:1}
+  .yk-index-page #yk-world .yk-resume-career summary>span {grid-column:2;grid-row:1 / 3;align-self:center}
+  .yk-index-page #yk-world .yk-career-content {padding:0 0 22px}
+  .yk-index-page #yk-world .yk-resume-section {margin-top:36px}
+  .yk-index-page #yk-world .yk-resume-section-heading {gap:5px}
+  .yk-index-page #yk-world .yk-resume-skills>div {grid-template-columns:1fr;gap:8px}
+  .yk-index-page #yk-world .yk-resume-background {grid-template-columns:1fr;gap:0}
+  .yk-index-page #yk-world .yk-resume-projects>a {padding:20px}
+}
+@media(prefers-reduced-motion:reduce){.yk-index-page #yk-world .yk-resume-projects>a,.yk-index-page #yk-world .yk-resume-career summary>span {transition:none}}
