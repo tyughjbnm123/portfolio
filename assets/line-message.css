@@ -134,3 +134,11 @@
 @media(max-width:800px) {.lc-workbench {grid-template-columns:minmax(0,1fr)}.lc-preview {position:static;width:100%;max-width:380px;margin:4px auto 0}.lc-message-card {flex-basis:280px;width:280px}.lc-card-tools {flex-direction:row;align-items:center}.lc-form-panel {min-height:0}.lc-export {margin-top:30px}.lc-heading {align-items:flex-start}.lc-guide-link {margin-top:25px}}
 @media(max-width:520px) {body[data-tool-page=line-message] {padding-inline:16px}.lc-heading {display:block}.lc-heading .lc-guide-link {display:none}.lc-editor-top {padding:20px 18px 14px}.lc-editor-top h2 {font-size:20px}.lc-editor-top .lc-button {padding:9px 12px;font-size:12px}.lc-card-strip {padding-inline:18px}.lc-card-tools {padding:0 15px 10px}.lc-card-tools p {font-size:11px}.lc-tabs {padding-inline:18px;justify-content:space-between;gap:8px}.lc-tabs button {font-size:13px}.lc-form-panel {padding:20px 18px 6px}.lc-notification {padding:18px}.lc-field-row {gap:10px}.lc-link-row {grid-template-columns:1fr;gap:0}.lc-color-row {gap:14px}.lc-export {padding:20px 18px}.lc-export-head {align-items:flex-start;flex-direction:column;gap:8px;margin-bottom:17px}.lc-export-bar {align-items:stretch;gap:14px}.lc-export-actions {width:100%}.lc-export-actions .lc-button {flex:1}.lc-segment {width:100%}.lc-segment button {flex:1}.lc-preview {max-width:356px}.lc-message-card {flex-basis:calc(100% - 4px);width:calc(100% - 4px)}}
 @media(prefers-reduced-motion:reduce) {[data-tool-page=line-message] *,[data-tool-page=line-message] *::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.lc-heading {display:grid;grid-template-columns:minmax(0,1fr) auto 72px;align-items:center}
+.lc-heading>div {min-width:0}
+@media(max-width:800px) {
+  .lc-heading {grid-template-columns:minmax(0,1fr) 56px;gap:16px}
+  .lc-heading .yk-orbit {display:grid;grid-column:2;grid-row:1;width:56px;height:56px}
+  .lc-heading .yk-orbit i::after {left:25px}
+  .lc-heading .lc-guide-link {grid-column:1/-1;grid-row:2;justify-self:end;margin-top:0}
+}

@@ -2,7 +2,7 @@
   'use strict';
   if(!globalThis.Storyboard||!globalThis.StoryboardData){const warning=document.createElement('p');warning.className='sb-warnings';warning.setAttribute('role','alert');warning.textContent='分鏡工具未能載入，請重新整理頁面；若持續出現，請聯絡網站維護者。';document.querySelector('main').prepend(warning);document.querySelectorAll('main button,main input,main select,main textarea').forEach(el=>el.disabled=true);document.querySelector('.sb-workspace').hidden=true;return;}
   const S=globalThis.Storyboard,D=S.D,$=id=>document.getElementById(id),all=q=>Array.from(document.querySelectorAll(q));
-  let project=S.demo(),selected=project.shots[0].id,filter='all',playing=false,elapsed=0,started=0,raf=0,toastTimer,dragId=null;
+  let project=S.demo(),selected=project.shots[0].id,filter='all',playing=false,elapsed=0,started=0,raf=0,toastTimer,dragId=null,imageTarget=null,imageBusy=false;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   const current=()=>project.shots.find(s=>s.id===selected)||project.shots[0];
@@ -45,7 +45,7 @@
   }
   function timeline(){
     const track=$('sb-timeline');track.replaceChildren();project.shots.forEach((s,i)=>{const b=node('button','sb-time-block');b.type='button';b.style.flex=s.duration+' 1 0%';b.setAttribute('aria-pressed',String(s.id===selected));b.setAttribute('aria-label',`跳至第 ${i+1} 鏡，${s.duration} 秒`);b.append(node('span','',pad(i+1)),node('small','',`${s.duration.toFixed(1)}s`));b.addEventListener('click',()=>choose(s.id));track.append(b);});
-    const duration=S.total(project);$('sb-duration-status').textContent=`${duration.toFixed(1)} / ${project.target} 秒`;$('sb-duration-status').dataset.warning=String(duration!==project.target);$('sb-scrubber').max=duration;
+    const duration=S.total(project);$('sb-total-duration').textContent=duration.toFixed(1)+' 秒';$('sb-total-shots').textContent=project.shots.length+' 個分鏡';$('sb-duration-status').textContent=`實際 ${duration.toFixed(1)} 秒 / 目標 ${project.target} 秒`;$('sb-duration-status').dataset.warning=String(duration!==project.target);$('sb-scrubber').max=duration;
   }
   function paintProgress(){
     const duration=S.total(project),s=current(),row=S.timeline(project)[index()],progress=Math.max(0,Math.min(1,(elapsed-row.start)/s.duration));
@@ -63,7 +63,7 @@
     $('sb-stage-shell').dataset.ratio=project.ratio;$('sb-preview-info').textContent=`SHOT ${pad(index()+1)} / ${pad(project.shots.length)}`;$('sb-stage-number').textContent=pad(index()+1);
     $('sb-stage-frame').textContent=`${S.FRAME_LABELS[s.frame]} / ${S.CAM_LABELS[s.camera]}`;$('sb-stage-caption').textContent=s.caption;
     $('sb-action-cue').textContent=S.actionText(s);$('sb-expression-cue').textContent=S.expressionText(s);
-    $('sb-edit-number').textContent='SHOT '+pad(index()+1);$('sb-edit-title').textContent=s.name||'未命名分鏡';$('sb-zoom-value').textContent=s.zoom.toFixed(2)+'×';$('sb-image-name').textContent=s.imageLabel;
+    $('sb-edit-number').textContent=`SHOT ${pad(index()+1)} / ${pad(project.shots.length)}`;$('sb-edit-title').textContent=s.name||'未命名分鏡';$('sb-zoom-value').textContent=s.zoom.toFixed(2)+'×';$('sb-image-name').textContent=s.imageLabel;$('sb-image-name').title=s.imageLabel;
     paintProgress();
     requestAnimationFrame(imageInfo);
   }
@@ -113,18 +113,54 @@
   $('sb-save').addEventListener('click',()=>{download(JSON.stringify(project,null,2),'ad-storyboard-project.json','application/json;charset=utf-8');notify('專案已準備下載，可在此工作台重新開啟');});
   $('sb-import').addEventListener('click',()=>$('sb-project-file').click());
   $('sb-project-file').addEventListener('change',async()=>{const input=$('sb-project-file'),file=input.files[0];input.value='';if(!file)return;try{if(file.size>30000000)throw Error('請選擇 30 MB 以內的專案檔。');const next=S.parseProject(await file.text());stop();project=next;selected=project.shots[0].id;elapsed=0;syncForm();render();notify('專案已開啟');}catch(error){notify(error.message||'專案檔無法開啟，請確認格式。');}});
-  $('sb-choose-image').addEventListener('click',()=>$('sb-image-file').click());
-  $('sb-image-file').addEventListener('change',async()=>{const input=$('sb-image-file'),file=input.files[0],target=current();input.value='';if(!file)return;
+  function openImagePicker(){
+    if(imageBusy)return;
+    stop();imageTarget=current();$('sb-image-file').click();
+  }
+  $('sb-choose-image').addEventListener('click',openImagePicker);
+  $('sb-upload-preview').addEventListener('click',openImagePicker);
+  function setImageBusy(busy){
+    imageBusy=busy;
+    $('sb-choose-image').disabled=$('sb-upload-preview').disabled=busy;
+    $('sb-image-dropzone').setAttribute('aria-busy',String(busy));
+    $('sb-upload-label').textContent=busy?'正在讀取圖片…':'上傳這一鏡的圖片';
+  }
+  async function uploadImage(file,target){
+    if(!file)return;
+    if(imageBusy){notify('圖片仍在讀取，請稍候再上傳。');return;}
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){notify('請使用 5 MB 以內的 JPEG、PNG 或 WebP 圖片。');return;}
+    stop();setImageBusy(true);
     try{
       const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});
       const image=new Image();image.src=data;await image.decode();
       if(!S.validImage(data))throw Error('invalid image');
       const draftSize=JSON.stringify(project).length-target.image.length+data.length;if(draftSize>28000000){notify('此專案圖片總量已接近上限，請先縮小圖片。');return;}
       if(!project.shots.includes(target)){notify('原分鏡已移除，請重新選擇圖片。');return;}
-      stop();target.image=data;target.imageLabel=file.name;target.imageFit='contain';target.focusX=50;target.focusY=50;target.zoom=1;choose(target.id);notify('這一鏡的參考圖已更新，先以完整圖片顯示');
+      stop();target.image=data;target.imageLabel=file.name;target.imageFit='contain';target.focusX=50;target.focusY=50;target.zoom=1;syncForm();render();notify(`第 ${project.shots.indexOf(target)+1} 鏡的圖片已更新，先以完整圖片顯示`);
     }catch{notify('圖片無法讀取，請換一個檔案。');}
+    finally{setImageBusy(false);}
+  }
+  $('sb-image-file').addEventListener('change',()=>{
+    const input=$('sb-image-file'),file=input.files[0],target=imageTarget||current();
+    imageTarget=null;input.value='';uploadImage(file,target);
   });
+  const isFileDrag=e=>Array.from(e.dataTransfer?.types||[]).includes('Files');
+  for(const id of ['sb-stage-shell','sb-image-dropzone']){
+    const zone=$(id);
+    zone.addEventListener('dragover',e=>{
+      if(!isFileDrag(e))return;
+      e.preventDefault();e.dataTransfer.dropEffect=imageBusy?'none':'copy';zone.classList.add('is-file-over');
+    });
+    zone.addEventListener('dragleave',e=>{if(!zone.contains(e.relatedTarget))zone.classList.remove('is-file-over');});
+    zone.addEventListener('drop',e=>{
+      zone.classList.remove('is-file-over');if(!isFileDrag(e))return;
+      e.preventDefault();const files=Array.from(e.dataTransfer.files);
+      if(files.length!==1){notify('每個分鏡使用一張圖片，請一次上傳一個檔案。');return;}
+      uploadImage(files[0],current());
+    });
+  }
+  document.addEventListener('dragover',e=>{if(isFileDrag(e))e.preventDefault();});
+  document.addEventListener('drop',e=>{if(isFileDrag(e))e.preventDefault();});
   $('sb-stage-image').addEventListener('error',()=>{$('sb-stage-image').hidden=true;$('sb-image-error').hidden=false;});
   $('sb-stage-image').addEventListener('load',()=>{$('sb-stage-image').hidden=false;$('sb-image-error').hidden=true;imageInfo();});
   new ResizeObserver(imageInfo).observe($('sb-stage'));
