@@ -4,17 +4,18 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>廣告分鏡工作台｜郭奕圻的工具房</title>
   <meta name="description" content="把動作卡片、運鏡與 FACS 表情整合進每一鏡，預演廣告節奏並匯出完整分鏡稿。">
-  <link rel="stylesheet" href="assets/site-theme.css"><link rel="stylesheet" href="assets/storyboard.css">
-  <script src="assets/site-shell.js"></script><script defer src="assets/storyboard-data.js"></script><script defer src="assets/storyboard-core.js"></script><script defer src="assets/storyboard.js"></script>
+  <link rel="stylesheet" href="assets/site-theme.css"><link rel="stylesheet" href="assets/storyboard.css?v=20260912-orbit1">
+  <script src="assets/site-shell.js"></script><script defer src="assets/storyboard-data.js"></script><script defer src="assets/storyboard-core.js"></script><script defer src="assets/storyboard.js?v=20260912-upload1"></script>
 </head>
 <body class="yk-tool-page" data-tool-page="ad-storyboard">
   <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" ><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html" ><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html" aria-current="page"><span>07</span>廣告分鏡工作台</a></nav>
   <main id="tool-workspace">
-    <header class="sb-heading"><div><p class="sb-overline">STORYBOARD STUDIO <span>整合試作</span></p><h1>廣告分鏡工作台</h1></div><div class="sb-heading-actions"><button type="button" class="sb-button" id="sb-import">開啟專案</button><button type="button" class="sb-button" id="sb-save">下載專案</button><a class="sb-button sb-primary" href="#sb-output">匯出分鏡稿 ↗</a></div></header>
+    <header class="sb-heading"><div><p class="sb-overline">STORYBOARD STUDIO <span>整合試作</span></p><h1>廣告分鏡工作台</h1></div><div class="sb-heading-actions"><button type="button" class="sb-button" id="sb-import">開啟專案</button><button type="button" class="sb-button" id="sb-save">下載專案</button><a class="sb-button sb-primary" href="#sb-output">匯出分鏡稿 ↗</a></div><span class="yk-orbit" aria-hidden="true"><i></i><b>07</b></span></header>
     <noscript><p>請開啟 JavaScript，才能編輯與預演分鏡。</p></noscript>
     <section class="sb-brief" aria-label="廣告設定">
       <div class="sb-project-name"><label for="sb-name">這次的廣告</label><input id="sb-name" data-project="name" maxlength="120" aria-label="廣告名稱"></div>
       <div class="sb-project-select"><label for="sb-ratio">畫面比例</label><select id="sb-ratio" data-project="ratio"><option value="16:9">16:9 橫式</option><option value="9:16" selected>9:16 直式</option><option value="1:1">1:1 方形</option></select></div>
+      <div class="sb-project-duration"><span>實際總長</span><output id="sb-total-duration" aria-live="polite">15.0 秒</output><small id="sb-total-shots">5 個分鏡</small></div>
       <div class="sb-project-select"><label for="sb-target">目標長度</label><select id="sb-target" data-project="target"><option value="15">15 秒</option><option value="30">30 秒</option><option value="60">60 秒</option></select></div>
       <button type="button" class="sb-text-button" id="sb-brief-toggle" aria-expanded="false" aria-controls="sb-brief-fields">企劃設定 ＋</button>
       <div id="sb-brief-fields" class="sb-brief-fields" hidden><div class="sb-field"><label for="sb-product">商品／品牌</label><input id="sb-product" data-project="product" maxlength="2000"></div><div class="sb-field"><label for="sb-audience">溝通對象</label><input id="sb-audience" data-project="audience" maxlength="2000"></div><div class="sb-field"><label for="sb-message">想留下的一句話</label><input id="sb-message" data-project="message" maxlength="2000"></div><div class="sb-field"><label for="sb-music">音樂方向</label><input id="sb-music" data-project="music" maxlength="2000"></div></div>
@@ -22,7 +23,7 @@
     <div class="sb-workspace">
       <aside class="sb-shots-panel" aria-label="分鏡列表"><div class="sb-panel-title"><h2>分鏡 <span id="sb-shot-count">05</span></h2><button type="button" class="sb-small-button" id="sb-add" aria-label="新增分鏡">＋</button></div><div id="sb-shot-list" class="sb-shot-list" role="group" aria-label="選擇分鏡，可拖曳排序"></div><p class="sb-help">拖曳調整順序，或使用編輯區的左右箭頭。</p></aside>
       <section class="sb-viewer" aria-label="分鏡構圖預演">
-        <div class="sb-viewer-bar"><span><i></i> 構圖預演</span><span id="sb-preview-info">SHOT 01 / 05</span></div>
+        <div class="sb-viewer-bar"><span><i></i> 構圖預演</span><div class="sb-viewer-actions"><button type="button" class="sb-button" id="sb-upload-preview">上傳圖片 ↥</button><span id="sb-preview-info">SHOT 01 / 05</span></div></div>
         <p id="sb-preview-size" class="sb-help">9:16 直式預覽</p>
         <div class="sb-stage-shell" id="sb-stage-shell" data-ratio="9:16"><div class="sb-stage" id="sb-stage">
           <img id="sb-stage-image" src="assets/lora-cream-sample.jpg" alt="保養品廣告參考圖">
@@ -30,7 +31,7 @@
           <div class="sb-frame-guide" aria-hidden="true"></div>
           <div class="sb-stage-top"><span id="sb-stage-number">01</span><span id="sb-stage-frame">近景 / 緩慢推近</span></div>
           <div class="sb-stage-bottom"><span class="sb-frame-caption" id="sb-stage-caption">今天，也留一點時間給自己。</span><span id="sb-frame-time">00:00.0</span></div>
-        </div></div>
+        </div><span class="sb-drop-overlay" aria-hidden="true">放開，替換這一鏡的圖片</span></div>
         <div class="sb-transport"><button type="button" class="sb-small-button" id="sb-prev" aria-label="上一鏡">←</button><button type="button" class="sb-play" id="sb-play" aria-label="播放分鏡">▶ <span>播放分鏡</span></button><button type="button" class="sb-small-button" id="sb-next" aria-label="下一鏡">→</button><span id="sb-transport-time">00:00.0 / 00:15.0</span></div>
         <div class="sb-timeline-head"><span>廣告節奏</span><span id="sb-duration-status">15.0 / 15 秒</span></div>
         <div class="sb-timeline-wrap"><div id="sb-timeline" class="sb-timeline" role="group" aria-label="分鏡時間軸"></div><span id="sb-playhead" class="sb-playhead" aria-hidden="true"></span></div>
@@ -39,16 +40,21 @@
         <p class="sb-preview-note">參考圖搭配構圖位移，預演鏡頭順序與停留時間；人物動作、表情與旁白尚未生成。</p>
       </section>
       <aside class="sb-inspector" aria-label="分鏡編輯區">
-        <div class="sb-inspector-head"><div><span class="sb-overline" id="sb-edit-number">SHOT 01</span><h2 id="sb-edit-title">讓日常慢下來</h2></div><div class="sb-shot-tools"><button type="button" class="sb-small-button" id="sb-move-back" aria-label="分鏡往前移">←</button><button type="button" class="sb-small-button" id="sb-move-forward" aria-label="分鏡往後移">→</button><button type="button" class="sb-small-button" id="sb-duplicate" aria-label="複製這一鏡" title="複製這一鏡">⧉</button><button type="button" class="sb-small-button" id="sb-delete" aria-label="刪除這一鏡" title="刪除這一鏡">−</button></div></div>
+        <div class="sb-inspector-head"><div><span class="sb-overline" id="sb-edit-number">SHOT 01 / 05</span><h2 id="sb-edit-title">讓日常慢下來</h2></div><div class="sb-shot-tools"><button type="button" class="sb-small-button" id="sb-move-back" aria-label="分鏡往前移">←</button><button type="button" class="sb-small-button" id="sb-move-forward" aria-label="分鏡往後移">→</button><button type="button" class="sb-small-button" id="sb-duplicate" aria-label="複製這一鏡" title="複製這一鏡">⧉</button><button type="button" class="sb-small-button" id="sb-delete" aria-label="刪除這一鏡" title="刪除這一鏡">−</button></div></div>
         <div class="sb-tabs" role="tablist" aria-label="分鏡設定"><button type="button" role="tab" id="sb-tab-scene" data-panel="scene" aria-selected="true" aria-controls="sb-panel-scene">畫面</button><button type="button" role="tab" id="sb-tab-action" data-panel="action" aria-selected="false" aria-controls="sb-panel-action" tabindex="-1">動作與運鏡</button><button type="button" role="tab" id="sb-tab-expression" data-panel="expression" aria-selected="false" aria-controls="sb-panel-expression" tabindex="-1">表情</button></div>
         <div class="sb-inspector-body">
           <section id="sb-panel-scene" role="tabpanel" aria-labelledby="sb-tab-scene">
+            <div class="sb-reference-upload" id="sb-image-dropzone" aria-busy="false">
+              <button type="button" id="sb-choose-image" class="sb-upload-button" aria-describedby="sb-upload-help"><span class="sb-upload-icon" aria-hidden="true">↥</span><span><strong id="sb-upload-label">上傳這一鏡的圖片</strong><small>點選檔案，或將圖片拖到這裡</small></span></button>
+              <p id="sb-image-name" class="sb-image-filename">保養品廣告參考圖</p>
+              <p id="sb-upload-help" class="sb-help">JPG、PNG、WebP · 單張最多 5 MB<br>圖片會一起存入「下載專案」的檔案。</p>
+            </div>
             <div class="sb-field"><label for="sb-shot-name">這一鏡的名稱</label><input id="sb-shot-name" data-shot="name" maxlength="120"></div>
             <div class="sb-field-row"><div class="sb-field"><label for="sb-shot-stage">分鏡目的</label><select id="sb-shot-stage" data-shot="stage"></select></div><div class="sb-field"><label for="sb-shot-duration">停留秒數</label><input id="sb-shot-duration" data-shot="duration" type="number" min="0.5" max="30" step="0.5"></div></div>
             <div class="sb-field"><label for="sb-shot-description">畫面描述</label><textarea id="sb-shot-description" data-shot="description" rows="3" maxlength="4000"></textarea></div>
             <div class="sb-field"><label for="sb-shot-caption">畫面字幕 <span>後製加入</span></label><input id="sb-shot-caption" data-shot="caption" maxlength="4000"></div>
             <div class="sb-field"><label for="sb-shot-narration">旁白</label><textarea id="sb-shot-narration" data-shot="narration" rows="2" maxlength="4000"></textarea></div>
-            <details class="sb-image-settings"><summary>參考圖與構圖</summary><button type="button" class="sb-button sb-full" id="sb-choose-image">選取這一鏡的參考圖 ↗</button><p id="sb-image-name" class="sb-help">保養品廣告參考圖</p><div class="sb-field"><label for="sb-image-fit">圖片呈現</label><select id="sb-image-fit" data-shot="imageFit"><option value="cover">填滿畫面（裁切）</option><option value="contain">完整顯示（不裁切）</option></select><p id="sb-image-size-help" class="sb-help">直式素材建議 1080 × 1920 px。</p></div><div class="sb-field"><label for="sb-shot-zoom">構圖放大 <output id="sb-zoom-value">1.0×</output></label><input id="sb-shot-zoom" data-shot="zoom" type="range" min="1" max="2" step="0.05"></div><div class="sb-field"><label for="sb-shot-focusX">左右位置</label><input id="sb-shot-focusX" data-shot="focusX" type="range" min="0" max="100"></div><div class="sb-field"><label for="sb-shot-focusY">上下位置</label><input id="sb-shot-focusY" data-shot="focusY" type="range" min="0" max="100"></div><p class="sb-help">JPEG、PNG 或 WebP，單張最多 5 MB。圖片隨下載的專案保留。</p></details>
+            <details class="sb-image-settings"><summary>圖片裁切與構圖</summary><div class="sb-field"><label for="sb-image-fit">圖片呈現</label><select id="sb-image-fit" data-shot="imageFit"><option value="cover">填滿畫面（裁切）</option><option value="contain">完整顯示（不裁切）</option></select><p id="sb-image-size-help" class="sb-help">直式素材建議 1080 × 1920 px。</p></div><div class="sb-field"><label for="sb-shot-zoom">構圖放大 <output id="sb-zoom-value">1.0×</output></label><input id="sb-shot-zoom" data-shot="zoom" type="range" min="1" max="2" step="0.05"></div><div class="sb-field"><label for="sb-shot-focusX">左右位置</label><input id="sb-shot-focusX" data-shot="focusX" type="range" min="0" max="100"></div><div class="sb-field"><label for="sb-shot-focusY">上下位置</label><input id="sb-shot-focusY" data-shot="focusY" type="range" min="0" max="100"></div><p class="sb-help">JPEG、PNG 或 WebP，單張最多 5 MB。圖片隨下載的專案保留。</p></details>
           </section>
           <section id="sb-panel-action" role="tabpanel" aria-labelledby="sb-tab-action" hidden>
             <div class="sb-field-row"><div class="sb-field"><label for="sb-shot-frame">景別</label><select id="sb-shot-frame" data-shot="frame"></select></div><div class="sb-field"><label for="sb-shot-camera">機位／運鏡</label><select id="sb-shot-camera" data-shot="camera"></select></div></div>
