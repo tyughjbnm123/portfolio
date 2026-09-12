@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>表情控制器｜郭奕圻的工具房</title>
-<link rel="stylesheet" href="assets/facs-tool.css?v=20260912-photo1">
+<link rel="stylesheet" href="assets/facs-tool.css?v=20260912-photo2">
 <link rel="stylesheet" href="assets/site-theme.css"><script src="assets/site-shell.js"></script>
-<link rel="stylesheet" href="assets/facs-preview.css?v=20260912-photo1">
-<script src="assets/facs-preview.js?v=20260912-photo1"></script></head>
+<link rel="stylesheet" href="assets/facs-preview.css?v=20260912-photo2">
+<script src="assets/facs-preview.js?v=20260912-photo2"></script></head>
 <body class="yk-tool-page" data-tool-page="facs-tool">
 
 <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" aria-current="page"><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html"><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html"><span>07</span>廣告分鏡工作台</a></nav><main id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 02 — EXPRESSION LAB</p><h1>表情控制器</h1><p class="yk-tool-description">選擇角色、調整臉部動作，把表情轉成可用的描述。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>02</b></span></div><a class="yk-storyboard-link" href="ad-storyboard.html">試用整合版：把動作、表情與運鏡放進廣告分鏡工作台 ↗</a><div class="main-grid">
@@ -64,6 +64,7 @@
     </div>
     <div class="ctrl-group" id="group-eye">
       <div class="ctrl-group-title">▸ 眼部</div>
+      <p class="face-side-note" id="faceSideNote">左右以角色本人為準：左眼在畫面右側，右眼在畫面左側。</p>
     </div>
     <div class="ctrl-group" id="group-nose">
       <div class="ctrl-group-title">▸ 鼻部</div>
@@ -115,11 +116,12 @@ const AU_INFO = {
   AU6:  { name: '臉頰上抬',   group: 'eye'   },
   AU7:  { name: '眼瞼收緊',   group: 'eye'   },
   AU41: { name: '上眼瞼下垂', group: 'eye'   },
-  AU46: { name: '單眼眨眼',   group: 'eye'   },
+  AU46_L: { name: '左眼眨眼', group: 'eye'   },
+  AU46_R: { name: '右眼眨眼', group: 'eye'   },
   AU9:  { name: '皺鼻',       group: 'nose'  },
   AU10: { name: '上唇抬起',   group: 'upper' },
   AU12: { name: '嘴角上揚',   group: 'upper' },
-  AU13: { name: '嘴角加深',   group: 'upper' },
+  AU20: { name: '嘴巴加寬',   group: 'upper' },
   AU22: { name: '嘴唇向外翻', group: 'upper' },
   AU15: { name: '嘴角下拉',   group: 'lower' },
   AU16: { name: '下唇下拉',   group: 'lower' },
@@ -127,7 +129,7 @@ const AU_INFO = {
   AU26: { name: '下顎放鬆',   group: 'lower' },
   AU27: { name: '嘴巴大幅張開', group: 'lower' },
 };
-const AU_ORDER = ['AU1','AU2','AU4','AU5','AU6','AU7','AU41','AU46','AU9','AU10','AU12','AU13','AU22','AU15','AU16','AU17','AU26','AU27'];
+const AU_ORDER = ['AU1','AU2','AU4','AU5','AU6','AU7','AU41','AU46_L','AU46_R','AU9','AU10','AU12','AU20','AU22','AU15','AU16','AU17','AU26','AU27'];
 const GROUP_LABELS = { brow: '眉毛', eye: '眼部', nose: '鼻部', upper: '上唇與嘴角', lower: '下唇與下顎' };
 
 const state = {};
@@ -142,13 +144,13 @@ function intensityLabel(v) {
 // ============ 預設表情（自然強度基準值，輕微/強烈由此換算）============
 const PRESETS_NATURAL = {
   neutral:   {},
-  happy:     { AU6:1.2, AU7:0.3, AU12:1.8, AU13:0.4, AU26:0.2 },
+  happy:     { AU6:1.2, AU7:0.3, AU12:1.8, AU20:0.4, AU26:0.2 },
   sad:       { AU1:1.4, AU4:0.7, AU15:1.0, AU17:0.4, AU41:0.4 },
   angry:     { AU4:1.7, AU5:0.3, AU7:1.1, AU9:0.2, AU15:0.3, AU17:0.3 },
   surprised: { AU1:1.4, AU2:1.3, AU5:1.5, AU26:1.0, AU27:0.5 },
   disgust:   { AU4:0.5, AU7:0.5, AU9:1.2, AU10:0.8, AU15:0.2 },
   fear:      { AU1:1.1, AU2:0.8, AU4:0.5, AU5:1.3, AU7:0.4, AU15:0.4, AU26:0.7 },
-  contempt:  { AU7:0.3, AU12:0.7, AU13:0.8, AU15:0.2 },
+  contempt:  { AU7:0.3, AU12:0.7, AU20:0.8, AU15:0.2 },
 };
 const EXPR_LABEL_ZH = { neutral:'中性', happy:'開心', sad:'悲傷', angry:'憤怒', surprised:'驚訝', disgust:'厭惡', fear:'恐懼', contempt:'輕蔑' };
 const EXPR_LABEL_EN = { neutral:'neutral', happy:'happiness', sad:'sadness', angry:'anger', surprised:'surprise', disgust:'disgust', fear:'fear', contempt:'contempt' };
@@ -216,7 +218,7 @@ function buildControls() {
         <div class="ctrl-intensity" id="i_${au}">無</div>
         <div class="ctrl-row">
           <span class="ctrl-label">${AU_INFO[au].name}</span>
-          <input type="range" class="ctrl-slider" id="${au}" min="0" max="4" step="0.1" value="0" aria-label="${AU_INFO[au].name}（${au}）" oninput="update('${au}',this.value)">
+          <input type="range" class="ctrl-slider" id="${au}" min="0" max="4" step="0.1" value="0" aria-label="${AU_INFO[au].name}（${au}）" ${au.startsWith('AU46_') ? 'aria-describedby="faceSideNote"' : ''} oninput="update('${au}',this.value)">
           <span class="ctrl-val" id="v_${au}">0.0</span>
         </div>
       `;
@@ -327,17 +329,26 @@ function buildActionUnitsObject() {
   return obj;
 }
 
+function buildExpressionPayload() {
+  // FACP is this site's custom format. L/R refer to the subject, not the viewer.
+  return {
+    protocol_version: 'FACP1.2',
+    face_type: currentFace.id,
+    expression_label: isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName],
+    intensity: isCustomState ? 'custom' : currentIntensity,
+    side_reference: 'subject',
+    action_units: buildActionUnitsObject()
+  };
+}
+
 function renderJSON() {
-  const aus = AU_ORDER.map(au =>
-    `    <span class="json-key">"${au}"</span>: <span class="json-num">${state[au].toFixed(1)}</span>`
-  ).join(',\n');
-  document.getElementById('jsonOutput').innerHTML =
-    `{\n` +
-    `  <span class="json-key">"protocol_version"</span>: <span class="json-str">"FACP1.1"</span>,\n` +
-    `  <span class="json-key">"face_type"</span>: <span class="json-str">"${currentFace.id}"</span>,\n` +
-    `  <span class="json-key">"expression_label"</span>: <span class="json-str">"${isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName]}"</span>,\n` +
-    `  <span class="json-key">"intensity"</span>: <span class="json-str">"${isCustomState ? 'custom' : currentIntensity}"</span>,\n` +
-    `  <span class="json-key">"action_units"</span>: {\n${aus}\n  }\n}`;
+  const json = JSON.stringify(buildExpressionPayload(), null, 2);
+  // Build the visible and copied JSON from the same data, then apply highlighting.
+  document.getElementById('jsonOutput').innerHTML = json
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/("[^"\n]*")(\s*:)?|\b\d+(?:\.\d+)?\b/g, (match, str, key) =>
+      str ? `<span class="${key ? 'json-key' : 'json-str'}">${str}</span>${key || ''}`
+          : `<span class="json-num">${match}</span>`);
 
   const ts = Date.now();
   const seq = Math.floor(Math.random() * 99999);
@@ -354,13 +365,7 @@ function toggleAdvanced() {
 }
 
 function copyJSON() {
-  const json = JSON.stringify({
-    protocol_version: 'FACP1.1',
-    face_type: currentFace.id,
-    expression_label: isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName],
-    intensity: isCustomState ? 'custom' : currentIntensity,
-    action_units: buildActionUnitsObject()
-  }, null, 2);
+  const json = JSON.stringify(buildExpressionPayload(), null, 2);
   navigator.clipboard.writeText(json).then(() => {
     const btn = document.getElementById('copyJsonBtn');
     const original = '📋 複製 JSON';
@@ -416,9 +421,8 @@ function generateAIDescription() {
   } else if (state.AU41 > 0.15) {
     clauses.push('上眼瞼略微下垂，眼神較放鬆');
   }
-  if (state.AU46 > 0.15) {
-    clauses.push('單眼輕輕閉合，帶出眨眼的神情');
-  }
+  if (state.AU46_L > 0.15) clauses.push(`角色左眼（畫面右側）做眨眼動作，閉合強度為${intensityLabel(state.AU46_L)}`);
+  if (state.AU46_R > 0.15) clauses.push(`角色右眼（畫面左側）做眨眼動作，閉合強度為${intensityLabel(state.AU46_R)}`);
   if (state.AU6 > 0.15) {
     clauses.push('臉頰略微上抬');
   }
@@ -432,8 +436,8 @@ function generateAIDescription() {
   if (state.AU12 > 0.15) {
     clauses.push('嘴角略微向上');
   }
-  if (state.AU13 > 0.15) {
-    clauses.push('嘴角略微加深拉開');
+  if (state.AU20 > 0.15) {
+    clauses.push('嘴巴水平加寬，兩側嘴角向外拉開');
   }
   if (state.AU10 > 0.15) {
     clauses.push('上唇中央略微抬起');
