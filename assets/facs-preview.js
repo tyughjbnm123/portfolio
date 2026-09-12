@@ -3,7 +3,7 @@
 (function (root) {
   'use strict';
   const SIZE = 480, GRID = 61;
-  const AU = ['AU1','AU2','AU4','AU5','AU6','AU7','AU41','AU46','AU9','AU10','AU12','AU13','AU22','AU15','AU16','AU17','AU26','AU27'];
+  const AU = ['AU1','AU2','AU4','AU5','AU6','AU7','AU41','AU46_L','AU46_R','AU9','AU10','AU12','AU20','AU22','AU15','AU16','AU17','AU26','AU27'];
   const ANCHORS = {
     young_f: {eyes:[[194,198],[285,196]],brows:[[193,169],[286,168]],mouth:[239,295,31],nose:[239,255],chin:344},
     young_m: {eyes:[[195,212],[286,212]],brows:[[192,190],[286,190]],mouth:[238,313,37],nose:[237,269],chin:377},
@@ -36,14 +36,19 @@
       }
       if(au==='AU7') {add(x,y-half,0,3,width,8);add(x,y+half,0,-2,width,8);}
       if(au==='AU41') add(x,y-half,0,5,width,10);
-      if(au==='AU46' && i===1) {add(x,y-half,0,8,width,10);add(x,y+half,0,-2,width,7);}
+      // Portraits face the viewer: index 1 is the subject's left eye.
+      if((au==='AU46_L' && i===1) || (au==='AU46_R' && i===0)) {
+        add(x,y-half,0,8,width,10);add(x,y+half,0,-2,width,7);
+      }
     });
     const [mx,my,mw]=f.mouth, [nx,ny]=f.nose;
     if(au==='AU9') {add(nx-15,ny,-1,-4,17,17);add(nx+15,ny,1,-4,17,17);}
     if(au==='AU10') add(mx,my-6,0,-5,mw*.75,12);
     [-1,1].forEach(side=>{
       if(au==='AU12') add(mx+side*mw,my,side*6,-10,22,21);
-      if(au==='AU13') add(mx+side*mw,my,side*4,-2,20,18);
+      // AU20: lip stretcher (https://www.cs.cmu.edu/~face/facs.htm).
+      // Keep this horizontal, independent of AU12's upward smile motion.
+      if(au==='AU20') add(mx+side*mw,my,side*10,0,28,20);
       if(au==='AU15') add(mx+side*mw,my,-side,7,21,21);
       if(au==='AU22') add(mx+side*mw,my,-side*2,0,17,15);
     });

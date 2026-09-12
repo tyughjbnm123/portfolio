@@ -29,6 +29,7 @@
 [data-tool-page=facs-tool] .face-note {font-size:12px;line-height:1.7;margin-top:14px}
 .face-preview-status {font-size:12px;color:var(--yk-muted);line-height:1.5;margin-top:7px}
 .face-preview-status:empty {display:none}
+.face-side-note {font-size:13px;color:var(--yk-muted);line-height:1.7;margin:0 0 14px}
 @media (min-width:1101px) {
   [data-tool-page=facs-tool] .main-grid>.face-preview-panel {top:12px}
 }
