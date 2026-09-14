@@ -44,7 +44,7 @@
     const crop=info?.width&&card.fit==='cover'&&Math.abs(info.width/info.height-Number(card.ratio.split(':')[0])/Number(card.ratio.split(':')[1]))>.03;
     $('image-status').textContent=!raw?'目前為純文字卡片。':!url?'請輸入有效的 HTTPS 圖片直連。':result==='error'?'圖片未能載入，請確認網址可公開讀取且確實是圖片。':result==='loaded'?`原圖 ${info.width} × ${info.height} px。${oversize?'請先等比例縮小至 1024 × 1024 px 以內，再上傳圖片。':crop?'目前會裁切；可改成「保留完整圖片」或更接近原圖的比例。':'預覽已載入；LINE 仍會自行讀取此網址。'}`:'正在讀取圖片…';
   }
-  function previewSize(){const hero=$('phone-cards').children[selected]?.querySelector('.lc-hero');$('preview-image-size').textContent=hero?`圖片框 ${Math.round(hero.clientWidth)} × ${Math.round(hero.clientHeight)} px · ${state.cards[selected].ratio}`:'純文字卡片';}
+  function previewSize(){const hero=$('phone-cards').children[selected]?.querySelector('.lc-hero'),box=hero?.getBoundingClientRect();$('preview-image-size').textContent=box?`圖片框 ${Math.round(box.width)} × ${Math.round(box.height)} px · ${state.cards[selected].ratio}`:'純文字卡片';}
   function preview(){
     const viewport=$('phone-cards');
     const accent=/^#[0-9a-f]{6}$/i.test(state.accent)?state.accent:'#536F35';
