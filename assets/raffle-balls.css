@@ -1,0 +1,36 @@
+[data-tool-page=raffle] .stage.ball-stage {padding:24px 20px 22px;gap:10px;min-height:640px;background:radial-gradient(ellipse at 50% 35%,var(--yk-soft),var(--yk-surface) 72%)}
+[data-tool-page=raffle] .stage.ball-stage::before {display:none}
+.ball-stage-header {display:flex;align-items:flex-start;justify-content:space-between;gap:14px;width:100%;padding:0 4px}
+.ball-stage .tier-progress {text-align:left;min-width:0;overflow-wrap:anywhere}
+.ball-queue-label {display:block;font-size:11px;letter-spacing:.08em;color:var(--yk-muted);margin-bottom:3px}
+.ball-state {display:flex;align-items:center;gap:7px;color:var(--yk-muted);font-size:12px;white-space:nowrap;padding-top:7px}
+.ball-state::before {content:'';width:6px;height:6px;border-radius:50%;background:var(--yk-accent);box-shadow:0 0 10px color-mix(in srgb,var(--yk-accent) 30%,transparent)}
+.ball-display {width:100%;max-width:450px;aspect-ratio:480/440;position:relative;margin:0 auto -14px}
+#raffleCanvas {display:block;width:100%;height:100%}
+.ball-stage .ball-result {width:100%;text-align:center;position:relative;min-height:108px;padding:9px 8px 0}
+.ball-result-meta {font-size:13px;line-height:1.7;color:var(--yk-muted);display:block;min-height:23px}
+[data-tool-page=raffle] .ball-result .result-name {font-size:clamp(26px,3.5vw,43px);line-height:1.35;letter-spacing:.03em;padding:7px 4px;font-weight:600;color:var(--yk-ink)}
+[data-tool-page=raffle] .ball-result .result-name.placeholder {font-size:18px;font-weight:400;padding-top:12px;color:var(--yk-muted)}
+[data-tool-page=raffle] .ball-result .seal {position:static;display:inline-flex;margin-top:0;font-size:12px;padding:2px 10px;opacity:0;transform:translateY(3px);min-height:22px}
+[data-tool-page=raffle] .ball-result .seal.show {opacity:1;transform:none}
+.ball-stage[data-phase=revealed] .result-name {animation:ball-name-reveal .4s ease-out}
+.ball-stage[data-phase=mixing] .ball-state::before {animation:ball-light 1s ease-in-out infinite}
+.ball-actions {width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px}
+[data-tool-page=raffle] .ball-stage .draw-btn {min-width:220px;max-width:100%;min-height:52px;font-size:17px;padding:12px 28px;white-space:normal}
+.ball-skip {font:13px var(--yk-font);color:var(--yk-muted);background:transparent;border:0;border-bottom:1px solid var(--yk-line);padding:5px 0;cursor:pointer}
+.ball-skip:hover {color:var(--yk-ink)}
+.ball-skip[hidden] {display:none}
+.ball-skip:focus-visible {outline:2px solid var(--yk-accent);outline-offset:4px}
+.ball-visual-note {margin:4px 0 0;text-align:center;font-size:12px;line-height:1.7;color:var(--yk-muted);opacity:.78}
+[data-tool-page=raffle] .ball-stage .empty-hint {font-size:13px;line-height:1.6;margin:4px 0 0}
+@keyframes ball-name-reveal {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes ball-light {50%{opacity:.45}}
+@media(max-width:780px){
+  [data-tool-page=raffle] .stage.ball-stage {min-height:0;padding:22px 16px}
+  .ball-display {max-width:370px}
+  .ball-stage .ball-result {min-height:100px}
+  [data-tool-page=raffle] .ball-result .result-name {font-size:32px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ball-stage *, .ball-stage *::before {animation:none!important;transition:none!important}
+}
