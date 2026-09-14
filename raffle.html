@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>抽獎機｜郭奕圻的工具房</title>
-<link rel="stylesheet" href="assets/raffle.css">
-<link rel="stylesheet" href="assets/site-theme.css"><script src="assets/site-shell.js"></script></head>
+<link rel="stylesheet" href="assets/raffle.css?v=20260914-balls1">
+<link rel="stylesheet" href="assets/site-theme.css"><script src="assets/site-shell.js"></script>
+<link rel="stylesheet" href="assets/raffle-balls.css?v=20260914-balls1">
+<script src="assets/raffle-balls.js?v=20260914-balls1"></script></head>
 <body class="yk-tool-page" data-tool-page="raffle">
 
 <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" ><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" aria-current="page"><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html"><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html"><span>07</span>廣告分鏡工作台</a></nav><main class="wrap" id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 04 — LUCKY DRAW</p><h1>抽獎機</h1><p class="yk-tool-description">匯入名單、設定獎項，逐一揭曉得獎結果。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>04</b></span></div>
@@ -37,25 +39,31 @@
       <button class="btn btn-ghost" id="applyTiersBtn">套用獎項設定</button>
     </div>
 
-    <!-- CENTER: stage -->
-    <div class="stage">
-      <div class="tier-progress">
-        <div class="tier-name" id="tierName">尚未設定獎項</div>
-        <div class="tier-count" id="tierCountLabel">請先在左側設定獎項</div>
-      </div>
-
-      <div class="card-area">
-        <div class="ticket">
-          <div class="seal" id="seal">中獎</div>
-          <div class="ticket-inner">
-            <div class="result-name placeholder" id="resultName" aria-live="polite">按下方按鈕開始抽獎</div>
-          </div>
+    <!-- CENTER: lottery drum -->
+    <section class="stage ball-stage" id="ballStage" data-phase="idle" aria-label="抽獎球舞台">
+      <div class="ball-stage-header">
+        <div class="tier-progress">
+          <span class="ball-queue-label" id="tierContext">待抽獎項</span>
+          <div class="tier-name" id="tierName">尚未設定獎項</div>
+          <div class="tier-count" id="tierCountLabel">請先在左側設定獎項</div>
         </div>
+        <span class="ball-state" id="ballState">待抽獎</span>
       </div>
-
-      <button class="draw-btn" id="drawBtn" disabled>開　始　抽　獎</button>
+      <div class="ball-display" aria-hidden="true">
+        <canvas id="raffleCanvas" width="960" height="880"></canvas>
+      </div>
+      <div class="ball-result">
+        <span class="ball-result-meta" id="resultTier">本次得獎者</span>
+        <div class="result-name placeholder" id="resultName" aria-live="polite" aria-atomic="true">等待開獎</div>
+        <span class="seal" id="seal">中獎</span>
+      </div>
+      <div class="ball-actions">
+        <button class="draw-btn" id="drawBtn" disabled>開始抽獎</button>
+        <button class="ball-skip" id="skipDrawBtn" type="button" hidden>略過剩餘動畫</button>
+      </div>
       <div class="empty-hint" id="emptyHint">請先在左側輸入名單並套用獎項設定</div>
-    </div>
+      <p class="ball-visual-note">球體為動畫示意，得獎結果會列於得獎名單。</p>
+    </section>
 
     <!-- RIGHT: winners -->
     <div class="panel">
@@ -84,16 +92,18 @@
 <script>
 let pool = [];
 let drawing = false;
+let skipAnimations = false;
 
 // 獎項設定（可編輯的草稿）與套用後的正式獎項清單
 let tierConfig = [
-  { name:'一獎', count:3 },
-  { name:'二獎', count:10 },
-  { name:'三獎', count:10 }
+  { name:'一獎', count:1 },
+  { name:'二獎', count:1 },
+  { name:'三獎', count:1 }
 ];
 let presetConfig = ['', '', '']; // 每個獎項對應的「指定得獎人」草稿文字，索引與 tierConfig 對齊
 let tiers = [];       // 套用後：[{name, count, drawnList:[], forcedRemaining:[]}]
 let currentTierIndex = 0;
+let tierStructureDirty = false;
 
 const advancedRows = document.getElementById('advancedRows');
 
@@ -114,6 +124,33 @@ const copyBtn = document.getElementById('copyBtn');
 const resetBtn = document.getElementById('resetBtn');
 const emptyHint = document.getElementById('emptyHint');
 const toast = document.getElementById('toast');
+const ballStage = document.getElementById('ballStage');
+const ballState = document.getElementById('ballState');
+const resultTier = document.getElementById('resultTier');
+const skipDrawBtn = document.getElementById('skipDrawBtn');
+const ballMachine = typeof RaffleBalls !== 'undefined' ? new RaffleBalls.Drum(document.getElementById('raffleCanvas'), phase => {
+  ballStage.dataset.phase = phase;
+  ballState.textContent = {idle:'待抽獎',mixing:'攪拌中',extracting:'出球中',revealed:'已揭曉'}[phase];
+}) : null;
+
+skipDrawBtn.addEventListener('click', () => {
+  if(!drawing) return;
+  skipAnimations = true;
+  skipDrawBtn.hidden = true;
+  ballMachine?.finish();
+});
+
+function resetBallResult(){
+  resultTier.textContent = '本次得獎者';
+  resultName.textContent = '等待開獎';
+  resultName.className = 'result-name placeholder';
+  seal.classList.remove('show');
+  ballMachine?.reset();
+}
+function briefRevealPause(ms){
+  if(skipAnimations || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) return Promise.resolve();
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function showToast(msg){
   toast.textContent = msg;
@@ -133,7 +170,52 @@ function parseNames(text){
 
 function updatePoolCount(){
   poolCount.innerHTML = pool.length + '<small>人</small>';
+  ballMachine?.setCount(pool.length);
   updateStageLabel();
+}
+
+function setDrawingLocked(locked){
+  [nameInput, fileInput, loadBtn, addTierBtn, applyTiersBtn, resetBtn,
+    ...tierRows.querySelectorAll('input, button'), ...advancedRows.querySelectorAll('textarea')]
+    .forEach(control => control.disabled = locked);
+}
+
+function selectPendingTier(){
+  const pending = tiers.findIndex(t => t.drawnList.length < t.count);
+  currentTierIndex = pending < 0 ? tiers.length : pending;
+}
+
+function syncTierInput(input){
+  const idx = Number(input.dataset.idx);
+  const field = input.dataset.field;
+  if(!tierConfig[idx]) return false;
+  if(drawing){
+    input.value = tierConfig[idx][field];
+    return false;
+  }
+  if(field === 'count'){
+    const count = Number(input.value);
+    if(!Number.isSafeInteger(count) || count < 1){
+      input.setAttribute('aria-invalid', 'true');
+      return false;
+    }
+    tierConfig[idx].count = count;
+  } else {
+    tierConfig[idx].name = input.value;
+  }
+  input.removeAttribute('aria-invalid');
+  syncLiveTier(idx);
+  if(field === 'count') input.value = tierConfig[idx].count;
+  return true;
+}
+
+function syncVisibleTierInputs(){
+  let valid = true;
+  tierRows.querySelectorAll('input').forEach(input => {
+    if(!syncTierInput(input)) valid = false;
+  });
+  if(!valid) showToast('獎項人數請填入大於或等於 1 的整數');
+  return valid;
 }
 
 function renderTierRows(){
@@ -143,7 +225,7 @@ function renderTierRows(){
     row.className = 'tier-row';
     row.innerHTML = `
       <input type="text" value="${t.name}" placeholder="獎項名稱" data-idx="${i}" data-field="name">
-      <input type="number" min="1" value="${t.count}" data-idx="${i}" data-field="count">
+      <input type="number" min="1" step="1" value="${t.count}" aria-label="獎項人數" data-idx="${i}" data-field="count">
       <button class="remove-tier" data-idx="${i}" title="移除此獎項">✕</button>
     `;
     tierRows.appendChild(row);
@@ -151,26 +233,26 @@ function renderTierRows(){
 
   tierRows.querySelectorAll('input').forEach(inp=>{
     inp.addEventListener('input', (e)=>{
-      const idx = parseInt(e.target.dataset.idx);
-      const field = e.target.dataset.field;
-      if(field === 'name'){
-        tierConfig[idx].name = e.target.value;
-      } else {
-        let v = parseInt(e.target.value) || 1;
-        if(v < 1) v = 1;
-        tierConfig[idx].count = v;
-      }
-      syncLiveTier(idx);
+      if(drawing){ syncTierInput(e.target); return; }
+      syncTierInput(e.target);
       renderAdvancedRows();
+      updateStageLabel();
     });
   });
 
   tierRows.querySelectorAll('.remove-tier').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
+      if(drawing) return;
       const idx = parseInt(e.target.dataset.idx);
+      tiers.forEach(t => {
+        if(t.sourceIndex === idx) t.sourceIndex = -1;
+        else if(t.sourceIndex > idx) t.sourceIndex--;
+      });
+      tierStructureDirty = tiers.length > 0;
       tierConfig.splice(idx,1);
       presetConfig.splice(idx,1);
       renderTierRows();
+      updateStageLabel();
     });
   });
 
@@ -190,11 +272,11 @@ function syncLiveTier(configIdx){
   if(newCount < t.drawnList.length){
     // 人數不能少於已經抽出的人數，自動修正並提示
     tierConfig[configIdx].count = t.drawnList.length;
-    showToast(`「${t.name}」已抽出 ${t.drawnList.length} 位，人數不能設得更少`);
-  } else {
-    t.count = tierConfig[configIdx].count;
+    showToast(`「${t.name}」已抽出 ${t.drawnList.length} 位；要減少人數，請先重置得獎紀錄`);
   }
+  t.count = tierConfig[configIdx].count;
 
+  selectPendingTier();
   renderWinners();
   updateStageLabel();
 }
@@ -219,12 +301,16 @@ function renderAdvancedRows(){
 }
 
 addTierBtn.addEventListener('click', ()=>{
+  if(drawing) return;
+  tierStructureDirty = tiers.length > 0;
   tierConfig.push({ name:`第${tierConfig.length+1}獎`, count:1 });
   presetConfig.push('');
   renderTierRows();
+  updateStageLabel();
 });
 
 applyTiersBtn.addEventListener('click', ()=>{
+  if(drawing || !syncVisibleTierInputs()) return;
   const validEntries = tierConfig
     .map((t, i) => ({ t, i }))
     .filter(x => x.t.name.trim().length > 0 && x.t.count > 0);
@@ -251,12 +337,11 @@ applyTiersBtn.addEventListener('click', ()=>{
   presetConfig = tiers.map(t => t.forcedRemaining.join('\n'));
   tiers.forEach((t, i) => t.sourceIndex = i); // 重新對齊索引，確保之後即時同步能對上正確的獎項
   currentTierIndex = 0;
-  renderAdvancedRows();
+  tierStructureDirty = false;
+  renderTierRows();
   renderWinners();
   updateStageLabel();
-  resultName.textContent = '按下方按鈕開始抽獎';
-  resultName.className = 'result-name placeholder';
-  seal.classList.remove('show');
+  resetBallResult();
   const total = tiers.reduce((s,t)=>s+t.count,0);
   showToast(`已套用獎項設定，共 ${tiers.length} 個獎項、${total} 個名額`);
 });
@@ -266,6 +351,7 @@ function winners(){
 }
 
 function updateStageLabel(){
+  document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
   if(tiers.length === 0){
     tierName.textContent = '尚未設定獎項';
     tierCountLabel.textContent = '請先在左側設定獎項並套用';
@@ -276,6 +362,7 @@ function updateStageLabel(){
     return;
   }
   if(currentTierIndex >= tiers.length){
+    document.getElementById('tierContext').textContent = '抽獎進度';
     tierName.textContent = '🎉 所有獎項已抽完';
     tierCountLabel.textContent = `共 ${tiers.reduce((s,t)=>s+t.drawnList.length,0)} 位得獎者`;
     drawBtn.disabled = true;
@@ -286,10 +373,14 @@ function updateStageLabel(){
   const t = tiers[currentTierIndex];
   tierName.textContent = t.name;
   tierCountLabel.textContent = `${t.drawnList.length} / ${t.count} 人`;
-  drawBtn.textContent = `抽　出　${t.name}`;
+  drawBtn.textContent = drawing ? '抽獎中…' : `抽出 ${t.name}`;
   const has = pool.length > 0;
-  drawBtn.disabled = !has || drawing;
-  if(!has){
+  const invalidCount = tierRows.querySelectorAll('[aria-invalid="true"]').length > 0;
+  drawBtn.disabled = !has || drawing || tierStructureDirty || invalidCount;
+  if(tierStructureDirty || invalidCount){
+    emptyHint.style.display = 'block';
+    emptyHint.textContent = tierStructureDirty ? '獎項已新增或移除，請先套用獎項設定' : '獎項人數請填入大於或等於 1 的整數';
+  } else if(!has){
     emptyHint.style.display = 'block';
     emptyHint.textContent = '名單人數不足，請先套用名單';
   } else {
@@ -298,6 +389,7 @@ function updateStageLabel(){
 }
 
 loadBtn.addEventListener('click', ()=>{
+  if(drawing) return;
   const names = parseNames(nameInput.value);
   if(names.length === 0){
     showToast('請先輸入至少一位名單');
@@ -313,6 +405,7 @@ fileInput.addEventListener('change', (e)=>{
   if(!file) return;
   const reader = new FileReader();
   reader.onload = (ev)=>{
+    if(drawing) return;
     nameInput.value = ev.target.result;
     const names = parseNames(ev.target.result);
     pool = names;
@@ -382,27 +475,27 @@ function renderWinners(){
   });
 }
 
-async function rollAnimation(finalName, duration){
-  resultName.classList.remove('placeholder');
-  resultName.classList.add('rolling');
-  const pseudo = pool.length ? pool : [finalName];
-  const start = Date.now();
-  return new Promise(resolve=>{
-    const iv = setInterval(()=>{
-      const r = pseudo[Math.floor(Math.random()*pseudo.length)];
-      resultName.textContent = maskName(r);
-      if(Date.now() - start > duration){
-        clearInterval(iv);
-        resultName.classList.remove('rolling');
-        resultName.textContent = maskName(finalName);
-        resolve();
-      }
-    }, 60);
-  });
+async function rollAnimation(finalName, duration, ordinal, prizeName){
+  resultTier.textContent = prizeName + ' · 第 ' + ordinal + ' 位';
+  resultName.className = 'result-name placeholder';
+  resultName.textContent = '幸運球攪拌中…';
+  try {
+    if(skipAnimations) ballMachine?.reveal(ordinal);
+    else await ballMachine?.draw({ordinal,duration});
+  } catch(error) {
+    // A rendering failure must not discard or redraw a selected winner.
+    ballState.textContent = '已揭曉';
+  }
+  ballStage.dataset.phase = 'revealed';
+  resultName.className = 'result-name';
+  resultName.textContent = maskName(finalName);
 }
 
 drawBtn.addEventListener('click', async ()=>{
   if(drawing) return;
+  if(tierStructureDirty){ showToast('請先套用獎項設定'); return; }
+  if(!syncVisibleTierInputs()) return;
+  selectPendingTier();
   if(tiers.length === 0 || currentTierIndex >= tiers.length) return;
   if(pool.length === 0) return;
 
@@ -416,30 +509,40 @@ drawBtn.addEventListener('click', async ()=>{
   }
 
   drawing = true;
+  skipAnimations = false;
+  skipDrawBtn.hidden = false;
+  updateStageLabel();
+  drawBtn.textContent = '抽獎中…';
+  setDrawingLocked(true);
   drawBtn.disabled = true;
   seal.classList.remove('show');
 
-  const chosen = pickDrawList(tier, n);
-
-  for(let i=0;i<chosen.length;i++){
-    await rollAnimation(chosen[i], 900);
-    seal.classList.add('show');
-    tier.drawnList.push(chosen[i]);
-    renderWinners();
-    updatePoolCount();
-    if(i < chosen.length - 1){
-      await new Promise(r=>setTimeout(r, 500));
-      seal.classList.remove('show');
+  try {
+    for(let i=0;i<n;i++){
+      // Reserve one result, animate it, then commit it exactly once.
+      const [chosenName] = pickDrawList(tier, 1);
+      await rollAnimation(chosenName, i === 0 ? 2600 : 1900, tier.drawnList.length + 1, tier.name);
+      seal.classList.add('show');
+      tier.drawnList.push(chosenName);
+      renderWinners();
+      updatePoolCount();
+      updateStageLabel();
+      if(i < n - 1){
+        await briefRevealPause(950);
+        seal.classList.remove('show');
+      }
     }
-  }
 
-  drawing = false;
-
-  if(tier.drawnList.length >= tier.count){
-    await new Promise(r=>setTimeout(r, 600));
-    currentTierIndex++;
+    if(tier.drawnList.length >= tier.count){
+      await briefRevealPause(500);
+    }
+  } finally {
+    drawing = false;
+    skipDrawBtn.hidden = true;
+    setDrawingLocked(false);
+    selectPendingTier();
+    updateStageLabel();
   }
-  updateStageLabel();
 });
 
 copyBtn.addEventListener('click', ()=>{
@@ -462,6 +565,7 @@ copyBtn.addEventListener('click', ()=>{
 });
 
 resetBtn.addEventListener('click', ()=>{
+  if(drawing) return;
   if(!confirm('確定要重置名單與得獎紀錄嗎？（獎項設定與指定得獎人會保留）')) return;
   pool = [];
   tiers.forEach((t, i) => {
@@ -472,9 +576,7 @@ resetBtn.addEventListener('click', ()=>{
   nameInput.value = '';
   fileInput.value = '';
   renderWinners();
-  resultName.textContent = '按下方按鈕開始抽獎';
-  resultName.className = 'result-name placeholder';
-  seal.classList.remove('show');
+  resetBallResult();
   updatePoolCount();
   showToast('已重置');
 });
