@@ -188,7 +188,7 @@
       background-image: none;
     }
   </style>
-<link rel="stylesheet" href="assets/site-theme.css"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css"></head>
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css"></head>
 <body data-content-page="true" class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
 
   <!-- NAVBAR -->
@@ -627,10 +627,13 @@
       document.addEventListener('mousemove', (e) => {
         if (!activeNode) return;
         const canvasRect = canvas.getBoundingClientRect();
-        let left = e.clientX - canvasRect.left - offsetX;
-        let top = e.clientY - canvasRect.top - offsetY;
-        left = Math.max(10, Math.min(canvasRect.width - activeNode.offsetWidth - 10, left));
-        top = Math.max(10, Math.min(canvasRect.height - activeNode.offsetHeight - 10, top));
+        // Pointer coordinates are rendered pixels; node positions use layout pixels.
+        const scaleX = canvasRect.width / canvas.offsetWidth || 1;
+        const scaleY = canvasRect.height / canvas.offsetHeight || 1;
+        let left = (e.clientX - canvasRect.left - offsetX) / scaleX - canvas.clientLeft;
+        let top = (e.clientY - canvasRect.top - offsetY) / scaleY - canvas.clientTop;
+        left = Math.max(10, Math.min(canvas.clientWidth - activeNode.offsetWidth - 10, left));
+        top = Math.max(10, Math.min(canvas.clientHeight - activeNode.offsetHeight - 10, top));
         activeNode.style.left = `${left}px`;
         activeNode.style.top = `${top}px`;
         drawConnections();
