@@ -7,13 +7,25 @@
 <link rel="stylesheet" href="assets/facs-tool.css?v=20260912-photo2">
 <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script>
 <link rel="stylesheet" href="assets/facs-preview.css?v=20260912-photo2">
-<script src="assets/facs-preview.js?v=20260912-photo2"></script></head>
+<link rel="stylesheet" href="assets/facs-upload.css?v=20260919-upload1">
+<script src="assets/facs-preview.js?v=20260919-upload1"></script>
+<script src="assets/facs-upload.js?v=20260919-upload1"></script></head>
 <body class="yk-tool-page" data-tool-page="facs-tool">
 
-<a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" aria-current="page"><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html"><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html"><span>07</span>廣告分鏡工作台</a></nav><main id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 02 — EXPRESSION LAB</p><h1>表情控制器</h1><p class="yk-tool-description">選擇角色、調整臉部動作，把表情轉成可用的描述。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>02</b></span></div><a class="yk-storyboard-link" href="ad-storyboard.html">試用整合版：把動作、表情與運鏡放進廣告分鏡工作台 ↗</a><div class="main-grid">
+<a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" aria-current="page"><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html"><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html"><span>07</span>廣告分鏡工作台</a></nav><main id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 02 — EXPRESSION LAB</p><h1>表情控制器</h1><p class="yk-tool-description">上傳照片或選擇角色，調整五官動作，把表情轉成可用的描述。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>02</b></span></div><a class="yk-storyboard-link" href="ad-storyboard.html">試用整合版：把動作、表情與運鏡放進廣告分鏡工作台 ↗</a><div class="main-grid">
 
   <!-- LEFT: continuous portrait preview -->
   <section class="panel face-preview-panel" aria-label="角色與表情預覽">
+    <div class="face-upload-area">
+      <button id="faceUploadBtn" type="button" class="face-upload-button face-upload-primary">＋ 上傳自己的照片</button>
+      <input type="file" id="faceUploadInput" accept="image/jpeg,image/png,image/webp" hidden>
+      <p class="face-upload-help">JPG、PNG、WebP · 12 MB 以內<br>可手動裁切與對齊五官，照片只在本機處理。</p>
+      <div class="face-custom-row" id="faceCustomRow" hidden>
+        <button class="face-custom-choice" id="faceCustomBtn" type="button" aria-pressed="false"><img id="faceCustomThumb" alt="已裁切的自訂照片"><span>我的照片</span></button>
+        <div class="face-custom-actions"><button id="faceRecropBtn" type="button" class="face-upload-button">重新裁切／對齊</button><button id="faceRemoveBtn" type="button" class="face-upload-button">移除照片</button></div>
+      </div>
+      <p id="faceUploadStatus" class="face-upload-status" role="status"></p>
+    </div>
     <div class="face-preview-heading">
       <div><span class="face-eyebrow">PORTRAIT PREVIEW</span><h2>表情預覽</h2></div>
       <span class="face-live-label">即時</span>
@@ -101,7 +113,7 @@
       <button class="copy-btn" id="copyDescBtn" onclick="copyDescription()">📋 複製 AI 表情描述</button>
     </div>
 
-    <div class="usage-hint">💡 使用方式：<br>1. 選擇角色臉型<br>2. 選擇預設表情或調整動作單元<br>3. 查看表情預覽<br>4. 複製結構化參數或 AI 表情描述<br>5. 將描述加入圖像生成或圖片編輯指令</div>
+    <div class="usage-hint">💡 使用方式：<br>1. 上傳照片並裁切、對齊五官，或選擇參考角色<br>2. 選擇預設表情或調整動作單元<br>3. 切換原始照片，對照表情變化<br>4. 複製結構化參數或 AI 表情描述<br>5. 將描述加入圖像生成或圖片編輯指令<br>上傳照片只保留於本次頁面，重新整理後需重新選取。</div>
   </div>
 
 </div>
@@ -258,6 +270,7 @@ function buildSelector() {
 function selectFace(ft, el) {
   currentFace = ft;
   document.querySelectorAll('.face-opt').forEach(o => {o.classList.remove('active');o.setAttribute('aria-pressed','false');});
+  document.getElementById('faceCustomBtn').setAttribute('aria-pressed',String(ft.id==='user_photo'));
   el.classList.add('active');
   el.setAttribute('aria-pressed','true');
   refreshAllViews();
@@ -337,7 +350,8 @@ function buildExpressionPayload() {
     expression_label: isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName],
     intensity: isCustomState ? 'custom' : currentIntensity,
     side_reference: 'subject',
-    action_units: buildActionUnitsObject()
+    action_units: buildActionUnitsObject(),
+    ...(currentFace.id==='user_photo'?{photo_reference:{source:'local_upload',width:currentFace.width,height:currentFace.height,crop_ratio:currentFace.cropRatio,landmark_space:'normalized_480x480',landmarks:currentFace.anchors}}:{})
   };
 }
 
@@ -485,6 +499,14 @@ function switchTab(name) {
 }
 
 // ============ 初始化 ============
+const uploadEditor = new FacsUpload.UploadEditor({
+  onApply(face){selectFace(face,document.getElementById('faceCustomBtn'));resetAll();setPreviewOriginal(false);},
+  onSelect(face){selectFace(face,document.getElementById('faceCustomBtn'));},
+  onRemove(){
+    for(const key of photoPreview.cache.keys())if(key.startsWith('user_photo:'))photoPreview.cache.delete(key);
+    if(currentFace.id==='user_photo')selectFace(faceTypes[0],document.querySelector('.face-opt'));
+  }
+});
 buildControls();
 buildSelector();
 refreshAllViews();

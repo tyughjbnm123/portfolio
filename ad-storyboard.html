@@ -5,7 +5,7 @@
   <title>廣告分鏡工作台｜郭奕圻的工具房</title>
   <meta name="description" content="把動作卡片、運鏡與 FACS 表情整合進每一鏡，預演廣告節奏並匯出完整分鏡稿。">
   <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><link rel="stylesheet" href="assets/storyboard.css?v=20260912-orbit1">
-  <script src="assets/site-shell.js"></script><script defer src="assets/storyboard-data.js"></script><script defer src="assets/storyboard-core.js"></script><script defer src="assets/storyboard.js?v=20260912-upload1"></script>
+  <script src="assets/site-shell.js"></script><script defer src="assets/storyboard-data.js?v=20260919-anime"></script><script defer src="assets/storyboard-core.js"></script><script defer src="assets/storyboard.js?v=20260919-anime"></script>
 </head>
 <body class="yk-tool-page" data-tool-page="ad-storyboard">
   <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ai-tools.html" ><span>01</span>短影片動作卡片庫</a><a href="facs-tool.html" ><span>02</span>表情控制器</a><a href="prompt-library.html" ><span>03</span>AI 指令庫</a><a href="raffle.html" ><span>04</span>抽獎機</a><a href="utm-builder.html" ><span>05</span>UTM 連結產生器</a><a href="line-message.html" ><span>06</span>LINE 訊息編排器</a><a href="ad-storyboard.html" aria-current="page"><span>07</span>廣告分鏡工作台</a></nav>
@@ -59,7 +59,7 @@
           <section id="sb-panel-action" role="tabpanel" aria-labelledby="sb-tab-action" hidden>
             <div class="sb-field-row"><div class="sb-field"><label for="sb-shot-frame">景別</label><select id="sb-shot-frame" data-shot="frame"></select></div><div class="sb-field"><label for="sb-shot-camera">機位／運鏡</label><select id="sb-shot-camera" data-shot="camera"></select></div></div>
             <div class="sb-current-action"><span>目前動作</span><strong id="sb-current-action">緩慢深呼吸</strong></div>
-            <div class="sb-field"><label for="sb-action-search">搜尋動作卡 <span>42 張</span></label><input id="sb-action-search" type="search" placeholder="例如：產品、頭髮、走近"></div>
+            <div class="sb-field"><label for="sb-action-search">搜尋動作卡 <span id="sb-action-catalog-count">48 張</span></label><input id="sb-action-search" type="search" placeholder="例如：產品、頭髮、走近"></div>
             <div class="sb-action-filters" role="group" aria-label="依鏡頭位置篩選"><button type="button" data-filter="all" aria-pressed="true">全部</button><button type="button" data-filter="open" aria-pressed="false">開場</button><button type="button" data-filter="mid" aria-pressed="false">過程</button><button type="button" data-filter="end" aria-pressed="false">收尾</button></div>
             <div id="sb-action-list" class="sb-action-list" role="group" aria-label="動作卡片"></div><p id="sb-action-empty" class="sb-help" hidden>沒有符合的動作，試試其他關鍵字。</p>
             <button type="button" class="sb-text-button" id="sb-clear-action">清除動作，依畫面描述拍攝</button>
