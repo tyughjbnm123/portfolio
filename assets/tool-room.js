@@ -1,8 +1,8 @@
 (function(root){
   'use strict';
   const tools=[
-    {id:'storyboard',short:'廣告分鏡',title:'廣告分鏡工作台',category:'影片創作',purpose:'把零散畫面，排成一支廣告。',description:'安排每一鏡的畫面、動作與秒數，預演整支影片的節奏，再匯出分鏡稿。',path:'ad-storyboard.html',steps:['安排分鏡','設定動作與表情','預演與匯出'],alt:'三張人物分鏡搭配十五秒時間軸，示意從畫面安排到廣告分鏡稿。'},
-    {id:'video',short:'動作卡片',title:'短影片動作卡片庫',category:'影片創作',purpose:'先找到動作，再開始拍。',description:'從 48 張角色動作卡挑選開場、展示與收尾姿勢，組合後帶入廣告分鏡工作台。',path:'ai-tools.html',steps:['挑選動作','排列與設定秒數','帶入分鏡工作台'],alt:'同一位金髮動漫角色的揮手、產品展示與指向資訊區動作，組成三鏡順序。'},
+    {id:'storyboard',short:'廣告分鏡',title:'廣告分鏡工作台',category:'影片創作',purpose:'把畫面、台詞與秒數排成廣告。',description:'上傳參考照片，安排開場、產品展示與收尾，補上字幕、旁白和秒數，預演後匯出分鏡稿。',path:'ad-storyboard.html',imageVersion:'20260919-clear-purpose',steps:['安排畫面','加入台詞與秒數','預演與匯出'],alt:'保養品廣告的開場人物、產品特寫與收尾照片，每鏡附字幕，並排列在十五秒時間軸上。'},
+    {id:'video',short:'動作卡片',title:'短影片動作卡片庫',category:'影片創作',purpose:'挑一個動作，加入你的分鏡。',description:'從 48 張動漫角色動作卡挑選姿勢，對照起始與完成畫面，再把選好的動作帶進廣告分鏡工作台。',path:'ai-tools.html',imageVersion:'20260919-clear-purpose',steps:['挑選動作','比較起始與完成','加入分鏡'],alt:'同一個揮手動作的兩格姿勢對照：起始時抬手準備，完成時揮手微笑，搭配加入分鏡示意按鈕。'},
     {id:'facs',short:'表情控制',title:'表情控制器',category:'影片創作',purpose:'把「笑自然一點」，說得更具體。',description:'上傳照片、對齊五官並調整滑桿，查看局部表情變化，整理成可用的表情描述。',path:'facs-tool.html',steps:['上傳並裁切','對齊與調整五官','取得表情描述'],alt:'人像上的五官定位點搭配嘴角與眼睛控制滑桿，示意局部表情調整。'},
     {id:'line',short:'LINE 訊息',title:'LINE 訊息編排器',category:'行銷與活動',purpose:'訊息送出前，先看它長什麼樣。',description:'把圖片、文案與按鈕編成商品卡片，預覽手機裡的輪播訊息，再匯出 Flex Message。',path:'line-message.html',steps:['編排圖文','預覽手機訊息','匯出訊息'],alt:'商品圖片與文字編排在手機輪播訊息中，包含商品按鈕與多張卡片。'},
     {id:'utm',short:'UTM 連結',title:'UTM 連結產生器',category:'行銷與活動',purpose:'讓每個活動連結，都有清楚的來源。',description:'填入目的網址、來源、媒介與活動名稱，產生可用於流量分析的追蹤連結。',path:'utm-builder.html',steps:['填入網址','標記來源與活動','複製追蹤連結'],alt:'網址搭配來源 instagram、媒介 social 與活動 summer，合成帶有 UTM 參數的連結。'},

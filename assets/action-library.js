@@ -16,20 +16,38 @@
     if(el.dataset.loading||el.dataset.ready)return;
     el.dataset.loading='true';delete el.dataset.failed;
     const a=L.BY_ID.get(Number(el.dataset.action));
-    getImage(a.atlas).then(image=>{
-      el.querySelectorAll('.ac-pose').forEach((layer,frame)=>{
+    async function showImage(image){
+      const layers=[...el.querySelectorAll('.ac-pose')];
+      const frames=layers.map((layer,frame)=>{
         const img=document.createElement('img');img.alt='';img.draggable=false;
-        img.onerror=()=>{if(!layer.contains(img))return;delete el.dataset.ready;el.dataset.failed='true';updateImageStatus();};
         img.style.left=`${-a.column*100}%`;img.style.top=`${-frame*100}%`;img.src=image.src;
-        layer.replaceChildren(img);
+        return img;
       });
+      // Keep the previous image visible until both replacement frames are decoded.
+      let decodeTimer;
+      try{
+        await Promise.race([
+          Promise.all(frames.map(img=>img.decode())),
+          new Promise((_,reject)=>{decodeTimer=setTimeout(()=>reject(Error('圖片解碼逾時')),4000);})
+        ]);
+      }catch(error){frames.forEach(img=>{img.src='';});throw error;}
+      finally{clearTimeout(decodeTimer);}
+      layers.forEach((layer,index)=>layer.replaceChildren(frames[index]));
       el.dataset.ready='true';
+    }
+    imageLoader.getPreview(a.atlas).then(async image=>{
+      await showImage(image);
+      // The dialog can open with its cached thumbnail while detail loads in the background.
+      if(el.dataset.full==='true')getImage(a.atlas).then(full=>{
+        if(el.isConnected)return showImage(full);
+      }).catch(()=>{});
     }).catch(()=>{el.dataset.failed='true';}).finally(()=>{delete el.dataset.loading;updateImageStatus();});
   }
   function updateImageStatus(){const help=$('ac-image-help');if(help)help.hidden=!document.querySelector('.ac-grid .ac-art[data-failed=true]');}
   const lazy=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){loadArt(entry.target);lazy.unobserve(entry.target);}}),{rootMargin:'500px'});
-  function art(a,{labels=true,end=false,immediate=false}={}){
+  function art(a,{labels=true,end=false,immediate=false,full=false}={}){
     const wrap=node('div','ac-art');wrap.dataset.action=a.id;wrap.dataset.step=end?'1':'0';wrap.setAttribute('aria-hidden','true');
+    if(full)wrap.dataset.full='true';
     for(let frame=0;frame<2;frame++)wrap.append(node('span','ac-pose'+(frame?' ac-pose-end':'')));
     if(labels){wrap.append(node('span','ac-frame-count',String(a.id).padStart(2,'0')+' / '+a.shotZh));if(a.fresh)wrap.append(node('span','ac-new','新增'));const cap=node('div','ac-art-caption');cap.append(node('span','ac-phase-start','01 起始'),node('span','ac-phase-end','02 完成'),node('span','','兩格示意 ↗'));wrap.append(cap);}
     if(immediate)queueMicrotask(()=>loadArt(wrap));else lazy.observe(wrap);return wrap;
@@ -65,7 +83,7 @@
   function move(i,delta){const j=i+delta;if(j<0||j>=selected.length)return;[selected[i],selected[j]]=[selected[j],selected[i]];renderSequence();notify(`已移到第 ${j+1} 鏡`);}
   function stopModal(){clearInterval(modalTimer);modalPlaying=false;$('ac-dialog-play').textContent='播放兩格示意';$('ac-dialog-play').setAttribute('aria-pressed','false');}
   function showStep(step){modalStep=step;$('ac-dialog-art').firstElementChild.dataset.step=step;$('ac-step-start').setAttribute('aria-pressed',String(step===0));$('ac-step-end').setAttribute('aria-pressed',String(step===1));$('ac-dialog-cue').textContent=modalAction.cues[step];}
-  function openPreview(a){stopModal();document.querySelectorAll(`.ac-grid .ac-art[data-action="${a.id}"][data-failed=true]`).forEach(loadArt);modalAction=a;$('ac-dialog-title').textContent=a.zh;$('ac-dialog-meta').textContent=`${String(a.id).padStart(2,'0')} / ${L.KINDS[a.kind]} · ${a.shotZh} · 建議 ${a.duration} 秒`;$('ac-dialog-description').textContent=a.cues.join('，接著')+'。';$('ac-dialog-art').replaceChildren(art(a,{labels:false,immediate:true}));showStep(0);$('ac-dialog').showModal();$('ac-dialog').scrollTop=0;}
+  function openPreview(a){stopModal();document.querySelectorAll(`.ac-grid .ac-art[data-action="${a.id}"][data-failed=true]`).forEach(loadArt);modalAction=a;$('ac-dialog-title').textContent=a.zh;$('ac-dialog-meta').textContent=`${String(a.id).padStart(2,'0')} / ${L.KINDS[a.kind]} · ${a.shotZh} · 建議 ${a.duration} 秒`;$('ac-dialog-description').textContent=a.cues.join('，接著')+'。';$('ac-dialog-art').replaceChildren(art(a,{labels:false,immediate:true,full:true}));showStep(0);$('ac-dialog').showModal();$('ac-dialog').scrollTop=0;}
   $('ac-retry-images').addEventListener('click',()=>document.querySelectorAll('.ac-art[data-failed=true]').forEach(loadArt));
   addEventListener('online',()=>document.querySelectorAll('.ac-art[data-failed=true]').forEach(loadArt));
   $('ac-dialog-retry').addEventListener('click',()=>{const image=$('ac-dialog-art').firstElementChild;if(image)loadArt(image);});
