@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>郭奕圻 YI-CHI KUO｜作品集與工具房</title><meta name="description" content="郭奕圻的互動作品集。品牌專案、MarTech、自動化、AI 創作與實用工具。"><link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/index-site.css">
-<link rel="stylesheet" href="assets/resume.css"></head><body class="yk-index-page"><div id="yk-world" aria-label="郭奕圻的互動首頁">
+<link rel="stylesheet" href="assets/resume.css"><link rel="stylesheet" href="assets/tool-room.css?v=20260919-tools3"><script src="assets/tool-room.js?v=20260919-raffle4"></script></head><body class="yk-index-page"><div id="yk-world" aria-label="郭奕圻的互動首頁">
  <div class="yk-shell">
   <header class="yk-nav"><button type="button" class="yk-home" aria-label="返回首頁">YI-CHI KUO<span>PERSONAL UNIVERSE</span></button><span class="yk-nav-note">策略思考 · 技術實作 · 創意探索</span><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></header>
   <div class="yk-home-view">
@@ -116,9 +116,12 @@
   <a class="yk-visit" href="projects.html">查看完整作品集 ↗</a>
  </template>
  <template id="yk-tools-content">
-  <div class="yk-detail-heading"><span class="yk-eyebrow">03 / TOOLS I BUILD</span><h2>我的工具房</h2><p>選一個工具，看看它可以幫你完成什麼。</p></div>
-  <div class="yk-tool-picker" role="group" aria-label="選擇工具"><button type="button" data-tool="storyboard" aria-pressed="false"><span>▥</span>廣告分鏡</button><button type="button" data-tool="utm" aria-pressed="true"><span>↗</span>UTM 連結</button><button type="button" data-tool="video" aria-pressed="false"><span>▷</span>動作卡片</button><button type="button" data-tool="facs" aria-pressed="false"><span>◡</span>表情控制</button><button type="button" data-tool="prompt" aria-pressed="false"><span>{ }</span>指令收藏</button><button type="button" data-tool="line" aria-pressed="false"><span>▤</span>LINE 訊息</button><button type="button" data-tool="raffle" aria-pressed="false"><span>✳</span>抽獎機</button></div>
-  <section class="yk-tool-bench" aria-label="工具預覽"><div class="yk-bench-title"><h3>UTM 連結產生器</h3><span class="yk-bench-kind">直接試用</span></div><p class="yk-bench-description">填入網址與活動來源，追蹤連結會即時更新。</p><div class="yk-utm-form"><label>目的網址<input name="url" type="url" value="https://example.com/" autocomplete="off"></label><label>來源<input name="source" value="instagram" autocomplete="off"></label><label>媒介<input name="medium" value="social" autocomplete="off"></label><label>活動名稱<input name="campaign" value="portfolio" autocomplete="off"></label><output class="yk-utm-output" aria-live="polite"></output></div><div class="yk-tool-steps" hidden></div><a class="yk-visit yk-tool-live" href="utm-builder.html">進入工具 ↗</a></section>
+  <div class="yk-detail-heading"><span class="yk-eyebrow">03 / TOOLS I BUILD</span><h2>我的工具房</h2><p>從一個畫面開始，找到這次工作用得上的工具。</p></div>
+  <div class="yk-tool-picker" role="group" aria-label="選擇工具"></div>
+  <section class="yk-tool-showcase" aria-label="工具預覽">
+    <figure class="yk-tool-figure"><img width="1600" height="1000" alt=""><figcaption>功能示意</figcaption></figure>
+    <div class="yk-tool-copy"><span class="yk-tool-category"></span><h3></h3><p class="yk-tool-purpose"></p><p class="yk-tool-description"></p><ol class="yk-tool-flow"></ol><a class="yk-visit yk-tool-live" href="ad-storyboard.html">開啟工具 ↗</a></div>
+  </section>
  </template>
  <template id="yk-lab-content">
   <div class="yk-detail-heading"><span class="yk-eyebrow">04 / CREATIVE EXPLORATIONS</span><h2>創意實驗室</h2><p>AI 商業視覺、影音內容與互動體驗。</p></div>
@@ -187,13 +190,7 @@ function bindDetail(key){
   body.querySelectorAll('[data-case]').forEach(btn=>btn.addEventListener('click',()=>{if(btn===selected&&!panel.hidden){collapse();return;}selected=btn;const value=data[btn.dataset.case];panel.hidden=false;panel.querySelector('h3').textContent=value.title;body.querySelectorAll('[data-case]').forEach(b=>b.setAttribute('aria-expanded',String(b===btn)));const facts=panel.querySelector('.yk-case-facts');facts.replaceChildren();value.facts.forEach((text,i)=>{const item=document.createElement('div');const label=document.createElement('h4');label.textContent=['01 / 原本的問題','02 / 我的做法','03 / 交付與範圍'][i];const p=document.createElement('p');p.textContent=text;item.append(label,p);facts.appendChild(item);});}));
   body.querySelector('[data-close-case]').addEventListener('click',collapse);
  }
- if(key==='tools'){
-  const tools={storyboard:{title:'廣告分鏡工作台',desc:'把角色表情、動作與運鏡整合成一支廣告，預演節奏並帶走完整分鏡稿。',path:'ad-storyboard.html',steps:['安排分鏡','調整動作與表情','預演與匯出']},line:{title:'LINE 訊息編排器',desc:'把圖片、文案與按鈕編成商品卡片，預覽輪播訊息並匯出 Flex Message。',path:'line-message.html',steps:['編排卡片','預覽與追蹤','匯出訊息']},utm:{title:'UTM 連結產生器',desc:'填入網址與活動來源，追蹤連結會即時更新。',path:'utm-builder.html'},video:{title:'短影片動作卡片庫',desc:'用動作與運鏡卡片整理創作方向，再組合成影片描述。',path:'ai-tools.html',steps:['選擇動作','設定機位與運鏡','組合描述']},facs:{title:'表情控制器',desc:'用臉部動作拆解表情，探索不同角色的表情描述。',path:'facs-tool.html',steps:['選擇角色','調整表情','整理描述']},prompt:{title:'AI 指令蒐集工具',desc:'把常用指令收集成可搜尋、可分類的工作資料庫。',path:'prompt-library.html',steps:['收集指令','分類整理','搜尋與取用']},raffle:{title:'抽獎機',desc:'為活動整理名單、設定獎項並呈現抽獎結果。',path:'raffle.html',steps:['匯入名單','設定獎項','進行抽獎']}};
-  const form=body.querySelector('.yk-utm-form');const output=body.querySelector('.yk-utm-output');
-  const updateUrl=()=>{try{const url=new URL(form.querySelector('[name="url"]').value);if(!['http:','https:'].includes(url.protocol))throw Error();['source','medium','campaign'].forEach(name=>{const val=form.querySelector('[name="'+name+'"]').value.trim();if(val)url.searchParams.set('utm_'+name,val);else url.searchParams.delete('utm_'+name);});output.textContent=url.href;}catch(e){output.textContent='請輸入完整的 http:// 或 https:// 網址。';}};
-  form.addEventListener('input',updateUrl);updateUrl();
-  body.querySelectorAll('[data-tool]').forEach(btn=>btn.addEventListener('click',()=>{const value=tools[btn.dataset.tool];body.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));body.querySelector('.yk-bench-title h3').textContent=value.title;body.querySelector('.yk-bench-description').textContent=value.desc;body.querySelector('.yk-bench-kind').textContent=btn.dataset.tool==='utm'?'直接試用':'功能預覽';form.hidden=btn.dataset.tool!=='utm';const steps=body.querySelector('.yk-tool-steps');steps.hidden=btn.dataset.tool==='utm';steps.replaceChildren();(value.steps||[]).forEach((text,i)=>{const span=document.createElement('span');const no=document.createElement('small');no.textContent='0'+(i+1);span.append(no,document.createTextNode(text));steps.appendChild(span);});body.querySelector('.yk-tool-live').href=''+value.path;}));
- }
+ if(key==='tools') ToolRoom.mount(body);
  if(key==='lab'){
   const wall=body.querySelector('.yk-gallery-stage');const viewer=body.querySelector('#yk-art-view');let trigger=null;
   body.querySelectorAll('[data-art]').forEach(btn=>btn.addEventListener('click',()=>{trigger=btn;wall.hidden=true;viewer.hidden=false;const img=viewer.querySelector('img');img.src=ykImages[btn.dataset.art];img.alt=btn.querySelector('img').alt;viewer.querySelector('figcaption').textContent=btn.dataset.art==='zhen'?'珍珍食品｜商業產品 × 情境視覺':'追花季｜季節主題 × 社群內容';btn.setAttribute('aria-expanded','true');viewer.querySelector('button').focus({preventScroll:true});}));
