@@ -18,7 +18,7 @@ body[data-tool-page=ai-tools] .yk-site-nav{min-height:78px}body[data-tool-page=a
 @media(prefers-reduced-motion:reduce){.ac-card,.ac-toast,.ac-pose{transition:none!important}.ac-card:hover{transform:none}.ac-card .ac-pose-end,.ac-card .ac-phase-start,.ac-card .ac-phase-end{animation:none!important}.ac-card.is-playing .ac-phase-end{display:none}.ac-art.is-playing .ac-pose-end{animation:none}.ac-art.is-playing .ac-phase-end{display:none}.ac-art.is-playing .ac-phase-start{animation:none}}
 
 /* Compact gallery thumbnails; keep the complete 3:4 pose inside the frame. */
-.ac-art-button>.ac-art{height:250px;width:187.5px;max-width:100%;margin:auto}
+.ac-art-button>.ac-art{height:225px;width:168.75px;max-width:100%;margin:auto}
 .ac-pose{overflow:hidden}
 .ac-pose img{position:absolute;width:400%;height:200%;max-width:none;display:block;pointer-events:none}
 .ac-art:not([data-ready=true]):not([data-failed=true])::after{content:'圖片載入中…';position:absolute;inset:0;display:grid;place-items:center;color:#536f35;font-size:13px;background:#f4f3ed}
@@ -27,14 +27,24 @@ body[data-tool-page=ai-tools] .yk-site-nav{min-height:78px}body[data-tool-page=a
 .ac-image-help[hidden]{display:none}.ac-image-help:not([hidden]){margin:0 0 18px}
 .ac-image-help p{margin:0;line-height:1.7}.ac-image-help button{white-space:nowrap}
 .ac-card-info{padding:14px}.ac-card h2{font-size:17px;margin-top:8px;margin-bottom:5px}.ac-card-description{margin-bottom:10px}
+.ac-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 16px}
+.ac-card{display:flex;flex-direction:column}
+.ac-card-info{flex:1;display:flex;flex-direction:column}
+.ac-card-bottom{margin-top:auto}
+@media(max-width:1280px){.ac-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1100px){.ac-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #ac-dialog-art{max-width:270px;width:100%;margin:auto}
 @media(max-width:760px){
+  .ac-grid{gap:14px 10px}
   .ac-art-button>.ac-art{height:160px;width:120px}
   .ac-art-caption>span:last-child{display:none}
   .ac-art-caption{padding:6px 8px}
   .ac-frame-count{left:5px;top:5px;font-size:9px}
   .ac-new{right:5px;top:27px;font-size:9px}
   .ac-card-info{padding:10px}.ac-card h2{font-size:15px;min-height:2.9em}.ac-card-description{font-size:12px;line-height:1.6;min-height:3.2em}
+  .ac-card-top,.ac-card-description{display:none}
+  .ac-card h2{margin:0 0 10px;overflow-wrap:anywhere}
+  .ac-card-bottom{row-gap:8px}
   .ac-image-help{flex-wrap:wrap;gap:4px}
   #ac-dialog-art{max-width:180px}
 }
