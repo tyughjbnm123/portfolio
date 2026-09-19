@@ -5,24 +5,38 @@
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   const button=(text,cls,fn,label)=>{const b=node('button',cls,text);b.type='button';if(label)b.setAttribute('aria-label',label);b.addEventListener('click',fn);return b;};
   let selected=[],kind='all',modalAction=null,modalStep=0,modalPlaying=false,modalTimer=0,toastTimer=0,uploadURL='',uploadToken=0,busy=false,outputMode='sequence';
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),imageCache=new Map();
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),imageLoader=ActionMedia.createLoader();
   const notify=text=>{clearTimeout(toastTimer);$('ac-toast').textContent=text;$('ac-toast').classList.add('is-visible');toastTimer=setTimeout(()=>$('ac-toast').classList.remove('is-visible'),3600);};
   const fields=['name','ratio','quality','scene','character','props','product','music','song','bpm','beats'];
   const settings=()=>Object.fromEntries(fields.map(k=>[k,$('ac-'+k).value]));
   function persist(){try{sessionStorage.setItem(L.STORAGE,JSON.stringify({selected,settings:settings()}));}catch{}if(!$('ac-output').hidden&&outputMode==='sequence')renderPrompt();}
   try{const saved=JSON.parse(sessionStorage.getItem(L.STORAGE)||'null');if(saved){selected=L.normalizeSelection(saved.selected);for(const k of fields)if(typeof saved.settings?.[k]==='string'&&saved.settings[k].length<5000){if(k==='ratio'&&!['9:16','16:9','1:1'].includes(saved.settings[k]))continue;$('ac-'+k).value=saved.settings[k];}}}catch{}
-  function getImage(src){if(!imageCache.has(src)){const p=new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>{imageCache.delete(src);reject(Error('動作圖片未能載入，請重新整理後再試。'));};img.src=src;});imageCache.set(src,p);}return imageCache.get(src);}
-  function loadArt(el){if(el.dataset.loaded)return;el.dataset.loaded='true';const a=L.BY_ID.get(Number(el.dataset.action));getImage(a.atlas).then(()=>{if(!el.isConnected)return;el.querySelectorAll('.ac-pose').forEach(p=>p.style.backgroundImage=`url("${a.atlas}")`);el.dataset.ready='true';}).catch(()=>{el.dataset.failed='true';});}
+  const getImage=src=>imageLoader.get(src);
+  function loadArt(el){
+    if(el.dataset.loading||el.dataset.ready)return;
+    el.dataset.loading='true';delete el.dataset.failed;
+    const a=L.BY_ID.get(Number(el.dataset.action));
+    getImage(a.atlas).then(image=>{
+      el.querySelectorAll('.ac-pose').forEach((layer,frame)=>{
+        const img=document.createElement('img');img.alt='';img.draggable=false;
+        img.onerror=()=>{if(!layer.contains(img))return;delete el.dataset.ready;el.dataset.failed='true';updateImageStatus();};
+        img.style.left=`${-a.column*100}%`;img.style.top=`${-frame*100}%`;img.src=image.src;
+        layer.replaceChildren(img);
+      });
+      el.dataset.ready='true';
+    }).catch(()=>{el.dataset.failed='true';}).finally(()=>{delete el.dataset.loading;updateImageStatus();});
+  }
+  function updateImageStatus(){const help=$('ac-image-help');if(help)help.hidden=!document.querySelector('.ac-grid .ac-art[data-failed=true]');}
   const lazy=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){loadArt(entry.target);lazy.unobserve(entry.target);}}),{rootMargin:'500px'});
   function art(a,{labels=true,end=false,immediate=false}={}){
     const wrap=node('div','ac-art');wrap.dataset.action=a.id;wrap.dataset.step=end?'1':'0';wrap.setAttribute('aria-hidden','true');
-    for(let frame=0;frame<2;frame++){const layer=node('span','ac-pose'+(frame?' ac-pose-end':''));layer.style.backgroundPosition=`${a.column/3*100}% ${frame*100}%`;wrap.append(layer);}
+    for(let frame=0;frame<2;frame++)wrap.append(node('span','ac-pose'+(frame?' ac-pose-end':'')));
     if(labels){wrap.append(node('span','ac-frame-count',String(a.id).padStart(2,'0')+' / '+a.shotZh));if(a.fresh)wrap.append(node('span','ac-new','新增'));const cap=node('div','ac-art-caption');cap.append(node('span','ac-phase-start','01 起始'),node('span','ac-phase-end','02 完成'),node('span','','兩格示意 ↗'));wrap.append(cap);}
     if(immediate)queueMicrotask(()=>loadArt(wrap));else lazy.observe(wrap);return wrap;
   }
   function syncCardButtons(){document.querySelectorAll('[data-add]').forEach(b=>{const n=selected.filter(v=>v.id===Number(b.dataset.add)).length;b.textContent=n?`＋ 再加一鏡 · ${n}`:'＋ 加入';b.disabled=selected.length>=L.MAX;});$('ac-dialog-add').disabled=selected.length>=L.MAX;}
   function renderGallery(){
-    lazy.disconnect();const matches=L.filterActions({search:$('ac-search').value,kind,stage:$('ac-stage').value,shot:$('ac-shot').value});
+    $('ac-grid').querySelectorAll('.ac-art').forEach(el=>lazy.unobserve(el));const matches=L.filterActions({search:$('ac-search').value,kind,stage:$('ac-stage').value,shot:$('ac-shot').value});
     const grid=$('ac-grid');grid.replaceChildren();$('ac-empty').hidden=!!matches.length;$('ac-result-count').textContent=`${matches.length} / ${L.ACTIONS.length} 張`;
     for(const a of matches){
       const card=node('article','ac-card');card.dataset.action=a.id;const visual=button('','ac-art-button',()=>openPreview(a),`預覽 ${a.zh}`);visual.append(art(a));
@@ -31,7 +45,7 @@
       const bottom=node('div','ac-card-bottom'),add=button('＋ 加入','ac-add',()=>addAction(a.id),`加入 ${a.zh}`);add.dataset.add=a.id;bottom.append(node('span','',`建議 ${a.duration} 秒`),add);info.append(bottom);card.append(visual,info);
       card.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&!reduced.matches)card.classList.add('is-playing');});card.addEventListener('pointerleave',()=>card.classList.remove('is-playing'));visual.addEventListener('focus',()=>{if(!reduced.matches)card.classList.add('is-playing');});visual.addEventListener('blur',()=>card.classList.remove('is-playing'));grid.append(card);
     }
-    syncCardButtons();document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));
+    syncCardButtons();updateImageStatus();document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));
   }
   function addAction(id){if(selected.length>=L.MAX){notify('一個專案最多 12 鏡，請先移除或匯出目前分鏡。');return;}const a=L.BY_ID.get(id);selected.push({id,duration:a.duration,camera:'front'});renderSequence();notify(`已加入「${a.zh}」，目前 ${selected.length} 鏡`);}
   function updateSummary(){const count=selected.length;for(const id of ['ac-send','ac-generate','ac-save-project'])$(id).disabled=!count||busy;$('ac-clear').disabled=!count;$('ac-count').textContent=`${count} / ${L.MAX}`;$('ac-jump-count').textContent=count;$('ac-total').textContent=L.total(selected).toFixed(1);syncCardButtons();persist();if(!$('ac-output').hidden&&outputMode==='sequence')renderPrompt();}
@@ -51,7 +65,10 @@
   function move(i,delta){const j=i+delta;if(j<0||j>=selected.length)return;[selected[i],selected[j]]=[selected[j],selected[i]];renderSequence();notify(`已移到第 ${j+1} 鏡`);}
   function stopModal(){clearInterval(modalTimer);modalPlaying=false;$('ac-dialog-play').textContent='播放兩格示意';$('ac-dialog-play').setAttribute('aria-pressed','false');}
   function showStep(step){modalStep=step;$('ac-dialog-art').firstElementChild.dataset.step=step;$('ac-step-start').setAttribute('aria-pressed',String(step===0));$('ac-step-end').setAttribute('aria-pressed',String(step===1));$('ac-dialog-cue').textContent=modalAction.cues[step];}
-  function openPreview(a){stopModal();modalAction=a;$('ac-dialog-title').textContent=a.zh;$('ac-dialog-meta').textContent=`${String(a.id).padStart(2,'0')} / ${L.KINDS[a.kind]} · ${a.shotZh} · 建議 ${a.duration} 秒`;$('ac-dialog-description').textContent=a.cues.join('，接著')+'。';$('ac-dialog-art').replaceChildren(art(a,{labels:false,immediate:true}));showStep(0);$('ac-dialog').showModal();$('ac-dialog').scrollTop=0;}
+  function openPreview(a){stopModal();document.querySelectorAll(`.ac-grid .ac-art[data-action="${a.id}"][data-failed=true]`).forEach(loadArt);modalAction=a;$('ac-dialog-title').textContent=a.zh;$('ac-dialog-meta').textContent=`${String(a.id).padStart(2,'0')} / ${L.KINDS[a.kind]} · ${a.shotZh} · 建議 ${a.duration} 秒`;$('ac-dialog-description').textContent=a.cues.join('，接著')+'。';$('ac-dialog-art').replaceChildren(art(a,{labels:false,immediate:true}));showStep(0);$('ac-dialog').showModal();$('ac-dialog').scrollTop=0;}
+  $('ac-retry-images').addEventListener('click',()=>document.querySelectorAll('.ac-art[data-failed=true]').forEach(loadArt));
+  addEventListener('online',()=>document.querySelectorAll('.ac-art[data-failed=true]').forEach(loadArt));
+  $('ac-dialog-retry').addEventListener('click',()=>{const image=$('ac-dialog-art').firstElementChild;if(image)loadArt(image);});
   $('ac-dialog-close').addEventListener('click',()=>$('ac-dialog').close());$('ac-dialog').addEventListener('close',stopModal);
   $('ac-step-start').addEventListener('click',()=>{stopModal();showStep(0);});$('ac-step-end').addEventListener('click',()=>{stopModal();showStep(1);});
   $('ac-dialog-play').addEventListener('click',()=>{if(modalPlaying){stopModal();return;}modalPlaying=true;$('ac-dialog-play').textContent='暫停示意';$('ac-dialog-play').setAttribute('aria-pressed','true');showStep(1-modalStep);modalTimer=setInterval(()=>showStep(1-modalStep),1400);});$('ac-dialog-add').addEventListener('click',()=>addAction(modalAction.id));

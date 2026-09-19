@@ -16,3 +16,25 @@ body[data-tool-page=ai-tools] .yk-site-nav{min-height:78px}body[data-tool-page=a
 @media(max-width:1100px){.ac-layout{grid-template-columns:minmax(0,1fr) 310px;gap:20px}.ac-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ac-sidebar{padding:17px}.ac-intro p{display:none}}
 @media(max-width:760px){body[data-tool-page=ai-tools]{padding-left:16px;padding-right:16px}.ac-layout{grid-template-columns:1fr}.ac-sidebar{position:static;max-height:none}.ac-grid{gap:14px 10px}.ac-card-info{padding:12px}.ac-card h2{font-size:16px}.ac-card-description{font-size:13px}.ac-card-top{font-size:11px}.ac-card-bottom{flex-wrap:wrap}.ac-add{width:100%;min-height:42px}.ac-intro{gap:12px;margin-bottom:20px}.ac-intro>div{display:block}.ac-intro>div span{display:block;font-size:13px}.ac-intro a{margin-left:auto}.ac-filter-row{gap:8px;flex-wrap:wrap}.ac-filter-row label{font-size:13px}.ac-filter-row>span{font-size:12px}.ac-chips{gap:6px}.ac-chips button{padding:8px 12px;font-size:13px}.ac-art-caption{font-size:11px;padding:8px}.ac-frame-count,.ac-new{font-size:10px;top:8px;padding:3px 6px}.ac-new{right:8px}.ac-frame-count{left:8px}.ac-output{padding:18px}.ac-output-heading{display:block}.ac-output-actions{margin-top:15px}.ac-dialog{padding:16px}.ac-dialog-layout{grid-template-columns:1fr;gap:10px}#ac-dialog-art{max-width:260px;width:100%;margin:auto}.ac-dialog-heading h2{font-size:21px}.ac-dialog-notes>p{font-size:14px}.ac-dialog-steps{margin-top:12px}.ac-toast{width:max-content;text-align:center}.ac-phase-end{left:8px!important}}
 @media(prefers-reduced-motion:reduce){.ac-card,.ac-toast,.ac-pose{transition:none!important}.ac-card:hover{transform:none}.ac-card .ac-pose-end,.ac-card .ac-phase-start,.ac-card .ac-phase-end{animation:none!important}.ac-card.is-playing .ac-phase-end{display:none}.ac-art.is-playing .ac-pose-end{animation:none}.ac-art.is-playing .ac-phase-end{display:none}.ac-art.is-playing .ac-phase-start{animation:none}}
+
+/* Compact gallery thumbnails; keep the complete 3:4 pose inside the frame. */
+.ac-art-button>.ac-art{height:250px;width:187.5px;max-width:100%;margin:auto}
+.ac-pose{overflow:hidden}
+.ac-pose img{position:absolute;width:400%;height:200%;max-width:none;display:block;pointer-events:none}
+.ac-art:not([data-ready=true]):not([data-failed=true])::after{content:'圖片載入中…';position:absolute;inset:0;display:grid;place-items:center;color:#536f35;font-size:13px;background:#f4f3ed}
+.ac-grid .ac-art[data-failed=true]::after{content:'圖片未載入，點圖重試';padding:20px;text-align:center}
+.ac-image-help{display:flex;gap:16px;justify-content:space-between;align-items:baseline;margin-top:18px;color:var(--yk-muted);font-size:13px}
+.ac-image-help[hidden]{display:none}.ac-image-help:not([hidden]){margin:0 0 18px}
+.ac-image-help p{margin:0;line-height:1.7}.ac-image-help button{white-space:nowrap}
+.ac-card-info{padding:14px}.ac-card h2{font-size:17px;margin-top:8px;margin-bottom:5px}.ac-card-description{margin-bottom:10px}
+#ac-dialog-art{max-width:270px;width:100%;margin:auto}
+@media(max-width:760px){
+  .ac-art-button>.ac-art{height:160px;width:120px}
+  .ac-art-caption>span:last-child{display:none}
+  .ac-art-caption{padding:6px 8px}
+  .ac-frame-count{left:5px;top:5px;font-size:9px}
+  .ac-new{right:5px;top:27px;font-size:9px}
+  .ac-card-info{padding:10px}.ac-card h2{font-size:15px;min-height:2.9em}.ac-card-description{font-size:12px;line-height:1.6;min-height:3.2em}
+  .ac-image-help{flex-wrap:wrap;gap:4px}
+  #ac-dialog-art{max-width:180px}
+}

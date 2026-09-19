@@ -27,14 +27,32 @@
   function pointFromClient(clientX,clientY,rect){
     return [clamp((clientX-rect.left)/rect.width*SIZE,4,SIZE-4),clamp((clientY-rect.top)/rect.height*SIZE,4,SIZE-4)];
   }
+  function markerError(message,pointIds=[]){const error=new Error(message);error.pointIds=pointIds;return error;}
+  function normalizePoints(points){
+    if(!Array.isArray(points)||points.length!==POINTS.length)throw markerError('五官標記不完整，請按「重置標記」後重新對齊。');
+    const byId=new Map(points.map(p=>[p.id,p]));
+    const normalized=POINTS.map(base=>{
+      const p=byId.get(base.id);
+      if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.x>SIZE||p.y<0||p.y>SIZE)throw markerError(`請將「${base.label}」標記放在照片範圍內。`,[base.id]);
+      return {...base,x:p.x,y:p.y};
+    });
+    const p=Object.fromEntries(normalized.map(v=>[v.id,v]));
+    const corrected=[];
+    for(const [right,left,label]of [['eyeR','eyeL','眼睛'],['browR','browL','眉毛'],['mouthR','mouthL','嘴角']]){
+      if(p[right].x>p[left].x){const a={x:p[right].x,y:p[right].y};Object.assign(p[right],{x:p[left].x,y:p[left].y});Object.assign(p[left],a);corrected.push(label);}
+    }
+    return {points:normalized,corrected};
+  }
   function landmarks(points){
-    const p=Object.fromEntries(points.map(v=>[v.id,[v.x,v.y]]));
-    if(Object.keys(p).length!==POINTS.length||Object.values(p).some(v=>v.some(n=>!Number.isFinite(n)||n<0||n>SIZE))) throw new Error('請把所有標記放在照片範圍內。');
-    if(p.eyeL[0]-p.eyeR[0]<35) throw new Error('請確認左右眼標記：右眼在畫面左側，左眼在畫面右側。臉部太小時，請返回裁切並放大。');
-    if(p.mouthL[0]-p.mouthR[0]<12) throw new Error('請將兩個嘴角標記分別放在嘴巴左、右兩端。');
+    const p=Object.fromEntries(normalizePoints(points).points.map(v=>[v.id,[v.x,v.y]]));
+    const eyeSpan=p.eyeL[0]-p.eyeR[0],mouthSpan=p.mouthL[0]-p.mouthR[0];
+    if(eyeSpan<4) throw markerError('1、2 眼睛標記太靠近，請分別放在兩眼中心；臉太小時可返回裁切放大。',['eyeR','eyeL']);
+    if(mouthSpan<2) throw markerError('6、7 嘴角標記重疊，請分別放在嘴巴兩端。',['mouthR','mouthL']);
     const mx=(p.mouthR[0]+p.mouthL[0])/2,my=(p.mouthR[1]+p.mouthL[1])/2;
-    if(my<Math.max(p.eyeR[1],p.eyeL[1])+20||p.chin[1]<my+15) throw new Error('請確認眼睛、嘴巴與下巴標記的位置；此預覽適合接近正面的照片。');
-    return {eyes:[p.eyeR,p.eyeL],brows:[p.browR,p.browL],nose:p.nose,mouth:[mx,my,(p.mouthL[0]-p.mouthR[0])/2],chin:p.chin[1],scale:clamp((p.eyeL[0]-p.eyeR[0])/92,.45,2.2)};
+    const margin=Math.max(1,eyeSpan*.08);
+    if(my<(p.eyeR[1]+p.eyeL[1])/2+margin) throw markerError('6、7 嘴角應放在眼睛下方，請確認這兩個標記的位置。',['mouthR','mouthL']);
+    if(p.chin[1]<my+margin) throw markerError('8 下巴應放在嘴巴下方的臉部最下緣。',['chin']);
+    return {eyes:[p.eyeR,p.eyeL],brows:[p.browR,p.browL],nose:p.nose,mouth:[mx,my,mouthSpan/2],chin:p.chin[1],scale:clamp(eyeSpan/92,.04,2.2)};
   }
 
   class UploadEditor {
@@ -64,8 +82,7 @@
             <section id="faceAlignSettings" hidden><h3>把標記放到五官上</h3><p class="face-crop-help">先選下方部位，再點照片定位；也可直接拖曳圓點。左右以照片中的人物為準。</p><div class="face-point-list" id="facePointList"></div><p class="face-point-current" id="facePointHint" aria-live="polite"></p><button type="button" class="face-upload-button" id="facePointsReset">重置標記</button></section>
           </div>
         </div>
-        <p class="face-crop-error" id="faceCropError" role="alert"></p>
-        <div class="face-crop-footer"><p>照片只在本機處理。套用後從中性表情開始。</p><div><button type="button" class="face-upload-button" id="faceCropBack" hidden>返回裁切</button><button type="button" class="face-upload-button face-upload-primary" id="faceCropNext">下一步：對齊五官</button><button type="button" class="face-upload-button face-upload-primary" id="faceCropApply" hidden>套用照片</button></div></div>`;
+        <div class="face-crop-footer"><p class="face-crop-error" id="faceCropError" role="alert" tabindex="-1"></p><div class="face-crop-footer-actions"><p>照片只在本機處理。套用後從中性表情開始。</p><div><button type="button" class="face-upload-button" id="faceCropBack" hidden>返回裁切</button><button type="button" class="face-upload-button face-upload-primary" id="faceCropNext">下一步：對齊五官</button><button type="button" class="face-upload-button face-upload-primary" id="faceCropApply" hidden>套用照片</button></div></div></div>`;
       document.body.appendChild(this.dialog);
       this.$=id=>this.dialog.querySelector('#'+id);
       this.stage=this.$('faceCropStage');this.canvas=this.$('faceCropCanvas');this.ctx=this.canvas.getContext('2d');
@@ -90,7 +107,7 @@
       this.$('faceCropRatio').addEventListener('change',e=>{this.settings.ratio=e.target.value;this.points=freshPoints();this.render();});
       for(const [id,key] of [['faceCropZoom','zoom'],['faceCropX','x'],['faceCropY','y']])this.$(id).addEventListener('input',e=>{this.settings[key]=Number(e.target.value);this.render();});
       this.$('faceCropReset').addEventListener('click',()=>{this.settings={...this.settings,zoom:1,x:0,y:0};this.render();});
-      this.$('facePointsReset').addEventListener('click',()=>{this.points=freshPoints();this.render();});
+      this.$('facePointsReset').addEventListener('click',()=>{this.clearError();this.points=freshPoints();this.render();});
       this.$('faceCropNext').addEventListener('click',()=>{this.setMode('align');this.pointList.children[0].focus({preventScroll:true});this.dialog.scrollTop=0;});
       this.$('faceCropBack').addEventListener('click',()=>this.setMode('crop'));
       this.$('faceCropApply').addEventListener('click',()=>this.apply());
@@ -127,7 +144,7 @@
       this.setMode('crop');this.dialog.showModal();this.stage.focus({preventScroll:true});this.dialog.scrollTop=0;
     }
     setMode(mode){
-      this.mode=mode;this.drag=null;this.$('faceCropError').textContent='';
+      this.mode=mode;this.drag=null;this.clearError();
       const aligning=mode==='align';
       this.$('faceCropSettings').hidden=aligning;this.$('faceAlignSettings').hidden=!aligning;
       this.$('faceCropNext').hidden=aligning;this.$('faceCropBack').hidden=!aligning;this.$('faceCropApply').hidden=!aligning;
@@ -143,11 +160,13 @@
       [...this.pointList.children].forEach((el,i)=>el.setAttribute('aria-pressed',String(i===index)));
     }
     nudgePoint(key,amount){
+      this.clearError();
       const p=this.points[this.selected],axis=key==='ArrowLeft'||key==='ArrowRight'?'x':'y';
       p[axis]=clamp(p[axis]+(key==='ArrowLeft'||key==='ArrowUp'?-amount:amount),4,SIZE-4);this.render();
     }
     pointerDown(e){
       if(!this.image||e.button!==0)return;e.preventDefault();
+      this.clearError();
       const rect=this.stage.getBoundingClientRect();
       if(this.mode==='align'){
         const dot=e.target.closest('[data-point]');if(dot)this.selectPoint(Number(dot.dataset.point));
@@ -180,18 +199,31 @@
       this.$('faceCropX').disabled=g.overflowX<.01;this.$('faceCropY').disabled=g.overflowY<.01;
       this.points.forEach((p,i)=>{const el=this.pointLayer.children[i];el.style.left=(p.x/SIZE*100)+'%';el.style.top=(p.y/SIZE*100)+'%';});
     }
+    clearError(){
+      this.$('faceCropError').textContent='';
+      for(const dot of this.pointLayer.children)dot.removeAttribute('aria-invalid');
+    }
     apply(){
+      this.clearError();
       try{
-        const anchors=landmarks(this.points);this.render();
+        if(!this.image)throw Error('照片尚未讀取完成，請關閉視窗並重新選取圖片。');
+        const normalized=normalizePoints(this.points),anchors=landmarks(normalized.points);
+        this.points=normalized.points;this.render();
         const face={id:'user_photo',label:'我的照片',thumb:this.canvas.toDataURL('image/jpeg',.94),revision:++this.revision,anchors,width:this.canvas.width,height:this.canvas.height,cropRatio:this.settings.ratio};
+        this.onApply(face);
         this.saved={face,image:this.image,settings:{...this.settings},points:this.points.map(p=>({...p})),name:this.name};
         document.getElementById('faceCustomRow').hidden=false;
         document.getElementById('faceCustomThumb').src=face.thumb;
-        this.onApply(face);this.status.textContent='已套用照片。可選擇表情，或使用滑桿微調。';this.dialog.close();
+        this.status.textContent='已套用照片。'+(normalized.corrected.length?`已依畫面左右校正${normalized.corrected.join('、')}標記。`:'')+(anchors.eyes[1][0]-anchors.eyes[0][0]<35?'臉部偏小，可重新裁切放大，讓表情變化更清楚。':'可選擇表情，或使用滑桿微調。');this.dialog.close();
         document.getElementById('faceCustomBtn').focus({preventScroll:true});
-      }catch(error){this.$('faceCropError').textContent=error.message||'無法套用照片，請檢查標記位置。';}
+      }catch(error){
+        const target=POINTS.findIndex(p=>error.pointIds?.includes(p.id));
+        if(target>=0)this.selectPoint(target);
+        [...this.pointLayer.children].forEach((dot,i)=>{if(error.pointIds?.includes(POINTS[i].id))dot.setAttribute('aria-invalid','true');});
+        const message=this.$('faceCropError');message.textContent='尚未套用：'+(error.message||'請檢查標記位置，或重新選取照片。');message.focus({preventScroll:true});message.scrollIntoView({block:'nearest'});
+      }
     }
   }
-  const api={SIZE,RATIOS,POINTS,frameSize,cropGeometry,pointFromClient,landmarks,freshPoints,UploadEditor};
+  const api={SIZE,RATIOS,POINTS,frameSize,cropGeometry,pointFromClient,normalizePoints,landmarks,freshPoints,UploadEditor};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.FacsUpload=api;
 })(typeof window==='undefined'?{}:window);
