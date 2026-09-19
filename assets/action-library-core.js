@@ -16,11 +16,11 @@
     ['身體轉向後側','回眸看向鏡頭',3],['雙手自然垂放','雙手放入裙側口袋',3,'雙手插口袋'],['抬起手掌','小幅揮手、微笑',3],['雙手拿穩盒子','打開盒蓋、露出產品',4],
     ['展示瓶身側面','旋轉到正面、停住',4],['手背留出試用區','指腹推開少量乳霜',4],['手掌朝向留白區','指向資訊位置',3],['雙手平舉兩款產品','視線在兩款之間切換',4]
   ];
-  const camera=new Set([1,19,23,26,27]),expression=new Set([6,10,11,12,13,14,15,20,21,29]),product=new Set([38,44,45,46,48]);
-  const ACTIONS=D.ACTIONS.map(a=>{const c=cues[a.id-1];return {...a,zh:c?.[3]||a.zh,cues:c?.slice(0,2)||[a.zh,a.zh],duration:c?.[2]||3,kind:camera.has(a.id)?'camera':product.has(a.id)?'product':expression.has(a.id)?'expression':'body',fresh:a.id>42,atlas:'assets/action-atlas-'+String(Math.ceil(a.id/4)).padStart(2,'0')+'.png',column:(a.id-1)%4};});
+  const camera=new Set([1,19,26,27]),expression=new Set([6,10,13,14,15,20,21,29]),product=new Set([38,44,45,46,48]),gesture=new Set([2,5,7,8,9,11,12,16,17,25,28,33,34,40,43,47]);
+  const ACTIONS=D.ACTIONS.map(a=>{const c=cues[a.id-1];return {...a,zh:c?.[3]||a.zh,cues:c?.slice(0,2)||[a.zh,a.zh],duration:c?.[2]||3,kind:camera.has(a.id)?'camera':product.has(a.id)?'product':expression.has(a.id)?'expression':gesture.has(a.id)?'gesture':'body',atlas:'assets/action-atlas-'+String(Math.ceil(a.id/4)).padStart(2,'0')+'.png',column:(a.id-1)%4};});
   const BY_ID=new Map(ACTIONS.map(a=>[a.id,a]));
-  const KINDS={all:'全部',body:'人物動作',expression:'表情與視線',camera:'鏡頭構圖',product:'產品展示',new:'新增動作'};
-  function filterActions({search='',kind='all',stage='all',shot='all'}={}){const q=String(search).trim().toLowerCase();return ACTIONS.filter(a=>(kind==='all'||(kind==='new'?a.fresh:a.kind===kind))&&(stage==='all'||a.cat.includes(stage))&&(shot==='all'||a.shot===shot)&&(!q||`${a.id} ${a.zh} ${a.en} ${a.cues.join(' ')}`.toLowerCase().includes(q)));}
+  const KINDS={all:'全部',gesture:'手勢互動',body:'姿勢與移動',expression:'表情與視線',product:'產品展示',camera:'運鏡與取景'};
+  function filterActions({search='',kind='all',stage='all',shot='all'}={}){const q=String(search).trim().toLowerCase();return ACTIONS.filter(a=>(kind==='all'||a.kind===kind)&&(stage==='all'||a.cat.includes(stage))&&(shot==='all'||a.shot===shot)&&(!q||`${a.id} ${a.zh} ${a.en} ${a.cues.join(' ')}`.toLowerCase().includes(q)));}
   function normalizeSelection(raw){if(!Array.isArray(raw))return [];return raw.slice(0,MAX).filter(v=>v&&BY_ID.has(v.id)).map(v=>({id:v.id,duration:Math.max(.5,Math.min(30,Math.round((Number(v.duration)||BY_ID.get(v.id).duration)*2)/2)),camera:Object.hasOwn(S.CAM_LABELS,v.camera)?v.camera:'front'}));}
   const total=sel=>Math.round(sel.reduce((n,s)=>n+s.duration,0)*10)/10;
   function recommend({style='sweet',tempo='slow',shot='balance'}={}){let ids=style==='cool'?[22,30,38,21]:style==='elegant'?[20,45,46,47]:style==='playful'?[43,8,44,33]:[43,38,45,47];if(shot==='close')ids=[20,6,38,45];return normalizeSelection(ids.map(id=>({id,duration:tempo==='fast'?2:BY_ID.get(id).duration,camera:'front'})));}

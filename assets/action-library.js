@@ -49,7 +49,7 @@
     const wrap=node('div','ac-art');wrap.dataset.action=a.id;wrap.dataset.step=end?'1':'0';wrap.setAttribute('aria-hidden','true');
     if(full)wrap.dataset.full='true';
     for(let frame=0;frame<2;frame++)wrap.append(node('span','ac-pose'+(frame?' ac-pose-end':'')));
-    if(labels){wrap.append(node('span','ac-frame-count',String(a.id).padStart(2,'0')+' / '+a.shotZh));if(a.fresh)wrap.append(node('span','ac-new','新增'));const cap=node('div','ac-art-caption');cap.append(node('span','ac-phase-start','01 起始'),node('span','ac-phase-end','02 完成'),node('span','','兩格示意 ↗'));wrap.append(cap);}
+    if(labels){wrap.append(node('span','ac-frame-count',String(a.id).padStart(2,'0')+' / '+a.shotZh));const cap=node('div','ac-art-caption');cap.append(node('span','ac-phase-start','01 起始'),node('span','ac-phase-end','02 完成'),node('span','','兩格示意 ↗'));wrap.append(cap);}
     if(immediate)queueMicrotask(()=>loadArt(wrap));else lazy.observe(wrap);return wrap;
   }
   function syncCardButtons(){document.querySelectorAll('[data-add]').forEach(b=>{const n=selected.filter(v=>v.id===Number(b.dataset.add)).length;b.textContent=n?`＋ 再加一鏡 · ${n}`:'＋ 加入';b.disabled=selected.length>=L.MAX;});$('ac-dialog-add').disabled=selected.length>=L.MAX;}
@@ -91,7 +91,7 @@
   $('ac-step-start').addEventListener('click',()=>{stopModal();showStep(0);});$('ac-step-end').addEventListener('click',()=>{stopModal();showStep(1);});
   $('ac-dialog-play').addEventListener('click',()=>{if(modalPlaying){stopModal();return;}modalPlaying=true;$('ac-dialog-play').textContent='暫停示意';$('ac-dialog-play').setAttribute('aria-pressed','true');showStep(1-modalStep);modalTimer=setInterval(()=>showStep(1-modalStep),1400);});$('ac-dialog-add').addEventListener('click',()=>addAction(modalAction.id));
   document.addEventListener('visibilitychange',()=>{if(document.hidden){stopModal();document.querySelectorAll('.ac-card.is-playing').forEach(c=>c.classList.remove('is-playing'));}});
-  for(const [k,text] of Object.entries(L.KINDS)){const b=button(k==='new'?`${text} 6`:text,'',()=>{kind=k;renderGallery();});b.dataset.kind=k;b.setAttribute('aria-pressed',String(k==='all'));$('ac-kind-filters').append(b);}
+  for(const [k,text] of Object.entries(L.KINDS)){const b=button(text,'',()=>{kind=k;renderGallery();});b.dataset.kind=k;b.setAttribute('aria-pressed',String(k==='all'));$('ac-kind-filters').append(b);}
   for(const id of ['ac-search','ac-stage','ac-shot'])$(id).addEventListener(id==='ac-search'?'input':'change',renderGallery);
   function resetFilters(){kind='all';$('ac-search').value='';$('ac-stage').value=$('ac-shot').value='all';renderGallery();}
   $('ac-filter-reset').addEventListener('click',resetFilters);$('ac-empty-reset').addEventListener('click',resetFilters);$('ac-clear').addEventListener('click',()=>{selected=[];renderSequence();});
