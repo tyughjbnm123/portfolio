@@ -1,4 +1,4 @@
-/* Local photo deformation. The six bundled portraits use calibrated 2D anchors;
+/* Local photo deformation. Bundled and uploaded portraits use calibrated 2D anchors;
    this illustrates AU directions, not a clinical FACS rig or generated imagery. */
 (function (root) {
   'use strict';
@@ -16,22 +16,23 @@
   function strength(n) { return Math.tanh(clamp(Number(n)||0,0,4)*.45)/Math.tanh(1.8); }
 
   function controls(faceId, au) {
-    const f = ANCHORS[faceId] || ANCHORS.young_f, points=[];
-    const add=(x,y,dx,dy,rx,ry)=>points.push({x,y,dx,dy,rx,ry});
+    const f = (typeof faceId==='object' ? faceId : ANCHORS[faceId]) || ANCHORS.young_f, points=[];
+    const scale=f.scale||1;
+    const add=(x,y,dx,dy,rx,ry)=>points.push({x,y,dx:dx*scale,dy:dy*scale,rx:rx*scale,ry:ry*scale});
     f.brows.forEach(([x,y],i)=>{
       const side=i===0?-1:1;
-      if(au==='AU1') add(x-side*16,y,0,-10,22,15);
-      if(au==='AU2') add(x+side*18,y,0,-9,23,16);
+      if(au==='AU1') add(x-side*16*scale,y,0,-10,22,15);
+      if(au==='AU2') add(x+side*18*scale,y,0,-9,23,16);
       if(au==='AU4') {
-        add(x-side*14,y,-side*4,9,24,13);
-        add(x+side*18,y,0,2,20,13);
+        add(x-side*14*scale,y,-side*4,9,24,13);
+        add(x+side*18*scale,y,0,2,20,13);
       }
     });
     f.eyes.forEach(([x,y],i)=>{
-      const half=f.anime?13:7, width=f.anime?31:25;
+      const half=(f.anime?13:7)*scale, width=f.anime?31:25;
       if(au==='AU5') add(x,y-half,0,-5,width,10);
       if(au==='AU6') {
-        add(x,y+32,0,-6,36,25);
+        add(x,y+32*scale,0,-6,36,25);
         add(x,y+half,0,-2,width,8);
       }
       if(au==='AU7') {add(x,y-half,0,3,width,8);add(x,y+half,0,-2,width,8);}
@@ -42,8 +43,8 @@
       }
     });
     const [mx,my,mw]=f.mouth, [nx,ny]=f.nose;
-    if(au==='AU9') {add(nx-15,ny,-1,-4,17,17);add(nx+15,ny,1,-4,17,17);}
-    if(au==='AU10') add(mx,my-6,0,-5,mw*.75,12);
+    if(au==='AU9') {add(nx-15*scale,ny,-1,-4,17,17);add(nx+15*scale,ny,1,-4,17,17);}
+    if(au==='AU10') add(mx,my-6*scale,0,-5,mw*.75/scale,12);
     [-1,1].forEach(side=>{
       if(au==='AU12') add(mx+side*mw,my,side*6,-10,22,21);
       // AU20: lip stretcher (https://www.cs.cmu.edu/~face/facs.htm).
@@ -52,13 +53,13 @@
       if(au==='AU15') add(mx+side*mw,my,-side,7,21,21);
       if(au==='AU22') add(mx+side*mw,my,-side*2,0,17,15);
     });
-    if(au==='AU22') {add(mx,my-6,0,-2,mw*.8,9);add(mx,my+8,0,3,mw*.8,10);}
-    if(au==='AU16') add(mx,my+9,0,5,mw*.85,12);
-    if(au==='AU17') {add(mx,f.chin-12,0,-6,38,22);add(mx,my+9,0,-2,mw,12);}
+    if(au==='AU22') {add(mx,my-6*scale,0,-2,mw*.8/scale,9);add(mx,my+8*scale,0,3,mw*.8/scale,10);}
+    if(au==='AU16') add(mx,my+9*scale,0,5,mw*.85/scale,12);
+    if(au==='AU17') {add(mx,f.chin-12*scale,0,-6,38,22);add(mx,my+9*scale,0,-2,mw/scale,12);}
     // A single closed-mouth photo has no hidden teeth/interior. Keep jaw
     // motion restrained instead of painting a synthetic hole over the face.
-    if(au==='AU26') {add(mx,f.chin-6,0,5,50,25);add(mx,my+11,0,3,mw,14);}
-    if(au==='AU27') {add(mx,f.chin-6,0,7,50,25);add(mx,my+11,0,5,mw,14);add(mx,my-6,0,-2,mw*.8,9);}
+    if(au==='AU26') {add(mx,f.chin-6*scale,0,5,50,25);add(mx,my+11*scale,0,3,mw/scale,14);}
+    if(au==='AU27') {add(mx,f.chin-6*scale,0,7,50,25);add(mx,my+11*scale,0,5,mw/scale,14);add(mx,my-6*scale,0,-2,mw*.8/scale,9);}
     return points;
   }
 
@@ -141,27 +142,33 @@
       this.motion=window.matchMedia('(prefers-reduced-motion: reduce)');
     }
     async setFace(face) {
-      if(this.faceId===face.id) return;
-      this.faceId=face.id;
+      const key=face.id+':'+(face.revision||0);
+      if(this.faceId===key) return;
+      this.faceId=key;
       const request=++this.request;
       cancelAnimationFrame(this.frame);this.frame=0;this.source=null;
       this.canvas.hidden=true;this.photo.hidden=true;
       this.canvas.parentElement.setAttribute('aria-busy','true');
       this.status.textContent='正在載入角色…';
       try {
-        let data=this.cache.get(face.id);
+        // Only the latest uploaded crop is retained in the preview cache.
+        if(face.id==='user_photo')for(const oldKey of this.cache.keys())if(oldKey.startsWith('user_photo:')&&oldKey!==key)this.cache.delete(oldKey);
+        let data=this.cache.get(key);
         if(!data) {
           const img=new Image();img.src=face.thumb;await img.decode();
-          const buffer=document.createElement('canvas');buffer.width=SIZE;buffer.height=SIZE;
+          const width=SIZE,height=face.anchors?clamp(Math.round(face.height||SIZE),SIZE,640):SIZE;
+          const buffer=document.createElement('canvas');buffer.width=width;buffer.height=height;
           const ctx=buffer.getContext('2d',{willReadFrequently:true});
-          ctx.drawImage(img,0,0,SIZE,SIZE);
-          data={source:ctx.getImageData(0,0,SIZE,SIZE),fields:buildFields(face.id)};
-          this.cache.set(face.id,data);
+          ctx.drawImage(img,0,0,width,height);
+          data={source:ctx.getImageData(0,0,width,height),fields:buildFields(face.anchors||face.id)};
+          if(request!==this.request)return;
+          this.cache.set(key,data);
         }
         if(request!==this.request) return;
         this.source=data.source;this.fields=data.fields;
-        this.canvas.width=SIZE;this.canvas.height=SIZE;
-        this.output=this.ctx.createImageData(SIZE,SIZE);
+        this.canvas.width=data.source.width;this.canvas.height=data.source.height;
+        this.canvas.parentElement.style.aspectRatio=String(data.source.width/data.source.height);
+        this.output=this.ctx.createImageData(data.source.width,data.source.height);
         this.photo.src=face.thumb;this.photo.alt=face.label+'原始參考照片';
         this.canvas.setAttribute('aria-label',face.label+'的表情變化預覽');
         this.values=this.target.slice();
@@ -201,7 +208,7 @@
       if(this.values.every(v=>v<.00001)) this.ctx.putImageData(this.source,0,0);
       else {
         combine(this.fields,this.values,this.map);
-        warp(this.source.data,this.output.data,this.map);
+        warp(this.source.data,this.output.data,this.map,this.source.width,this.source.height);
         this.ctx.putImageData(this.output,0,0);
       }
     }

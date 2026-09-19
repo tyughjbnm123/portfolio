@@ -1,5 +1,4 @@
-/* Shared catalog extracted from the existing action-card and FACS tools. */
-(function(root){const data={
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.StoryboardData=factory();})(globalThis,function(){return {
   "ACTIONS": [
     {
       "id": 1,
@@ -22,7 +21,7 @@
       "shotEn": "Wide",
       "risk": "mid",
       "hand": false,
-      "p": "Camera slowly tilts up from waist level to face, establishing full character."
+      "p": "Start with the full character in view, then slowly tilt upward to frame the face."
     },
     {
       "id": 2,
@@ -79,7 +78,7 @@
         "open",
         "med"
       ],
-      "shot": "medium",
+      "shot": "wide",
       "style": [
         "cool",
         "sweet"
@@ -87,11 +86,11 @@
       "tempo": [
         "fast"
       ],
-      "shotZh": "中景→近景",
-      "shotEn": "Medium→Close",
+      "shotZh": "全景",
+      "shotEn": "Wide",
       "risk": "mid",
       "hand": false,
-      "p": "Subject walks toward camera, stops close. Face fills the frame at the end."
+      "p": "Walk a few steps toward the camera, stop with the full body still visible, and look at the lens."
     },
     {
       "id": 5,
@@ -277,9 +276,9 @@
     },
     {
       "id": 13,
-      "k": "眯眼挑眉",
-      "zh": "瞇眼挑眉搞怪",
-      "en": "Squint & eyebrow raise",
+      "k": "瞇眼搞怪表情",
+      "zh": "瞇眼搞怪表情",
+      "en": "Playful squint",
       "cat": [
         "mid",
         "close"
@@ -295,7 +294,7 @@
       "shotEn": "Close",
       "risk": "mid",
       "hand": false,
-      "p": "Eyes squint, one eyebrow raises exaggeratedly, playful silly expression."
+      "p": "Gently squint and give a playful smile. Keep eyebrows naturally behind opaque bangs, never drawn over the hair."
     },
     {
       "id": 14,
@@ -414,8 +413,8 @@
     },
     {
       "id": 19,
-      "k": "俯角仰拍",
-      "zh": "仰角鏡頭俯視",
+      "k": "低角度臉部構圖",
+      "zh": "低角度臉部構圖",
       "en": "Low-angle look-down",
       "cat": [
         "mid",
@@ -458,8 +457,8 @@
     },
     {
       "id": 21,
-      "k": "酷拽直视",
-      "zh": "酷拽直視,表情歸零",
+      "k": "平靜直視鏡頭",
+      "zh": "平靜直視鏡頭",
       "en": "Cool neutral gaze",
       "cat": [
         "end",
@@ -640,9 +639,9 @@
     },
     {
       "id": 29,
-      "k": "咬唇上望",
-      "zh": "咬嘴唇,眼神上飄",
-      "en": "Bite lip, look up",
+      "k": "抿唇向上看",
+      "zh": "抿唇向上看",
+      "en": "Press lips, glance up",
       "cat": [
         "mid",
         "close"
@@ -659,7 +658,7 @@
       "shotEn": "Close",
       "risk": "low",
       "hand": false,
-      "p": "Lower lip caught lightly, eyes gaze upward, dreamy sweet expression."
+      "p": "Lightly press the lips together and lift the gaze, maintaining a relaxed expression."
     },
     {
       "id": 30,
@@ -822,9 +821,9 @@
     },
     {
       "id": 37,
-      "k": "扭胯",
-      "zh": "扭胯擺動",
-      "en": "Hip sway",
+      "k": "左右重心律動",
+      "zh": "左右重心律動",
+      "en": "Side-to-side weight shift",
       "cat": [
         "mid",
         "med"
@@ -840,7 +839,7 @@
       "shotEn": "Medium",
       "risk": "low",
       "hand": false,
-      "p": "Hips sway side to side to the beat, upper body relaxed, confident attitude."
+      "p": "Gently shift weight from one leg to the other with a relaxed upper body and small alternating steps."
     },
     {
       "id": 38,
@@ -936,8 +935,8 @@
     },
     {
       "id": 42,
-      "k": "双手插兜",
-      "zh": "雙手插口袋耍酷",
+      "k": "雙手插口袋",
+      "zh": "雙手插口袋",
       "en": "Hands in pockets",
       "cat": [
         "mid",
@@ -954,7 +953,152 @@
       "shotEn": "Medium",
       "risk": "low",
       "hand": false,
-      "p": "Subject puts hands in pockets, relaxed cool stance, slight head tilt, effortless attitude."
+      "p": "Place both hands in the skirt side pockets and settle into a relaxed standing pose."
+    },
+    {
+      "id": 43,
+      "k": "揮手打招呼",
+      "zh": "揮手打招呼",
+      "en": "Friendly greeting",
+      "cat": [
+        "open",
+        "med"
+      ],
+      "shot": "medium",
+      "style": [
+        "sweet",
+        "elegant",
+        "playful"
+      ],
+      "tempo": [
+        "slow"
+      ],
+      "shotZh": "中景",
+      "shotEn": "Medium",
+      "risk": "mid",
+      "hand": true,
+      "p": "Raise an open palm beside the shoulder and give a small friendly wave toward camera."
+    },
+    {
+      "id": 44,
+      "k": "開箱揭示產品",
+      "zh": "開箱揭示產品",
+      "en": "Unbox a product",
+      "cat": [
+        "open",
+        "mid",
+        "med"
+      ],
+      "shot": "medium",
+      "style": [
+        "sweet",
+        "elegant",
+        "playful"
+      ],
+      "tempo": [
+        "slow"
+      ],
+      "shotZh": "中景",
+      "shotEn": "Medium",
+      "risk": "mid",
+      "hand": true,
+      "p": "Hold a simple box steadily, lift its lid and reveal the product inside; pause for a clear view."
+    },
+    {
+      "id": 45,
+      "k": "旋轉展示瓶身",
+      "zh": "旋轉展示瓶身",
+      "en": "Rotate product",
+      "cat": [
+        "mid",
+        "close"
+      ],
+      "shot": "close",
+      "style": [
+        "sweet",
+        "elegant",
+        "playful"
+      ],
+      "tempo": [
+        "slow"
+      ],
+      "shotZh": "近景",
+      "shotEn": "Close",
+      "risk": "mid",
+      "hand": true,
+      "p": "Slowly rotate the product from its side to its front, then hold the front facing camera without obscuring it."
+    },
+    {
+      "id": 46,
+      "k": "手背試用質地",
+      "zh": "手背試用質地",
+      "en": "Show product texture",
+      "cat": [
+        "mid",
+        "close"
+      ],
+      "shot": "close",
+      "style": [
+        "sweet",
+        "elegant",
+        "playful"
+      ],
+      "tempo": [
+        "slow"
+      ],
+      "shotZh": "近景",
+      "shotEn": "Close",
+      "risk": "mid",
+      "hand": true,
+      "p": "Spread a small dab of lotion on the back of the opposite hand with a gentle fingertip motion, keeping both hands visible."
+    },
+    {
+      "id": 47,
+      "k": "指向資訊留白區",
+      "zh": "指向資訊留白區",
+      "en": "Point to call to action",
+      "cat": [
+        "end",
+        "med"
+      ],
+      "shot": "medium",
+      "style": [
+        "sweet",
+        "elegant",
+        "playful"
+      ],
+      "tempo": [
+        "slow"
+      ],
+      "shotZh": "中景",
+      "shotEn": "Medium",
+      "risk": "mid",
+      "hand": true,
+      "p": "Open a palm toward the empty side of the composition, then point gently to that space for a later text overlay."
+    },
+    {
+      "id": 48,
+      "k": "雙手比較兩款產品",
+      "zh": "雙手比較兩款產品",
+      "en": "Compare two options",
+      "cat": [
+        "mid",
+        "med"
+      ],
+      "shot": "medium",
+      "style": [
+        "sweet",
+        "elegant",
+        "playful"
+      ],
+      "tempo": [
+        "slow"
+      ],
+      "shotZh": "中景",
+      "shotEn": "Medium",
+      "risk": "mid",
+      "hand": true,
+      "p": "Hold one product in each hand at the same height and glance between the two, leaving space for comparison captions in editing."
     }
   ],
   "CAMERAS": [
@@ -1182,4 +1326,4 @@
     "fear": "恐懼",
     "contempt": "輕蔑"
   }
-};if(typeof module==='object'&&module.exports)module.exports=data;else root.StoryboardData=data;})(globalThis);
+};});

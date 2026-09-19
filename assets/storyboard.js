@@ -165,5 +165,18 @@
   $('sb-stage-image').addEventListener('load',()=>{$('sb-stage-image').hidden=false;$('sb-image-error').hidden=true;imageInfo();});
   new ResizeObserver(imageInfo).observe($('sb-stage'));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+  const actionCatalogCount=$('sb-action-catalog-count');
+  if(actionCatalogCount)actionCatalogCount.textContent=`${D.ACTIONS.length} 張`;
+  const entryURL=new URL(location.href);
+  if(entryURL.searchParams.get('from')==='actions'){
+    try{
+      const raw=sessionStorage.getItem('yichi-action-handoff-v1');
+      if(!raw)throw Error('沒有可接收的動作專案，請回到動作卡片庫重新送出。');
+      project=S.parseProject(raw);selected=project.shots[0].id;elapsed=0;
+      sessionStorage.removeItem('yichi-action-handoff-v1');
+      notify(`已帶入 ${project.shots.length} 鏡動作與參考圖`);
+    }catch(error){notify(error.message||'無法帶入動作專案，請重新送出或開啟下載的專案。');}
+    entryURL.searchParams.delete('from');history.replaceState(null,'',entryURL);
+  }
   syncForm();render();
 })();
