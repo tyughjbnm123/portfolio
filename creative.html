@@ -7,7 +7,7 @@
   <title>創作與技術實驗｜郭奕圻 YI-CHI KUO</title>
   <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
   <link rel="stylesheet" href="assets/content-pages.css">
-  <link rel="stylesheet" href="assets/creative-lab.css?v=20260920-kks">
+  <link rel="stylesheet" href="assets/creative-lab.css?v=20260920-comfy">
   <script src="assets/site-shell.js"></script>
   <script defer src="assets/creative-lab.js?v=20260920-kks"></script>
 </head>
@@ -20,7 +20,7 @@
       <div><p class="cl-eyebrow">04 / CREATIVE & TECHNICAL EXPLORATIONS</p><h1>創作與技術實驗</h1><p class="cl-lead">把想做的畫面與體驗，<br>一步步做出來。</p></div>
       <div class="cl-intro-note"><span class="cl-live-dot"></span><p>從 AI 視覺到遊戲修改，記錄需求如何變成實作，以及過程中的測試、調整與取捨。</p><a class="cl-text-link" href="#kks">看看最近的遊戲互動實驗 <span aria-hidden="true">↓</span></a></div>
     </header>
-    <nav class="cl-section-nav" aria-label="實驗項目"><a href="#kks"><span>01</span> 遊戲互動</a><a href="#ai-visual"><span>02</span> AI 視覺</a><a href="#ar"><span>03</span> AR 作品</a><a href="#next"><span>04</span> 下一步探索</a></nav>
+    <nav class="cl-section-nav" aria-label="實驗項目"><a href="#kks"><span>01</span> 遊戲互動</a><a href="#ai-visual"><span>02</span> AI 視覺</a><a href="#ar"><span>03</span> AR 作品</a><a href="#next"><span>04</span> ComfyUI</a></nav>
 
     <section id="kks" class="cl-section" aria-labelledby="kks-title">
       <div class="cl-section-heading"><p class="cl-eyebrow">01 / GAME MODDING</p><span class="cl-status">概念驗證 POC · AI 協作開發</span></div>
@@ -48,9 +48,21 @@
       </div>
     </section>
 
-    <section id="ar" class="cl-section" aria-labelledby="ar-title"><div class="cl-section-heading"><p class="cl-eyebrow">03 / INTERACTIVE ARCHIVE</p><span class="cl-section-type">過往作品</span></div><div class="cl-ar-layout"><div><h2 id="ar-title">讓畫面產生互動</h2><p>過往以 Spark AR 製作的互動濾鏡作品。嘗試把文字與視覺元素帶進使用者的拍攝情境，探索內容被使用與參與的方式。</p><span class="cl-small-note">以下為保留的實際使用畫面。</span><a class="cl-text-link" href="youtube.html">更多影音與 YouTube 作品 ↗</a></div><div class="cl-ar-images"><figure><a href="assets/spark-ar-demo-1.jpg" class="cl-art-link" data-art-title="人像文字濾鏡" data-art-caption="Spark AR 過往作品的實際使用畫面。"><img src="assets/spark-ar-demo-1.jpg" alt="在人像前額呈現文字的濾鏡使用畫面" loading="lazy" decoding="async"></a><figcaption>01 / 人像文字濾鏡</figcaption></figure><figure><a href="assets/spark-ar-demo-2.jpg" class="cl-art-link" data-art-title="場景視覺濾鏡" data-art-caption="Spark AR 過往作品的實際使用畫面。"><img src="assets/spark-ar-demo-2.jpg" alt="場景中呈現按讚圖案的濾鏡使用畫面" loading="lazy" decoding="async"></a><figcaption>02 / 場景視覺濾鏡</figcaption></figure></div></div></section>
+    <section id="ar" class="cl-section" aria-labelledby="ar-title">
+      <div class="cl-section-heading"><p class="cl-eyebrow">03 / SPARK AR</p><span class="cl-section-type">過往濾鏡作品</span></div>
+      <div class="cl-section-intro"><h2 id="ar-title">Spark AR 互動濾鏡</h2><p>將文字與圖像帶進鏡頭畫面。這兩個實作，分別嘗試自拍文字效果與實景圖像疊加。</p></div>
+      <div class="cl-ar-cards">
+        <figure class="cl-ar-card"><a href="assets/spark-ar-demo-1.jpg" class="cl-art-link" data-art-title="人像文字濾鏡" data-art-caption="在自拍畫面疊上手寫文字，讓文字成為表情的一部分。此圖為保留的濾鏡使用畫面。"><img src="assets/spark-ar-demo-1.jpg" width="364" height="456" alt="自拍畫面中，在前額位置疊上「我怎麼這麼好看」的手寫文字" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span class="cl-eyebrow">01 / 人像 × 文字</span><h3>讓文字成為表情的一部分</h3><p>在自拍畫面疊上手寫字樣，嘗試用一句話表達拍攝當下的心情。</p><span class="cl-ar-caption">Spark AR 製作 · 實際使用畫面</span></figcaption></figure>
+        <figure class="cl-ar-card"><a href="assets/spark-ar-demo-2.jpg" class="cl-art-link" data-art-title="場景圖像濾鏡" data-art-caption="將按讚圖案與幾何線條加入實景畫面，探索圖像與背景的搭配。此圖為保留的濾鏡使用畫面。"><img src="assets/spark-ar-demo-2.jpg" width="368" height="510" alt="實景畫面中疊上按讚圖案與三角形線條" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span class="cl-eyebrow">02 / 實景 × 圖像</span><h3>在日常場景加一點變化</h3><p>將按讚圖案與幾何線條加入鏡頭，探索圖像與實際背景的搭配。</p><span class="cl-ar-caption">Spark AR 製作 · 實際使用畫面</span></figcaption></figure>
+      </div>
+    </section>
 
-    <section id="next" class="cl-next" aria-labelledby="next-title"><div><p class="cl-eyebrow">04 / NEXT EXPLORATION</p><h2 id="next-title">ComfyUI 影像工作流</h2><span class="cl-status">規劃方向</span></div><div><p>下一步想把輸入素材、處理流程與輸出結果放在一起，記錄設定如何影響畫面，逐步整理能重複使用的影像製作流程。</p><div class="cl-next-flow"><span>輸入素材</span><i aria-hidden="true">→</i><span>工作流與調整</span><i aria-hidden="true">→</i><span>成果對照</span></div></div></section>
+    <section id="next" class="cl-next" aria-labelledby="next-title">
+      <!-- Comfy logo: https://github.com/Comfy-Org/comfy-mcp/blob/main/assets/logo.svg -->
+      <img class="cl-comfy-logo" src="assets/comfy-logo.svg" width="112" height="112" alt="ComfyUI Logo" loading="lazy" decoding="async">
+      <div><p class="cl-eyebrow">04 / WORK IN PROGRESS</p><h2 id="next-title">ComfyUI</h2><p>AI 影像工作流</p></div>
+      <span class="cl-status cl-progress-status"><span class="cl-live-dot" aria-hidden="true"></span>持續推進中</span>
+    </section>
   </main>
   <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
   <dialog id="cl-lightbox" class="cl-lightbox" aria-labelledby="cl-lightbox-title"><div class="cl-lightbox-heading"><h2 id="cl-lightbox-title"></h2><button type="button" id="cl-lightbox-close" aria-label="關閉作品大圖">關閉 ×</button></div><img id="cl-lightbox-image" alt=""><p id="cl-lightbox-caption"></p></dialog>
