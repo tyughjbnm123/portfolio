@@ -1,423 +1,58 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>創意 AI 實驗室 | 郭奕圻 YI-CHI KUO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="郭奕圻的創作與技術實驗：KKS 場景互動系統原型、AI 視覺製作與 AR 互動作品。">
+  <title>創作與技術實驗｜郭奕圻 YI-CHI KUO</title>
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/content-pages.css">
+  <link rel="stylesheet" href="assets/creative-lab.css?v=20260920-kks">
+  <script src="assets/site-shell.js"></script>
+  <script defer src="assets/creative-lab.js?v=20260920-kks"></script>
+</head>
+<body data-content-page="true" class="cl-page">
+  <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
+  <div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#lab">↖ 回到探索</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
+  <nav class="yk-content-nav" aria-label="作品集導覽"><a href="projects.html"><span>01</span>精選作品</a><a href="creative.html" aria-current="page"><span>02</span>創作與技術實驗</a><a href="youtube.html"><span>03</span>影音創作</a><a href="index.html#tools"><span>04</span>我的工具房</a></nav>
+  <main id="tool-workspace">
+    <header class="cl-intro">
+      <div><p class="cl-eyebrow">04 / CREATIVE & TECHNICAL EXPLORATIONS</p><h1>創作與技術實驗</h1><p class="cl-lead">把想做的畫面與體驗，<br>一步步做出來。</p></div>
+      <div class="cl-intro-note"><span class="cl-live-dot"></span><p>從 AI 視覺到遊戲修改，記錄需求如何變成實作，以及過程中的測試、調整與取捨。</p><a class="cl-text-link" href="#kks">看看最近的遊戲互動實驗 <span aria-hidden="true">↓</span></a></div>
+    </header>
+    <nav class="cl-section-nav" aria-label="實驗項目"><a href="#kks"><span>01</span> 遊戲互動</a><a href="#ai-visual"><span>02</span> AI 視覺</a><a href="#ar"><span>03</span> AR 作品</a><a href="#next"><span>04</span> 下一步探索</a></nav>
 
-  <!-- 三模式（Dev/Visual/Brand）預先套用，避免切換閃爍(FOUC)；需在任何樣式渲染前同步執行 -->
-  <script>
-    (function () {
-      var MODES = ['dev', 'visual', 'brand'];
-      try {
-        var qs = new URLSearchParams(window.location.search);
-        var qMode = qs.get('mode');
-        var legacyMap = { terminal: 'dev', dashboard: 'visual', dev: 'dev', visual: 'visual', brand: 'brand' };
-        var mode = (qMode && legacyMap[qMode]) || localStorage.getItem('mode');
-        if (!mode) {
-          var legacyTheme = localStorage.getItem('theme');
-          mode = legacyTheme === 'light' ? 'visual' : 'dev';
-        }
-        if (MODES.indexOf(mode) === -1) mode = 'dev';
-        document.documentElement.setAttribute('data-theme', mode);
-      } catch (e) {
-        document.documentElement.setAttribute('data-theme', 'dev');
-      }
-    })();
-  </script>
-
-  <!-- Tailwind CSS v3 CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  
-  <script>
-    // Tailwind 自訂主題配置
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Noto Sans TC', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            border: 'var(--border)',
-            input: 'var(--input)',
-            ring: 'var(--ring)',
-            background: 'var(--background)',
-            foreground: 'var(--foreground)',
-            primary: {
-              DEFAULT: 'var(--primary)',
-              foreground: 'var(--primary-foreground)',
-            },
-            secondary: {
-              DEFAULT: 'var(--secondary)',
-              foreground: 'var(--secondary-foreground)',
-            },
-            muted: {
-              DEFAULT: 'var(--muted)',
-              foreground: 'var(--muted-foreground)',
-            },
-            accent: {
-              DEFAULT: 'var(--accent)',
-              foreground: 'var(--accent-foreground)',
-            },
-            card: {
-              DEFAULT: 'var(--card)',
-              foreground: 'var(--card-foreground)',
-            },
-          },
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* 三模式 CSS 變數：Dev / Visual / Brand（規格見 design_handoff.html 第 04 節） */
-    :root,
-    html[data-theme="dev"] {
-      --background: #0a0e14;
-      --foreground: #e6edf3;
-      --primary: #3fb950;
-      --primary-foreground: #0a0e14;
-      --secondary: #161b22;
-      --secondary-foreground: #e6edf3;
-      --muted: #0d1117;
-      --muted-foreground: #8b949e;
-      --accent: #3fb950;
-      --accent-foreground: #0a0e14;
-      --card: #0d1117;
-      --card-foreground: #e6edf3;
-      --border: #1e2530;
-      --ring: #3fb950;
-    }
-
-    html[data-theme="visual"] {
-      --background: #fafafa;
-      --foreground: #18181b;
-      --primary: #7c3aed;
-      --primary-foreground: #ffffff;
-      --secondary: #f4f4f5;
-      --secondary-foreground: #18181b;
-      --muted: #f4f4f5;
-      --muted-foreground: #71717a;
-      --accent: #7c3aed;
-      --accent-foreground: #ffffff;
-      --card: #ffffff;
-      --card-foreground: #18181b;
-      --border: #e5e7eb;
-      --ring: #7c3aed;
-    }
-
-    html[data-theme="brand"] {
-      --background: #f7f5f0;
-      --foreground: #3d3935;
-      --primary: #5a5550;
-      --primary-foreground: #f7f5f0;
-      --secondary: #ece7e0;
-      --secondary-foreground: #3d3935;
-      --muted: #ece7e0;
-      --muted-foreground: #6b6358;
-      --accent: #8b7355;
-      --accent-foreground: #f7f5f0;
-      --card: #fbfaf7;
-      --card-foreground: #3d3935;
-      --border: #c8c4bc;
-      --ring: #5a5550;
-    }
-
-    body {
-      background-color: var(--background);
-      color: var(--foreground);
-      font-family: 'Noto Sans TC', sans-serif;
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--background);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 3px;
-    }
-
-    .bg-grid {
-      background-image: linear-gradient(to right, rgba(63, 185, 80, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(63, 185, 80, 0.025) 1px, transparent 1px);
-      background-size: 30px 30px;
-    }
-    html[data-theme="visual"] .bg-grid {
-      background-image: linear-gradient(to right, rgba(124, 58, 237, 0.025) 1px, transparent 1px), linear-gradient(to bottom, rgba(124, 58, 237, 0.025) 1px, transparent 1px);
-    }
-    html[data-theme="brand"] .bg-grid {
-      background-image: none;
-    }
-
-    html[data-theme="brand"] .font-mono {
-      font-family: 'Noto Sans TC', sans-serif;
-      font-weight: 300;
-      letter-spacing: 0.02em;
-    }
-    html[data-theme="brand"] .font-bold {
-      font-weight: 500;
-    }
-    html[data-theme="brand"] .font-extrabold {
-      font-weight: 500;
-    }
-    html[data-theme="brand"] .tracking-tight {
-      letter-spacing: 0;
-    }
-    html[data-theme="brand"] .shadow-2xl,
-    html[data-theme="brand"] .shadow-xl {
-      box-shadow: 0 1px 2px rgba(61, 57, 53, 0.06), 0 1px 3px rgba(61, 57, 53, 0.05);
-    }
-  </style>
-<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css"></head>
-<body data-content-page="true" class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
-
-  <!-- NAVBAR -->
-    <a class="yk-skip" href="#tool-workspace">跳至主要內容</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html">↖ 回到首頁</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-content-nav" aria-label="作品集導覽"><a href="projects.html"><span>01</span>精選作品</a><a href="creative.html" aria-current="page"><span>02</span>創意實驗</a><a href="youtube.html"><span>03</span>影音創作</a><a href="index.html#tools"><span>04</span>我的工具房</a></nav>
-
-  <!-- MAIN CONTENT -->
-  <main id="tool-workspace" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-24">
-
-    <!-- HERO SECTION -->
-    <section class="yk-content-intro space-y-6 max-w-3xl">
-      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs text-primary font-mono">
-        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-        <span>CREATIVE AI LAB // 創意 AI 實驗室</span>
+    <section id="kks" class="cl-section" aria-labelledby="kks-title">
+      <div class="cl-section-heading"><p class="cl-eyebrow">01 / GAME MODDING</p><span class="cl-status">概念驗證 POC · AI 協作開發</span></div>
+      <div class="cl-kks-heading"><div><h2 id="kks-title">KKS 場景互動系統</h2><p class="cl-subtitle">讓看得到的場所，成為玩家能參與的互動。</p></div><p class="cl-kks-summary">從泳池、休息椅與角色活動點出發，探索如何在主遊戲中重用原生活動，並在互動結束後交還操作權。</p></div>
+      <div class="cl-demo">
+        <figure class="cl-game-cover">
+          <div class="cl-cover-top"><span>KOIKATSU SUNSHINE</span><span>原作遊戲封面</span></div>
+          <img src="assets/kks-game-cover.jpg" width="1000" height="665" alt="Koikatsu Sunshine 遊戲封面，人物在泳池邊合照；用於介紹遊戲修改專案" fetchpriority="high">
+          <figcaption><span>原作：ILLUSION · Koikatsu Sunshine</span><a href="https://wiki.anime-sharing.com/hgames/index.php?title=File:Koikatsu_Sunshine_Cover.jpg" target="_blank" rel="noopener noreferrer">封面來源 ↗</a></figcaption>
+        </figure>
+        <div class="cl-demo-copy"><p class="cl-eyebrow">這個修改，想完成什麼？</p><div class="cl-phases" role="group" aria-label="查看互動流程"><button type="button" data-phase-button="approach" aria-pressed="true" aria-controls="cl-phase-detail"><span>01</span>靠近活動點<i aria-hidden="true">↗</i></button><button type="button" data-phase-button="interact" aria-pressed="false" aria-controls="cl-phase-detail"><span>02</span>執行互動<i aria-hidden="true">↗</i></button><button type="button" data-phase-button="restore" aria-pressed="false" aria-controls="cl-phase-detail"><span>03</span>退出與恢復<i aria-hidden="true">↗</i></button></div><div id="cl-phase-detail" class="cl-phase-detail" aria-live="polite" aria-atomic="true"><h3 id="cl-phase-title">先確認，這裡能不能互動。</h3><p id="cl-phase-description">依玩家所在場景、距離與活動點占用情況，確認可使用的活動，再由玩家按鍵啟動。</p><span id="cl-phase-note">互動入口：場景、位置與可用性</span></div></div>
       </div>
+      <div class="cl-facts"><div><span class="cl-eyebrow">我的角色</span><h3>需求定義與實機驗收</h3><p>提出場景需求、安排優先順序、制定驗收條件，並執行後期遊戲測試與迭代回饋。</p></div><div><span class="cl-eyebrow">協作方式</span><h3>與 Codex 一起開發</h3><p>Codex 協助原生機制研究、程式實作、編譯部署及文件整理；我依實際體驗確認方向與結果。</p></div><div><span class="cl-eyebrow">目前階段</span><h3>小範圍驗證，持續迭代</h3><p>部分環境活動、雙角色互動與指定室內探索已有歷史執行或還原紀錄；完整回歸測試仍待補齊。</p></div></div>
+      <details class="cl-details"><summary><span>開發中的取捨與驗證</span><span class="cl-details-mark" aria-hidden="true">＋</span></summary><div class="cl-details-content"><div class="cl-decisions"><article><span class="cl-eyebrow">01 / REUSE</span><h3>重用原生活動</h3><p>從既有 NPC 活動與控制器出發，定位動作、道具與音訊的依賴，逐步驗證指定活動能否在主遊戲中使用。</p></article><article><span class="cl-eyebrow">02 / RESTORE</span><h3>把退出視為功能的一半</h3><p>相機模式切換存在非同步更新。依歷史失敗紀錄調整還原順序，指定泳池測試已有相機還原前後的對照。</p></article><article><span class="cl-eyebrow">03 / VERIFY</span><h3>區分實作與驗收</h3><p>程式存在、執行事件與完整體驗是不同層次的證據。下一步補齊重複進出、切圖、角色替換及插件卸載的測試。</p></article></div><div class="cl-evidence"><p><strong>證據範圍</strong>依 2026.09.15 專案稽核整理。既有驗證限定於指定動作及場景；狀態還原仍有待修正項目，效能改善尚未量測。</p><p class="cl-tech">C# <span>／</span> BepInEx <span>／</span> Unity 既有機制研究 <span>／</span> 狀態管理</p></div></div></details>
+    </section>
 
-      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight font-mono">LoRA 商業生圖 <span class="text-primary">×</span> Spark AR 濾鏡
-      </h1>
-
-      <p class="text-muted-foreground text-base md:text-lg leading-relaxed">
-        用 AI 生圖與互動濾鏡，同時解決「拍攝成本」跟「社群擴散」兩件事——訓練專屬 LoRA 模型取代部分商業攝影需求，開發 Spark AR 濾鏡讓品牌內容自然被分享出去。
-      </p>
-
-      <div class="grid grid-cols-3 gap-6 pt-6 border-t border-border/60">
-        <div>
-          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">2</div>
-          <div class="text-xs text-muted-foreground font-mono">LoRA 風格模型</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">數十萬+</div>
-          <div class="text-xs text-muted-foreground font-mono">濾鏡累計使用</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-bold text-primary font-mono">IG</div>
-          <div class="text-xs text-muted-foreground font-mono">互動濾鏡發布平台</div>
-        </div>
+    <section id="ai-visual" class="cl-section" aria-labelledby="ai-title"><div class="cl-section-heading"><p class="cl-eyebrow">02 / AI VISUAL STUDIES</p><span class="cl-section-type">作品展示</span></div><div class="cl-section-intro"><h2 id="ai-title">把主題變成具體畫面</h2><p>從產品情境、季節活動與社群議題出發，探索人物、場景和產品之間的關係，讓內容方向有可以討論的畫面。</p></div>
+      <div class="cl-gallery-filter" role="group" aria-label="AI 視覺作品分類"><button type="button" data-visual-filter="all" aria-pressed="true">全部作品</button><button type="button" data-visual-filter="product" aria-pressed="false">產品情境</button><button type="button" data-visual-filter="topic" aria-pressed="false">節慶與議題</button></div>
+      <div class="cl-gallery">
+        <figure data-visual-kind="product"><a href="assets/lora-zhenzhen-sample.jpg" class="cl-art-link" data-art-title="零食聚會情境" data-art-caption="以好友分享零食的場景，呈現產品與聚會的連結；暖紅色調呼應熱鬧、輕鬆的氛圍。"><img src="assets/lora-zhenzhen-sample.jpg" alt="三位好友在暖紅餐桌分享零食的品牌視覺" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span>產品情境</span><h3>零食聚會情境</h3><p>從分享零食的時刻，建立產品的使用情境。</p></figcaption></figure>
+        <figure data-visual-kind="product"><a href="assets/lora-cream-sample.jpg" class="cl-art-link" data-art-title="保養品日常情境" data-art-caption="以人物使用情境與柔和光線，探索保養品在日常生活中的視覺呈現。"><img src="assets/lora-cream-sample.jpg" alt="人物手持保養品的日常情境視覺" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span>產品情境</span><h3>保養品日常情境</h3><p>把產品放入人物與生活場景之中。</p></figcaption></figure>
+        <figure data-visual-kind="topic"><a href="assets/lora-flower-sample.jpg" class="cl-art-link" data-art-title="追花季社群視覺" data-art-caption="結合賞花季節、旅遊資訊與防護主題，探索資訊型社群貼文的畫面安排。"><img src="assets/lora-flower-sample.jpg" alt="粉色花季主題與旅遊防護資訊的社群視覺" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span>節慶與議題</span><h3>追花季社群視覺</h3><p>以季節主題串起旅遊資訊與防護內容。</p></figcaption></figure>
+        <figure data-visual-kind="product"><a href="assets/lora-cyberpunk-sample.jpg" class="cl-art-link" data-art-title="戶外產品情境" data-art-caption="以戶外活動與產品使用場景，探索功能型商品的視覺溝通方式。"><img src="assets/lora-cyberpunk-sample.jpg" alt="戶外活動中的藥膏產品情境視覺" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span>產品情境</span><h3>戶外產品情境</h3><p>把商品功能放進具體的使用時刻。</p></figcaption></figure>
+        <figure data-visual-kind="topic"><a href="assets/lora-topical-sample.jpg" class="cl-art-link" data-art-title="健康議題視覺" data-art-caption="以議題主題與宣導訊息為起點，探索健康內容的社群視覺表達。"><img src="assets/lora-topical-sample.jpg" alt="拒絕毒品主題的健康宣導視覺" loading="lazy" decoding="async"><span class="cl-enlarge">查看大圖 ↗</span></a><figcaption><span>節慶與議題</span><h3>健康議題視覺</h3><p>嘗試將宣導訊息整理成可閱讀的畫面。</p></figcaption></figure>
       </div>
     </section>
 
-    <!-- LoRA 切換展示 -->
-    <section class="space-y-8">
-      <div class="text-center md:text-left space-y-2">
-        <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <i data-lucide="wand-2" class="w-4 h-4"></i>
-          <span>LORA SHOWCASE // 商業生圖</span>
-        </div>
-        <h2 class="text-3xl font-bold tracking-tight font-mono">LoRA 商業生圖</h2>
-        <p class="text-muted-foreground text-sm max-w-2xl">
-          訓練專屬 AI 模特兒與產品 LoRA，為品牌節省拍攝成本。點擊切換查看不同應用情境。
-        </p>
-      </div>
+    <section id="ar" class="cl-section" aria-labelledby="ar-title"><div class="cl-section-heading"><p class="cl-eyebrow">03 / INTERACTIVE ARCHIVE</p><span class="cl-section-type">過往作品</span></div><div class="cl-ar-layout"><div><h2 id="ar-title">讓畫面產生互動</h2><p>過往以 Spark AR 製作的互動濾鏡作品。嘗試把文字與視覺元素帶進使用者的拍攝情境，探索內容被使用與參與的方式。</p><span class="cl-small-note">以下為保留的實際使用畫面。</span><a class="cl-text-link" href="youtube.html">更多影音與 YouTube 作品 ↗</a></div><div class="cl-ar-images"><figure><a href="assets/spark-ar-demo-1.jpg" class="cl-art-link" data-art-title="人像文字濾鏡" data-art-caption="Spark AR 過往作品的實際使用畫面。"><img src="assets/spark-ar-demo-1.jpg" alt="在人像前額呈現文字的濾鏡使用畫面" loading="lazy" decoding="async"></a><figcaption>01 / 人像文字濾鏡</figcaption></figure><figure><a href="assets/spark-ar-demo-2.jpg" class="cl-art-link" data-art-title="場景視覺濾鏡" data-art-caption="Spark AR 過往作品的實際使用畫面。"><img src="assets/spark-ar-demo-2.jpg" alt="場景中呈現按讚圖案的濾鏡使用畫面" loading="lazy" decoding="async"></a><figcaption>02 / 場景視覺濾鏡</figcaption></figure></div></div></section>
 
-      <div class="rounded-2xl border border-border bg-card/20 backdrop-blur-md p-6 md:p-10 shadow-xl">
-        <div class="flex items-center flex-wrap gap-2 mb-8">
-          <button onclick="switchLora('cyberpunk')" id="lora-btn-cyberpunk" class="px-4 py-2 rounded-full text-sm font-mono font-bold transition-all bg-primary text-primary-foreground">
-            AI 商用產品視覺
-          </button>
-          <button onclick="switchLora('minimalist')" id="lora-btn-minimalist" class="px-4 py-2 rounded-full text-sm font-mono font-bold transition-all text-muted-foreground hover:text-foreground border border-border">
-            AI 時事議題視覺
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          <div id="lora-preview-grid" class="grid grid-cols-3 gap-2">
-          </div>
-          <div id="lora-desc" class="space-y-3">
-            <h3 class="text-lg font-bold font-mono text-primary">AI 商用產品視覺</h3>
-            <p class="text-sm text-muted-foreground">將產品賣點、使用情境與目標受眾轉化為可視化的廣告素材，透過 AI 快速產出商品情境圖、社群主視覺與電商行銷素材。</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Spark AR 濾鏡 -->
-    <section class="space-y-8">
-      <div class="text-center md:text-left space-y-2">
-        <div class="inline-flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <i data-lucide="scan-face" class="w-4 h-4"></i>
-          <span>SPARK AR // 互動濾鏡</span>
-        </div>
-        <h2 class="text-3xl font-bold tracking-tight font-mono">Spark AR 濾鏡開發</h2>
-        <p class="text-muted-foreground text-sm max-w-2xl">
-          自主開發 IG 互動濾鏡，結合社群裂變創造數十萬次使用量。
-        </p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <div class="rounded-2xl border border-border overflow-hidden shadow-xl aspect-[3/4]">
-          <img src="assets/spark-ar-demo-1.jpg" alt="Spark AR 濾鏡實際使用畫面 1" class="w-full h-full object-cover">
-        </div>
-        <div class="rounded-2xl border border-border overflow-hidden shadow-xl aspect-[3/4]">
-          <img src="assets/spark-ar-demo-2.jpg" alt="Spark AR 濾鏡實際使用畫面 2" class="w-full h-full object-cover">
-        </div>
-        <div class="col-span-2 md:col-span-1 p-6 rounded-2xl border border-border bg-card shadow-xl text-center flex flex-col justify-center space-y-1">
-          <div class="text-3xl font-extrabold text-primary font-mono">數十萬+</div>
-          <div class="text-xs text-muted-foreground font-mono">濾鏡累計使用次數</div>
-        </div>
-      </div>
-    </section>
-
+    <section id="next" class="cl-next" aria-labelledby="next-title"><div><p class="cl-eyebrow">04 / NEXT EXPLORATION</p><h2 id="next-title">ComfyUI 影像工作流</h2><span class="cl-status">規劃方向</span></div><div><p>下一步想把輸入素材、處理流程與輸出結果放在一起，記錄設定如何影響畫面，逐步整理能重複使用的影像製作流程。</p><div class="cl-next-flow"><span>輸入素材</span><i aria-hidden="true">→</i><span>工作流與調整</span><i aria-hidden="true">→</i><span>成果對照</span></div></div></section>
   </main>
-
-  <!-- FOOTER -->
-  <footer class="border-t border-border bg-card/40 backdrop-blur-md py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-      <div class="flex flex-col items-center md:items-start space-y-1">
-        <span class="text-sm font-bold font-mono tracking-wider text-primary">YI-CHI KUO</span>
-        <span class="text-xs text-muted-foreground font-mono">© 2026 YI-CHI KUO. All rights reserved.</span>
-      </div>
-      
-      <!-- 底部社群連結 -->
-      <div class="flex items-center space-x-6">
-        <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
-          <i data-lucide="play-circle" class="w-5 h-5"></i>
-        </a>
-        <a href="projects.html" class="text-muted-foreground hover:text-primary transition-colors">
-          <i data-lucide="briefcase" class="w-5 h-5"></i>
-        </a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- 回到頂部按鈕 -->
-  <button id="btn-back-to-top" onclick="scrollToTop()" class="fixed bottom-6 right-6 p-3 rounded-full bg-primary text-primary-foreground border border-primary/20 shadow-xl opacity-0 translate-y-10 pointer-events-none transition-all duration-300 z-50 hover:scale-105">
-    <i data-lucide="arrow-up" class="w-5 h-5"></i>
-  </button>
-
-  <!-- 全域主題與切換邏輯 JS -->
-  <script>
-    // 1. 初始化 Lucide 圖標
-    lucide.createIcons();
-
-    // 2. 三模式 (Dev / Visual / Brand) 狀態管理
-    const MODES = ['dev', 'visual', 'brand'];
-    const MODE_BTN_ACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
-    const MODE_BTN_INACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
-
-    function setMode(mode) {
-      if (MODES.indexOf(mode) === -1) mode = 'dev';
-      document.documentElement.setAttribute('data-theme', mode);
-      localStorage.setItem('mode', mode);
-      localStorage.setItem('theme', mode === 'dev' ? 'dark' : 'light');
-
-      MODES.forEach(function (m) {
-        const btn = document.getElementById('btn-' + m);
-        if (!btn) return;
-        btn.className = (m === mode) ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
-        btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
-      });
-
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.set('mode', mode);
-        window.history.replaceState({}, '', url);
-      } catch (e) { /* file:// 等環境下略過即可 */ }
-    }
-
-    function initMode() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dev';
-      setMode(current);
-    }
-
-    // 3. 手機版導覽選單切換
-    function toggleMobileMenu() {
-      const menu = document.getElementById('mobile-menu');
-      const icon = document.getElementById('menu-icon');
-      if (menu.classList.contains('hidden')) {
-        menu.classList.remove('hidden');
-        icon.setAttribute('data-lucide', 'x');
-      } else {
-        menu.classList.add('hidden');
-        icon.setAttribute('data-lucide', 'menu');
-      }
-      lucide.createIcons();
-    }
-
-    // 4. 浮動「回到頂部」按鈕邏輯
-    window.addEventListener('scroll', () => {
-      const btn = document.getElementById('btn-back-to-top');
-      if (window.scrollY > 300) {
-        btn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-      } else {
-        btn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-      }
-    });
-
-    function scrollToTop() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 5. LoRA 展示切換（AI 商用產品視覺 / AI 時事議題視覺）
-    const LORA_STYLES = {
-      cyberpunk: {
-        label: 'AI 商用產品視覺',
-        desc: '將產品賣點、使用情境與目標受眾轉化為可視化的廣告素材，透過 AI 快速產出商品情境圖、社群主視覺與電商行銷素材。',
-        images: [
-          { src: 'assets/lora-cyberpunk-sample.jpg', alt: 'AI 商用產品視覺範例：戶外防蚊藥膏廣告' },
-          { src: 'assets/lora-cream-sample.jpg', alt: 'AI 商用產品視覺範例：保濕乳液產品廣告' },
-          { src: 'assets/lora-zhenzhen-sample.jpg', alt: 'AI 商用產品視覺範例：零食品牌社群主視覺' }
-        ]
-      },
-      minimalist: {
-        label: 'AI 時事議題視覺',
-        desc: '結合國際節日、健康議題與品牌溝通需求，透過 AI 快速生成具宣導感與社群傳播性的主視覺，適合衛教內容、節慶貼文、公益議題與品牌聲量操作。',
-        images: [
-          { src: 'assets/lora-topical-sample.jpg', alt: 'AI 時事議題視覺範例：拒絕毒品衛教宣導視覺' },
-          { src: 'assets/lora-flower-sample.jpg', alt: 'AI 時事議題視覺範例：四月追花季防護指南' }
-        ]
-      }
-    };
-
-    function switchLora(style) {
-      if (!LORA_STYLES[style]) return;
-      const data = LORA_STYLES[style];
-
-      Object.keys(LORA_STYLES).forEach(function (s) {
-        const btn = document.getElementById('lora-btn-' + s);
-        if (!btn) return;
-        btn.className = (s === style)
-          ? "px-4 py-2 rounded-full text-sm font-mono font-bold transition-all bg-primary text-primary-foreground"
-          : "px-4 py-2 rounded-full text-sm font-mono font-bold transition-all text-muted-foreground hover:text-foreground border border-border";
-      });
-
-      const grid = document.getElementById('lora-preview-grid');
-      grid.innerHTML = data.images.map(function (img) {
-        return '<div class="aspect-square rounded-lg overflow-hidden border border-border">' +
-               '<img src="' + img.src + '" alt="' + img.alt + '" class="w-full h-full object-cover">' +
-               '</div>';
-      }).join('');
-
-      document.getElementById('lora-desc').innerHTML =
-        '<h3 class="text-lg font-bold font-mono text-primary">' + data.label + '</h3>' +
-        '<p class="text-sm text-muted-foreground">' + data.desc + '</p>';
-    }
-
-    // 三模式初始化放在腳本最後執行，確保上面用到的函式與元素都已就緒
-    initMode();
-    switchLora('cyberpunk');
-  </script>
+  <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
+  <dialog id="cl-lightbox" class="cl-lightbox" aria-labelledby="cl-lightbox-title"><div class="cl-lightbox-heading"><h2 id="cl-lightbox-title"></h2><button type="button" id="cl-lightbox-close" aria-label="關閉作品大圖">關閉 ×</button></div><img id="cl-lightbox-image" alt=""><p id="cl-lightbox-caption"></p></dialog>
 </body>
 </html>
