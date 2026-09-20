@@ -34,4 +34,69 @@
     });
     explanation.textContent = flow.explanation;
   }));
+
+  const videos = [...document.querySelectorAll('video')];
+  const picker = document.querySelector('.ar-picker');
+  const workButtons = [...document.querySelectorAll('[data-ar-select]')];
+  const works = [...document.querySelectorAll('.ar-gallery > article')];
+  function selectWork(id, updateAddress = false) {
+    const selected = works.find(work => work.id === id) || works[0];
+    if (!selected) return;
+    works.forEach(work => {
+      work.hidden = work !== selected;
+      if (work.hidden) work.querySelector('video')?.pause();
+    });
+    workButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.arSelect === selected.id)));
+    if (updateAddress) history.replaceState(null, '', `#${selected.id}`);
+  }
+  if (picker && workButtons.length) {
+    picker.hidden = false;
+    selectWork(location.hash.slice(1));
+    workButtons.forEach(button => button.addEventListener('click', () => selectWork(button.dataset.arSelect, true)));
+    window.addEventListener('hashchange', () => selectWork(location.hash.slice(1)));
+  }
+  document.querySelectorAll('[data-ar-play]').forEach(playButton => {
+    const video = document.getElementById(playButton.dataset.arPlay);
+    if (!video) return;
+    const videoError = video.closest('figure')?.querySelector('.ar-video-error');
+    let failed = false;
+    let loading = false;
+    playButton.hidden = false;
+    const syncPlayback = () => {
+      const action = failed ? '重試播放' : loading ? '載入中' : video.ended ? '重播' : video.paused ? '播放' : '暫停';
+      const symbol = failed || video.ended ? '↻' : loading ? '…' : video.paused ? '▶' : 'Ⅱ';
+      playButton.textContent = `${symbol} ${action} Demo`;
+      playButton.setAttribute('aria-label', `${action}${playButton.dataset.arTitle} Demo`);
+      video.closest('article')?.toggleAttribute('data-playing', !video.paused && !video.ended);
+    };
+    syncPlayback();
+    const showVideoError = () => {
+      failed = true; loading = false;
+      if (videoError) { videoError.textContent = '影片暫時無法載入，請點「重試播放」。'; videoError.hidden = false; }
+      syncPlayback();
+    };
+    playButton.addEventListener('click', async () => {
+      if (loading) return;
+      if (!video.paused) { video.pause(); return; }
+      try {
+        if (failed || video.error) { failed = false; video.load(); }
+        if (video.ended) video.currentTime = 0;
+        loading = true; syncPlayback();
+        if (videoError) videoError.hidden = true;
+        await video.play();
+      } catch (error) {
+        if (error.name !== 'AbortError') showVideoError();
+      } finally {
+        loading = false; syncPlayback();
+      }
+    });
+    ['play', 'pause', 'ended'].forEach(event => video.addEventListener(event, syncPlayback));
+    video.addEventListener('play', () => videos.forEach(other => { if (other !== video) other.pause(); }));
+    video.addEventListener('playing', () => { failed = false; loading = false; if (videoError) videoError.hidden = true; syncPlayback(); });
+    video.addEventListener('error', showVideoError);
+    video.querySelector('source')?.addEventListener('error', showVideoError);
+  });
+  const pauseAll = () => videos.forEach(video => video.pause());
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pauseAll(); });
+  window.addEventListener('pagehide', pauseAll);
 })();
