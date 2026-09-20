@@ -7,9 +7,9 @@
   <title>Spark AR 作品與互動實驗｜郭奕圻 YI-CHI KUO</title>
   <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
   <link rel="stylesheet" href="assets/content-pages.css">
-  <link rel="stylesheet" href="assets/spark-ar-case.css?v=20260920-gallery14">
+  <link rel="stylesheet" href="assets/spark-ar-case.css?v=20260920-v17">
   <script src="assets/site-shell.js"></script>
-  <script defer src="assets/spark-ar-case.js?v=20260920-gallery14"></script>
+  <script defer src="assets/spark-ar-case.js?v=20260920-v17"></script>
 </head>
 <body data-content-page="true" class="ar-page">
   <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
@@ -21,52 +21,39 @@
     </header>
 
     <section id="demos" class="ar-selected" aria-labelledby="collection-title">
-      <div id="collection" class="ar-section-heading"><div><p class="ar-eyebrow">01 — SELECTED WORKS</p><h2 id="collection-title">三種互動，三種趣味。</h2></div><p class="ar-viewing-note">點選播放，看看當時的實際效果。<br>影片保留原音，可在播放器開啟聲音。</p></div>
-      <div class="ar-gallery">
-        <article id="selfie" class="ar-card" aria-labelledby="selfie-title">
+      <div id="collection" class="ar-section-heading"><div><p class="ar-eyebrow">SELECTED WORKS / 05 DEMOS</p><h2 id="collection-title">選一個作品，看看互動。</h2></div><p class="ar-viewing-note">點縮圖切換作品，再播放 Demo。<br>製作流程可展開閱讀。</p></div>
+      <div class="ar-picker" role="group" aria-label="選擇 Spark AR 作品" hidden><button type="button" data-ar-select="selfie" aria-controls="selfie" aria-pressed="false"><img src="assets/spark-ar-selfie-poster.jpg?v=20260920-v17" alt="" width="72" height="96"><span><small>01 / 人像 × 文字</small><strong>我怎麼這麼好看</strong></span></button><button type="button" data-ar-select="emotion" aria-controls="emotion" aria-pressed="false"><img src="assets/spark-ar-emotion-poster.jpg?v=20260920-v17" alt="" width="72" height="96"><span><small>02 / 表情 × 音效</small><strong>漫畫情緒符號</strong></span></button><button type="button" data-ar-select="click" aria-controls="click" aria-pressed="false"><img src="assets/spark-ar-click-poster.jpg?v=20260920-v17" alt="" width="72" height="96"><span><small>03 / 手勢 × 圖像</small><strong>Click・點讚互動</strong></span></button><button type="button" data-ar-select="meme" aria-controls="meme" aria-pressed="false"><img src="assets/spark-ar-meme-poster.jpg?v=20260920-v17" alt="" width="72" height="96"><span><small>04 / 迷因 × 造型</small><strong>迷因墨鏡</strong></span></button><button type="button" data-ar-select="scope" aria-controls="scope" aria-pressed="false"><img src="assets/spark-ar-scope-poster.jpg?v=20260920-v17" alt="" width="72" height="96"><span><small>05 / 遊戲 × 實景</small><strong>瞄準鏡視角</strong></span></button></div>
+      <div class="ar-gallery"><article id="selfie" class="ar-card" aria-labelledby="selfie-title">
           <figure class="ar-film">
             <div class="ar-film-meta"><span>01 / 人像 × 文字</span><span>00:10</span></div>
-            <video id="ar-selfie-video" controls playsinline muted preload="none" poster="assets/spark-ar-selfie-poster.jpg" width="720" height="1280" aria-label="我怎麼這麼好看濾鏡 Demo" aria-describedby="ar-selfie-caption"><source src="assets/spark-ar-selfie-demo.mp4" type="video/mp4">你的瀏覽器不支援此影片的播放。</video>
+            <video id="ar-selfie-video" controls playsinline muted preload="none" poster="assets/spark-ar-selfie-poster.jpg?v=20260920-v17" width="158" height="280" aria-label="我怎麼這麼好看濾鏡 Demo" aria-describedby="ar-selfie-caption"><source src="assets/spark-ar-selfie-demo.mp4?v=20260920-v17" type="video/mp4">你的瀏覽器不支援此影片的播放。</video>
             <figcaption id="ar-selfie-caption">對準人像，讓文字動畫一起入鏡。</figcaption>
             <button class="ar-demo-play" type="button" data-ar-play="ar-selfie-video" data-ar-title="我怎麼這麼好看" aria-controls="ar-selfie-video" hidden>▶ 播放 Demo</button>
             <p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p>
           </figure>
           <div class="ar-card-copy"><p class="ar-category">AE 動畫 × 臉部追蹤</p><h3 id="selfie-title">我怎麼這麼好看</h3><p class="ar-description">把同名歌曲的趣味化成手寫文字特效。結合歌曲熱度與使用者的喜愛，這款濾鏡曾掀起一波使用熱潮。</p></div>
           <details class="ar-making"><summary>從 AE 特效到人像濾鏡 <span aria-hidden="true">＋</span></summary><div class="ar-making-body"><p>我先用 After Effects（AE）製作文字特效，再匯出成逐格圖片，帶入 Spark AR 循環播放，並讓文字跟著人像移動。這個作品把我的剪輯與特效經驗，從影片後製延伸到拍攝當下。</p><ol class="ar-flow" aria-label="文字濾鏡製作流程"><li><span class="ar-step">01</span><div><h4>在 AE 裡設計文字動態</h4><span class="ar-node">After Effects · 特效與節奏</span></div></li><li><span class="ar-step">02</span><div><h4>匯出逐格圖片</h4><span class="ar-node">圖片序列 → 循環動畫</span></div></li><li><span class="ar-step">03</span><div><h4>結合臉部追蹤</h4><span class="ar-node">Spark AR · 讓文字跟隨人像</span></div></li></ol><p class="ar-caption">2021 版專案使用 20 格、每秒 15 格的圖片序列；此處保留早期 Demo，文字位置與播放設定可能因版本不同而有差異。</p></div></details>
-        </article>
-
-        <article id="emotion" class="ar-card" aria-labelledby="emotion-title">
+        </article><article id="emotion" class="ar-card" aria-labelledby="emotion-title">
           <figure class="ar-film">
             <div class="ar-film-meta"><span>02 / 表情 × 符號</span><span>00:05</span></div>
-            <video id="ar-demo-video" controls playsinline muted preload="none" poster="assets/spark-ar-emotion-poster.jpg" width="720" height="1280" aria-label="漫畫情緒符號濾鏡 Demo" aria-describedby="ar-emotion-caption"><source src="assets/spark-ar-emotion-demo.mp4" type="video/mp4">你的瀏覽器不支援此影片的播放。</video>
+            <video id="ar-demo-video" controls playsinline muted preload="none" poster="assets/spark-ar-emotion-poster.jpg?v=20260920-v17" width="158" height="280" aria-label="漫畫情緒符號濾鏡 Demo" aria-describedby="ar-emotion-caption"><source src="assets/spark-ar-emotion-demo.mp4?v=20260920-v17" type="video/mp4">你的瀏覽器不支援此影片的播放。</video>
             <figcaption id="ar-emotion-caption">把漫畫裡的生氣符號，畫在額頭上。</figcaption>
             <button id="ar-demo-play" class="ar-demo-play" type="button" data-ar-play="ar-demo-video" data-ar-title="漫畫情緒符號" aria-controls="ar-demo-video" hidden>▶ 播放 Demo</button>
             <p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p>
           </figure>
           <div class="ar-card-copy"><p class="ar-category">表情觸發 × 打擊音效</p><h3 id="emotion-title">漫畫情緒符號</h3><p class="ar-description">借用漫畫誇張的情緒語言。壓眉時，生氣符號切換位置，再搭配短促音效，讓一個表情變成有戲的反應。</p></div>
           <details class="ar-making"><summary>壓眉如何觸發效果 <span aria-hidden="true">＋</span></summary><div class="ar-making-body"><p>把開始壓眉的瞬間，接到圖像與聲音兩條分支。每次壓眉觸發一次，讓視覺和音效一起回應表情。</p><ol class="ar-flow" aria-label="漫畫情緒符號互動流程"><li><span class="ar-step">01</span><div><h4>追蹤臉部位置</h4><span class="ar-node">Face Tracker → 額頭兩側圖像</span></div></li><li><span class="ar-step">02</span><div><h4>偵測開始壓眉的瞬間</h4><span class="ar-node">Eyebrows Lowered → Pulse</span></div></li><li><span class="ar-step">03</span><div><h4>符號換位，播放打擊聲</h4><span class="ar-node">Switch / Not · Audio Player</span></div></li></ol><p class="ar-caption">依保存的原始專案整理。符號以 5 張影格、每秒 5 格循環播放，並跟隨臉部移動。</p></div></details>
-        </article>
-
-        <article id="click" class="ar-card" aria-labelledby="click-title">
+        </article><article id="click" class="ar-card" aria-labelledby="click-title">
           <figure class="ar-film">
             <div class="ar-film-meta"><span>03 / 手勢 × 圖像</span><span>00:04</span></div>
-            <video id="ar-click-video" controls playsinline muted preload="none" poster="assets/spark-ar-click-poster.jpg" width="720" height="1280" aria-label="Click 點讚互動 Demo" aria-describedby="ar-click-caption"><source src="assets/spark-ar-click-demo.mp4" type="video/mp4">你的瀏覽器不支援此影片的播放。</video>
+            <video id="ar-click-video" controls playsinline muted preload="none" poster="assets/spark-ar-click-poster.jpg?v=20260920-v17" width="158" height="280" aria-label="Click 點讚互動 Demo" aria-describedby="ar-click-caption"><source src="assets/spark-ar-click-demo.mp4?v=20260920-v17" type="video/mp4">你的瀏覽器不支援此影片的播放。</video>
             <figcaption id="ar-click-caption">一個讚，也能成為鏡頭裡的互動。</figcaption>
             <button class="ar-demo-play" type="button" data-ar-play="ar-click-video" data-ar-title="Click 點讚互動" aria-controls="ar-click-video" hidden>▶ 播放 Demo</button>
             <p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p>
           </figure>
           <div class="ar-card-copy"><p class="ar-category">觸控操作 × 圖像回饋</p><h3 id="click-title">Click・點讚互動</h3><p class="ar-description">把熟悉的點讚符號放進日常場景。透過點擊與圖像變化，讓使用者參與畫面，玩出自己的拍攝方式。</p></div>
           <details class="ar-making"><summary>手勢如何連動畫面 <span aria-hidden="true">＋</span></summary><div class="ar-making-body"><p>從點擊顯示延伸到拖曳、縮放與旋轉，探索圖像可以怎麼回應使用者。</p><div class="ar-flow-options" role="group" aria-label="選擇 Click 互動流程"><button type="button" data-flow="tap" aria-pressed="true" aria-controls="click-workflow">點一下</button><button type="button" data-flow="drag" aria-pressed="false" aria-controls="click-workflow">拖曳</button><button type="button" data-flow="pinch" aria-pressed="false" aria-controls="click-workflow">縮放</button><button type="button" data-flow="rotate" aria-pressed="false" aria-controls="click-workflow">旋轉</button></div><div id="click-workflow" aria-live="polite" aria-atomic="true"><ol class="ar-flow" aria-label="Click 互動步驟"><li><span class="ar-step">01</span><div><h4 data-flow-title="0">點擊螢幕</h4><span class="ar-node" data-flow-node="0">Screen Tap</span></div></li><li><span class="ar-step">02</span><div><h4 data-flow-title="1">切換開關狀態</h4><span class="ar-node" data-flow-node="1">Switch → Pulse</span></div></li><li><span class="ar-step">03</span><div><h4 data-flow-title="2">顯示切換＋音效</h4><span class="ar-node" data-flow-node="2">Visible / Audio Player</span></div></li></ol><p id="ar-flow-explanation" class="ar-flow-explanation">點擊切換圖像的顯示狀態；音效由另一條開關分支在開啟時觸發。這兩條連線共同形成點擊回饋。</p></div><p class="ar-caption">流程整理自保存的 Click 專案版本，包含後續的手勢實驗；上方影片為早期點讚版本的實際畫面。</p></div></details>
-        </article>
-      </div>
-    </section>
-
-    <section class="ar-experiments" aria-labelledby="experiments-title">
-      <div class="ar-section-heading"><div><p class="ar-eyebrow">02 — MORE EXPERIMENTS</p><h2 id="experiments-title">讓日常畫面，多一點戲。</h2></div><p class="ar-viewing-note">迷因符號與遊戲視角的小實驗。</p></div>
-      <div class="ar-experiment-grid">
-        <article id="meme" class="ar-experiment" aria-labelledby="meme-title"><figure class="ar-film ar-film-small"><div class="ar-film-meta"><span>04 / MEME</span><span>00:03</span></div><video id="ar-meme-video" controls playsinline muted preload="none" poster="assets/spark-ar-meme-poster.jpg" width="720" height="1280" aria-label="迷因墨鏡 Demo" aria-describedby="ar-meme-caption"><source src="assets/spark-ar-meme-demo.mp4" type="video/mp4">你的瀏覽器不支援此影片的播放。</video><figcaption id="ar-meme-caption">像素墨鏡疊加的人像效果。</figcaption><button class="ar-demo-play" type="button" data-ar-play="ar-meme-video" data-ar-title="迷因墨鏡" aria-controls="ar-meme-video" hidden>▶ 播放 Demo</button><p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p></figure><div class="ar-experiment-copy"><p class="ar-category">迷因 × 人像造型</p><h3 id="meme-title">迷因墨鏡</h3><p>把熟悉的像素墨鏡帶進自拍。用誇張的造型和表情，讓普通的人像畫面多一點迷因的幽默感。</p><span class="ar-experiment-label">造型趣味</span></div></article>
-        <article id="scope" class="ar-experiment" aria-labelledby="scope-title"><figure class="ar-film ar-film-small"><div class="ar-film-meta"><span>05 / GAME VIEW</span><span>00:03</span></div><video id="ar-scope-video" controls playsinline muted preload="none" poster="assets/spark-ar-scope-poster.jpg" width="720" height="1280" aria-label="瞄準鏡視角 Demo" aria-describedby="ar-scope-caption"><source src="assets/spark-ar-scope-demo.mp4" type="video/mp4">你的瀏覽器不支援此影片的播放。</video><figcaption id="ar-scope-caption">用遊戲視角重新觀看生活場景。</figcaption><button class="ar-demo-play" type="button" data-ar-play="ar-scope-video" data-ar-title="瞄準鏡視角" aria-controls="ar-scope-video" hidden>▶ 播放 Demo</button><p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p></figure><div class="ar-experiment-copy"><p class="ar-category">遊戲介面 × 實景</p><h3 id="scope-title">瞄準鏡視角</h3><p>把遊戲裡的瞄準鏡與道具疊進實景。鏡頭對準沙發上的玩偶，日常場景也能有遊戲畫面的趣味。</p><span class="ar-experiment-label">視角轉換</span></div></article>
-      </div>
+        </article><article id="meme" class="ar-experiment" aria-labelledby="meme-title"><figure class="ar-film ar-film-small"><div class="ar-film-meta"><span>04 / MEME</span><span>00:03</span></div><video id="ar-meme-video" controls playsinline muted preload="none" poster="assets/spark-ar-meme-poster.jpg?v=20260920-v17" width="158" height="280" aria-label="迷因墨鏡 Demo" aria-describedby="ar-meme-caption"><source src="assets/spark-ar-meme-demo.mp4?v=20260920-v17" type="video/mp4">你的瀏覽器不支援此影片的播放。</video><figcaption id="ar-meme-caption">像素墨鏡疊加的人像效果。</figcaption><button class="ar-demo-play" type="button" data-ar-play="ar-meme-video" data-ar-title="迷因墨鏡" aria-controls="ar-meme-video" hidden>▶ 播放 Demo</button><p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p></figure><div class="ar-experiment-copy"><p class="ar-category">迷因 × 人像造型</p><h3 id="meme-title">迷因墨鏡</h3><p>把熟悉的像素墨鏡帶進自拍。用誇張的造型和表情，讓普通的人像畫面多一點迷因的幽默感。</p><span class="ar-experiment-label">造型趣味</span></div></article><article id="scope" class="ar-experiment" aria-labelledby="scope-title"><figure class="ar-film ar-film-small"><div class="ar-film-meta"><span>05 / GAME VIEW</span><span>00:03</span></div><video id="ar-scope-video" controls playsinline muted preload="none" poster="assets/spark-ar-scope-poster.jpg?v=20260920-v17" width="158" height="280" aria-label="瞄準鏡視角 Demo" aria-describedby="ar-scope-caption"><source src="assets/spark-ar-scope-demo.mp4?v=20260920-v17" type="video/mp4">你的瀏覽器不支援此影片的播放。</video><figcaption id="ar-scope-caption">用遊戲視角重新觀看生活場景。</figcaption><button class="ar-demo-play" type="button" data-ar-play="ar-scope-video" data-ar-title="瞄準鏡視角" aria-controls="ar-scope-video" hidden>▶ 播放 Demo</button><p class="ar-video-error" role="status" hidden>影片暫時無法播放，請重新整理頁面後再試。</p></figure><div class="ar-experiment-copy"><p class="ar-category">遊戲介面 × 實景</p><h3 id="scope-title">瞄準鏡視角</h3><p>把遊戲裡的瞄準鏡與道具疊進實景。鏡頭對準沙發上的玩偶，日常場景也能有遊戲畫面的趣味。</p><span class="ar-experiment-label">視角轉換</span></div></article></div>
     </section>
     <a class="ar-back" href="creative.html#ar">↖ 回到創作與技術實驗</a>
   </main>
