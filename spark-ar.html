@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Spark AR 互動濾鏡作品：Click 的點擊與手勢控制，以及「我怎麼這麼好看」的人像文字動畫。以原始專案整理製作流程。">
+  <title>Spark AR 互動濾鏡｜郭奕圻 YI-CHI KUO</title>
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/content-pages.css">
+  <link rel="stylesheet" href="assets/spark-ar-case.css?v=20260920-workflow">
+  <script src="assets/site-shell.js"></script>
+  <script defer src="assets/spark-ar-case.js?v=20260920-workflow"></script>
+</head>
+<body data-content-page="true" class="ar-page">
+  <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
+  <div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="creative.html#ar">↖ 創作與技術實驗</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
+  <main id="tool-workspace">
+    <header class="ar-intro"><p class="ar-eyebrow">SPARK AR / INTERACTIVE FILTERS</p><h1>Spark AR 互動濾鏡</h1><p class="ar-lead">文字跟著臉移動，圖像隨手勢回應。</p><p class="ar-muted">從自拍文字到觸控操作，將素材、動畫與互動邏輯組合成拍攝時可以使用的效果。</p></header>
+    <nav class="ar-case-nav" aria-label="濾鏡作品"><a href="#click"><span>01</span> Click・手勢互動</a><a href="#selfie"><span>02</span> 我怎麼這麼好看</a></nav>
+
+    <section id="click" class="ar-case" aria-labelledby="click-title">
+      <header class="ar-case-heading"><div><p class="ar-eyebrow">01 / TOUCH & RESPONSE</p><h2 id="click-title">Click｜讓畫面回應手勢</h2></div><span class="ar-tag">圖像・手勢・音效</span></header>
+      <div class="ar-case-layout">
+        <figure class="ar-record"><div class="ar-record-image"><img src="assets/spark-ar-demo-2.jpg" width="368" height="510" alt="過往按讚版本的使用畫面：實景中疊上按讚圖案與幾何線條" decoding="async"></div><figcaption><strong>過往使用畫面 · 按讚版本</strong><span>保留的實拍截圖；下方流程依提供的 Click 專案版本整理。</span></figcaption></figure>
+        <div class="ar-case-copy"><p class="ar-summary">把圖像放進鏡頭，讓使用者自己決定它如何出現、放在哪裡。專案將點擊與音效連接，也在另一個版本加入拖曳、縮放與旋轉，探索更自由的畫面操作。</p>
+          <div class="ar-workflow-heading"><h3>簡單工作流</h3><span>選一個手勢，看它如何影響畫面</span></div>
+          <div class="ar-flow-options" role="group" aria-label="選擇 Click 互動流程">
+            <button type="button" data-flow="tap" aria-pressed="true" aria-controls="click-workflow">點一下</button>
+            <button type="button" data-flow="drag" aria-pressed="false" aria-controls="click-workflow">拖曳</button>
+            <button type="button" data-flow="pinch" aria-pressed="false" aria-controls="click-workflow">縮放</button>
+            <button type="button" data-flow="rotate" aria-pressed="false" aria-controls="click-workflow">旋轉</button>
+          </div>
+          <div id="click-workflow" class="ar-workflow" aria-live="polite" aria-atomic="true">
+            <ol class="ar-flow" aria-label="Click 互動步驟">
+              <li><span class="ar-step">01 / 使用者操作</span><h4 data-flow-title="0">點擊螢幕</h4><span class="ar-node" data-flow-node="0">Screen Tap</span></li>
+              <li><span class="ar-step">02 / 互動處理</span><h4 data-flow-title="1">切換開關狀態</h4><span class="ar-node" data-flow-node="1">Switch → Pulse</span></li>
+              <li><span class="ar-step">03 / 畫面反應</span><h4 data-flow-title="2">顯示切換＋音效</h4><span class="ar-node" data-flow-node="2">Visible / Audio Player</span></li>
+            </ol>
+            <p id="ar-flow-explanation" class="ar-flow-explanation">點擊切換圖像的顯示狀態；音效由另一條開關分支在開啟時觸發。這兩條連線共同形成點擊回饋。</p>
+          </div>
+          <p class="ar-caption">依原始專案重繪的簡化流程。切換按鈕可查看說明。</p>
+          <details class="ar-source"><summary>看看原始素材與製作細節 <span aria-hidden="true">＋</span></summary><div class="ar-source-body">
+            <figure class="ar-source-art"><img src="assets/spark-click-ring.png" width="576" height="1024" alt="Click 專案中的白色光圈動畫影格" loading="lazy" decoding="async"><figcaption>光圈動畫的其中一格</figcaption></figure>
+            <div><h3>同一個互動想法，保留了不同版本。</h3><p><code>click/click.arproj</code> 使用 49 格、每秒 25 格循環的光圈素材；手勢分別連到圖像的位置、縮放與旋轉屬性。</p><p><code>click..arproj</code> 保留另一組圖像設定，並有音訊頻段經平滑處理後連到縮放的分支。</p><p class="ar-caption">流程以已連接到輸出的分支為主，省略內部運算與未接到畫面輸出的測試節點。以上為專案結構分析，尚未重新執行原濾鏡驗證。</p></div>
+          </div></details>
+        </div>
+      </div>
+    </section>
+
+    <section id="selfie" class="ar-case" aria-labelledby="selfie-title">
+      <header class="ar-case-heading"><div><p class="ar-eyebrow">02 / FACE & TYPOGRAPHY</p><h2 id="selfie-title">我怎麼這麼好看</h2></div><span class="ar-tag">人像・文字・動畫</span></header>
+      <div class="ar-case-layout">
+        <figure class="ar-record"><div class="ar-record-image"><img src="assets/spark-ar-demo-1.jpg" width="364" height="456" alt="自拍濾鏡實際使用畫面，手寫字樣出現在前額位置" loading="lazy" decoding="async"></div><figcaption><strong>保留的實際使用畫面</strong><span>將手寫文字帶進自拍，讓字句與人像一起入鏡。</span></figcaption></figure>
+        <div class="ar-case-copy"><p class="ar-summary">用一句手寫字樣表達自拍時的心情。文字以逐格動畫呈現，透過臉部追蹤跟隨人像，再搭配修膚與畫面調色，組合成完整的濾鏡效果。</p>
+          <div class="ar-workflow-heading"><h3>效果怎麼組成</h3><span>臉部追蹤 × 文字動畫</span></div>
+          <ol class="ar-flow ar-selfie-flow" aria-label="人像文字濾鏡的效果組成">
+            <li><span class="ar-step">01 / 素材</span><h4>手寫文字動畫</h4><span class="ar-node">20 格 · 15 fps · 循環</span></li>
+            <li><span class="ar-step">02 / 場景設定</span><h4>文字平面跟隨臉部</h4><span class="ar-node">Face Tracker → Plane</span></li>
+            <li><span class="ar-step">03 / 使用效果</span><h4>自拍畫面加入文字</h4><span class="ar-node">文字材質＋人像畫面</span></li>
+          </ol>
+          <p class="ar-caption">依「我怎麼這麼好看 2021」的場景與材質設定整理。</p>
+          <div class="ar-color-flow"><strong>畫面調色</strong><span>攝影機畫面 <i aria-hidden="true">→</i> ColorFilter <i aria-hidden="true">→</i> 畫面材質</span></div>
+          <details class="ar-source"><summary>看看原始文字素材 <span aria-hidden="true">＋</span></summary><div class="ar-lettering"><img src="assets/spark-selfie-lettering.jpg" width="1024" height="586" alt="原始手寫文字素材：我怎麼這麼好看" loading="lazy" decoding="async"><p class="ar-caption">原始文字動畫的其中一格。修膚設定與文字動畫分別保存在材質和場景中。</p></div></details>
+        </div>
+      </div>
+    </section>
+    <a class="ar-back" href="creative.html#ar">↖ 回到創作與技術實驗</a>
+  </main>
+  <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
+</body>
+</html>
