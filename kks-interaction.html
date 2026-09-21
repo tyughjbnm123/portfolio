@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KKS 場景互動｜郭奕圻 YI-CHI KUO</title><meta name="description" content="從泳池、休息椅與角色活動點出發，探索如何在主遊戲中重用原生活動，並在互動結束後交還操作權。">
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/creative-lab.css?v=20260921-v18"><link rel="stylesheet" href="assets/exploration-pages.css?v=20260921-v18">
+<script src="assets/site-shell.js"></script><script defer src="assets/creative-lab.js?v=20260921-v18"></script>
+</head><body data-content-page="true" class="cl-page exploration-page">
+<a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
+<div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#lab">↖ 回到探索分類</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
+<nav class="yk-content-nav" aria-label="四大主導覽"><a href="index.html#about"><span>01</span>我是誰</a><a href="index.html#work"><span>02</span>我做過什麼</a><a href="index.html#tools"><span>03</span>我的工具房</a><a href="index.html#lab" aria-current="true"><span>04</span>我正在探索</a></nav>
+<nav class="yk-explore-nav" aria-label="我正在探索的六個分類"><span class="yk-explore-nav-label">探索分類</span><div><a data-explore-section="ai-visual" href="ai-visual.html"><span>01</span>AI 商業與社群視覺</a><a data-explore-section="ar" href="spark-ar.html"><span>02</span>Spark AR 濾鏡</a><a data-explore-section="kks" href="kks-interaction.html" aria-current="true"><span>03</span>KKS 場景互動</a><a data-explore-section="automation" href="bluestacks-automation.html"><span>04</span>BlueStacks 腳本</a><a data-explore-section="videos" href="youtube.html"><span>05</span>剪輯與 YouTube</a><a data-explore-section="next" href="comfyui.html"><span>06</span>AI 影像工作流</a></div></nav>
+<main id="tool-workspace"><header class="exploration-intro"><p class="cl-eyebrow">04.03 / GAME MODDING</p><h1>KKS 場景互動</h1><p class="exploration-lead">讓看得到的場所，成為玩家能參與的互動。</p><p class="exploration-description">從泳池、休息椅與角色活動點出發，探索如何在主遊戲中重用原生活動，並在互動結束後交還操作權。</p></header>
+<section id="kks" class="cl-section" aria-label="KKS 互動設計與實作"><div class="cl-section-heading"><span class="cl-status">概念驗證 POC · AI 協作開發</span></div>
+      <div class="cl-demo">
+        <figure class="cl-game-cover">
+          <div class="cl-cover-top"><span>KOIKATSU SUNSHINE</span><span>原作遊戲封面</span></div>
+          <img src="assets/kks-game-cover.jpg" width="1000" height="665" alt="Koikatsu Sunshine 遊戲封面，人物在泳池邊合照；用於介紹遊戲修改專案" fetchpriority="high" decoding="async">
+          <figcaption><span>原作：ILLUSION · Koikatsu Sunshine</span><a href="https://wiki.anime-sharing.com/hgames/index.php?title=File:Koikatsu_Sunshine_Cover.jpg" target="_blank" rel="noopener noreferrer">封面來源 ↗</a></figcaption>
+        </figure>
+        <div class="cl-demo-copy"><p class="cl-eyebrow">這個修改，想完成什麼？</p><div class="cl-phases" role="group" aria-label="查看互動流程"><button type="button" data-phase-button="approach" aria-pressed="true" aria-controls="cl-phase-detail"><span>01</span>靠近活動點<i aria-hidden="true">↗</i></button><button type="button" data-phase-button="interact" aria-pressed="false" aria-controls="cl-phase-detail"><span>02</span>執行互動<i aria-hidden="true">↗</i></button><button type="button" data-phase-button="restore" aria-pressed="false" aria-controls="cl-phase-detail"><span>03</span>退出與恢復<i aria-hidden="true">↗</i></button></div><div id="cl-phase-detail" class="cl-phase-detail" aria-live="polite" aria-atomic="true"><h3 id="cl-phase-title">先確認，這裡能不能互動。</h3><p id="cl-phase-description">依玩家所在場景、距離與活動點占用情況，確認可使用的活動，再由玩家按鍵啟動。</p><span id="cl-phase-note">互動入口：場景、位置與可用性</span></div></div>
+      </div>
+      <div class="cl-facts"><div><span class="cl-eyebrow">我的角色</span><h3>需求定義與實機驗收</h3><p>提出場景需求、安排優先順序、制定驗收條件，並執行後期遊戲測試與迭代回饋。</p></div><div><span class="cl-eyebrow">協作方式</span><h3>與 Codex 一起開發</h3><p>Codex 協助原生機制研究、程式實作、編譯部署及文件整理；我依實際體驗確認方向與結果。</p></div><div><span class="cl-eyebrow">目前階段</span><h3>小範圍驗證，持續迭代</h3><p>部分環境活動、雙角色互動與指定室內探索已有歷史執行或還原紀錄；完整回歸測試仍待補齊。</p></div></div>
+      <details class="cl-details"><summary><span>開發中的取捨與驗證</span><span class="cl-details-mark" aria-hidden="true">＋</span></summary><div class="cl-details-content"><div class="cl-decisions"><article><span class="cl-eyebrow">01 / REUSE</span><h3>重用原生活動</h3><p>從既有 NPC 活動與控制器出發，定位動作、道具與音訊的依賴，逐步驗證指定活動能否在主遊戲中使用。</p></article><article><span class="cl-eyebrow">02 / RESTORE</span><h3>把退出視為功能的一半</h3><p>相機模式切換存在非同步更新。依歷史失敗紀錄調整還原順序，指定泳池測試已有相機還原前後的對照。</p></article><article><span class="cl-eyebrow">03 / VERIFY</span><h3>區分實作與驗收</h3><p>程式存在、執行事件與完整體驗是不同層次的證據。下一步補齊重複進出、切圖、角色替換及插件卸載的測試。</p></article></div><div class="cl-evidence"><p><strong>證據範圍</strong>依 2026.09.15 專案稽核整理。既有驗證限定於指定動作及場景；狀態還原仍有待修正項目，效能改善尚未量測。</p><p class="cl-tech">C# <span>／</span> BepInEx <span>／</span> Unity 既有機制研究 <span>／</span> 狀態管理</p></div></div></details>
+    </section>
+<a class="exploration-back" href="index.html#lab">↖ 回到六個探索主題</a></main>
+<footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
+
+</body></html>
