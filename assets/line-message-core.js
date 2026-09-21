@@ -11,7 +11,7 @@
   const asset='https://tyughjbnm123.github.io/portfolio/assets/';
   const target='https://tyughjbnm123.github.io/portfolio/';
   function card(kind='product'){
-    const common={eyebrow:'本週精選',title:'好友相聚，零食上桌',description:'用一張卡片介紹聚會零食，把商品資訊與活動連結一起分享。',detail:'',image:asset+'lora-zhenzhen-sample.jpg',ratio:'1:1',fit:'contain',button1Label:'查看示範作品',button1Url:target+'creative.html',button2Label:'',button2Url:''};
+    const common={eyebrow:'本週精選',title:'好友相聚，零食上桌',description:'用一張卡片介紹聚會零食，把商品資訊與活動連結一起分享。',detail:'',image:asset+'lora-zhenzhen-sample.jpg',ratio:'1:1',fit:'contain',button1Label:'查看示範作品',button1Url:target+'ai-visual.html',button2Label:'',button2Url:''};
     if(kind==='event')return {...common,eyebrow:'活動邀請',title:'一起探索影像創作',description:'介紹活動主題、適合參加的對象與報名方式。把重要資訊，放進一則訊息。',detail:'日期・地點請在此填寫',image:asset+'panasonic-thumb.jpg',button1Label:'查看活動案例',button1Url:target+'projects.html'};
     if(kind==='notice')return {...common,eyebrow:'品牌公告',title:'有件新鮮事，想告訴你',description:'在這裡寫下你的品牌消息。\n\n可加入服務異動、會員通知，或一段想分享給顧客的內容。',image:'',button1Label:'了解更多',button1Url:target};
     if(kind==='blank')return {...common,eyebrow:'',title:'新卡片',description:'',image:'',button1Label:'',button1Url:''};

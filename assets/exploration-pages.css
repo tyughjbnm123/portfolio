@@ -1,0 +1,11 @@
+.exploration-page .exploration-intro{max-width:850px;padding:10px 0 27px;border-bottom:1px solid var(--yk-line)}
+.exploration-page .exploration-intro h1{margin:13px 0 17px}
+.exploration-page .exploration-lead{font-size:24px;line-height:1.6;color:var(--yk-ink);margin-bottom:12px}
+.exploration-page .exploration-description{font-size:15px;line-height:1.9;color:var(--yk-muted);max-width:770px}
+.exploration-page .cl-section{padding-top:25px}
+.exploration-page .cl-gallery-filter{margin-top:0}
+.comfy-progress{display:grid;grid-template-columns:112px minmax(0,1fr);align-items:center;gap:35px;max-width:900px;margin-top:30px;padding:30px;border:1px solid var(--yk-line);border-radius:16px;background:var(--yk-surface)}
+.comfy-progress>img{width:112px;height:112px;border-radius:16px}
+.comfy-progress h2{font-size:24px;margin:17px 0 12px}
+.comfy-progress p{color:var(--yk-muted)}
+@media(max-width:600px){.exploration-page .exploration-intro{padding-top:0}.exploration-page .exploration-lead{font-size:20px}.exploration-page .exploration-description{font-size:14px}.comfy-progress{grid-template-columns:1fr;gap:22px;padding:23px}.comfy-progress>img{width:80px;height:80px}.comfy-progress h2{font-size:22px}}

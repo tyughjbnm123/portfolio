@@ -16,6 +16,7 @@
     document.querySelectorAll('[data-visual-kind]').forEach(item=>item.hidden=kind!=='all'&&item.dataset.visualKind!==kind);
   }));
   const dialog=document.getElementById('cl-lightbox'),image=document.getElementById('cl-lightbox-image');
+  if (!dialog || !image) return;
   let lastTrigger=null;
   document.querySelectorAll('.cl-art-link').forEach(link=>link.addEventListener('click',event=>{
     if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;

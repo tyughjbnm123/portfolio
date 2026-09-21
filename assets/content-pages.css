@@ -8,7 +8,18 @@ body[data-content-page] .yk-content-nav {width:100%;max-width:1320px;margin:20px
 .yk-content-nav a {display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;color:var(--yk-muted);text-decoration:none;border:1px solid transparent;transition:background .25s,color .25s,transform .25s}
 .yk-content-nav a span {font-size:11px;opacity:.65}
 .yk-content-nav a:hover {background:var(--yk-soft);color:var(--yk-ink);transform:translateY(-2px)}
-.yk-content-nav a[aria-current=page] {background:var(--yk-ink);color:var(--yk-bg);border-color:var(--yk-ink)}
+.yk-content-nav a[aria-current] {background:var(--yk-ink);color:var(--yk-bg);border-color:var(--yk-ink)}
+.yk-explore-nav{width:100%;max-width:1320px;margin:18px auto 0;padding:15px 0;border-bottom:1px solid var(--yk-line);display:flex;align-items:flex-start;gap:20px;font:13px/1.6 var(--yk-font)}
+.yk-explore-nav-label{flex-shrink:0;color:var(--yk-muted);font-size:11px;line-height:40px}
+.yk-explore-nav>div{display:flex;flex-wrap:wrap;gap:6px 12px;min-width:0}
+.yk-explore-nav a{display:flex;align-items:center;gap:8px;min-height:40px;padding:6px 10px;color:var(--yk-muted);text-decoration:none;border-radius:7px;border:1px solid transparent;transition:background .2s,color .2s}
+.yk-explore-nav a>span{font-size:10px;color:var(--yk-accent)}
+.yk-explore-nav a:hover{color:var(--yk-ink);background:var(--yk-soft)}
+.yk-explore-nav a[aria-current]{color:var(--yk-ink);background:var(--yk-soft);border-color:var(--yk-line)}
+@media(max-width:700px){.yk-explore-nav{display:block;margin-top:12px;padding-top:5px}.yk-explore-nav-label{display:block;font-size:10px;line-height:2.5}.yk-explore-nav>div{gap:4px 5px}.yk-explore-nav a{font-size:11px;padding:7px 8px;min-height:38px;gap:6px}}
+@media(prefers-reduced-motion:reduce){.yk-explore-nav a{transition:none}}
+.exploration-back{display:inline-block;margin-top:28px;color:var(--yk-ink);font-size:14px;text-underline-offset:5px}
+.exploration-back:hover{color:var(--yk-accent)}
 body[data-content-page] .font-mono {font-family:var(--yk-font)}
 body[data-content-page] main {max-width:1320px;width:100%;padding:45px 0 60px}
 body[data-content-page] .rounded-xl,body[data-content-page] .rounded-2xl {border-radius:18px}
