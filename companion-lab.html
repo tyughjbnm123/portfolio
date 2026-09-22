@@ -3,68 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="從照片延伸的 Q 版網站小精靈：揮手、跳舞，在網頁上自由拖曳的互動試作。">
+  <meta name="description" content="可以自由拖曳的網頁小精靈，透過招呼、跳舞與閒置反應，讓逛作品集多一點互動。">
   <title>網頁小精靈｜郭奕圻</title>
-  <link rel="stylesheet" href="assets/companion/companion.css?v=20260922-v22">
-  <script defer src="assets/companion/companion-media.js?v=20260922-v22"></script>
-  <script defer src="assets/companion/companion.js?v=20260922-v22"></script>
+  <link rel="stylesheet" href="assets/companion/companion-lab-v23.css">
+  <script defer src="assets/companion/companion-player-v23.js"></script>
+  <script defer src="assets/companion/companion-lab-v23.js"></script>
+  <script defer src="assets/companion/companion-widget-v23.js"></script>
 </head>
-<body data-mode="idle" data-paused="false" data-ready="false">
-  <a class="skip" href="#playground">跳至互動區</a>
-  <header class="site-nav"><a class="brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><a class="back" href="index.html#lab">↖ 回到探索</a></header>
-  <main id="playground">
-    <div class="intro"><div><p class="eyebrow"><i></i> CHARACTER PLAYGROUND <span>01</span></p><h1>網頁<span>小精靈</span></h1></div><p class="intro-note">抓住小精靈，放到你喜歡的位置。<br>點一下播放動作與配音，也能從選單切換靜音。</p></div>
-    <div class="playground">
-      <section class="stage" id="pet-stage" aria-label="小精靈互動舞台">
-        <div class="stage-top"><span class="stage-name"><i></i> 小精靈 01</span><span class="live-state" id="live-state">自在待機</span></div>
-        <div class="orbit orbit-one" aria-hidden="true"></div><div class="orbit orbit-two" aria-hidden="true"></div>
-        <span class="stage-cross cross-left" aria-hidden="true">+</span><span class="stage-cross cross-right" aria-hidden="true">+</span>
-        <div class="speech" id="pet-speech" role="status" aria-live="polite">嗨，點一下跟我打招呼。</div>
-        <div class="pet-arena" id="pet-home">
-          <button class="pet-actor" id="pet-actor" type="button" aria-label="小精靈，拖曳移動或點擊互動" title="拖曳移動 · 點一下開啟選單 · 方向鍵移動" aria-expanded="false" aria-controls="pet-floating-menu">
-            <span class="pet-look"><span class="pet-motion"><span class="pet-sprite" aria-hidden="true"></span></span></span>
-          </button>
-        </div>
-        <div class="stage-away" id="stage-away" hidden><span aria-hidden="true">↘</span><h2>整個網頁，都可以是我的位置。</h2><p>直接抓住浮在畫面上的小精靈，拖到你喜歡的地方。</p><button type="button" id="return-stage">回到舞台 ↗</button></div>
-        <div class="pet-loading" id="pet-loading" role="status">角色正在準備中…</div>
-        <div class="stage-floor" aria-hidden="true"><i></i><span></span><i></i></div>
-        <div class="stage-bottom"><span id="stage-tip">點一下打招呼，或拖著她移動。</span><span class="coordinate">2D / LIVE</span></div>
-        <div id="pet-particles" class="pet-particles" aria-hidden="true"></div>
-      </section>
-      <aside class="controls" aria-label="角色互動設定">
-        <p class="eyebrow">MAKE A LITTLE MOMENT</p><h2>今天，想做什麼？</h2><p class="panel-note">選一個動作，看她的小反應。</p>
-        <div class="modes" role="group" aria-label="角色動作">
-          <button type="button" data-pet-mode="idle" aria-pressed="true"><span class="mode-icon" aria-hidden="true">☾</span><span>自在待機<small>慢慢呼吸，放鬆一下</small></span></button>
-          <button type="button" data-pet-mode="wave" aria-pressed="false"><span class="mode-icon" aria-hidden="true">✧</span><span>揮手招呼<small>嗨，很高興見到你</small></span></button>
-          <button type="button" data-pet-mode="sway" aria-pressed="false"><span class="mode-icon" aria-hidden="true">↔</span><span>左右搖擺<small>跟著拍子，輕輕搖</small></span></button>
-          <button type="button" data-pet-mode="bounce" aria-pressed="false"><span class="mode-icon" aria-hidden="true">↑</span><span>開心跳跳<small>今天有一點好心情</small></span></button>
-        </div>
-        <div class="tempo-head"><label for="pet-tempo">搖擺與跳躍的節奏</label><output id="tempo-output" for="pet-tempo">100 <small>BPM</small></output></div>
-        <input id="pet-tempo" type="range" min="70" max="150" step="5" value="100" aria-label="跳舞節奏 BPM">
-        <div class="range-labels"><span>慵懶一點</span><span>活潑一點</span></div>
-        <div class="playback"><button class="quiet-button" id="pet-pause" type="button" aria-pressed="false">Ⅱ 暫停動作</button><button class="quiet-button" id="pet-reset" type="button">↺ 回到原位</button></div>
-        <div class="sound-row"><div><strong>動作配音</strong><span id="sound-note" role="status">動作與配音一起播放，可隨時切換靜音。</span></div><button class="voice-button" id="pet-sound" type="button" aria-pressed="false">🔊 關閉聲音</button></div>
-        <button class="dock-button" id="pet-mini" type="button" aria-pressed="false"><span>放到網頁上自由拖曳</span><span aria-hidden="true">↘</span></button>
-        <p class="reduce-note" id="reduce-note" hidden>已依你的裝置設定減少動態；可以手動開啟。</p>
-      </aside>
-    </div>
-    <div class="little-guide"><p><span>01</span><strong>點一下</strong>會跟你揮揮手</p><p><span>02</span><strong>拖著走</strong>幫她換個位置</p><p><span>03</span><strong>按暫停</strong>想安靜隨時都可以</p></div>
-    <section class="companion-story" aria-labelledby="companion-story-title"><p class="eyebrow">ABOUT THIS EXPERIMENT</p><h2 id="companion-story-title">從造型，到互動。</h2><p>從照片延伸角色造型，結合動作、節奏與點擊回應，探索網站除了提供資訊，也能帶來什麼互動感受。</p><p>以角色短動畫呈現表情與動作，再加入自由拖曳、搖擺、跳躍與配音。點擊角色後，動作與配音一起循環播放；點擊角色開啟選單，就能切換靜音，手機也能直接操作。按暫停時，聲音一起停止，角色回到靜態畫面。</p><a href="index.html#lab">回到創作與技術實驗 ↗</a></section>
+<body>
+  <header class="nav"><a class="brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><a class="back" href="index.html#lab">↖ 回到探索</a></header>
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <div><p class="eyebrow">A LITTLE COMPANY / INTERACTION EXPERIMENT</p><h1 id="title">網頁<span>小精靈</span></h1><p class="lead">抓住她，放到你喜歡的位置。<br>點一下開啟選單，跳支舞，或安靜陪你逛逛。</p><button class="start" id="start-companion" type="button" aria-label="開始和小精靈互動"><span>召喚小精靈</span><b aria-hidden="true">↗</b></button><p class="hint">動作與配音各播放一次 · 聲音可隨時關閉</p></div>
+      <div class="preview"><span class="preview-status" id="live-state" role="status">等待召喚</span><img src="assets/companion/idle-still-v23.webp" alt="黑髮 Q 版小精靈" width="480" height="452"><div class="away"><strong>↘</strong>她已經來到網頁上了。<br>試著拖動角色，幫她找個位置。</div></div>
+    </section>
+    <div class="section-head"><h2>六個小反應，一段陪伴。</h2><p>跟著你的操作，自然出現。</p></div>
+    <section class="journey" aria-label="小精靈的六種模式">
+      <article class="step" data-step="idle"><small>01 / IDLE</small><h3>安靜待機</h3><p>眨眨眼、放鬆一下。動作結束後安靜停留。</p></article>
+      <article class="step" data-step="welcome"><small>02 / HELLO</small><h3>打個招呼</h3><p>點擊召喚，揮揮手，跟你說聲嗨。</p></article>
+      <article class="step" data-step="drag"><small>03 / DRAG</small><h3>跟著你移動</h3><p>按住角色拖曳，她會張開手保持平衡。</p></article>
+      <article class="step" data-step="dance"><small>04 / DANCE</small><h3>跳一支舞</h3><p>在角色選單點跳舞，表演一次就回到待機。</p></article>
+      <article class="step" data-step="yawn"><small>05 / A LITTLE BREAK</small><h3>伸個懶腰</h3><p>安靜約 45 秒，打個哈欠。再次互動前不會重複。</p></article>
+      <article class="step" data-step="bye"><small>06 / SEE YOU</small><h3>下次見</h3><p>點收起，揮手道別後回到小入口，隨時能再召喚。</p></article>
+    </section>
+    <section class="note" aria-label="操作方式"><p><strong>選單只留三個控制。</strong><br>左鍵點角色，或在手機輕點角色，就能跳舞、切換聲音與收起。其他小反應，交給互動自然觸發。</p><div class="mini-menu" aria-hidden="true"><span>♪ 跳舞</span><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4Z M15 8a6 6 0 0 1 0 8"/></svg><span>×</span></div></section>
   </main>
-  <footer><span>PHOTO → CHARACTER → A LITTLE INTERACTION</span><span>2D 角色動畫試作 · 2026</span></footer>
-  <aside class="pet-dock" id="pet-dock" aria-label="自由拖曳小精靈" hidden>
-    <div class="dock-arena" id="pet-dock-home"></div>
-    <div class="floating-menu" id="pet-floating-menu" role="group" aria-label="浮動角色選單" hidden>
-      <div class="floating-heading"><strong>網頁小精靈</strong><button type="button" id="dock-dismiss" aria-label="關閉角色選單">×</button></div>
-      <p>拖曳換位置 · 點角色開啟選單</p>
-      <div class="floating-actions"><button type="button" id="dock-dance" aria-pressed="false">♪ 跳舞</button><button type="button" id="dock-pause" aria-pressed="false">Ⅱ 暫停</button></div>
-      <button type="button" class="voice-button dock-voice" id="dock-voice" aria-pressed="false">🔊 關閉聲音</button><p id="dock-voice-note" role="status">動作與配音一起播放，可隨時切換靜音。</p>
-      <div class="floating-links"><button type="button" id="dock-return">回到舞台 ↗</button><button type="button" id="dock-hide">收起小精靈</button></div>
-    </div>
-  </aside>
-  <button type="button" class="pet-recall" id="pet-recall" hidden>✧ 召喚小精靈</button>
-  <noscript><p class="no-script">請啟用 JavaScript，才能與小精靈互動。</p></noscript>
+  <footer><span>CHARACTER → MOTION → A LITTLE INTERACTION</span><span>網頁互動實驗 · 2026</span></footer>
+  <noscript><p>請啟用 JavaScript，才能和小精靈互動。</p></noscript>
 </body>
 </html>
-
-
