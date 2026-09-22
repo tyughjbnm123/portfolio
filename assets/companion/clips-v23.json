@@ -1,0 +1,86 @@
+{
+  "idle": {
+    "name": "idle",
+    "animation": "idle-v23.webp",
+    "poster": "idle-still-v23.webp",
+    "audio": "idle-v23.mp3",
+    "duration": 6150,
+    "frames": 122,
+    "bytes": 992830,
+    "loop": 1,
+    "size": [
+      480,
+      452
+    ]
+  },
+  "welcome": {
+    "name": "welcome",
+    "animation": "welcome-v23.webp",
+    "poster": "welcome-still-v23.webp",
+    "audio": "welcome-v23.mp3",
+    "duration": 6150,
+    "frames": 122,
+    "bytes": 1048474,
+    "loop": 1,
+    "size": [
+      480,
+      452
+    ]
+  },
+  "drag": {
+    "name": "drag",
+    "animation": "drag-v23.webp",
+    "poster": "drag-still-v23.webp",
+    "audio": "drag-v23.mp3",
+    "duration": 6150,
+    "frames": 122,
+    "bytes": 1084734,
+    "loop": 1,
+    "size": [
+      480,
+      452
+    ]
+  },
+  "dance": {
+    "name": "dance",
+    "animation": "dance-v23.webp",
+    "poster": "dance-still-v23.webp",
+    "audio": "dance-v23.mp3",
+    "duration": 6150,
+    "frames": 122,
+    "bytes": 1073276,
+    "loop": 1,
+    "size": [
+      480,
+      452
+    ]
+  },
+  "yawn": {
+    "name": "yawn",
+    "animation": "yawn-v23.webp",
+    "poster": "yawn-still-v23.webp",
+    "audio": "yawn-v23.mp3",
+    "duration": 6150,
+    "frames": 122,
+    "bytes": 1011006,
+    "loop": 1,
+    "size": [
+      480,
+      452
+    ]
+  },
+  "bye": {
+    "name": "bye",
+    "animation": "bye-v23.webp",
+    "poster": "bye-still-v23.webp",
+    "audio": "bye-v23.mp3",
+    "duration": 6150,
+    "frames": 122,
+    "bytes": 1070672,
+    "loop": 1,
+    "size": [
+      480,
+      452
+    ]
+  }
+}
