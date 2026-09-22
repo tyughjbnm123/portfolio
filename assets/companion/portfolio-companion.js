@@ -8,7 +8,7 @@
   let position=saved.position&&Number.isFinite(saved.position.x)&&Number.isFinite(saved.position.y)?saved.position:null;
   let loadingPromise=null,waveTimer=null,drag=null,suppressClick=false;
   const host=document.createElement('div');host.id='yk-companion-widget';
-  const root=host.attachShadow({mode:'open'}),sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('portfolio-companion.css?v=20260922-v21',base).href;root.append(sheet);
+  const root=host.attachShadow({mode:'open'}),sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('portfolio-companion.css?v=20260922-v22',base).href;root.append(sheet);
   const ui=document.createElement('div');
   ui.innerHTML=`<button class="launcher" type="button" aria-expanded="false" aria-controls="companion-panel"><span aria-hidden="true">✧</span> 召喚小精靈</button>
     <section class="panel" id="companion-panel" aria-label="網頁小精靈" hidden>
@@ -16,13 +16,20 @@
       <div class="load-status" hidden><p class="loading" role="status">角色準備中…</p><button class="retry" type="button" hidden>重新載入</button><button class="cancel" type="button">收起</button></div>
       <div class="menu" id="companion-menu" role="group" aria-label="小精靈選單" hidden>
         <div class="menu-heading"><strong>網頁小精靈</strong><button class="dismiss" type="button" aria-label="關閉小精靈選單">×</button></div>
-        <p class="tip">抓住角色，就能拖到任何角落。</p>
+        <p class="tip">拖曳換位置 · 點角色開啟選單</p>
         <div class="controls"><button class="dance" type="button" aria-pressed="false">♪ 跳舞</button><button class="pause" type="button" aria-pressed="false">Ⅱ 暫停</button></div>
+        <button class="voice" type="button" aria-pressed="false">🔊 關閉聲音</button><p class="voice-note" role="status">動作與配音一起播放。</p>
         <a class="visit" href="${new URL('../../companion-lab.html',base).href}">完整試玩 ↗</a><button class="close" type="button">收起小精靈</button>
       </div>
     </section>`;
   root.append(ui);document.body.append(host);
   const $=s=>root.querySelector(s),launcher=$('.launcher'),panel=$('.panel'),actor=$('.actor'),sprite=$('.sprite'),menu=$('.menu');
+  const media=new window.CompanionMedia(sprite,(muted,status)=>{
+    $('.voice').textContent=muted?'🔇 開啟聲音':'🔊 關閉聲音';
+    $('.voice').setAttribute('aria-pressed',String(muted));
+    $('.voice-note').textContent=muted?'已靜音，動作照常播放。':status==='error'?'配音暫時無法播放，點角色再試一次。':status==='playing'?'動作與配音一起播放。':'點一下角色，動作和配音一起播放。';
+    requestAnimationFrame(layoutMenu);
+  });
   const clamp=(n,min,max)=>Math.max(min,Math.min(n,Math.max(min,max)));
   function viewportWidth(){return Math.min(innerWidth,document.documentElement.getBoundingClientRect().right);}
   function scale(){return host.getBoundingClientRect().width/host.offsetWidth||1;}
@@ -44,20 +51,22 @@
     host.dataset.mode=state.wave?'wave':state.dance?'dance':'idle';host.dataset.paused=String(state.paused);host.dataset.ready=String(state.ready);actor.disabled=!state.ready;
     $('.dance').textContent=state.dance?'☾ 休息':'♪ 跳舞';$('.dance').setAttribute('aria-pressed',String(state.dance));
     $('.pause').textContent=state.paused?'▶ 繼續':'Ⅱ 暫停';$('.pause').setAttribute('aria-pressed',String(state.paused));requestAnimationFrame(layoutMenu);
+    $('.voice').disabled=!state.ready;
+    media.setPlaying(state.open&&state.ready&&!state.paused&&!document.hidden);
   }
   function load(){
     if(state.ready)return Promise.resolve();if(loadingPromise)return loadingPromise;
     $('.load-status').hidden=false;$('.loading').textContent='角色準備中…';$('.retry').hidden=true;
-    const img=new Image();img.src=new URL('blackhair-sprites-v2.svg',base).href;
-    loadingPromise=img.decode().then(()=>{sprite.style.backgroundImage=`url("${img.src}")`;state.ready=true;$('.load-status').hidden=true;render();}).catch(()=>{$('.loading').textContent='角色暫時沒有載入。';$('.retry').hidden=false;}).finally(()=>{loadingPromise=null;});return loadingPromise;
+    loadingPromise=media.load().then(()=>{state.ready=true;$('.load-status').hidden=true;render();}).catch(()=>{$('.loading').textContent='角色暫時沒有載入。';$('.retry').hidden=false;}).finally(()=>{loadingPromise=null;});return loadingPromise;
   }
-  function open(focus=true){state.open=true;remember();render();requestAnimationFrame(fit);load().then(()=>{if(focus&&state.open&&state.ready)actor.focus({preventScroll:true});});}
+  function open(focus=true){if(focus)media.activate();state.open=true;remember();render();requestAnimationFrame(fit);load().then(()=>{if(focus&&state.open&&state.ready)actor.focus({preventScroll:true});});}
   function close(){state.open=false;state.menu=false;state.wave=false;clearTimeout(waveTimer);host.style.left='';host.style.top='';host.style.right='';host.style.bottom='';remember();render();launcher.focus({preventScroll:true});}
   function hideMenu(focus=false){state.menu=false;render();if(focus)actor.focus({preventScroll:true});}
   launcher.addEventListener('click',()=>open());$('.close').addEventListener('click',close);$('.cancel').addEventListener('click',close);$('.retry').addEventListener('click',load);$('.dismiss').addEventListener('click',()=>hideMenu(true));
-  $('.dance').addEventListener('click',()=>{clearTimeout(waveTimer);state.wave=false;state.dance=!state.dance;remember();render();});
-  $('.pause').addEventListener('click',()=>{state.paused=!state.paused;if(!state.paused&&reduced.matches)host.dataset.motionOptin='true';remember();render();});
-  actor.addEventListener('click',event=>{if(suppressClick&&event.detail!==0){suppressClick=false;return;}clearTimeout(waveTimer);state.menu=!state.menu;state.wave=true;render();waveTimer=setTimeout(()=>{state.wave=false;render();},1800);});
+  $('.dance').addEventListener('click',()=>{media.activate();clearTimeout(waveTimer);state.wave=false;state.dance=!state.dance;state.paused=false;if(reduced.matches)host.dataset.motionOptin='true';remember();render();media.restart();});
+  $('.pause').addEventListener('click',()=>{state.paused=!state.paused;if(!state.paused){media.activate();if(reduced.matches)host.dataset.motionOptin='true';}remember();render();});
+  $('.voice').addEventListener('click',()=>media.toggleMuted());
+  actor.addEventListener('click',event=>{if(suppressClick&&event.detail!==0){suppressClick=false;return;}media.activate();clearTimeout(waveTimer);state.menu=!state.menu;state.wave=true;render();media.restart();waveTimer=setTimeout(()=>{state.wave=false;render();},6100);});
   actor.addEventListener('pointerdown',event=>{if(event.button!==0||!state.ready)return;const r=host.getBoundingClientRect();drag={id:event.pointerId,startX:event.clientX,startY:event.clientY,x:r.left,y:r.top,moved:false};suppressClick=false;actor.setPointerCapture(event.pointerId);host.dataset.dragging='true';});
   actor.addEventListener('pointermove',event=>{if(!drag||event.pointerId!==drag.id)return;const dx=event.clientX-drag.startX,dy=event.clientY-drag.startY;if(Math.hypot(dx,dy)>5&&!drag.moved){drag.moved=true;hideMenu();}if(drag.moved)place(drag.x+dx,drag.y+dy);});
   function end(event){if(!drag||event.pointerId!==drag.id)return;suppressClick=drag.moved||event.type==='pointercancel';if(drag.moved)savePosition();drag=null;delete host.dataset.dragging;if(actor.hasPointerCapture(event.pointerId))actor.releasePointerCapture(event.pointerId);setTimeout(()=>{suppressClick=false;},0);}
@@ -67,7 +76,9 @@
     if(event.key==='Escape'&&state.open){event.preventDefault();event.stopPropagation();if(state.menu)hideMenu(true);else close();return;}if(event.target!==actor)return;
     const delta={ArrowLeft:[-16,0],ArrowRight:[16,0],ArrowUp:[0,-16],ArrowDown:[0,16]}[event.key];if(delta){event.preventDefault();event.stopPropagation();hideMenu();const r=host.getBoundingClientRect();place(r.left+delta[0],r.top+delta[1]);savePosition();}
   });
-  document.addEventListener('visibilitychange',()=>{host.dataset.background=String(document.hidden);});
+  document.addEventListener('visibilitychange',()=>{host.dataset.background=String(document.hidden);render();});
+  window.addEventListener('pagehide',()=>media.setPlaying(false));
+  window.addEventListener('pageshow',render);
   reduced.addEventListener('change',event=>{if(event.matches){state.paused=true;delete host.dataset.motionOptin;remember();render();}});
   window.addEventListener('resize',fit);new ResizeObserver(fit).observe(host);sheet.addEventListener('load',fit);
   render();if(saved.open===true)open(false);

@@ -6,8 +6,13 @@
   const names={idle:'自在待機',wave:'揮手招呼',sway:'左右搖擺',bounce:'開心跳跳'};
   const lines={idle:'慢一點，也沒關係。',wave:'嗨，很高興見到你！',sway:'左一下，右一下 ♪',bounce:'把今天的好心情跳出來！'};
   let mode='idle',paused=reduced.matches,mini=false,hiddenPet=false,ready=false,bpm=100,drag=null,suppressClick=false,homeMoved=false;
-  let waveTimer=null,audio=null,master=null,sound=false,soundToken=0,beatTimer=null,beatIndex=0;
-  const nodes=new Set();
+  let waveTimer=null;
+  const media=new window.CompanionMedia(document.querySelector('.pet-sprite'),(muted,status)=>{
+    const label=muted?'🔇 開啟聲音':'🔊 關閉聲音';
+    for(const id of ['pet-sound','dock-voice']){$(id).textContent=label;$(id).setAttribute('aria-pressed',String(muted));}
+    const note=muted?'已靜音，動作照常播放。':status==='error'?'配音暫時無法播放，點角色再試一次。':status==='playing'?'動作與配音一起播放。':'點一下角色，動作和配音一起播放。';
+    $('sound-note').textContent=note;$('dock-voice-note').textContent=note;
+  });
   function speak(text){$('pet-speech').textContent=text;}
   function update(){
     body.dataset.mode=mode;body.dataset.paused=String(paused);body.dataset.ready=String(ready);
@@ -19,17 +24,18 @@
     $('pet-mini').firstElementChild.textContent=mini&&!hiddenPet?'回到大舞台':hiddenPet?'召喚小精靈':'放到網頁上自由拖曳';
     $('dock-dance').setAttribute('aria-pressed',String(mode==='sway'||mode==='bounce'));$('dock-dance').textContent=mode==='sway'||mode==='bounce'?'☾ 休息':'♪ 跳舞';
     $('dock-pause').setAttribute('aria-pressed',String(paused));$('dock-pause').textContent=paused?'▶ 繼續':'Ⅱ 暫停';
-    $('pet-sound').setAttribute('aria-checked',String(sound));
-    $('sound-note').textContent=sound?(paused?'動作暫停時，音效也會暫停。':'節拍已開啟，切換頁面時會自動關閉。'):'預設安靜，點開才會播放。';
+    for(const id of ['pet-sound','dock-voice'])$(id).disabled=!ready;
+    media.setPlaying(ready&&!paused&&!hiddenPet&&!document.hidden);
     body.style.setProperty('--cycle',`${120/bpm}s`);
     $('tempo-output').replaceChildren(document.createTextNode(bpm+' '));const unit=document.createElement('small');unit.textContent='BPM';$('tempo-output').append(unit);
     $('stage-away').hidden=!mini;$('pet-speech').hidden=mini;$('pet-recall').hidden=!hiddenPet;
   }
   function setMode(next,{temporary=false}={}){
     if(!ready)return;
+    media.activate();paused=false;if(reduced.matches)body.dataset.motionOptin='true';
     const previous=mode==='wave'?'idle':mode;clearTimeout(waveTimer);mode=next;speak(lines[next]);update();
-    if(next==='wave')burst();
-    if(temporary)waveTimer=setTimeout(()=>{mode=previous;speak(lines[mode]);update();},2200);
+    media.restart();if(next==='wave')burst();
+    if(temporary)waveTimer=setTimeout(()=>{mode=previous;speak(lines[mode]);update();},6100);
   }
   function burst(){
     if(reduced.matches||mini)return;
@@ -55,9 +61,9 @@
     else{actor.style.left='50%';actor.style.top='50%';homeMoved=false;}
     actor.style.setProperty('--look-x','0px');actor.style.setProperty('--look-r','0deg');speak('這裡剛剛好。');
   }
-  function toMini(focus=true){menuOpen(false);mini=true;hiddenPet=false;dock.hidden=false;dockHome.append(actor);actor.style.left='50%';actor.style.top='50%';resetPosition();update();if(focus)actor.focus({preventScroll:true});}
+  function toMini(focus=true){if(focus)media.activate();menuOpen(false);mini=true;hiddenPet=false;dock.hidden=false;dockHome.append(actor);actor.style.left='50%';actor.style.top='50%';resetPosition();update();if(focus)actor.focus({preventScroll:true});}
   function toStage(){menuOpen(false);mini=false;hiddenPet=false;home.append(actor);dock.hidden=true;resetPosition();update();speak('我回來啦！');actor.focus({preventScroll:true});}
-  function hidePet(){menuOpen(false);hiddenPet=true;dock.hidden=true;turnSoundOff();update();$('pet-recall').focus({preventScroll:true});}
+  function hidePet(){menuOpen(false);hiddenPet=true;dock.hidden=true;update();$('pet-recall').focus({preventScroll:true});}
   actor.addEventListener('pointerdown',event=>{
     if(event.button!==0||!ready)return;
     const rect=(mini?dock:actor).getBoundingClientRect();drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:rect.left,top:rect.top,w:rect.width,h:rect.height,moved:false};suppressClick=false;actor.setPointerCapture(event.pointerId);actor.classList.add('dragging');
@@ -78,8 +84,8 @@
   stage.addEventListener('pointermove',event=>{if(mini||paused||drag||reduced.matches||event.pointerType==='touch')return;const r=stage.getBoundingClientRect(),factor=clamp((event.clientX-r.left)/r.width-.5,-.5,.5);actor.style.setProperty('--look-x',factor*5+'px');actor.style.setProperty('--look-r',factor*2+'deg');});
   stage.addEventListener('pointerleave',()=>{actor.style.setProperty('--look-x','0px');actor.style.setProperty('--look-r','0deg');});
   document.querySelectorAll('[data-pet-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.petMode)));
-  $('pet-tempo').addEventListener('input',event=>{bpm=Number(event.target.value);update();restartBeat();});
-  $('pet-pause').addEventListener('click',()=>{paused=!paused;if(!paused&&reduced.matches)body.dataset.motionOptin='true';update();restartBeat();});
+  $('pet-tempo').addEventListener('input',event=>{bpm=Number(event.target.value);update();});
+  $('pet-pause').addEventListener('click',()=>{paused=!paused;if(!paused){media.activate();if(reduced.matches)body.dataset.motionOptin='true';}update();});
   $('pet-reset').addEventListener('click',resetPosition);
   $('pet-mini').addEventListener('click',()=>mini&&!hiddenPet?toStage():toMini());
   $('dock-dismiss').addEventListener('click',()=>{menuOpen(false);actor.focus({preventScroll:true});});
@@ -88,27 +94,17 @@
   floatMenu.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();menuOpen(false);actor.focus({preventScroll:true});}});
   document.addEventListener('pointerdown',event=>{if(!floatMenu.hidden&&!dock.contains(event.target))menuOpen(false);});
   $('return-stage').addEventListener('click',toStage);$('dock-return').addEventListener('click',toStage);$('dock-hide').addEventListener('click',hidePet);$('pet-recall').addEventListener('click',toMini);
-  function stopBeat(){clearInterval(beatTimer);beatTimer=null;for(const osc of nodes){try{osc.stop();}catch{}}nodes.clear();}
-  function tone(frequency,length,volume,type='sine',fall=false){
-    if(!audio||!master)return;const time=audio.currentTime,osc=audio.createOscillator(),gain=audio.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency,time);if(fall)osc.frequency.exponentialRampToValueAtTime(45,time+length);gain.gain.setValueAtTime(.001,time);gain.gain.exponentialRampToValueAtTime(volume,time+.006);gain.gain.exponentialRampToValueAtTime(.001,time+length);osc.connect(gain);gain.connect(master);nodes.add(osc);osc.onended=()=>{nodes.delete(osc);osc.disconnect();gain.disconnect();};osc.start(time);osc.stop(time+length+.02);
-  }
-  function tick(){if(audio?.state!=='running')return;const beat=beatIndex++%4;tone(beat%2?190:140,.13,.25,'sine',true);tone(beat%2?880:660,.07,.035,'triangle');}
-  function restartBeat(){stopBeat();if(!sound||paused||document.hidden||hiddenPet)return;beatIndex=0;tick();beatTimer=setInterval(tick,60000/bpm);}
-  function turnSoundOff(){soundToken++;sound=false;stopBeat();audio?.suspend().catch(()=>{});update();}
-  $('pet-sound').addEventListener('click',async()=>{
-    if(sound){turnSoundOff();return;}const token=++soundToken;
-    try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)throw Error('unsupported');if(!audio){audio=new Audio();master=audio.createGain();master.gain.value=.35;master.connect(audio.destination);}await audio.resume();if(token!==soundToken)return;if(document.hidden)return; sound=true;update();restartBeat();}
-    catch{sound=false;update();$('sound-note').textContent='瀏覽器無法播放音效，仍可操作角色。';}
-  });
-  document.addEventListener('visibilitychange',()=>{body.dataset.background=String(document.hidden);if(document.hidden)turnSoundOff();});
-  window.addEventListener('pagehide',()=>{stopBeat();audio?.close().catch(()=>{});});
-  reduced.addEventListener('change',event=>{if(event.matches){paused=true;delete body.dataset.motionOptin;stopBeat();} $('reduce-note').hidden=!event.matches;update();});
+  $('pet-sound').addEventListener('click',()=>media.toggleMuted());
+  $('dock-voice').addEventListener('click',()=>media.toggleMuted());
+  document.addEventListener('visibilitychange',()=>{body.dataset.background=String(document.hidden);update();});
+  window.addEventListener('pagehide',()=>media.setPlaying(false));
+  window.addEventListener('pageshow',update);
+  reduced.addEventListener('change',event=>{if(event.matches){paused=true;delete body.dataset.motionOptin;} $('reduce-note').hidden=!event.matches;update();});
   function fit(){if(mini&&!hiddenPet){const r=dock.getBoundingClientRect();placeDock(r.left,r.top);}else if(homeMoved){const r=actor.getBoundingClientRect(),h=home.getBoundingClientRect();placeHome(r.left-h.left+r.width/2,r.top-h.top+r.height/2);}}
   new ResizeObserver(fit).observe(home);window.addEventListener('resize',fit);
-  const asset=new URL('blackhair-sprites-v2.svg',document.currentScript.src).href;
   async function load(){
     $('pet-loading').hidden=false;$('pet-loading').textContent='角色正在準備中…';
-    try{const img=new Image();img.src=asset;await img.decode();ready=true;$('pet-loading').hidden=true;update();toMini(false);}
+    try{await media.load();ready=true;$('pet-loading').hidden=true;update();toMini(false);}
     catch{$('pet-loading').textContent='角色圖片尚未載入。';const retry=document.createElement('button');retry.type='button';retry.textContent='再試一次';retry.addEventListener('click',load);$('pet-loading').append(retry);}
   }
   $('reduce-note').hidden=!reduced.matches;update();load();
