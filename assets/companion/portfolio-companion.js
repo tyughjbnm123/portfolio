@@ -8,7 +8,7 @@
   let position=saved.position&&Number.isFinite(saved.position.x)&&Number.isFinite(saved.position.y)?saved.position:null;
   let loadingPromise=null,waveTimer=null,drag=null,suppressClick=false;
   const host=document.createElement('div');host.id='yk-companion-widget';
-  const root=host.attachShadow({mode:'open'}),sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('portfolio-companion.css?v=20260922-v20b',base).href;root.append(sheet);
+  const root=host.attachShadow({mode:'open'}),sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href=new URL('portfolio-companion.css?v=20260922-v21',base).href;root.append(sheet);
   const ui=document.createElement('div');
   ui.innerHTML=`<button class="launcher" type="button" aria-expanded="false" aria-controls="companion-panel"><span aria-hidden="true">✧</span> 召喚小精靈</button>
     <section class="panel" id="companion-panel" aria-label="網頁小精靈" hidden>
@@ -48,8 +48,8 @@
   function load(){
     if(state.ready)return Promise.resolve();if(loadingPromise)return loadingPromise;
     $('.load-status').hidden=false;$('.loading').textContent='角色準備中…';$('.retry').hidden=true;
-    const img=new Image(),mask=new Image();img.src=new URL('blackhair-sprites-v1.png',base).href;mask.src=new URL('blackhair-mask-v1.png',base).href;
-    loadingPromise=Promise.all([img.decode(),mask.decode()]).then(()=>{sprite.style.backgroundImage=`url("${img.src}")`;sprite.style.maskImage=`url("${mask.src}")`;state.ready=true;$('.load-status').hidden=true;render();}).catch(()=>{$('.loading').textContent='角色暫時沒有載入。';$('.retry').hidden=false;}).finally(()=>{loadingPromise=null;});return loadingPromise;
+    const img=new Image();img.src=new URL('blackhair-sprites-v2.svg',base).href;
+    loadingPromise=img.decode().then(()=>{sprite.style.backgroundImage=`url("${img.src}")`;state.ready=true;$('.load-status').hidden=true;render();}).catch(()=>{$('.loading').textContent='角色暫時沒有載入。';$('.retry').hidden=false;}).finally(()=>{loadingPromise=null;});return loadingPromise;
   }
   function open(focus=true){state.open=true;remember();render();requestAnimationFrame(fit);load().then(()=>{if(focus&&state.open&&state.ready)actor.focus({preventScroll:true});});}
   function close(){state.open=false;state.menu=false;state.wave=false;clearTimeout(waveTimer);host.style.left='';host.style.top='';host.style.right='';host.style.bottom='';remember();render();launcher.focus({preventScroll:true});}

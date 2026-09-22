@@ -105,10 +105,10 @@
   reduced.addEventListener('change',event=>{if(event.matches){paused=true;delete body.dataset.motionOptin;stopBeat();} $('reduce-note').hidden=!event.matches;update();});
   function fit(){if(mini&&!hiddenPet){const r=dock.getBoundingClientRect();placeDock(r.left,r.top);}else if(homeMoved){const r=actor.getBoundingClientRect(),h=home.getBoundingClientRect();placeHome(r.left-h.left+r.width/2,r.top-h.top+r.height/2);}}
   new ResizeObserver(fit).observe(home);window.addEventListener('resize',fit);
-  const asset=new URL('blackhair-sprites-v1.png',document.currentScript.src).href,maskAsset=new URL('blackhair-mask-v1.png',document.currentScript.src).href;
+  const asset=new URL('blackhair-sprites-v2.svg',document.currentScript.src).href;
   async function load(){
     $('pet-loading').hidden=false;$('pet-loading').textContent='角色正在準備中…';
-    try{const img=new Image(),mask=new Image();img.src=asset;mask.src=maskAsset;await Promise.all([img.decode(),mask.decode()]);ready=true;$('pet-loading').hidden=true;update();toMini(false);}
+    try{const img=new Image();img.src=asset;await img.decode();ready=true;$('pet-loading').hidden=true;update();toMini(false);}
     catch{$('pet-loading').textContent='角色圖片尚未載入。';const retry=document.createElement('button');retry.type='button';retry.textContent='再試一次';retry.addEventListener('click',load);$('pet-loading').append(retry);}
   }
   $('reduce-note').hidden=!reduced.matches;update();load();
