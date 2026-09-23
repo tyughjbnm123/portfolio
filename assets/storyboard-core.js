@@ -1,14 +1,14 @@
-(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./storyboard-data.js'));else root.Storyboard=factory(root.StoryboardData);})(globalThis,function(D){
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./storyboard-data.js'),require('./storyboard-3d-core.js'));else root.Storyboard=factory(root.StoryboardData,root.Storyboard3D);})(globalThis,function(D,C){
   'use strict';
   const MAX_SHOTS=12,round=n=>Math.round(n*10)/10;
-  const CAM_LABELS={front:'正面平視',lowAngle:'低角度仰拍',highAngle:'高角度俯拍',side:'側面構圖',orbit:'緩慢環繞',pushPull:'緩慢推近',none:'固定鏡頭'};
+  const CAM_LABELS={front:'正面平視',threeQuarterLeft:'左前方 45°',threeQuarterRight:'右前方 45°',back:'背面鏡位',ots:'過肩鏡位',lowAngle:'低角度仰拍',highAngle:'高角度俯拍',side:'側面構圖',orbit:'緩慢環繞',pushPull:'緩慢推近',none:'固定鏡頭'};
   const FRAME_LABELS={wide:'全景',medium:'中景',close:'近景',detail:'產品特寫'};
   const STAGES={hook:'吸引目光',introduce:'帶出商品',experience:'使用情境',benefit:'留下印象',cta:'行動呼籲'};
   const BODY_ACTIONS={2:'雙手整理頭髮',5:'雙手托臉，頭部微傾',6:'頭部微傾',7:'單手遮住下半臉',10:'保持正面姿態',11:'用手指輕碰下巴',12:'用手托住下巴',13:'保持面向鏡頭',20:'緩慢深呼吸',21:'維持姿態，直視鏡頭',26:'以唇部為構圖中心',28:'雙手攤開',29:'視線輕輕上移',38:'把產品舉到臉側，朝鏡頭展示'};
   let serial=0;
   const uid=()=>`shot-${Date.now().toString(36)}-${++serial}`;
   function aus(expression='neutral',intensity=1){return Object.fromEntries(D.AU_ORDER.map(k=>[k,round(Math.min(4,(D.PRESETS_NATURAL[expression]?.[k]||0)*intensity))]));}
-  function shot(values={}){return {id:uid(),name:'新分鏡',stage:'experience',duration:3,frame:'medium',camera:'front',actionId:0,expression:'neutral',intensity:1,aus:aus(),description:'',caption:'',narration:'',image:'assets/lora-cream-sample.jpg',imageLabel:'保養品廣告參考圖',imageFit:'cover',focusX:50,focusY:38,zoom:1,...values};}
+  function shot(values={}){return {id:uid(),name:'新分鏡',stage:'experience',duration:3,frame:'medium',camera:'front',actionId:0,expression:'neutral',intensity:1,aus:aus(),description:'',caption:'',narration:'',image:'assets/lora-cream-sample.jpg',imageLabel:'保養品廣告參考圖',imageFit:'cover',focusX:50,focusY:38,zoom:1,composer3d:null,...values};}
   function demo(){return {schema:'yichi-storyboard/1',name:'把日常，留給自己',product:'日常保濕乳霜',audience:'想把保養融入生活的人',message:'為自己留一段簡單的保養時光',ratio:'9:16',target:15,music:'溫暖、輕盈的木吉他節奏，保留旁白空間',shots:[
     shot({name:'讓日常慢下來',stage:'hook',duration:3,frame:'close',camera:'pushPull',actionId:20,expression:'neutral',description:'暖光落在臉上，角色停下手邊的事，緩慢深呼吸。',caption:'今天，也留一點時間給自己。',narration:'忙碌的日常裡，',focusX:46,focusY:21,zoom:1.18}),
     shot({name:'主角，輕輕入鏡',stage:'introduce',duration:3,frame:'medium',camera:'front',actionId:38,expression:'happy',intensity:.55,aus:aus('happy',.55),description:'角色拿起乳霜，將瓶身標籤轉向鏡頭。手部動作簡單，產品保持清楚。',caption:'一瓶，剛剛好的日常。',narration:'從一個簡單的保養步驟開始。',focusX:64,focusY:43,zoom:1}),
@@ -26,7 +26,7 @@
     const row=timeline(project)[index];
     return [`鏡頭 ${String(index+1).padStart(2,'0')}｜${s.name}｜${row.start.toFixed(1)}–${row.end.toFixed(1)} 秒`,
       `目的：${STAGES[s.stage]}。`, `畫面：${s.description.trim()||'請補充畫面內容。'}`,`構圖：${project.ratio}，${FRAME_LABELS[s.frame]}；${CAM_LABELS[s.camera]}。`,
-      `動作：${actionText(s)}`,`表情：${expressionText(s)}`,s.caption.trim()?`後製字幕：${s.caption.trim()}`:'',s.narration.trim()?`旁白：${s.narration.trim()}`:'',
+      s.composer3d?`3D 構圖參考：${C.describe(s.composer3d)}。人物、物件與實際攝影機位置以隨附參考圖為準。`:'',`動作：${actionText(s)}`,`表情：${expressionText(s)}`,s.caption.trim()?`後製字幕：${s.caption.trim()}`:'',s.narration.trim()?`旁白：${s.narration.trim()}`:'',
       '一致性：延續同一角色、服裝、場景光線與產品外觀。字幕與品牌字樣於後製加入。'].filter(Boolean).join('\n');
   }
   function script(project){return [`# ${project.name||'未命名廣告'}`,`商品：${project.product}\n受眾：${project.audience}\n核心訊息：${project.message}\n版型：${project.ratio}｜總長 ${total(project).toFixed(1)} 秒｜目標 ${project.target} 秒\n音樂方向：${project.music}`,
@@ -46,7 +46,7 @@
       if(!['custom',...Object.keys(D.EXPR_LABEL_ZH)].includes(s.expression)||!Number.isFinite(s.intensity)||s.intensity<.25||s.intensity>1.55||!s.aus||!D.AU_ORDER.every(k=>Number.isFinite(s.aus[k])&&s.aus[k]>=0&&s.aus[k]<=4))throw Error('表情設定不正確。');
       if(typeof s.image!=='string'||!validImage(s.image)||s.image.length>7500000||!Number.isFinite(s.focusX)||s.focusX<0||s.focusX>100||!Number.isFinite(s.focusY)||s.focusY<0||s.focusY>100||!Number.isFinite(s.zoom)||s.zoom<1||s.zoom>2)throw Error('參考圖或構圖參數不正確。');
       if(s.imageFit!==undefined&&!['cover','contain'].includes(s.imageFit))throw Error('圖片呈現設定不正確。');
-      const clean=shot();for(const k of Object.keys(clean))if(k!=='id')clean[k]=k==='aus'?Object.fromEntries(D.AU_ORDER.map(au=>[au,s.aus[au]])):k==='imageFit'?(s.imageFit??'cover'):s[k];return clean;
+      const clean=shot();for(const k of Object.keys(clean))if(k!=='id')clean[k]=k==='composer3d'?(s.composer3d==null?null:C.normalize(s.composer3d)):k==='aus'?Object.fromEntries(D.AU_ORDER.map(au=>[au,s.aus[au]])):k==='imageFit'?(s.imageFit??'cover'):s[k];return clean;
     });
     return {schema:p.schema,...Object.fromEntries(['name','product','audience','message','ratio','target','music'].map(k=>[k,p[k]])),shots};
   }

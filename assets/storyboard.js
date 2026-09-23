@@ -81,7 +81,7 @@
     const box=$('sb-script-summary'),scroll=box.scrollLeft;box.replaceChildren();const rows=S.timeline(project);
     project.shots.forEach((s,i)=>{const b=node('button','sb-script-tile');b.type='button';b.setAttribute('aria-pressed',String(s.id===selected));b.append(node('small','',`${pad(i+1)} / ${rows[i].start.toFixed(1)}–${rows[i].end.toFixed(1)}s`),node('strong','',s.name||'未命名分鏡'),node('p','',s.description||'尚未填寫畫面描述'));b.addEventListener('click',()=>{choose(s.id);$('sb-stage-shell').scrollIntoView({block:'center',behavior:reduced.matches?'auto':'smooth'});});box.append(b);});box.scrollLeft=scroll;
   }
-  function render(){shotList();timeline();preview();actionList();expression();output();}
+  function render(){render3DStatus();shotList();timeline();preview();actionList();expression();output();}
   function stop(){playing=false;cancelAnimationFrame(raf);$('sb-play').replaceChildren(document.createTextNode('▶ '),node('span','','播放分鏡'));$('sb-play').setAttribute('aria-label','播放分鏡');}
   function tick(now){
     if(!playing)return;elapsed=Math.min(S.total(project),(now-started)/1000);const s=project.shots[S.atTime(project,elapsed)];
@@ -110,6 +110,57 @@
   async function copy(text){let success=false;try{await navigator.clipboard.writeText(text);success=true;}catch{const t=node('textarea');t.value=text;t.style.position='fixed';t.style.top='-9999px';document.body.append(t);t.select();try{success=document.execCommand('copy');}catch{}finally{t.remove();}}if(success)notify('分鏡指令已複製');else{$('sb-script').parentElement.open=true;$('sb-script').textContent=text;const r=document.createRange();r.selectNodeContents($('sb-script'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);notify('已選取文字，請按 Ctrl/Cmd + C 複製');}}
   $('sb-copy-shot').addEventListener('click',()=>copy(S.prompt(project,current())));$('sb-copy-all').addEventListener('click',()=>copy(S.script(project)));
   $('sb-download-script').addEventListener('click',()=>{download(S.script(project),'ad-storyboard.txt','text/plain;charset=utf-8');notify('分鏡稿已準備下載');});
+  const C=globalThis.Storyboard3D,composerDialog=$('sb-composer-dialog'),composerFrame=$('sb-composer-frame');
+  let composerSession=null,composerLoadTimer=null;
+  function render3DStatus(){
+    const scene=current().composer3d;
+    $('sb-build-3d').textContent=scene?'編輯 3D 構圖':'建立 3D 構圖';
+    $('sb-3d-status').hidden=!scene;
+    if(scene)$('sb-3d-status').textContent=`3D 參考 · ${C.describe(scene)}。${scene.ratio!==project.ratio?'版型已變更，重新編輯並套用可更新參考圖。':'場景會隨「下載專案」保存，可再次編輯。'}`;
+  }
+  function closeComposer(){composerDialog.close();}
+  composerDialog.addEventListener('close',()=>{clearTimeout(composerLoadTimer);composerSession=null;composerFrame.removeAttribute('src');$('sb-build-3d').focus();});
+  $('sb-composer-close').addEventListener('click',closeComposer);
+  $('sb-build-3d').addEventListener('click',()=>{
+    if(imageBusy){notify('請等圖片讀取完成後再開啟 3D 構圖。');return;}
+    if(!C){notify('3D 工具未完整載入，請重新整理。');return;}
+    stop();
+    const target=current();
+    composerSession={token:crypto.randomUUID(),target,applying:false,ratio:project.ratio};
+    const url=new URL('shot-composer/index.html',location.href);url.searchParams.set('session',composerSession.token);url.hash='/composer';
+    $('sb-composer-title').textContent=`第 ${index()+1} 鏡 · ${target.name}`;
+    $('sb-composer-load').hidden=false;$('sb-composer-load').textContent='正在載入 3D 編輯器；第一次開啟需要下載模型與工具。';
+    composerFrame.src=url.href;composerDialog.showModal();
+    composerLoadTimer=setTimeout(()=>{if(composerSession){$('sb-composer-load').hidden=false;$('sb-composer-load').textContent='載入時間較長；若沒有出現編輯器，請檢查網路或確認 shot-composer 資料夾已完整上傳。';}},25000);
+  });
+  window.addEventListener('message',async event=>{
+    const session=composerSession;
+    if(!session||event.origin!==location.origin||event.source!==composerFrame.contentWindow||!C.envelope(event.data,session.token))return;
+    const data=event.data;
+    const respond=(type,payload={})=>composerFrame.contentWindow?.postMessage({channel:C.CHANNEL,token:session.token,type,...payload},location.origin);
+    if(data.type==='ready'){
+      respond('init',{shot:{id:session.target.id,name:session.target.name,ratio:session.ratio,frame:session.target.frame,camera:session.target.camera,scene:session.target.composer3d}});return;
+    }
+    if(data.type==='loaded'){clearTimeout(composerLoadTimer);$('sb-composer-load').hidden=true;return;}
+    if(data.type==='cancel'){closeComposer();return;}
+    if(data.type!=='apply'||session.applying)return;
+    session.applying=true;
+    try{
+      if(data.shotId!==session.target.id||!project.shots.includes(session.target))throw Error('原分鏡已變更，請重新開啟 3D 編輯器。');
+      const scene=C.normalize(data.scene);
+      if(scene.ratio!==session.ratio||!scene.objects.some(o=>o.visible))throw Error('構圖比例或可見物件不正確。');
+      if(typeof data.image!=='string'||data.image.length>2500000||!/^data:image\/(png|webp);base64,/.test(data.image)||!S.validImage(data.image))throw Error('3D 參考圖格式不正確。');
+      const image=new Image();image.src=data.image;await image.decode();
+      const [w,h]=session.ratio.split(':').map(Number);
+      if(image.width<64||image.height<64||image.width>2048||image.height>2048||Math.abs(image.width/image.height-w/h)>.025)throw Error('截圖比例不符，請重新開啟編輯器再套用。');
+      if(composerSession!==session||!composerDialog.open||!project.shots.includes(session.target))return;
+      const next={...session.target,...C.mapping(scene),composer3d:scene,image:data.image,imageLabel:`3D 構圖 · ${session.target.name}`,imageFit:'contain',focusX:50,focusY:50,zoom:1};
+      const nextSize=JSON.stringify(project).length-JSON.stringify(session.target).length+JSON.stringify(next).length;
+      if(nextSize>28000000)throw Error('專案已接近容量上限，請先縮小其他參考圖片。');
+      Object.assign(session.target,next);respond('applied');closeComposer();syncForm();render();notify('3D 構圖已套用，人物與鏡位也會隨專案保存。');
+    }catch(error){respond('error',{message:error.message||'無法套用，請再試一次。'});notify(error.message||'無法套用 3D 構圖。');}
+    finally{session.applying=false;}
+  });
   $('sb-save').addEventListener('click',()=>{download(JSON.stringify(project,null,2),'ad-storyboard-project.json','application/json;charset=utf-8');notify('專案已準備下載，可在此工作台重新開啟');});
   $('sb-import').addEventListener('click',()=>$('sb-project-file').click());
   $('sb-project-file').addEventListener('change',async()=>{const input=$('sb-project-file'),file=input.files[0];input.value='';if(!file)return;try{if(file.size>30000000)throw Error('請選擇 30 MB 以內的專案檔。');const next=S.parseProject(await file.text());stop();project=next;selected=project.shots[0].id;elapsed=0;syncForm();render();notify('專案已開啟');}catch(error){notify(error.message||'專案檔無法開啟，請確認格式。');}});
