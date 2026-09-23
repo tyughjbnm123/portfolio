@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KKS 互動與場景擴充｜郭奕圻 YI-CHI KUO</title><meta name="description" content="以 Koikatsu Sunshine、Unity 與 BepInEx 為基礎的非官方擴充研究，探索玩家日常活動、場景互動與角色動畫控制。觀看實機片段與目前研究進展。">
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/creative-lab.css?v=20260921-v18"><link rel="stylesheet" href="assets/exploration-pages.css?v=20260921-v18">
+<script src="assets/site-shell.js"></script><script defer src="assets/kks-interaction-v27.js"></script>
+<link rel="stylesheet" href="assets/kks-interaction-v27.css">
+</head><body data-content-page="true" class="cl-page exploration-page kks-page">
+<a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
+<div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#lab">↖ 回到探索分類</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
+<nav class="yk-content-nav" aria-label="四大主導覽"><a href="index.html#about"><span>01</span>我是誰</a><a href="index.html#work"><span>02</span>我做過什麼</a><a href="index.html#tools"><span>03</span>我的工具房</a><a href="index.html#lab" aria-current="true"><span>04</span>我正在探索</a></nav>
+<nav class="yk-explore-nav" aria-label="我正在探索的分類"><span class="yk-explore-nav-label">探索分類</span><div><a data-explore-section="ai-visual" href="ai-visual.html"><span>01</span>AI 商業與社群視覺</a><a data-explore-section="ar" href="spark-ar.html"><span>02</span>Spark AR 濾鏡</a><a data-explore-section="kks" href="kks-interaction.html" aria-current="true"><span>03</span>KKS 場景互動</a><a data-explore-section="automation" href="bluestacks-automation.html"><span>04</span>BlueStacks 腳本</a><a data-explore-section="videos" href="youtube.html"><span>05</span>剪輯與 YouTube</a><a data-explore-section="next" href="comfyui.html"><span>06</span>AI 影像工作流</a><a data-explore-section="slimbot" href="slimbot.html"><span>07</span>SlimBot 自動化</a></div></nav>
+<main id="tool-workspace">
+  <section class="kks-hero" aria-labelledby="kks-title">
+    <header class="kks-intro">
+      <p class="cl-eyebrow">04.03 / INTERACTION &amp; WORLD EXPANSION</p>
+      <h1 id="kks-title">KKS 互動與場景擴充</h1>
+      <p class="kks-lead">讓原本只能觀看的活動，成為玩家可以親自參與的體驗。</p>
+      <p class="kks-description">這是一個以 Koikatsu Sunshine、Unity 與 BepInEx 為基礎的非官方擴充研究專案。透過分析原生遊戲機制，逐步加入日常互動、場景探索與角色動畫控制，並處理互動結束後的控制權與狀態還原。</p>
+      <div class="kks-tags" aria-label="專案技術與性質"><span>非官方擴充研究</span><span>Unity</span><span>BepInEx</span><span>AI 協作</span></div>
+    </header>
+    <figure class="kks-film" aria-labelledby="kks-film-title">
+      <div class="kks-film-heading"><span id="kks-film-title">椅子互動・實機片段</span><span>00:17</span></div>
+      <video id="kks-video" controls playsinline preload="none" poster="assets/kks-interaction-poster-v27.jpg" width="1320" height="720" aria-label="KKS 椅子互動實機影片" aria-describedby="kks-film-caption">
+        <source src="assets/kks-interaction-demo-v27.mp4" type="video/mp4">
+        你的瀏覽器無法播放此影片，請使用下方「另開影片」觀看。
+      </video>
+      <figcaption id="kks-film-caption">從站立進入椅子互動，再退出並恢復移動。</figcaption>
+      <div class="kks-film-actions"><button type="button" id="kks-video-toggle" aria-controls="kks-video" hidden>播放實機片段 <span aria-hidden="true">▶</span></button><a href="assets/kks-interaction-demo-v27.mp4" target="_blank" rel="noopener noreferrer">另開影片 <span aria-hidden="true">↗</span><span class="kks-sr-only">（另開視窗）</span></a></div>
+      <p class="kks-video-status" id="kks-video-status" role="status" hidden></p>
+    </figure>
+  </section>
+
+  <section class="kks-flow" aria-labelledby="kks-flow-title">
+    <h2 id="kks-flow-title">互動的完整流程</h2>
+    <ol><li><span>01</span><strong>靠近與進入</strong><small>依位置觸發互動</small></li><li><span>02</span><strong>活動與動畫</strong><small>接入 Player 與角色狀態</small></li><li><span>03</span><strong>退出與還原</strong><small>交還控制權，恢復遊戲狀態</small></li></ol>
+  </section>
+
+  <section class="kks-progress" aria-labelledby="kks-progress-title">
+    <div class="kks-section-heading"><div><p class="cl-eyebrow">EXPLORATION / PROGRESS</p><h2 id="kks-progress-title">功能與研究進展</h2></div><p>從可參與的日常，到能自由探索的新場景。</p></div>
+    <div class="kks-feature-grid">
+      <article class="kks-feature"><div class="kks-feature-top"><span class="kks-number">01 / DAILY ACTIVITIES</span><span class="kks-status">部分原型已實測</span></div><h3>玩家日常活動</h3><p>將 NPC 的喝水、泡湯、玩沙、海邊玩水，以及泳圈與氣墊床活動接入 Player。多項原型已有特定範圍的實機測試紀錄。</p></article>
+      <article class="kks-feature"><div class="kks-feature-top"><span class="kks-number">02 / SCENE INTERACTION</span><span class="kks-status kks-status-pending">四組切換待實機確認</span></div><h3>場景互動與姿勢切換</h3><p>建立靠近指定位置、按鍵進入、切換動畫與退出的互動流程。最新椅子版本已加入四組動畫控制器的切換程式，仍待實機確認。</p></article>
+      <article class="kks-feature"><div class="kks-feature-top"><span class="kks-number">03 / VOICE &amp; ANIMATION</span><span class="kks-status kks-status-pending">整合中・椅子語音暫停</span></div><h3>角色語音與動畫協調</h3><p>建立依角色個性與實際動畫狀態選擇語音的機制，處理播放確認、切換與嘴型同步。原生事件語音和表情連動仍在整合；目前椅子測試版本暫停語音。</p></article>
+      <article class="kks-feature"><div class="kks-feature-top"><span class="kks-number">04 / WORLD EXPLORATION</span><span class="kks-status">部分場景已驗證</span></div><h3>新場景探索</h3><p>便利商店原型已驗證進入、移動探索及返回流程；小島已有使用者確認可移動。燈塔內部、樓梯與觀景空間等擴充仍在測試。</p></article>
+      <article class="kks-feature kks-feature-wide"><div class="kks-feature-top"><span class="kks-number">05 / DIAGNOSTICS &amp; HANDOFF</span><span class="kks-status">診斷與文件已建立</span></div><h3>診斷與交接工具</h3><p>整理原生 Action Catalog，建立動畫與音訊時間軸記錄、模組相容性追查及版本文件，讓問題可以重現，也方便後續維護與交接。</p></article>
+    </div>
+  </section>
+
+  <section class="kks-role" aria-labelledby="kks-role-title"><div><p class="cl-eyebrow">MY ROLE / AI COLLABORATION</p><h2 id="kks-role-title">我的工作</h2></div><p>負責功能構想、互動體驗設計、開發優先順序與遊戲內測試，並透過 AI 協作完成原生機制研究、程式修改、離線編譯與技術文件整理。</p></section>
+  <a class="exploration-back" href="index.html#lab">↖ 回到探索主題</a>
+</main>
+<footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
+
+</body></html>

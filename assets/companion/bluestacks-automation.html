@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BlueStacks 遊戲流程自動化作品：將練等與任務中的重複操作整理成腳本，展示操作順序、等待節奏與循環流程。">
+  <title>BlueStacks 練等與任務自動化｜郭奕圻 YI-CHI KUO</title>
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18">
+  <link rel="stylesheet" href="assets/bluestacks-case.css?v=20260920-v17">
+  <script src="assets/site-shell.js"></script>
+  <script defer src="assets/bluestacks-case.js?v=20260920-v17"></script>
+</head>
+<body data-content-page="true" class="bs-page">
+  <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
+  <div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#lab">↖ 回到探索分類</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
+  <nav class="yk-content-nav" aria-label="四大主導覽"><a href="index.html#about"><span>01</span>我是誰</a><a href="index.html#work"><span>02</span>我做過什麼</a><a href="index.html#tools"><span>03</span>我的工具房</a><a href="index.html#lab" aria-current="true"><span>04</span>我正在探索</a></nav>
+  <nav class="yk-explore-nav" aria-label="我正在探索的分類"><span class="yk-explore-nav-label">探索分類</span><div><a data-explore-section="ai-visual" href="ai-visual.html"><span>01</span>AI 商業與社群視覺</a><a data-explore-section="ar" href="spark-ar.html"><span>02</span>Spark AR 濾鏡</a><a data-explore-section="kks" href="kks-interaction.html"><span>03</span>KKS 場景互動</a><a data-explore-section="automation" href="bluestacks-automation.html" aria-current="true"><span>04</span>BlueStacks 腳本</a><a data-explore-section="videos" href="youtube.html"><span>05</span>剪輯與 YouTube</a><a data-explore-section="next" href="comfyui.html"><span>06</span>AI 影像工作流</a><a data-explore-section="slimbot" href="slimbot.html"><span>07</span>SlimBot 自動化</a></div></nav>
+  <main id="tool-workspace">
+    <header class="bs-hero">
+      <div class="bs-intro"><p class="bs-eyebrow">BLUESTACKS / GAME AUTOMATION</p><h1>把重複操作，<br>交給腳本。</h1><p class="bs-subtitle">BlueStacks 練等與任務自動化</p><p class="bs-description">將遊戲中反覆進行的練等與任務操作整理成可重播的腳本，讓操作順序、等待與循環有一致的安排。</p><div class="bs-tags"><span class="bs-complete"><i aria-hidden="true"></i>練等與任務腳本已完成</span><span>個人自動化實作</span></div><a class="bs-jump" href="#workflow">看看腳本流程 <span aria-hidden="true">↓</span></a></div>
+      <figure class="bs-game-figure"><img src="assets/bluestacks-game-example.png" alt="手機遊戲操作情境：角色、戰鬥畫面與螢幕上的操作按鈕" width="1275" height="715" fetchpriority="high"><figcaption><span>遊戲操作情境示意</span><span>腳本流程見下方 ↓</span></figcaption></figure>
+    </header>
+
+    <div class="bs-facts"><div><span>使用情境</span><strong>練等與任務操作</strong></div><div><span>執行環境</span><strong>BlueStacks 手機模擬器</strong></div><div><span>作品重點</span><strong>操作編排與循環控制</strong></div></div>
+
+    <section id="workflow" class="bs-section" aria-labelledby="workflow-title">
+      <div class="bs-section-heading"><div><p class="bs-eyebrow">01 / WORKFLOW</p><h2 id="workflow-title">兩種情境，一套流程思考。</h2></div><p>以下用四個階段示意腳本的操作順序。實際按鍵、畫面與等待時間依遊戲設定。</p></div>
+      <div class="bs-workbench">
+        <div class="bs-workbench-top"><div class="bs-modes" role="group" aria-label="選擇腳本情境"><button type="button" data-bs-mode="leveling" aria-pressed="true" aria-controls="bs-demo">自動練等</button><button type="button" data-bs-mode="quests" aria-pressed="false" aria-controls="bs-demo">任務操作</button></div><span class="bs-demo-label">互動流程示意 · 非遊戲實錄</span></div>
+        <div id="bs-demo" class="bs-demo-layout">
+          <ol class="bs-steps" aria-label="腳本流程步驟">
+            <li><button type="button" data-bs-step="0" aria-current="step" aria-controls="bs-step-detail"><span>01</span><div><strong>回到練等起點</strong><small>從固定畫面開始</small></div><i aria-hidden="true">↗</i></button></li>
+            <li><button type="button" data-bs-step="1" aria-controls="bs-step-detail"><span>02</span><div><strong>執行練等操作</strong><small>重播預定輸入</small></div><i aria-hidden="true">↗</i></button></li>
+            <li><button type="button" data-bs-step="2" aria-controls="bs-step-detail"><span>03</span><div><strong>等待戰鬥與結算</strong><small>保留畫面轉換時間</small></div><i aria-hidden="true">↗</i></button></li>
+            <li><button type="button" data-bs-step="3" aria-controls="bs-step-detail"><span>04</span><div><strong>銜接下一輪</strong><small>返回起點後重複</small></div><i aria-hidden="true">↗</i></button></li>
+          </ol>
+          <div class="bs-stage">
+            <div class="bs-stage-header"><span id="bs-scenario-label">自動練等</span><span id="bs-stage-count">01 / 04</span></div>
+            <div id="bs-step-detail" aria-live="polite" aria-atomic="true"><span class="bs-stage-number" id="bs-stage-number" aria-hidden="true">01</span><p class="bs-eyebrow" id="bs-step-kind">START / 固定起點</p><h3 id="bs-step-title">回到練等起點</h3><p id="bs-step-description">先將遊戲放在預定的起始畫面，讓腳本的第一個操作有一致的位置與順序。</p><div class="bs-step-note" id="bs-step-note">設計重點：每一輪從相同狀態開始。</div></div>
+            <div class="bs-progress" role="progressbar" aria-label="示意流程進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1"><span id="bs-progress-fill"></span></div>
+            <div class="bs-controls"><button type="button" id="bs-play">播放流程</button><button type="button" id="bs-stop" disabled>停止示意</button><span id="bs-play-state" role="status">點選步驟，或播放示意</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bs-section" aria-labelledby="thinking-title">
+      <div class="bs-section-heading"><div><p class="bs-eyebrow">02 / DESIGN THINKING</p><h2 id="thinking-title">重點在於，把步驟接得起來。</h2></div><p>自動化的價值，來自可重複的操作流程。先釐清起點、順序與等待，才能減少每次都重新操作的負擔。</p></div>
+      <div class="bs-thinking"><article><span>01</span><h3>拆解重複步驟</h3><p>把練等與任務分開整理，找出每輪會重複出現的輸入，讓不同目的的流程可以各自維護。</p></article><article><span>02</span><h3>安排操作節奏</h3><p>輸入與畫面轉換需要配合。流程說明保留等待階段，呈現腳本如何銜接前後操作。</p></article><article><span>03</span><h3>定義循環邊界</h3><p>清楚標示一輪從哪裡開始、在哪裡結束。當畫面偏離預期時，需要停止並調整，避免繼續累積錯誤操作。</p></article></div>
+    </section>
+
+    <section class="bs-scope" aria-labelledby="scope-title"><div><p class="bs-eyebrow">03 / PROJECT SCOPE</p><h2 id="scope-title">從遊戲情境，練習操作自動化。</h2><p>這個作品以已完成的練等與任務腳本為主，呈現將人工步驟整理成可重播流程的實作經驗，也是一種 RPA 操作自動化的應用情境。</p></div><dl><div><dt>已完成的功能</dt><dd>自動練等腳本、任務操作腳本</dd></div><div><dt>這一頁的展示</dt><dd>流程拆解、步驟切換與示意播放</dd></div><div><dt>適用範圍</dt><dd>已設定的遊戲畫面與操作流程；介面或流程改動時需重新調整。</dd></div></dl></section>
+
+    <details class="bs-reference"><summary>BlueStacks 功能參考 <span aria-hidden="true">＋</span></summary><p>BlueStacks 的巨集可錄製與重播操作序列，並設定重複次數及間隔；Script 功能則可將一連串操作綁定至快捷鍵。這些是工具本身的能力，實際作品功能以上方介紹為準。</p><div><a href="https://support.bluestacks.com/hc/en-us/articles/360056012412-How-to-record-and-manage-macros-using-the-Macro-manager-on-BlueStacks-5" target="_blank" rel="noopener noreferrer">官方巨集說明 ↗</a><a href="https://support.bluestacks.com/hc/en-us/articles/360060081652-How-to-use-Scripts-on-BlueStacks-5" target="_blank" rel="noopener noreferrer">官方 Script 說明 ↗</a></div></details>
+    <a class="exploration-back" href="index.html#lab">↖ 回到探索主題</a>
+  </main>
+  <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
+</body>
+</html>

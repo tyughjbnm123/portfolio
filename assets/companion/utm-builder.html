@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UTM 連結產生器｜郭奕圻的工具房</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+TC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="assets/utm-builder.css">
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script></head>
+<body class="yk-tool-page" data-tool-page="utm-builder">
+<a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ad-storyboard.html"><span>01</span>廣告分鏡工作台</a><a href="ai-tools.html"><span>02</span>短影片動作卡片庫</a><a href="facs-tool.html"><span>03</span>表情控制器</a><a href="line-message.html"><span>04</span>LINE 訊息編排器</a><a href="utm-builder.html" aria-current="page"><span>05</span>UTM 連結產生器</a><a href="raffle.html"><span>06</span>抽獎機</a><a href="prompt-library.html"><span>07</span>AI 指令庫</a></nav><main class="page" id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 05 — CAMPAIGN LINKS</p><h1>UTM 連結產生器</h1><p class="yk-tool-description">設定來源與活動參數，即時產生追蹤連結。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>05</b></span></div>
+
+  <div class="yk-utm-layout"><div class="panel yk-utm-settings">
+    <div class="panel-title"><i data-lucide="link-2"></i>連結設定</div>
+
+    <div class="field">
+      <label for="baseUrl">目標網址 <span class="required-mark">*</span></label>
+      <input id="baseUrl" type="text" placeholder="https://example.com/landing-page" autocomplete="off">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="utmSource">Campaign Source（來源）<span class="required-mark">*</span></label>
+        <input id="utmSource" type="text" placeholder="例：google, facebook, line" autocomplete="off">
+        <div class="presets" id="sourcePresets"></div>
+      </div>
+      <div class="field">
+        <label for="utmMedium">Campaign Medium（媒介）<span class="required-mark">*</span></label>
+        <input id="utmMedium" type="text" placeholder="例：cpc, social, email" autocomplete="off">
+        <div class="presets" id="mediumPresets"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="utmCampaign">Campaign Name（活動名稱）<span class="required-mark">*</span></label>
+      <input id="utmCampaign" type="text" placeholder="例：2026_spring_sale" autocomplete="off">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="utmTerm">Campaign Term（選填，付費關鍵字）</label>
+        <input id="utmTerm" type="text" placeholder="例：running_shoes" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="utmContent">Campaign Content（選填，區分素材版本）</label>
+        <input id="utmContent" type="text" placeholder="例：banner_a, textlink" autocomplete="off">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel yk-utm-result">
+    <div class="panel-title"><i data-lucide="zap"></i>產生的連結</div>
+    <div class="preview-box" id="previewBox" aria-live="polite"></div>
+    <div class="actions-row">
+      <button class="button primary" id="copyBtn"><i data-lucide="copy"></i>複製連結</button>
+      <button class="button" id="saveBtn"><i data-lucide="clock"></i>存進紀錄</button>
+    </div>
+  </div>
+
+  <div class="panel yk-utm-history">
+    <div class="panel-title"><i data-lucide="history"></i>歷史紀錄</div>
+    <div id="historyList"></div>
+  </div>
+</div></main><div class="toast" id="toast"></div>
+
+<script>
+  const SOURCE_PRESETS = ["google","facebook","instagram","line","newsletter"];
+  const MEDIUM_PRESETS = ["cpc","social","email","referral","organic"];
+  const HISTORY_KEY = "utmBuilder.history.v1";
+
+  const els = {
+    baseUrl: document.getElementById("baseUrl"),
+    source: document.getElementById("utmSource"),
+    medium: document.getElementById("utmMedium"),
+    campaign: document.getElementById("utmCampaign"),
+    term: document.getElementById("utmTerm"),
+    content: document.getElementById("utmContent"),
+    previewBox: document.getElementById("previewBox"),
+    copyBtn: document.getElementById("copyBtn"),
+    saveBtn: document.getElementById("saveBtn"),
+    historyList: document.getElementById("historyList"),
+    sourcePresets: document.getElementById("sourcePresets"),
+    mediumPresets: document.getElementById("mediumPresets"),
+    toast: document.getElementById("toast")
+  };
+
+  function renderPresets(container, values, targetInput) {
+    container.innerHTML = values.map(v => `<button type="button" class="preset-chip" data-val="${v}">${v}</button>`).join("");
+    container.querySelectorAll(".preset-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        targetInput.value = chip.dataset.val;
+        updatePreview();
+      });
+    });
+  }
+  renderPresets(els.sourcePresets, SOURCE_PRESETS, els.source);
+  renderPresets(els.mediumPresets, MEDIUM_PRESETS, els.medium);
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
+  }
+
+  function buildUrl() {
+    const base = els.baseUrl.value.trim();
+    if (!base) return { url: "", valid: false };
+
+    let urlObj;
+    try {
+      urlObj = new URL(base);
+    } catch (e) {
+      return { url: "", valid: false, error: "網址格式不對，記得要有 https:// 開頭" };
+    }
+
+    const params = [
+      ["utm_source", els.source.value.trim()],
+      ["utm_medium", els.medium.value.trim()],
+      ["utm_campaign", els.campaign.value.trim()],
+      ["utm_term", els.term.value.trim()],
+      ["utm_content", els.content.value.trim()]
+    ].filter(([, v]) => v);
+
+    params.forEach(([k, v]) => urlObj.searchParams.set(k, v));
+    return { url: urlObj.toString(), valid: true, base, params };
+  }
+
+  function updatePreview() {
+    const result = buildUrl();
+    if (!els.baseUrl.value.trim()) {
+      els.previewBox.innerHTML = `<span class="preview-empty">先填目標網址，這裡會即時顯示組好的連結...</span>`;
+      return;
+    }
+    if (result.error) {
+      els.previewBox.innerHTML = `<span style="color:var(--danger)">${escapeHtml(result.error)}</span>`;
+      return;
+    }
+    els.previewBox.textContent = result.url;
+  }
+
+  [els.baseUrl, els.source, els.medium, els.campaign, els.term, els.content].forEach(input => {
+    input.addEventListener("input", updatePreview);
+  });
+
+  let toastTimer = null;
+  function showToast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2200);
+  }
+
+  els.copyBtn.addEventListener("click", async () => {
+    const result = buildUrl();
+    if (!result.valid || !result.url) {
+      showToast("請先填好目標網址跟必填欄位。");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(result.url);
+    } catch (e) {
+      const helper = document.createElement("textarea");
+      helper.value = result.url;
+      helper.style.position = "fixed";
+      helper.style.opacity = "0";
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+    }
+    showToast("已複製連結。");
+  });
+
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveHistory(items) {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+    } catch (e) {
+      showToast("儲存紀錄失敗，瀏覽器儲存空間可能已滿。");
+    }
+  }
+
+  let history = loadHistory();
+
+  function renderHistory() {
+    if (!history.length) {
+      els.historyList.innerHTML = `<div class="history-empty">還沒有存過任何連結，產生連結後點「存進紀錄」就會出現在這裡。</div>`;
+      return;
+    }
+    els.historyList.innerHTML = history.map(item => `
+      <div class="history-item" data-id="${item.id}">
+        <div class="history-main">
+          <div class="history-name">${escapeHtml(item.campaign || "（未命名活動）")}</div>
+          <div class="history-url">${escapeHtml(item.url)}</div>
+          <div class="history-meta">${escapeHtml(item.source)} / ${escapeHtml(item.medium)} · ${new Date(item.createdAt).toLocaleDateString("zh-TW")}</div>
+        </div>
+        <div class="history-actions">
+          <button type="button" class="icon-btn" data-action="copy" title="複製連結"><i data-lucide="copy"></i></button>
+          <button type="button" class="icon-btn danger" data-action="delete" title="刪除"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+    `).join("");
+    lucide.createIcons();
+  }
+
+  els.saveBtn.addEventListener("click", () => {
+    const result = buildUrl();
+    if (!result.valid || !result.url || !els.source.value.trim() || !els.medium.value.trim() || !els.campaign.value.trim()) {
+      showToast("來源、媒介、活動名稱都填好才能存進紀錄。");
+      return;
+    }
+    history.unshift({
+      id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
+      url: result.url,
+      campaign: els.campaign.value.trim(),
+      source: els.source.value.trim(),
+      medium: els.medium.value.trim(),
+      createdAt: new Date().toISOString()
+    });
+    history = history.slice(0, 50);
+    saveHistory(history);
+    renderHistory();
+    showToast("已存進紀錄。");
+  });
+
+  els.historyList.addEventListener("click", async event => {
+    const btn = event.target.closest("[data-action]");
+    if (!btn) return;
+    const row = btn.closest(".history-item");
+    const id = row.dataset.id;
+    const item = history.find(h => h.id === id);
+    if (!item) return;
+
+    if (btn.dataset.action === "copy") {
+      try {
+        await navigator.clipboard.writeText(item.url);
+        showToast("已複製連結。");
+      } catch (e) {
+        showToast("複製失敗，請手動選取複製。");
+      }
+    }
+    if (btn.dataset.action === "delete") {
+      history = history.filter(h => h.id !== id);
+      saveHistory(history);
+      renderHistory();
+    }
+  });
+
+  updatePreview();
+  renderHistory();
+  lucide.createIcons();
+</script>
+<footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer></body>
+</html>

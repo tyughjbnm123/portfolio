@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>表情控制器｜郭奕圻的工具房</title>
+<link rel="stylesheet" href="assets/facs-tool.css?v=20260912-photo2">
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script>
+<link rel="stylesheet" href="assets/facs-preview.css?v=20260912-photo2">
+<link rel="stylesheet" href="assets/facs-upload.css?v=20260919-upload2">
+<script src="assets/facs-preview.js?v=20260919-upload1"></script>
+<script src="assets/facs-upload.js?v=20260919-upload2"></script></head>
+<body class="yk-tool-page" data-tool-page="facs-tool">
+
+<a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ad-storyboard.html"><span>01</span>廣告分鏡工作台</a><a href="ai-tools.html"><span>02</span>短影片動作卡片庫</a><a href="facs-tool.html" aria-current="page"><span>03</span>表情控制器</a><a href="line-message.html"><span>04</span>LINE 訊息編排器</a><a href="utm-builder.html"><span>05</span>UTM 連結產生器</a><a href="raffle.html"><span>06</span>抽獎機</a><a href="prompt-library.html"><span>07</span>AI 指令庫</a></nav><main id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 03 — EXPRESSION LAB</p><h1>表情控制器</h1><p class="yk-tool-description">上傳照片或選擇角色，調整五官動作，把表情轉成可用的描述。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>03</b></span></div><a class="yk-storyboard-link" href="ad-storyboard.html">試用整合版：把動作、表情與運鏡放進廣告分鏡工作台 ↗</a><div class="main-grid">
+
+  <!-- LEFT: continuous portrait preview -->
+  <section class="panel face-preview-panel" aria-label="角色與表情預覽">
+    <div class="face-upload-area">
+      <button id="faceUploadBtn" type="button" class="face-upload-button face-upload-primary">＋ 上傳自己的照片</button>
+      <input type="file" id="faceUploadInput" accept="image/jpeg,image/png,image/webp" hidden>
+      <p class="face-upload-help">JPG、PNG、WebP · 12 MB 以內<br>可手動裁切與對齊五官，照片只在本機處理。</p>
+      <div class="face-custom-row" id="faceCustomRow" hidden>
+        <button class="face-custom-choice" id="faceCustomBtn" type="button" aria-pressed="false"><img id="faceCustomThumb" alt="已裁切的自訂照片"><span>我的照片</span></button>
+        <div class="face-custom-actions"><button id="faceRecropBtn" type="button" class="face-upload-button">重新裁切／對齊</button><button id="faceRemoveBtn" type="button" class="face-upload-button">移除照片</button></div>
+      </div>
+      <p id="faceUploadStatus" class="face-upload-status" role="status"></p>
+    </div>
+    <div class="face-preview-heading">
+      <div><span class="face-eyebrow">PORTRAIT PREVIEW</span><h2>表情預覽</h2></div>
+      <span class="face-live-label">即時</span>
+    </div>
+    <div class="face-view-toggle" role="group" aria-label="切換照片對照">
+      <button id="faceLiveBtn" type="button" aria-pressed="true" onclick="setPreviewOriginal(false)">即時預覽</button>
+      <button id="faceOriginalBtn" type="button" aria-pressed="false" onclick="setPreviewOriginal(true)">原始照片</button>
+    </div>
+    <div class="face-canvas-wrap" aria-busy="true">
+      <canvas id="faceCanvas" width="480" height="480" role="img" aria-label="角色表情預覽" hidden></canvas>
+      <img id="facePhoto" alt="角色原始參考照片" hidden>
+      <span class="face-preview-tag" id="facePreviewTag">少女 · 中性</span>
+    </div>
+    <div class="face-preview-caption"><span id="faceExpression">中性</span><span id="faceIntensity">自然強度</span></div>
+    <p class="face-active-units" id="faceActiveUnits">選擇表情或拖動滑桿，查看五官變化。</p>
+    <div class="face-picker-heading"><span>參考角色</span><span id="faceSelectedName">少女</span></div>
+    <div class="face-selector" id="faceSelector"></div>
+    <p class="face-note" id="facePreviewNote">以原照片局部變形示意表情；張嘴、閉眼僅呈現近似動作，不會生成牙齒或新的臉部細節。</p>
+    <p id="facePreviewStatus" class="face-preview-status" role="status">正在載入角色…</p>
+  </section>
+
+  <!-- MIDDLE: Controls -->
+  <div class="panel controls-panel">
+    <div class="panel-label">FACS 表情控制器</div>
+
+    <div style="margin-bottom:12px">
+      <div class="ctrl-group-title">▸ 預設表情</div>
+      <div class="preset-row">
+        <button class="preset-btn active" data-preset="neutral" onclick="applyPreset('neutral',event)">😐 中性</button>
+        <button class="preset-btn" data-preset="happy" onclick="applyPreset('happy',event)">😊 開心</button>
+        <button class="preset-btn" data-preset="sad" onclick="applyPreset('sad',event)">😢 悲傷</button>
+        <button class="preset-btn" data-preset="angry" onclick="applyPreset('angry',event)">😠 憤怒</button>
+        <button class="preset-btn" data-preset="surprised" onclick="applyPreset('surprised',event)">😮 驚訝</button>
+        <button class="preset-btn" data-preset="disgust" onclick="applyPreset('disgust',event)">🤢 厭惡</button>
+        <button class="preset-btn" data-preset="fear" onclick="applyPreset('fear',event)">😨 恐懼</button>
+        <button class="preset-btn" data-preset="contempt" onclick="applyPreset('contempt',event)">😏 輕蔑</button>
+      </div>
+      <div class="ctrl-group-title">▸ 表情強度</div>
+      <div class="intensity-row">
+        <button class="intensity-btn" data-intensity="mild" onclick="setIntensity('mild')">輕微</button>
+        <button class="intensity-btn active" data-intensity="natural" onclick="setIntensity('natural')">自然</button>
+        <button class="intensity-btn" data-intensity="strong" onclick="setIntensity('strong')">強烈</button>
+      </div>
+    </div>
+
+    <div class="ctrl-group" id="group-brow">
+      <div class="ctrl-group-title">▸ 眉毛</div>
+    </div>
+    <div class="ctrl-group" id="group-eye">
+      <div class="ctrl-group-title">▸ 眼部</div>
+      <p class="face-side-note" id="faceSideNote">左右以角色本人為準：左眼在畫面右側，右眼在畫面左側。</p>
+    </div>
+    <div class="ctrl-group" id="group-nose">
+      <div class="ctrl-group-title">▸ 鼻部</div>
+    </div>
+    <div class="ctrl-group" id="group-upper">
+      <div class="ctrl-group-title">▸ 上唇與嘴角</div>
+    </div>
+    <div class="ctrl-group" id="group-lower">
+      <div class="ctrl-group-title">▸ 下唇與下顎</div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">↺ 重置所有參數</button>
+  </div>
+
+  <!-- RIGHT: Output -->
+  <div class="panel" style="display:flex;flex-direction:column;">
+    <div class="panel-label">自訂 FACP 表情參數</div>
+    <div class="protocol-note">FACP 是本站用於保存與傳遞表情設定的自訂格式，不是 AI 圖像工具的官方標準。</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" data-tab="json" onclick="switchTab('json')">結構化參數</button>
+      <button class="tab-btn" data-tab="desc" onclick="switchTab('desc')">AI 表情描述</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-json">
+      <div class="json-output" id="jsonOutput"></div>
+      <button class="adv-toggle" onclick="toggleAdvanced()" id="advToggleBtn">▸ 進階資料（timestamp / sequence_id）</button>
+      <div class="adv-content" id="advContent"></div>
+      <button class="copy-btn" id="copyJsonBtn" onclick="copyJSON()">📋 複製 JSON</button>
+    </div>
+
+    <div class="tab-panel" id="tab-desc">
+      <div class="desc-output" id="descOutput"></div>
+      <button class="copy-btn" id="copyDescBtn" onclick="copyDescription()">📋 複製 AI 表情描述</button>
+    </div>
+
+    <div class="usage-hint">💡 使用方式：<br>1. 上傳照片並裁切、對齊五官，或選擇參考角色<br>2. 選擇預設表情或調整動作單元<br>3. 切換原始照片，對照表情變化<br>4. 複製結構化參數或 AI 表情描述<br>5. 將描述加入圖像生成或圖片編輯指令<br>上傳照片只保留於本次頁面，重新整理後需重新選取。</div>
+  </div>
+
+</div>
+
+</main><script>
+// ============ AU 定義：名稱、分組 ============
+const AU_INFO = {
+  AU1:  { name: '內眉上抬',   group: 'brow'  },
+  AU2:  { name: '外眉上抬',   group: 'brow'  },
+  AU4:  { name: '眉毛下壓',   group: 'brow'  },
+  AU5:  { name: '上眼瞼抬起', group: 'eye'   },
+  AU6:  { name: '臉頰上抬',   group: 'eye'   },
+  AU7:  { name: '眼瞼收緊',   group: 'eye'   },
+  AU41: { name: '上眼瞼下垂', group: 'eye'   },
+  AU46_L: { name: '左眼眨眼', group: 'eye'   },
+  AU46_R: { name: '右眼眨眼', group: 'eye'   },
+  AU9:  { name: '皺鼻',       group: 'nose'  },
+  AU10: { name: '上唇抬起',   group: 'upper' },
+  AU12: { name: '嘴角上揚',   group: 'upper' },
+  AU20: { name: '嘴巴加寬',   group: 'upper' },
+  AU22: { name: '嘴唇向外翻', group: 'upper' },
+  AU15: { name: '嘴角下拉',   group: 'lower' },
+  AU16: { name: '下唇下拉',   group: 'lower' },
+  AU17: { name: '下巴抬起',   group: 'lower' },
+  AU26: { name: '下顎放鬆',   group: 'lower' },
+  AU27: { name: '嘴巴大幅張開', group: 'lower' },
+};
+const AU_ORDER = ['AU1','AU2','AU4','AU5','AU6','AU7','AU41','AU46_L','AU46_R','AU9','AU10','AU12','AU20','AU22','AU15','AU16','AU17','AU26','AU27'];
+const GROUP_LABELS = { brow: '眉毛', eye: '眼部', nose: '鼻部', upper: '上唇與嘴角', lower: '下唇與下顎' };
+
+const state = {};
+AU_ORDER.forEach(au => state[au] = 0);
+
+function intensityLabel(v) {
+  const labels = ['無','輕微','自然','明顯','誇張'];
+  const idx = Math.max(0, Math.min(4, Math.round(v)));
+  return labels[idx];
+}
+
+// ============ 預設表情（自然強度基準值，輕微/強烈由此換算）============
+const PRESETS_NATURAL = {
+  neutral:   {},
+  happy:     { AU6:1.2, AU7:0.3, AU12:1.8, AU20:0.4, AU26:0.2 },
+  sad:       { AU1:1.4, AU4:0.7, AU15:1.0, AU17:0.4, AU41:0.4 },
+  angry:     { AU4:1.7, AU5:0.3, AU7:1.1, AU9:0.2, AU15:0.3, AU17:0.3 },
+  surprised: { AU1:1.4, AU2:1.3, AU5:1.5, AU26:1.0, AU27:0.5 },
+  disgust:   { AU4:0.5, AU7:0.5, AU9:1.2, AU10:0.8, AU15:0.2 },
+  fear:      { AU1:1.1, AU2:0.8, AU4:0.5, AU5:1.3, AU7:0.4, AU15:0.4, AU26:0.7 },
+  contempt:  { AU7:0.3, AU12:0.7, AU20:0.8, AU15:0.2 },
+};
+const EXPR_LABEL_ZH = { neutral:'中性', happy:'開心', sad:'悲傷', angry:'憤怒', surprised:'驚訝', disgust:'厭惡', fear:'恐懼', contempt:'輕蔑' };
+const EXPR_LABEL_EN = { neutral:'neutral', happy:'happiness', sad:'sadness', angry:'anger', surprised:'surprise', disgust:'disgust', fear:'fear', contempt:'contempt' };
+
+function scaledPreset(name, intensity) {
+  const base = PRESETS_NATURAL[name] || {};
+  const factor = intensity === 'mild' ? 0.55 : intensity === 'strong' ? 1.55 : 1;
+  const full = {};
+  AU_ORDER.forEach(au => {
+    const raw = base[au] !== undefined ? base[au] * factor : 0;
+    full[au] = Math.min(4, Math.round(raw * 10) / 10);
+  });
+  return full;
+}
+
+let currentPresetName = 'neutral';
+let currentIntensity = 'natural';
+let isCustomState = false;
+
+// ============ 臉型定義 ============
+const faceTypes = [
+  { id:'young_f', label:'少女', thumb:'assets/facs-young-f.jpg' },
+  { id:'young_m', label:'青年', thumb:'assets/facs-young-m.jpg' },
+  { id:'cool_f',  label:'酷女', thumb:'assets/facs-cool-f.jpg' },
+  { id:'mature_m',label:'成熟', thumb:'assets/facs-mature-m.jpg' },
+  { id:'cute',    label:'可愛', thumb:'assets/facs-cute.jpg' },
+  { id:'anime',   label:'動漫', thumb:'assets/facs-anime.jpg' },
+];
+let currentFace = faceTypes[0];
+
+// ============ 同一張參考照片的連續預覽 ============
+const photoPreview = new FacsPreview.PhotoPreview(
+  document.getElementById('faceCanvas'),
+  document.getElementById('facePhoto'),
+  document.getElementById('facePreviewStatus')
+);
+
+function setPreviewOriginal(original) {
+  photoPreview.setOriginal(original);
+  document.getElementById('faceLiveBtn').setAttribute('aria-pressed', String(!original));
+  document.getElementById('faceOriginalBtn').setAttribute('aria-pressed', String(original));
+  updatePreviewLabels();
+}
+
+function updatePreviewLabels() {
+  const expression = isNeutralState() ? '中性' : isCustomState ? '自訂表情' : EXPR_LABEL_ZH[currentPresetName];
+  const active = AU_ORDER.filter(au => state[au] > 0.001);
+  document.querySelector('.face-live-label').textContent = photoPreview.original ? '對照中' : '即時';
+  document.getElementById('facePreviewTag').textContent = currentFace.label + ' · ' + (photoPreview.original ? '原始照片' : expression);
+  document.getElementById('faceExpression').textContent = expression;
+  document.getElementById('faceIntensity').textContent = isCustomState ? '手動調整' : ({mild:'輕微',natural:'自然',strong:'強烈'}[currentIntensity] + '強度');
+  document.getElementById('faceSelectedName').textContent = currentFace.label;
+  document.getElementById('faceActiveUnits').textContent = active.length
+    ? active.slice(0,3).map(au => AU_INFO[au].name).join(' · ') + (active.length > 3 ? ' 等 ' + active.length + ' 個動作' : '')
+    : '選擇表情或拖動滑桿，查看五官變化。';
+}
+
+// ============ 動態產生滑桿 UI ============
+function buildControls() {
+  ['brow','eye','nose','upper','lower'].forEach(group => {
+    const container = document.getElementById('group-' + group);
+    AU_ORDER.filter(au => AU_INFO[au].group === group).forEach(au => {
+      const row = document.createElement('div');
+      row.innerHTML = `
+        <div class="ctrl-intensity" id="i_${au}">無</div>
+        <div class="ctrl-row">
+          <span class="ctrl-label">${AU_INFO[au].name}</span>
+          <input type="range" class="ctrl-slider" id="${au}" min="0" max="4" step="0.1" value="0" aria-label="${AU_INFO[au].name}（${au}）" ${au.startsWith('AU46_') ? 'aria-describedby="faceSideNote"' : ''} oninput="update('${au}',this.value)">
+          <span class="ctrl-val" id="v_${au}">0.0</span>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  });
+}
+
+// ============ 臉型選單 ============
+function buildSelector() {
+  const container = document.getElementById('faceSelector');
+  faceTypes.forEach((ft, i) => {
+    const div = document.createElement('div');
+    div.className = 'face-opt' + (i === 0 ? ' active' : '');
+    div.tabIndex = 0;
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-pressed', String(i === 0));
+    div.setAttribute('aria-label', '選擇臉型：' + ft.label);
+    div.onclick = () => selectFace(ft, div);
+    div.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFace(ft, div); } };
+    const img = document.createElement('img');
+    img.src = ft.thumb;
+    img.alt = ft.label + '角色基準臉';
+    img.loading = 'lazy';
+    const canvasWrap = document.createElement('div');
+    canvasWrap.className = 'face-opt-canvas-wrap';
+    canvasWrap.appendChild(img);
+    const label = document.createElement('div');
+    label.className = 'face-opt-label';
+    label.textContent = ft.label;
+    div.appendChild(canvasWrap);
+    div.appendChild(label);
+    container.appendChild(div);
+  });
+}
+
+function selectFace(ft, el) {
+  currentFace = ft;
+  document.querySelectorAll('.face-opt').forEach(o => {o.classList.remove('active');o.setAttribute('aria-pressed','false');});
+  document.getElementById('faceCustomBtn').setAttribute('aria-pressed',String(ft.id==='user_photo'));
+  el.classList.add('active');
+  el.setAttribute('aria-pressed','true');
+  refreshAllViews();
+}
+
+// ============ 互動邏輯 ============
+function refreshAllViews() {
+  renderJSON();
+  renderDescription();
+  drawFace();
+}
+
+function update(au, val) {
+  state[au] = parseFloat(val);
+  document.getElementById('v_' + au).textContent = parseFloat(val).toFixed(1);
+  document.getElementById('i_' + au).textContent = intensityLabel(parseFloat(val));
+  isCustomState = true;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  refreshAllViews();
+}
+
+function applyPreset(name, e) {
+  currentPresetName = name;
+  isCustomState = false;
+  const p = scaledPreset(name, currentIntensity);
+  AU_ORDER.forEach(au => {
+    state[au] = p[au];
+    const el = document.getElementById(au);
+    const valEl = document.getElementById('v_' + au);
+    const iEl = document.getElementById('i_' + au);
+    if (el) el.value = p[au];
+    if (valEl) valEl.textContent = p[au].toFixed(1);
+    if (iEl) iEl.textContent = intensityLabel(p[au]);
+  });
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  const targetBtn = e ? e.target : document.querySelector(`[data-preset="${name}"]`);
+  if (targetBtn) targetBtn.classList.add('active');
+  refreshAllViews();
+}
+
+function setIntensity(level) {
+  currentIntensity = level;
+  document.querySelectorAll('.intensity-btn').forEach(b => b.classList.toggle('active', b.dataset.intensity === level));
+  if (!isCustomState) {
+    applyPreset(currentPresetName, null);
+  }
+}
+
+function resetAll() {
+  currentIntensity = 'natural';
+  document.querySelectorAll('.intensity-btn').forEach(b => b.classList.toggle('active', b.dataset.intensity === 'natural'));
+  applyPreset('neutral', null);
+}
+
+function isNeutralState() {
+  return AU_ORDER.every(au => state[au] <= 0.001);
+}
+
+function drawFace() {
+  photoPreview.setState(state);
+  photoPreview.setFace(currentFace);
+  updatePreviewLabels();
+}
+
+// ============ 輸出：結構化參數 ============
+function buildActionUnitsObject() {
+  const obj = {};
+  AU_ORDER.forEach(au => obj[au] = Math.round(state[au]*10)/10);
+  return obj;
+}
+
+function buildExpressionPayload() {
+  // FACP is this site's custom format. L/R refer to the subject, not the viewer.
+  return {
+    protocol_version: 'FACP1.2',
+    face_type: currentFace.id,
+    expression_label: isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName],
+    intensity: isCustomState ? 'custom' : currentIntensity,
+    side_reference: 'subject',
+    action_units: buildActionUnitsObject(),
+    ...(currentFace.id==='user_photo'?{photo_reference:{source:'local_upload',width:currentFace.width,height:currentFace.height,crop_ratio:currentFace.cropRatio,landmark_space:'normalized_480x480',landmarks:currentFace.anchors}}:{})
+  };
+}
+
+function renderJSON() {
+  const json = JSON.stringify(buildExpressionPayload(), null, 2);
+  // Build the visible and copied JSON from the same data, then apply highlighting.
+  document.getElementById('jsonOutput').innerHTML = json
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/("[^"\n]*")(\s*:)?|\b\d+(?:\.\d+)?\b/g, (match, str, key) =>
+      str ? `<span class="${key ? 'json-key' : 'json-str'}">${str}</span>${key || ''}`
+          : `<span class="json-num">${match}</span>`);
+
+  const ts = Date.now();
+  const seq = Math.floor(Math.random() * 99999);
+  document.getElementById('advContent').innerHTML =
+    `"timestamp": ${ts}<br>"sequence_id": ${seq}<br><span style="color:#3a4048">（此區資料不包含在主要 JSON 或複製內容中，僅供需要序列化紀錄時參考）</span>`;
+}
+
+function toggleAdvanced() {
+  const el = document.getElementById('advContent');
+  const btn = document.getElementById('advToggleBtn');
+  const show = !el.classList.contains('show');
+  el.classList.toggle('show', show);
+  btn.textContent = (show ? '▾' : '▸') + ' 進階資料（timestamp / sequence_id）';
+}
+
+function copyJSON() {
+  const json = JSON.stringify(buildExpressionPayload(), null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    const btn = document.getElementById('copyJsonBtn');
+    const original = '📋 複製 JSON';
+    btn.textContent = '✅ 已複製！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2200);
+  });
+}
+
+// ============ 輸出：AI 表情描述（依目前 AU 自動產生）============
+function overallIntensityLabel() {
+  // 套用預設表情時，直接採用目前選擇的強度分級，確保跟按鈕、JSON 一致
+  if (!isCustomState) {
+    return currentIntensity === 'mild' ? '輕微' : currentIntensity === 'strong' ? '明顯' : '自然';
+  }
+  // 完全自訂調整時，沒有明確的分級可用，改用目前作用中 AU 的平均值估算
+  const active = AU_ORDER.map(au => state[au]).filter(v => v > 0.05);
+  if (!active.length) return '無';
+  const avg = active.reduce((a,b)=>a+b,0) / active.length;
+  return intensityLabel(avg);
+}
+
+function generateAIDescription() {
+  const overall = overallIntensityLabel();
+
+  if (!isCustomState && currentPresetName === 'neutral') {
+    return '維持中性表情，臉部肌肉自然放鬆，不需要額外調整動作單元，保持人物原本身份與五官比例。';
+  }
+
+  const emotionName = isCustomState ? null : EXPR_LABEL_ZH[currentPresetName];
+  const opening = emotionName
+    ? `將人物表情調整為${overall}程度的${emotionName}：`
+    : `將人物表情調整為以下自訂狀態（整體強度約為${overall}）：`;
+
+  const clauses = [];
+
+  // 眉毛
+  if (state.AU4 > 0.15) {
+    clauses.push('眉頭向下並略微靠攏');
+  } else if (state.AU1 > 0.15 && state.AU2 > 0.15) {
+    clauses.push('雙眉整體上揚');
+  } else if (state.AU1 > 0.15) {
+    clauses.push('眉頭內側略微上揚');
+  } else if (state.AU2 > 0.15) {
+    clauses.push('眉尾外側略微上揚');
+  }
+
+  // 眼部
+  if (state.AU7 > 0.15) {
+    clauses.push('眼瞼輕微收緊，目光較銳利');
+  } else if (state.AU5 > 0.15) {
+    clauses.push('上眼瞼略微抬起，眼神更開闊');
+  } else if (state.AU41 > 0.15) {
+    clauses.push('上眼瞼略微下垂，眼神較放鬆');
+  }
+  if (state.AU46_L > 0.15) clauses.push(`角色左眼（畫面右側）做眨眼動作，閉合強度為${intensityLabel(state.AU46_L)}`);
+  if (state.AU46_R > 0.15) clauses.push(`角色右眼（畫面左側）做眨眼動作，閉合強度為${intensityLabel(state.AU46_R)}`);
+  if (state.AU6 > 0.15) {
+    clauses.push('臉頰略微上抬');
+  }
+
+  // 鼻部
+  if (state.AU9 > 0.15) {
+    clauses.push('鼻翼略微皺起');
+  }
+
+  // 嘴唇與嘴角
+  if (state.AU12 > 0.15) {
+    clauses.push('嘴角略微向上');
+  }
+  if (state.AU20 > 0.15) {
+    clauses.push('嘴巴水平加寬，兩側嘴角向外拉開');
+  }
+  if (state.AU10 > 0.15) {
+    clauses.push('上唇中央略微抬起');
+  }
+  if (state.AU22 > 0.15) {
+    clauses.push('嘴唇略微向外翻起');
+  }
+  if (state.AU15 > 0.15) {
+    clauses.push('嘴角略微向下');
+  }
+  if (state.AU16 > 0.15) {
+    clauses.push('下唇略微下拉');
+  }
+  if (state.AU17 > 0.15) {
+    clauses.push('下巴略微上抬');
+  }
+  if (state.AU26 > 0.15 || state.AU27 > 0.15) {
+    clauses.push(state.AU27 > 1 ? '嘴巴明顯張開' : '嘴巴略微張開');
+  }
+
+  const body = clauses.length ? clauses.join('，') : '臉部肌肉維持自然放鬆';
+
+  return `${opening}${body}。不要讓表情變得誇張或扭曲，保持人物原本身份與五官比例。`;
+}
+
+function renderDescription() {
+  document.getElementById('descOutput').textContent = generateAIDescription();
+}
+
+function copyDescription() {
+  const text = generateAIDescription();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyDescBtn');
+    const original = '📋 複製 AI 表情描述';
+    btn.textContent = '✅ 已複製！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2200);
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ============ 初始化 ============
+const uploadEditor = new FacsUpload.UploadEditor({
+  onApply(face){selectFace(face,document.getElementById('faceCustomBtn'));resetAll();setPreviewOriginal(false);},
+  onSelect(face){selectFace(face,document.getElementById('faceCustomBtn'));},
+  onRemove(){
+    for(const key of photoPreview.cache.keys())if(key.startsWith('user_photo:'))photoPreview.cache.delete(key);
+    if(currentFace.id==='user_photo')selectFace(faceTypes[0],document.querySelector('.face-opt'));
+  }
+});
+buildControls();
+buildSelector();
+refreshAllViews();
+</script>
+<footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer></body>
+</html>

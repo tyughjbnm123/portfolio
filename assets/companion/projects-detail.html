@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作品詳情 Case Study | 郭奕圻 YI-CHI KUO</title>
+  <!-- 三模式（Dev/Visual/Brand）預先套用，避免切換閃爍(FOUC)；需在任何樣式渲染前同步執行 -->
+  <script>
+    (function () {
+      var MODES = ['dev', 'visual', 'brand'];
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var qMode = qs.get('mode');
+        var legacyMap = { terminal: 'dev', dashboard: 'visual', dev: 'dev', visual: 'visual', brand: 'brand' };
+        var mode = (qMode && legacyMap[qMode]) || localStorage.getItem('mode');
+        if (!mode) {
+          var legacyTheme = localStorage.getItem('theme');
+          mode = legacyTheme === 'light' ? 'visual' : 'dev';
+        }
+        if (MODES.indexOf(mode) === -1) mode = 'dev';
+        document.documentElement.setAttribute('data-theme', mode);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dev');
+      }
+    })();
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans TC', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: {
+              DEFAULT: 'var(--primary)',
+              foreground: 'var(--primary-foreground)',
+            },
+            secondary: {
+              DEFAULT: 'var(--secondary)',
+              foreground: 'var(--secondary-foreground)',
+            },
+            muted: {
+              DEFAULT: 'var(--muted)',
+              foreground: 'var(--muted-foreground)',
+            },
+            accent: {
+              DEFAULT: 'var(--accent)',
+              foreground: 'var(--accent-foreground)',
+            },
+            card: {
+              DEFAULT: 'var(--card)',
+              foreground: 'var(--card-foreground)',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 三模式 CSS 變數：Dev / Visual / Brand（規格見 design_handoff.html 第 04 節） */
+    :root,
+    html[data-theme="dev"] {
+      --background: #0a0e14;
+      --foreground: #e6edf3;
+      --primary: #3fb950;
+      --primary-foreground: #0a0e14;
+      --secondary: #161b22;
+      --secondary-foreground: #e6edf3;
+      --muted: #0d1117;
+      --muted-foreground: #8b949e;
+      --accent: #3fb950;
+      --accent-foreground: #0a0e14;
+      --card: #0d1117;
+      --card-foreground: #e6edf3;
+      --border: #1e2530;
+      --ring: #3fb950;
+    }
+
+    html[data-theme="visual"] {
+      --background: #fafafa;
+      --foreground: #18181b;
+      --primary: #7c3aed;
+      --primary-foreground: #ffffff;
+      --secondary: #f4f4f5;
+      --secondary-foreground: #18181b;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --accent: #7c3aed;
+      --accent-foreground: #ffffff;
+      --card: #ffffff;
+      --card-foreground: #18181b;
+      --border: #e5e7eb;
+      --ring: #7c3aed;
+    }
+
+    html[data-theme="brand"] {
+      --background: #f7f5f0;
+      --foreground: #3d3935;
+      --primary: #5a5550;
+      --primary-foreground: #f7f5f0;
+      --secondary: #ece7e0;
+      --secondary-foreground: #3d3935;
+      --muted: #ece7e0;
+      --muted-foreground: #6b6358;
+      --accent: #8b7355;
+      --accent-foreground: #f7f5f0;
+      --card: #fbfaf7;
+      --card-foreground: #3d3935;
+      --border: #c8c4bc;
+      --ring: #5a5550;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--background);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    .bg-grid {
+      background-image: linear-gradient(to right, rgba(63, 185, 80, 0.025) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(63, 185, 80, 0.025) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    html[data-theme="visual"] .bg-grid {
+      background-image: linear-gradient(to right, rgba(124, 58, 237, 0.025) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(124, 58, 237, 0.025) 1px, transparent 1px);
+    }
+    html[data-theme="brand"] .bg-grid {
+      background-image: none;
+    }
+
+    html[data-theme="brand"] .font-mono {
+      font-family: 'Noto Sans TC', sans-serif;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+    html[data-theme="brand"] .font-bold {
+      font-weight: 500;
+    }
+    html[data-theme="brand"] .font-extrabold {
+      font-weight: 500;
+    }
+    html[data-theme="brand"] .tracking-tight {
+      letter-spacing: 0;
+    }
+    html[data-theme="brand"] .shadow-2xl,
+    html[data-theme="brand"] .shadow-xl {
+      box-shadow: 0 1px 2px rgba(61, 57, 53, 0.06), 0 1px 3px rgba(61, 57, 53, 0.05);
+    }
+
+    .canvas-grid {
+      background-image: radial-gradient(rgba(63, 185, 80, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    html[data-theme="visual"] .canvas-grid {
+      background-image: radial-gradient(rgba(124, 58, 237, 0.08) 1px, transparent 1px);
+    }
+    html[data-theme="brand"] .canvas-grid {
+      background-image: none;
+    }
+  </style>
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"></head>
+<body data-content-page="true" class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
+
+  <!-- NAVBAR -->
+  <a class="yk-skip" href="#tool-workspace">跳至主要內容</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html">↖ 回到首頁</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-content-nav" aria-label="四大主導覽"><a href="index.html#about"><span>01</span>我是誰</a><a href="index.html#work" aria-current="true"><span>02</span>我做過什麼</a><a href="index.html#tools"><span>03</span>我的工具房</a><a href="index.html#lab"><span>04</span>我正在探索</a></nav>
+
+  <!-- MAIN CONTENT -->
+  <main id="tool-workspace" class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 space-y-12">
+    
+    <!-- 返回按鈕 -->
+    <div class="flex">
+      <a href="projects.html" class="inline-flex items-center space-x-2 text-sm font-mono text-muted-foreground hover:text-primary transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>返回作品集總覽</span>
+      </a>
+    </div>
+
+    <!-- 動態渲染容器 -->
+    <article id="case-study-container" class="space-y-12">
+      <div class="text-center py-20 text-muted-foreground font-mono">
+        <i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto mb-4 text-primary"></i>
+        <span>正在加載 Case Study 數據...</span>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Lightbox（給 Hosset 案例的流程截圖放大用）-->
+  <div id="lightbox" class="fixed inset-0 bg-black/95 z-[100] hidden items-center justify-center p-4" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 text-white hover:text-primary transition-colors">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+    <img id="lightbox-img" src="" alt="放大預覽" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain">
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-border bg-card/40 backdrop-blur-md py-12 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex flex-col items-center md:items-start space-y-1">
+        <span class="text-sm font-bold font-mono tracking-wider text-primary">YI-CHI KUO</span>
+        <span class="text-xs text-muted-foreground font-mono">© 2026 YI-CHI KUO. All rights reserved.</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a href="https://www.youtube.com/@TOTbQQTHEN" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="play-circle" class="w-5 h-5"></i>
+        </a>
+        <a href="projects.html" class="text-muted-foreground hover:text-primary transition-colors">
+          <i data-lucide="briefcase" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 專案數據 JS 庫 -->
+  <script>
+    const PROJECT_DATA = {
+      "s23u-rental": {
+        title: "S23U 手機租賃服務 — 從 0 到 1 自主創業",
+        category: "PROJECT_MANAGEMENT",
+        heroImage: "assets/s23u-logo.jpg",
+        interactive: "s23u-sop",
+        stats: [
+          { label: "回本時間", value: "10 個月" },
+          { label: "客訴率", value: "0%" },
+          { label: "首次體驗回購率", value: "100%" }
+        ],
+        role: "創辦人 / 執行長",
+        timeline: "2024.04 - 至今",
+        budget: "自有資金創業",
+        background: "鎖定追星族群對演唱會、活動拍攝場景中高倍變焦攝影器材的短期租賃需求，自主創立 S23U 手機租賃服務，從 0 到 1 建立商業模式、行銷導流與整套營運機制。",
+        challenge: "1. 從零建立信任：新創租賃服務缺乏品牌信任基礎，顧客對面交流程的資安與詐騙疑慮高。\n2. 設備風控：高單價設備透過短租流通，需要在使用便利與風險控管間取得平衡。\n3. 精準觸及：如何在有限預算下，找到真正有拍攝需求的目標族群。",
+        solution: "1. 建立完整租賃 SOP：涵蓋預約、身分驗證、面交驗機、使用教學、歸還驗收的全流程規範。\n2. IG 內容經營導流：以 IG 為主要平台累積作品與客戶回饋，並佈局「台北 S23U」等在地搜尋關鍵字，建立自然搜尋與社群導流入口。\n3. 契約與風控機制：制定租賃合約條款、押金機制與異常處理規範，降低設備損壞與交易風險。",
+        results: "• 10 個月完成回本，建立穩定月現金流。\n• 客訴率 0%，首次體驗回購率達 100%。\n• 累積完整的服務設計、流程規劃、使用者體驗與商業營運經驗。"
+      },
+      "hosset-crm": {
+        title: "Hosset 虎勢 CRM LINE OA 自動化工作流",
+        category: "MARTECH_AUTOMATION",
+        heroImage: "assets/omnichat-flow.jpg",
+        interactive: "hosset-canvas",
+        stats: [
+          { label: "綁定轉換率", value: "+25%" },
+          { label: "API 響應時間", value: "<1.5s" },
+          { label: "資料同步", value: "準即時" }
+        ],
+        role: "MarTech 規劃與自動化 PM",
+        timeline: "2026.02 - 2026.05",
+        budget: "Hosset 虎勢專案研發預算",
+        background: "Hosset 虎勢在線下活動與實體通路累積了大量顧客，但缺乏高效的會員留存與再行銷機制。為了建立完整的 OMO 閉環，規劃透過 LINE 官方帳號（OA）串接 Omnichat 與 Cyberbiz CRM，實現線下流量自動化洗入線上會員體系。",
+        challenge: "1. 流程繁瑣：傳統綁定會員需要顧客手動輸入大量資料，導致流失率極高。\n2. 系統孤島：Omnichat（客服與自動化推播）與 Cyberbiz（電商與 CRM 系統）的會員數據無法即時互通。\n3. 數據不透明：行銷人員無法即時掌握線下掃碼到線上綁定的漏斗轉換率。",
+        solution: "1. 掃碼預填技術：設計專屬 QR Code，顧客掃描後自動開啟 LINE 並預填「我要綁定會員」關鍵字，由機器人秒級推送 Rich Message 綁定卡片。\n2. API 雙向串接：使用 Make/n8n 作為中介，呼叫 Cyberbiz API 驗證手機號碼，綁定成功後自動將 OpenID 回傳並打上 Omnichat 標籤。\n3. 自動發券與分眾：綁定成功即時派發 $100 禮券，並打上「已綁定會員」標籤，建立自動化再行銷劇本。\n4. 數據儀表板：將所有 API 互動日誌與會員狀態同步至 Looker Studio，提供即時漏斗看板。",
+        results: "• 成功協助客戶將 LINE 會員綁定轉換率大幅提升 25%。\n• 實現掃碼、綁定、發券、標籤與數據同步全流程自動化，無須例行人工操作。\n• 營運團隊可透過 Looker Studio 即時追蹤行銷成效，實現數據驅動決策。"
+      },
+      "alain-ducasse": {
+        title: "ALAIN DUCASSE 台灣電商官網規劃與建置",
+        category: "MARTECH_AUTOMATION",
+        heroImage: "assets/alain-ducasse.jpg",
+        stats: [
+          { label: "專案狀態", value: "已上線" },
+          { label: "平台", value: "Cyberbiz" },
+          { label: "負責範疇", value: "架構＋前台客製" }
+        ],
+        role: "專案經理 (PM)",
+        timeline: "2025.04 - 至今",
+        budget: "品牌台灣市場建置預算",
+        background: "法國精品巧克力品牌 ALAIN DUCASSE 進入台灣市場，啟動 Cyberbiz 電商官網規劃與建置專案，目標是建立符合台灣市場需求、精品品牌調性與消費者瀏覽習慣的官方線上展示與銷售入口。",
+        challenge: "1. 品牌調性拿捏：精品巧克力品牌對視覺呈現與瀏覽體驗要求細膩，需要在平台限制內盡量還原質感。\n2. 商品架構複雜：多系列、多規格商品的分類邏輯需要同時兼顧瀏覽動線與後台好維護。\n3. 在地化調整：法國總部規格與台灣消費者瀏覽習慣、金流物流需求之間需要磨合。",
+        solution: "1. 需求盤點與資訊架構：完整梳理商品線與內容需求，規劃符合品牌調性的網站資訊架構與商品分類邏輯。\n2. 前台版型客製：在 Cyberbiz 平台限制內進行前台版型與購物流程客製調整。\n3. 上線前檢核：基礎 SEO 設定、內容整理與上線前的完整檢查流程。",
+        results: "• 協助海外精品品牌建立台灣市場官方電商官網。\n• 累積 Cyberbiz 電商平台建置、CMS 後台管理、SEO 基礎設定與跨部門專案管理經驗。"
+      },
+      "alain-crm": {
+        title: "ALAIN DUCASSE Taiwan｜LINE CRM Foundation & POS Integration Planning",
+        category: "MARTECH_AUTOMATION",
+        heroImage: "assets/alain-crm.jpg",
+        stats: [
+          { label: "目前階段", value: "Phase 1" },
+          { label: "落地範圍", value: "Tag Taxonomy" },
+          { label: "Roadmap", value: "共 4 階段" }
+        ],
+        role: "MarTech / CRM Project Manager",
+        timeline: "2026 - 至今",
+        budget: "品牌 CRM 基礎建設專案",
+        background: "品牌既有 LINE OA 作為會員溝通入口，但不同社群、官網與活動來源尚未形成一致的會員識別與標籤管理邏輯，後續難以進一步進行分眾、再行銷與自動化 Journey。本專案先從導流來源追蹤（Tracked Entry Link）與 Tag Taxonomy 著手，建立可持續擴充的 CRM Data Foundation。",
+        challenge: "1. 不同入口加入 LINE 後，難以辨識會員來源。\n2. 標籤缺乏一致命名規則，長期容易重複、失控。\n3. 尚未建立「來源 → 興趣 → 行為 → 購買」的會員資料層級。\n4. 後續若要串 POS 消費資料，需要先定義會員識別方式與 Data Mapping。",
+        solution: "1.【已落地 / Phase 1】為 Instagram、Facebook、Website、Campaign 等入口規劃專屬 Tracked Entry Link，讓 MAAC 可辨識來源並寫入對應 Tag；建立 source_、campaign_ 為主的 Tag Taxonomy，並訂出 category_value 命名規則。\n2.【規劃中 / Phase 2-3】規劃 interest_、behavior_、member_、purchase_ 標籤延伸，以及 Segment Rule 與 Welcome Journey、Retargeting 等 Marketing Automation。\n3.【評估中 / Phase 4】參與鳳新 POS × MAAC Open API 串接評估，盤點 Member ID / Phone / LINE UID 識別方式與 Transaction 資料 Mapping 需求。",
+        results: "• 建立可辨識會員來源的 CRM 基礎與一致的 Tag 命名邏輯。\n• 將「導流」由單純加好友轉為可追蹤的會員資料來源。\n• 為後續 Segment、Journey Automation 與 POS 資料整合預留架構。\n• 目前僅 Phase 1（Data Foundation）已落地上線，Phase 2-4 為規劃／評估階段，尚未實作。"
+      },
+      "n8n-attendance": {
+        title: "n8n｜內部打卡系統與流程自動化",
+        category: "SYSTEM_AUTOMATION",
+        heroImage: "assets/n8n-attendance-architecture.png",
+        diagramImage: "assets/n8n-attendance-workflow.png",
+        stats: [
+          { label: "觸發方式", value: "LINE Webhook" },
+          { label: "資料儲存", value: "Google Sheets" },
+          { label: "狀態管理", value: "3 種狀態" }
+        ],
+        role: "Workflow / Automation Designer",
+        timeline: "內部專案／持續維護",
+        budget: "內部工具專案，無外部預算",
+        background: "內部出勤流程需要降低人工紀錄與行政處理成本，因此以 n8n 建立可由 LINE 觸發的打卡與出勤管理 Workflow：LINE User → Webhook → User ID Validation → Action Detection（Clock In / Clock Out / Attendance Query / Missing Punch Request）→ Google Sheets → Response / Status Update。",
+        challenge: "1. 如何確認打卡者身分，避免只靠使用者輸入姓名。\n2. 如何判斷上班、下班、查詢與補打卡等不同 Intent。\n3. 補打卡流程需包含申請、審核、狀態更新與資料回寫。\n4. Workflow 需考慮重複打卡、找不到員工、資料缺漏等異常情境。",
+        solution: "1. 使用 LINE User ID 作為身分識別依據，取代手動輸入姓名。\n2. 透過 n8n 條件節點進行 Intent / Action 分流（上班、下班、查詢、補打卡）。\n3. 以 Google Sheets 作為初期資料儲存與查詢來源。\n4. 建立補打卡狀態機制，區分 Pending / Approved / Rejected。\n5. 增加錯誤處理與防呆邏輯，處理重複打卡與資料缺漏情境。",
+        results: "• 將人工出勤紀錄轉為可追蹤的自動化 Workflow。\n• 建立身分識別、條件判斷、資料寫入與狀態管理完整流程。\n• 累積 Webhook、Data Mapping、Branch Logic 與 Error Handling 實務經驗。"
+      },
+      "mirror-shop-automation": {
+        title: "鏡好買｜電商訂單與供應商 Workflow Automation",
+        category: "SYSTEM_AUTOMATION",
+        heroImage: "assets/mirror-shop-architecture.png",
+        diagramImage: "assets/mirror-shop-workflow.png",
+        stats: [
+          { label: "自動化模組", value: "4 個" },
+          { label: "資料紀錄層", value: "n8n Data Table" },
+          { label: "整合系統", value: "Cyberbiz + Sheets" }
+        ],
+        role: "Automation / Workflow PM",
+        timeline: "內部專案／持續維護",
+        budget: "內部工具專案，無外部預算",
+        background: "鏡好買既有電商營運仰賴人工比對 Cyberbiz 訂單與供應商資料，容易發生通知延遲、標籤缺漏與物流回報斷點。以 n8n 建立正式自動化系統，串接 Cyberbiz Webhook／API、Google Sheet（營運總表、訂單列表、產品資訊列表）與 n8n Data Table，將訂單事件、排程健康檢查、供應商商品標籤與物流回寫整合為四個自動化模組。",
+        challenge: "1. Cyberbiz 即時訂單事件（付款／取消／退款）需要即時分流並通知對應供應商，避免人工延遲。\n2. 供應商、商品與訂單資料分散在多張 Google Sheet，需要建立一致的比對與回填邏輯，例如商品標籤與 Cyberbiz 商品 ID 對照。\n3. 供應商回報出貨仰賴人工填寫 Google Sheet，需要機制定時偵測「確認出貨」狀態並觸發後續 API 呼叫。\n4. 需要區分正式排程健康檢查與即時事件處理，避免兩種流程互相干擾或重複觸發。\n5. 異常情境（標籤缺漏、供應商對照不到、出貨 API 錯誤）需要明確的通知與紀錄機制。",
+        solution: "1. 訂單事件整合（Cyberbiz Webhook）：依 paid／cancelled／refunded 三種事件即時分流，觸發對應供應商 Email 通知，並將執行紀錄 Upsert 至 n8n Data Table（Webhook Log）與 Google Sheet 訂單列表。\n2. 排程更新與健康檢查（Schedule Trigger）：定時取得所有訂單、更新狀態、比對供應商主檔，並將缺漏與異常整理成健康檢查 Email 報告。\n3. 供應商主檔與商品標籤管理：同步 Google Sheet 營運總表與 n8n Data Table 供應商對照，每日檢查商品供應商標籤並回填 Cyberbiz 商品 ID，標籤異常另發送報告 Email。\n4. 物流資料接收與出貨回寫：供應商於 Google Sheet 訂單列表填寫物流資料並標記「確認出貨」，Google Apps Script 定時掃描並觸發 n8n Webhook，呼叫 Cyberbiz 出貨 API 後將結果回寫 Google Sheet 並發送內部通知。",
+        results: "• 建立涵蓋訂單事件、排程健康檢查、供應商商品標籤與物流回寫的 4 個自動化模組。\n• 以 n8n Data Table 與 3 張 Google Sheet（營運總表、訂單列表、產品資訊列表）分工管理不同資料類型，取代原本仰賴人工比對的流程。\n• 建立標籤缺漏、供應商對照失敗與出貨異常的自動通知機制。\n• 系統依技術交接文件建立並持續核對中，排程時間與部分欄位規格仍在確認與優化。"
+      },
+      "chc-health360-web": {
+        title: "中化健康 360｜自架品牌官網建置與網站移轉",
+        category: "PROJECT_MANAGEMENT",
+        heroImage: "assets/chc-health360.jpg",
+        stats: [
+          { label: "內容規模", value: "49 篇文章" },
+          { label: "產品數", value: "11 項" },
+          { label: "範疇", value: "全站移轉" }
+        ],
+        role: "Digital / Web Project Manager",
+        timeline: "內部專案／持續維護",
+        budget: "品牌官網建置專案",
+        background: "中化健康 360 既有網站需進行重建與內容移轉，專案需同時處理網站架構、既有內容、後台維護需求、SEO 資產延續與上線技術設定。",
+        challenge: "1. 既有網站內容量大，需要重新整理內容結構並避免移轉後資訊混亂。\n2. 前台內容呈現與後台維護需求需同時考量。\n3. 網站移轉需兼顧 DNS、301、GSC 與 SEO 資產延續。\n4. FormWeb 與網站信箱需確認表單送出、收件與異常流程。\n5. 專案涉及客戶、設計、前後端工程與外部系統，多方溝通成本高。",
+        solution: "1. Information Architecture：重新整理文章、產品與頁面層級，建立 Sitemap 與內容分類邏輯。\n2. Requirement Translation：將客戶營運需求轉為前後台功能需求、內容維護流程與測試項目，協助工程師確認實作邏輯。\n3. Form / Mail Flow：規劃網站聯絡表單、FormWeb 與信箱通知流程，並進行測試與異常情境確認。\n4. Migration / Technical Setup：處理 DNS、Cloudflare、301 Redirect、Google Search Console、GA4 與基礎 SEO 設定。\n5. QA / Go-live：執行前台、後台、表單與網址移轉測試，整理 Issue 並追蹤修正至正式上線。",
+        results: "• 完成 49 篇文章與 11 項產品內容之架構整理與移轉。\n• 建立網站前後台需求與內容維護邏輯。\n• 完成網站移轉、追蹤與搜尋資產相關設定。\n• 累積完整 Web Project 從需求、工程協作、測試到 Go-live 經驗。"
+      },
+      "panasonic-g9ii": {
+        title: "Panasonic LUMIX G9II 體驗會全國巡迴",
+        category: "PROJECT_MANAGEMENT",
+        heroImage: "assets/panasonic-hero.jpg",
+        stats: [
+          { label: "城市巡迴", value: "4 場" },
+          { label: "累計接待", value: "200+ 人" },
+          { label: "社群討論度", value: "+50%" }
+        ],
+        role: "專案經理 (PM) ｜ 星網股份有限公司",
+        timeline: "2023.11 - 2024.05",
+        budget: "Panasonic 品牌行銷預算",
+        background: "任職星網股份有限公司期間，負責 Panasonic 電視、耳機、相機等多產品線整合行銷專案；其中獨立規劃執行的 LUMIX G9II 體驗會，於台北、台中、高雄、台南舉辦四場，帶領攝影愛好者體驗新機性能。",
+        challenge: "1. 活動細節繁雜：場地租借、器材租借、廠商接洽、課程設計到宣傳素材，需要統籌執行。\n2. 現場轉換壓力：光是體驗還不夠，需要在活動現場直接促成購買決策。\n3. 巡迴一致性：四個城市的體驗規格與服務品質需要維持一致。",
+        solution: "1. 獨立接洽廠商：場地、器材租借與模特兒邀約，提升活動趣味性與參與度。\n2. 課程與素材設計：規劃產品介紹、攝影技巧教學等內容，並設計活動網頁與社群貼文等宣傳素材。\n3. 現場服務優化：強化現場產品解說與顧客服務流程。",
+        results: "• 活動單日促成 5 筆訂單。\n• 四場巡迴累計吸引超過 200 位參與者，社群討論度提升 50%。\n• 成功提升 LUMIX G9II 的品牌知名度與產品銷售量。"
+      },
+      "oasis-media": {
+        title: "EVOASIS｜發現綠洲・兩天一夜媒體活動",
+        category: "PROJECT_MANAGEMENT",
+        heroImage: "assets/oasis-event.jpg",
+        stats: [
+          { label: "活動預算", value: "80 萬" },
+          { label: "媒體接待", value: "40 家" },
+          { label: "活動行程", value: "2 天 1 夜" }
+        ],
+        role: "活動執行與跨部門協調｜源點科技",
+        timeline: "2025.11",
+        budget: "80 萬新台幣",
+        background: "EVOASIS 是電動車充電樁與充電服務品牌。「發現綠洲」以兩天一夜的自駕媒體活動，讓媒體從台北出發、前往台中，沿途走訪不同類型的 EVOASIS 充電站，實際體驗充電網絡與多元使用場景，再於台中勤美洲際酒店進行品牌說明與媒體交流。我參與活動執行，負責飯店洽談、製作物進度追蹤及廠商與內部單位協調，支援現場活動。",
+        challenge: "1. 跨地點行程銜接：活動涵蓋媒體報到、自駕站點體驗、飯店集合、媒體交流與住宿，需要將交通、場地與接待安排串接。\n2. 多方協作與交付：飯店、外部廠商與內部單位需配合活動時程，製作物與現場準備必須同步推進。\n3. 預算與規模：活動預算為 80 萬，參與媒體共 40 家，需要兼顧各項活動安排與執行資源。",
+        solution: "1. 飯店與廠商協調：負責飯店洽談，與外部廠商及內部單位確認活動需求、配合事項與執行時程。\n2. 製作物進度追蹤：跟進活動製作物的準備與交付，協調相關窗口配合現場使用需求。\n3. 現場執行支援：依活動行程配合媒體接待與現場安排，協助串接飯店、廠商及內部團隊的執行工作。",
+        results: "• 完成兩天一夜的 EVOASIS 媒體活動，參與媒體共 40 家。\n• 完成飯店洽談、製作物進度追蹤與現場執行支援，協調外部廠商及內部單位配合活動時程。\n• 活動以站點走訪、充電體驗與媒體交流，讓媒體實際認識 EVOASIS 充電網絡與使用情境。"
+      }
+    };
+
+    lucide.createIcons();
+
+    const MODES = ['dev', 'visual', 'brand'];
+    const MODE_BTN_ACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all bg-primary text-primary-foreground";
+    const MODE_BTN_INACTIVE = "flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all text-muted-foreground hover:text-foreground";
+
+    function setMode(mode) {
+      if (MODES.indexOf(mode) === -1) mode = 'dev';
+      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('mode', mode);
+      localStorage.setItem('theme', mode === 'dev' ? 'dark' : 'light');
+
+      MODES.forEach(function (m) {
+        const btn = document.getElementById('btn-' + m);
+        if (!btn) return;
+        btn.className = (m === mode) ? MODE_BTN_ACTIVE : MODE_BTN_INACTIVE;
+        btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+      });
+
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('mode', mode);
+        window.history.replaceState({}, '', url);
+      } catch (e) { /* file:// 等環境下略過即可 */ }
+
+      if (typeof window.__hossetDrawConnections === 'function') {
+        window.__hossetDrawConnections();
+      }
+    }
+
+    function initMode() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dev';
+      setMode(current);
+    }
+
+    initMode();
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('menu-icon');
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        icon.setAttribute('data-lucide', 'x');
+      } else {
+        menu.classList.add('hidden');
+        icon.setAttribute('data-lucide', 'menu');
+      }
+      lucide.createIcons();
+    }
+
+    // 取得 URL 參數
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Lightbox 控制（Hosset 案例的流程截圖放大用）
+    function openLightbox(url) {
+      const lightbox = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      img.src = url;
+      lightbox.classList.remove('hidden');
+      lightbox.classList.add('flex');
+    }
+    function closeLightbox() {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.classList.remove('flex');
+      lightbox.classList.add('hidden');
+    }
+
+    // ============ Hosset CRM 互動節點編輯器（原技能沙盒內容）============
+    const HOSSET_CANVAS_HTML = `
+      <div class="space-y-6 pt-4">
+        <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+          <span>互動展示：這個工作流實際上是怎麼運作的</span>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[650px]">
+          <div class="lg:col-span-8 rounded-2xl border border-border bg-card/10 backdrop-blur-md relative overflow-hidden shadow-2xl flex flex-col h-full">
+            <div class="bg-muted px-4 py-3 flex items-center justify-between border-b border-border z-10">
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                <span class="text-xs font-bold font-mono">HOSSET_LINE_CRM_WORKFLOW.json</span>
+              </div>
+              <button onclick="runWorkflow()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 transition-all flex items-center space-x-1.5 cursor-pointer">
+                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                <span>運行工作流</span>
+              </button>
+            </div>
+            <div id="canvas-container" class="flex-grow relative canvas-grid overflow-hidden select-none">
+              <svg id="canvas-svg" class="absolute inset-0 w-full h-full pointer-events-none z-0">
+                <defs>
+                  <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 2 L 10 5 L 0 8 z" fill="var(--primary)" />
+                  </marker>
+                </defs>
+              </svg>
+              <div id="node-trigger" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 40px; top: 80px;">
+                <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
+                  <i data-lucide="qr-code" class="w-4 h-4"></i>
+                  <span>1. LINE 掃碼觸發</span>
+                </div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">線下活動/DM 掃描 QR Code，自動預填「我要綁定會員」關鍵字。</div>
+              </div>
+              <div id="node-omnichat" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 280px; top: 80px;">
+                <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
+                  <i data-lucide="bot" class="w-4 h-4"></i>
+                  <span>2. Omnichat 機器人</span>
+                </div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">辨識關鍵字，推送 Rich Message 綁定引導圖卡。</div>
+              </div>
+              <div id="node-cyberbiz" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 520px; top: 80px;">
+                <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
+                  <i data-lucide="database" class="w-4 h-4"></i>
+                  <span>3. Cyberbiz 串接</span>
+                </div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">呼叫 Cyberbiz API，驗證手機號碼並綁定 OpenID 會員卡。</div>
+              </div>
+              <div id="node-coupon" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 520px; top: 320px;">
+                <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
+                  <i data-lucide="ticket" class="w-4 h-4"></i>
+                  <span>4. 自動發券與標籤</span>
+                </div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">自動派發 $100 綁定禮券，並於 Omnichat 上打上「已綁定會員」標籤。</div>
+              </div>
+              <div id="node-analytics" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 280px; top: 320px;">
+                <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
+                  <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                  <span>5. 數據分析看板</span>
+                </div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">即時將綁定率、發券率與核銷數據同步至 Looker Studio 儀表板。</div>
+              </div>
+            </div>
+          </div>
+          <div class="lg:col-span-4 flex flex-col gap-6 h-full">
+            <div class="rounded-2xl border border-border bg-card shadow-xl p-5 flex flex-col flex-grow overflow-hidden">
+              <div class="flex items-center space-x-2 text-xs font-bold font-mono border-b border-border pb-3 mb-3">
+                <i data-lucide="terminal" class="w-4 h-4 text-primary animate-pulse"></i>
+                <span>RUNNING_LOG // 即時運行控制台</span>
+              </div>
+              <div id="log-container" class="flex-grow font-mono text-[11px] leading-relaxed text-primary overflow-y-auto space-y-2 max-h-[220px]">
+                <div class="text-muted-foreground">點擊左側「運行工作流」按鈕以模擬即時 API 呼叫日誌...</div>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-border bg-card shadow-xl p-5 flex flex-col h-[280px]">
+              <div class="flex items-center space-x-2 text-xs font-bold font-mono border-b border-border pb-3 mb-3">
+                <i data-lucide="image" class="w-4 h-4 text-primary"></i>
+                <span>PROOF_OF_WORK // 真實 Omnichat 流程截圖</span>
+              </div>
+              <div class="flex-grow rounded-xl overflow-hidden border border-border bg-black/40 relative group cursor-pointer" onclick="openLightbox('assets/omnichat-flow.jpg')">
+                <img src="assets/omnichat-flow.jpg" alt="Omnichat LINE 自動化流程圖" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div class="text-xs font-mono font-bold text-white flex items-center space-x-1.5">
+                    <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    <span>查看完整高畫質大圖</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const HOSSET_LOGS = [
+      { t: 0, text: "[INFO] 正在初始化 HOSSET_LINE_CRM_WORKFLOW 工作流..." },
+      { t: 600, text: "[TRIGGER] 偵測到線下活動 QR Code 掃描事件。使用者 OpenID: `U91a2b3c4...`" },
+      { t: 1200, text: "[OMNICHAT] 成功辨識預填關鍵字「我要綁定會員」，發送 Rich Message 綁定引導圖卡。" },
+      { t: 2000, text: "[API] 呼叫 Cyberbiz 會員驗證介面 (POST /api/v1/member/verify)..." },
+      { t: 2800, text: "[API] Cyberbiz 驗證成功！手機號碼: `0912***345`。綁定 OpenID 狀態: `SUCCESS`" },
+      { t: 3400, text: "[OMNICHAT] 成功標記使用者標籤: `已綁定會員`、`2026實體活動`。" },
+      { t: 4000, text: "[COUPON] 自動派發 $100 會員綁定禮券。券號: `C2026053101`" },
+      { t: 4600, text: "[DATABASE] 即時同步綁定數據至 Looker Studio 資料庫。受影響行數: 1" },
+      { t: 5200, text: "[SUCCESS] 工作流運行完畢！綁定轉換率提升 25%，總耗時: 5.2 秒。" }
+    ];
+
+    function runWorkflow() {
+      const container = document.getElementById('log-container');
+      if (!container) return;
+      container.innerHTML = "";
+      HOSSET_LOGS.forEach(log => {
+        setTimeout(() => {
+          const div = document.createElement('div');
+          if (log.text.includes('[SUCCESS]')) div.className = "text-green-400 font-bold";
+          else if (log.text.includes('[TRIGGER]')) div.className = "text-yellow-400";
+          else if (log.text.includes('[API]')) div.className = "text-blue-400";
+          else div.className = "text-primary";
+          div.textContent = log.text;
+          container.appendChild(div);
+          container.scrollTop = container.scrollHeight;
+        }, log.t);
+      });
+    }
+
+    function initHossetCanvas() {
+      const canvas = document.getElementById('canvas-container');
+      const svg = document.getElementById('canvas-svg');
+      if (!canvas || !svg) return;
+
+      const nodeIds = ['node-trigger', 'node-omnichat', 'node-cyberbiz', 'node-coupon', 'node-analytics'];
+      const nodes = nodeIds.map(id => ({ id, el: document.getElementById(id) }));
+      const connections = [
+        { from: 'node-trigger', to: 'node-omnichat' },
+        { from: 'node-omnichat', to: 'node-cyberbiz' },
+        { from: 'node-cyberbiz', to: 'node-coupon' },
+        { from: 'node-coupon', to: 'node-analytics' }
+      ];
+
+      let activeNode = null, offsetX = 0, offsetY = 0;
+
+      nodes.forEach(node => {
+        node.el.addEventListener('mousedown', (e) => {
+          if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+          activeNode = node.el;
+          const rect = activeNode.getBoundingClientRect();
+          offsetX = e.clientX - rect.left;
+          offsetY = e.clientY - rect.top;
+          activeNode.style.transition = 'none';
+          e.preventDefault();
+        });
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!activeNode) return;
+        const canvasRect = canvas.getBoundingClientRect();
+        // Pointer coordinates are rendered pixels; node positions use layout pixels.
+        const scaleX = canvasRect.width / canvas.offsetWidth || 1;
+        const scaleY = canvasRect.height / canvas.offsetHeight || 1;
+        let left = (e.clientX - canvasRect.left - offsetX) / scaleX - canvas.clientLeft;
+        let top = (e.clientY - canvasRect.top - offsetY) / scaleY - canvas.clientTop;
+        left = Math.max(10, Math.min(canvas.clientWidth - activeNode.offsetWidth - 10, left));
+        top = Math.max(10, Math.min(canvas.clientHeight - activeNode.offsetHeight - 10, top));
+        activeNode.style.left = `${left}px`;
+        activeNode.style.top = `${top}px`;
+        drawConnections();
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (activeNode) {
+          activeNode.style.transition = '';
+          activeNode = null;
+        }
+      });
+
+      function drawConnections() {
+        svg.querySelectorAll('path').forEach(p => p.remove());
+        const strokeColor = 'var(--yk-accent)';
+
+        connections.forEach(conn => {
+          const fromEl = document.getElementById(conn.from);
+          const toEl = document.getElementById(conn.to);
+          if (!fromEl || !toEl) return;
+          const fromRect = { left: parseFloat(fromEl.style.left), top: parseFloat(fromEl.style.top), width: fromEl.offsetWidth, height: fromEl.offsetHeight };
+          const toRect = { left: parseFloat(toEl.style.left), top: parseFloat(toEl.style.top), width: toEl.offsetWidth, height: toEl.offsetHeight };
+          const startX = fromRect.left + fromRect.width;
+          const startY = fromRect.top + (fromRect.height / 2);
+          const endX = toRect.left;
+          const endY = toRect.top + (toRect.height / 2);
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', `M ${startX} ${startY} C ${startX + 50} ${startY}, ${endX - 50} ${endY}, ${endX} ${endY}`);
+          path.setAttribute('stroke', strokeColor);
+          path.setAttribute('stroke-width', '2');
+          path.setAttribute('fill', 'none');
+          path.setAttribute('marker-end', 'url(#arrow)');
+          svg.appendChild(path);
+        });
+      }
+
+      window.__hossetDrawConnections = drawConnections;
+      setTimeout(drawConnections, 100);
+      window.addEventListener('resize', drawConnections);
+    }
+
+    // ============ S23U SOP 流程時間軸（原技能沙盒內容）============
+    const S23U_SOP_HTML = `
+      <div class="space-y-6 pt-4">
+        <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
+          <span>互動展示：完整租賃 SOP，點擊每個階段看風控細節</span>
+        </div>
+        <div class="rounded-2xl border border-border bg-card shadow-xl p-6 md:p-8">
+          <div class="relative" id="sopTrack">
+            <div class="absolute top-6 left-0 right-0 h-px bg-border hidden md:block"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4 md:gap-2 relative"></div>
+          </div>
+          <div class="mt-8 pt-6 border-t border-border">
+            <div id="sopDetail" class="flex items-start space-x-4"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const SOP_STAGES = [
+      { icon: "megaphone", title: "社群導流", subtitle: "TRAFFIC", detail: "以 IG 為主要平台經營內容與客戶回饋，佈局「台北 S23U」等在地搜尋關鍵字，建立自然搜尋與社群導流入口，不用額外投放廣告也能持續獲客。" },
+      { icon: "message-circle", title: "私訊諮詢", subtitle: "INQUIRY", detail: "客戶透過 IG 私訊詢問租借需求，確認機型、檔期與方案內容，第一時間排除疑慮、建立信任感。" },
+      { icon: "calendar-check", title: "預約確認", subtitle: "BOOKING", detail: "確認租借時間、地點與方案內容，鎖定檔期，避免撞期或設備空窗。" },
+      { icon: "wallet", title: "訂金收取", subtitle: "DEPOSIT", detail: "收取訂金鎖定訂單，降低棄租率，同時作為設備風險控管的第一道防線。" },
+      { icon: "shield-check", title: "面交驗機", subtitle: "HANDOVER", detail: "面交時進行身分驗證與設備檢查，雙方確認機況並留存紀錄，保障雙方權益、降低交易糾紛。" },
+      { icon: "graduation-cap", title: "使用教學", subtitle: "GUIDANCE", detail: "教學正確操作與拍攝方式，降低因不熟悉設備造成的操作失誤與損壞風險。" },
+      { icon: "rotate-ccw", title: "歸還驗機", subtitle: "RETURN", detail: "驗收歸還設備狀態，比對面交時的紀錄，如有異常依規範處理，完整走完風控閉環。" }
+    ];
+    let sopActive = 0;
+
+    function renderSopTrack() {
+      const track = document.querySelector("#sopTrack .grid");
+      if (!track) return;
+      track.innerHTML = SOP_STAGES.map((stage, i) => `
+        <button type="button" data-i="${i}" class="sop-node group flex flex-col items-center text-center space-y-2 relative z-10">
+          <span class="w-12 h-12 rounded-full border-2 flex items-center justify-center bg-card transition-all ${i === sopActive ? 'border-primary bg-primary/10' : 'border-border group-hover:border-primary/50'}">
+            <i data-lucide="${stage.icon}" class="w-5 h-5 ${i === sopActive ? 'text-primary' : 'text-muted-foreground'}"></i>
+          </span>
+          <span class="text-[11px] font-mono font-bold ${i === sopActive ? 'text-primary' : 'text-muted-foreground'}">${stage.title}</span>
+        </button>
+      `).join("");
+      track.querySelectorAll(".sop-node").forEach(btn => {
+        btn.addEventListener("click", () => {
+          sopActive = parseInt(btn.dataset.i, 10);
+          renderSopTrack();
+          renderSopDetail();
+        });
+      });
+      lucide.createIcons();
+    }
+
+    function renderSopDetail() {
+      const detailEl = document.getElementById("sopDetail");
+      if (!detailEl) return;
+      const stage = SOP_STAGES[sopActive];
+      detailEl.innerHTML = `
+        <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="${stage.icon}" class="w-5 h-5 text-primary"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2 mb-1.5">
+            <h3 class="font-bold font-mono">${String(sopActive + 1).padStart(2, "0")} · ${stage.title}</h3>
+            <span class="text-[10px] font-mono text-muted-foreground">${stage.subtitle}</span>
+          </div>
+          <p class="text-sm text-muted-foreground leading-relaxed">${stage.detail}</p>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function initS23uSop() {
+      sopActive = 0;
+      renderSopTrack();
+      renderSopDetail();
+    }
+
+    // 渲染 Case Study
+    function renderCaseStudy() {
+      const slug = getQueryParam('slug') || 's23u-rental';
+      const data = PROJECT_DATA[slug];
+      const container = document.getElementById('case-study-container');
+
+      if (!data) {
+        container.innerHTML = `
+          <div class="text-center py-20 text-red-500 font-mono">
+            <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto mb-4"></i>
+            <span>找不到指定的專案數據！</span>
+            <br>
+            <a href="projects.html" class="mt-4 inline-block text-sm text-primary underline">返回作品集</a>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      // 格式化換行文案為 HTML 段落
+      const formatText = (text) => {
+        return text.split('\n').map(p => {
+          if (p.startsWith('•')) {
+            return `<li class="ml-4 list-disc text-muted-foreground text-sm leading-relaxed">${p.replace('•', '').trim()}</li>`;
+          }
+          if (p.match(/^\d\./)) {
+            return `<div class="pl-2 text-sm leading-relaxed mt-2"><strong class="text-primary font-mono">${p.substring(0,2)}</strong> ${p.substring(2).trim()}</div>`;
+          }
+          return `<p class="text-muted-foreground text-sm leading-relaxed mt-2">${p}</p>`;
+        }).join('');
+      };
+
+      const heroMedia = data.heroImage
+        ? `<img src="${data.heroImage}" alt="${data.title}" class="w-full h-full object-cover opacity-85">`
+        : `<div class="w-full h-full flex items-center justify-center bg-muted/60">
+             <div class="text-center space-y-2 opacity-50">
+               <i data-lucide="image" class="w-8 h-8 mx-auto"></i>
+               <div class="text-xs font-mono">待補案例實圖</div>
+             </div>
+           </div>`;
+
+      const diagramMedia = data.diagramImage
+        ? `<div class="space-y-3">
+             <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
+               <span class="w-1.5 h-4 bg-primary rounded-full"></span>
+               <span>系統流程圖</span>
+             </h2>
+             <div class="rounded-xl border border-border overflow-hidden bg-card">
+               <img src="${data.diagramImage}" alt="${data.title} 系統流程圖" class="w-full h-auto">
+             </div>
+           </div>`
+        : '';
+
+      container.innerHTML = `
+        <!-- 專案大圖與標題 -->
+        <div class="space-y-6">
+          <div class="yk-case-title space-y-3">
+            <span class="text-xs text-primary">${data.category}</span>
+            <h1>${data.title}</h1>
+          </div>
+          <div class="yk-case-hero" data-case-kind="${data.category}">
+            ${heroMedia}
+          </div>
+        </div>
+
+        <!-- 核心指標卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          ${data.stats.map(stat => `
+            <div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center">
+              <div class="text-xs text-muted-foreground font-mono mb-1">${stat.label}</div>
+              <div class="text-2xl md:text-3xl font-extrabold text-primary font-mono">${stat.value}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- 專案資訊表格 -->
+        <div class="rounded-2xl border border-border bg-card/20 backdrop-blur-md overflow-hidden">
+          <table class="w-full text-left border-collapse text-sm">
+            <tbody>
+              <tr class="border-b border-border/60">
+                <th class="p-4 bg-muted/40 font-mono text-xs w-[180px] text-muted-foreground">我的角色</th>
+                <td class="p-4 font-bold">${data.role}</td>
+              </tr>
+              <tr class="border-b border-border/60">
+                <th class="p-4 bg-muted/40 font-mono text-xs text-muted-foreground">專案時程</th>
+                <td class="p-4 font-mono">${data.timeline}</td>
+              </tr>
+              <tr>
+                <th class="p-4 bg-muted/40 font-mono text-xs text-muted-foreground">預算規模</th>
+                <td class="p-4 font-mono text-muted-foreground">${data.budget}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        ${diagramMedia}
+
+        <!-- 詳細 Case Study 內容 -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6">
+          <!-- 左側 8 欄：詳細內容 -->
+          <div class="md:col-span-8 space-y-8">
+            <div class="space-y-3">
+              <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
+                <span class="w-1.5 h-4 bg-primary rounded-full"></span>
+                <span>1. 專案背景 (Background)</span>
+              </h2>
+              <p class="text-muted-foreground text-sm leading-relaxed">${data.background}</p>
+            </div>
+
+            <div class="space-y-3">
+              <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
+                <span class="w-1.5 h-4 bg-primary rounded-full"></span>
+                <span>2. 面臨挑戰 (Challenges)</span>
+              </h2>
+              <div class="space-y-2">${formatText(data.challenge)}</div>
+            </div>
+
+            <div class="space-y-3">
+              <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
+                <span class="w-1.5 h-4 bg-primary rounded-full"></span>
+                <span>3. 解決方案 (Solutions)</span>
+              </h2>
+              <div class="space-y-2">${formatText(data.solution)}</div>
+            </div>
+          </div>
+
+          <!-- 右側 4 欄：成果與影響 -->
+          <div class="md:col-span-4">
+            <div class="p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-4 shadow-xl">
+              <h3 class="text-sm font-bold font-mono text-primary flex items-center space-x-2">
+                <i data-lucide="award" class="w-4 h-4"></i>
+                <span>4. 成果與影響 (Results)</span>
+              </h3>
+              <ul class="space-y-3">
+                ${data.results.split('\n').map(li => `
+                  <li class="text-xs text-muted-foreground leading-relaxed flex items-start space-x-2">
+                    <span class="text-primary font-bold mt-0.5">•</span>
+                    <span>${li.replace('•', '').trim()}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (data.interactive === "hosset-canvas") {
+        container.innerHTML += HOSSET_CANVAS_HTML;
+      } else if (data.interactive === "s23u-sop") {
+        container.innerHTML += S23U_SOP_HTML;
+      }
+
+      lucide.createIcons();
+
+      if (data.interactive === "hosset-canvas") {
+        initHossetCanvas();
+      } else if (data.interactive === "s23u-sop") {
+        initS23uSop();
+      }
+    }
+
+    // 執行渲染
+    renderCaseStudy();
+  </script>
+</body>
+</html>
