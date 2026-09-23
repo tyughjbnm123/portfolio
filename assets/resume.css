@@ -43,6 +43,10 @@
 .yk-index-page #yk-world .yk-career-content ul {padding-left:20px;margin:0;display:grid;gap:10px}
 .yk-index-page #yk-world .yk-career-content li {font-size:16px;line-height:1.8;color:var(--yk-muted);padding-left:3px}
 .yk-index-page #yk-world .yk-career-content li::marker {color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-career-job+.yk-career-job {margin-top:24px;padding-top:24px;border-top:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-career-job h4 {font-size:17px;font-weight:600;line-height:1.6;margin:0;color:var(--yk-ink)}
+.yk-index-page #yk-world .yk-career-content .yk-career-job-meta {display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;line-height:1.7;color:var(--yk-muted);margin:5px 0 12px}
+.yk-index-page #yk-world .yk-resume-career .yk-career-entry[open] summary>span {rotate:0deg}
 .yk-index-page #yk-world .yk-resume-projects {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .yk-index-page #yk-world .yk-resume-projects>a {display:flex;flex-direction:column;min-width:0;border:1px solid var(--yk-line);border-radius:16px;padding:24px;text-decoration:none;color:var(--yk-ink);background:var(--yk-surface);transition:transform .2s,border-color .2s}
 .yk-index-page #yk-world .yk-resume-projects>a:hover {transform:translateY(-4px);border-color:var(--yk-accent)}
@@ -99,3 +103,13 @@
   .yk-index-page #yk-world .yk-resume-projects>a {padding:20px}
 }
 @media(prefers-reduced-motion:reduce){.yk-index-page #yk-world .yk-resume-projects>a,.yk-index-page #yk-world .yk-resume-career summary>span {transition:none}}
+
+.yk-index-page #yk-world .yk-career-project{margin:18px 0 22px;padding:22px 24px;border:1px solid var(--yk-line);border-left:3px solid var(--yk-accent);border-radius:12px;background:var(--yk-surface)}
+.yk-index-page #yk-world .yk-career-project-label{font-size:11px;letter-spacing:.08em;color:var(--yk-accent)}
+.yk-index-page #yk-world .yk-career-project h5{font-size:19px;font-weight:500;line-height:1.6;margin:10px 0 8px;color:var(--yk-ink)}
+.yk-index-page #yk-world .yk-career-project .yk-career-project-role{font-size:13px;line-height:1.8;margin:0 0 14px;color:var(--yk-muted)}
+.yk-index-page #yk-world .yk-career-project>p:not(.yk-career-project-role){margin:0 0 14px;font-size:15px;line-height:1.85}
+.yk-index-page #yk-world .yk-career-project ul{margin:0;padding-left:20px}
+.yk-index-page #yk-world .yk-career-project li{font-size:15px;line-height:1.85}
+.yk-index-page #yk-world .yk-career-project li strong{font-weight:500;color:var(--yk-ink)}
+@media(max-width:600px){.yk-index-page #yk-world .yk-career-project{padding:18px 16px}.yk-index-page #yk-world .yk-career-project h5{font-size:18px}}

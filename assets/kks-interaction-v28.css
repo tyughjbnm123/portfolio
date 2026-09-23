@@ -1,0 +1,10 @@
+.kks-film-panel{margin-top:22px}
+.kks-film-panel summary{gap:18px}
+.kks-film-content{padding-bottom:24px}
+.kks-film-content video{display:block;width:100%;max-width:1000px;height:auto;aspect-ratio:11/6;background:#101511;border-radius:12px}
+.kks-film-content figcaption{font-size:14px;color:var(--yk-muted);margin-top:12px}
+.kks-film-actions{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:16px;font-size:14px}
+.kks-film-actions button{padding:9px 16px;border:1px solid var(--yk-line);border-radius:9px;background:var(--yk-soft);color:var(--yk-ink);min-height:44px}
+.kks-film-actions a{text-underline-offset:5px;color:var(--yk-muted)}
+.kks-film-content [role=status]{color:var(--yk-muted);font-size:13px;margin-top:10px}
+.kks-film-content [hidden]{display:none!important}
