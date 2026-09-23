@@ -6,24 +6,24 @@
   <meta name="description" content="可以自由拖曳的網頁小精靈，透過招呼、跳舞與閒置反應，讓逛作品集多一點互動。">
   <title>網頁小精靈｜郭奕圻</title>
   <link rel="stylesheet" href="assets/companion/companion-lab-v24.css">
-  <script defer src="assets/companion/companion-player-v24.js"></script>
+  <script defer src="assets/companion/companion-player-v27.js"></script>
   <script defer src="assets/companion/companion-lab-v24.js"></script>
-  <script defer src="assets/companion/companion-widget-v24.js"></script>
+  <script defer src="assets/companion/companion-widget-v27.js"></script>
 </head>
 <body>
   <header class="nav"><a class="brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><a class="back" href="index.html#lab">↖ 回到探索</a></header>
   <main>
     <section class="hero" aria-labelledby="title">
-      <div><p class="eyebrow">A LITTLE COMPANY / INTERACTION EXPERIMENT</p><h1 id="title">網頁<span>小精靈</span></h1><p class="lead">抓住她，放到你喜歡的位置。<br>點一下開啟選單，跳支舞，或安靜陪你逛逛。</p><button class="start" id="start-companion" type="button" aria-label="開始和小精靈互動"><span>召喚小精靈</span><b aria-hidden="true">↗</b></button><p class="hint">待機動作循環 · 其他動作與配音單次播放</p></div>
+      <div><p class="eyebrow">A LITTLE COMPANY / INTERACTION EXPERIMENT</p><h1 id="title">網頁<span>小精靈</span></h1><p class="lead">抓住她，放到你喜歡的位置。<br>點一下開啟選單，跳支舞，或安靜陪你逛逛。</p><button class="start" id="start-companion" type="button" aria-label="開始和小精靈互動"><span>召喚小精靈</span><b aria-hidden="true">↗</b></button><p class="hint">閒置時：待機 → 打哈欠 → 回到待機</p></div>
       <div class="preview"><span class="preview-status" id="live-state" role="status">等待召喚</span><img src="assets/companion/idle-still-v23.webp" alt="黑髮 Q 版小精靈" width="480" height="452"><div class="away"><strong>↘</strong>她已經來到網頁上了。<br>試著拖動角色，幫她找個位置。</div></div>
     </section>
     <div class="section-head"><h2>六個小反應，一段陪伴。</h2><p>點一張卡片，看看她的反應。</p></div>
     <section class="journey" aria-label="小精靈的六種模式">
-      <button class="step" type="button" data-step="idle" aria-label="播放安靜待機"><small>01 / IDLE</small><span class="step-title">安靜待機</span><span class="step-copy">眨眨眼、放鬆一下。動作循環，點選時配音一次。</span><span class="step-action" aria-hidden="true">循環待機 <b>↗</b></span></button>
+      <button class="step" type="button" data-step="idle" aria-label="播放安靜待機"><small>01 / IDLE</small><span class="step-title">安靜待機</span><span class="step-copy">沒有其他動作時，眨眨眼、放鬆一下。播完一輪後接打哈欠。</span><span class="step-action" aria-hidden="true">開始待機 <b>↗</b></span></button>
       <button class="step" type="button" data-step="welcome" aria-label="播放打個招呼"><small>02 / HELLO</small><span class="step-title">打個招呼</span><span class="step-copy">揮揮手，跟你說聲嗨。點擊召喚時也會出現。</span><span class="step-action" aria-hidden="true">播放一次 <b>↗</b></span></button>
       <button class="step" type="button" data-step="drag" aria-label="播放跟著你移動"><small>03 / DRAG</small><span class="step-title">跟著你移動</span><span class="step-copy">張開手保持平衡，也可以直接拖曳角色試試看。</span><span class="step-action" aria-hidden="true">播放一次 <b>↗</b></span></button>
       <button class="step" type="button" data-step="dance" aria-label="播放跳一支舞"><small>04 / DANCE</small><span class="step-title">跳一支舞</span><span class="step-copy">跟著節奏動一動，表演一次就回到待機。</span><span class="step-action" aria-hidden="true">播放一次 <b>↗</b></span></button>
-      <button class="step" type="button" data-step="yawn" aria-label="播放伸個懶腰"><small>05 / A LITTLE BREAK</small><span class="step-title">伸個懶腰</span><span class="step-copy">安靜約 10 秒，打個哈欠。也能點這裡立即觸發。</span><span class="step-action" aria-hidden="true">播放一次 <b>↗</b></span></button>
+      <button class="step" type="button" data-step="yawn" aria-label="播放打個哈欠"><small>05 / A LITTLE BREAK</small><span class="step-title">打個哈欠</span><span class="step-copy">待機播完後打個哈欠，再回到待機。也能點這裡立即觸發。</span><span class="step-action" aria-hidden="true">播放一次 <b>↗</b></span></button>
       <button class="step" type="button" data-step="bye" aria-label="播放下次見"><small>06 / SEE YOU</small><span class="step-title">下次見</span><span class="step-copy">揮手道別後收起角色，隨時能再召喚。</span><span class="step-action" aria-hidden="true">播放並收起 <b>↗</b></span></button>
     </section>
   </main>
