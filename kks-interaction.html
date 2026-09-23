@@ -3,7 +3,7 @@
 <title>KKS 互動與場景擴充｜郭奕圻 YI-CHI KUO</title><meta name="description" content="以 Koikatsu Sunshine、Unity 與 BepInEx 為基礎的非官方擴充研究，探索日常活動、場景互動與角色動畫，並處理互動結束後的控制權還原。">
 <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/creative-lab.css?v=20260921-v18"><link rel="stylesheet" href="assets/exploration-pages.css?v=20260921-v18">
 <script src="assets/site-shell.js"></script><script defer src="assets/creative-lab.js?v=20260921-v18"></script>
-<link rel="stylesheet" href="assets/kks-interaction-v28.css"><script defer src="assets/kks-interaction-v28.js"></script>
+<link rel="stylesheet" href="assets/kks-interaction-v28.css">
 </head><body data-content-page="true" class="cl-page exploration-page">
 <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
 <div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#lab">↖ 回到探索分類</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
@@ -22,10 +22,7 @@
       <details class="cl-details kks-film-panel" id="kks-film-panel">
         <summary><span>觀看實機片段 · 椅子互動（約 17 秒）</span><span class="cl-details-mark" aria-hidden="true">＋</span></summary>
         <figure class="kks-film-content">
-          <video id="kks-video" controls playsinline preload="none" poster="assets/kks-interaction-poster-v27.jpg" width="1320" height="720" aria-label="KKS 椅子互動實機影片" aria-describedby="kks-film-caption"><source src="assets/kks-interaction-demo-v27.mp4" type="video/mp4">你的瀏覽器無法播放此影片，請使用下方「另開影片」觀看。</video>
-          <figcaption id="kks-film-caption">從站立進入椅子互動，再退出並恢復移動。</figcaption>
-          <div class="kks-film-actions"><button type="button" id="kks-video-toggle" aria-controls="kks-video" hidden>播放實機片段 ▶</button><a href="assets/kks-interaction-demo-v27.mp4" target="_blank" rel="noopener noreferrer">另開影片 ↗</a></div>
-          <p id="kks-video-status" role="status" hidden></p>
+          <video id="kks-video" controls playsinline preload="none" poster="assets/kks-interaction-poster-v27.jpg" width="1320" height="720" aria-label="KKS 椅子互動實機影片"><source src="assets/kks-interaction-demo-v27.mp4" type="video/mp4">你的瀏覽器無法播放此影片。</video>
         </figure>
       </details>
       <div class="cl-facts"><div><span class="cl-eyebrow">我的角色</span><h3>互動設計與遊戲內測試</h3><p>負責功能構想、互動體驗設計與開發優先順序，透過遊戲內測試持續調整。</p></div><div><span class="cl-eyebrow">協作方式</span><h3>與 Codex 一起開發</h3><p>透過 AI 協作完成原生機制研究、程式修改、離線編譯與技術文件整理。</p></div><div><span class="cl-eyebrow">目前階段</span><h3>小範圍驗證，持續迭代</h3><p>日常活動與新場景已有部分實機測試紀錄；動畫切換、語音整合與完整回歸仍在進行。</p></div></div>
@@ -37,5 +34,9 @@
     </section>
 <a class="exploration-back" href="index.html#lab">↖ 回到探索主題</a></main>
 <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#lab">回到探索 ↗</a></footer>
-
+<script>
+document.getElementById('kks-film-panel').addEventListener('toggle', event => {
+  if (!event.currentTarget.open) document.getElementById('kks-video').pause();
+});
+</script>
 </body></html>
