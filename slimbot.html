@@ -1,107 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SlimBot 社群任務自動化｜郭奕圻 YI-CHI KUO</title>
-<meta name="description" content="SlimBot 社群任務自動化案例：整合 Facebook、Instagram、Threads 任務設定、AI 內容與素材、本機 Runner、執行紀錄及部署交接。">
+<meta name="description" content="SlimBot 社群任務自動化案例：透過系統架構圖，了解社群任務管理、AI 內容生成與本機自動化執行。">
 <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
 <link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18">
 <link rel="stylesheet" href="assets/creative-lab.css?v=20260921-v18">
 <link rel="stylesheet" href="assets/exploration-pages.css?v=20260921-v18">
-<link rel="stylesheet" href="assets/slimbot-v27.css?v=20260923-expanded">
-<script src="assets/site-shell.js"></script><script defer src="assets/slimbot-v27.js"></script>
+<link rel="stylesheet" href="assets/slimbot-v28.css">
+<script src="assets/site-shell.js"></script><script defer src="assets/slimbot-v28.js"></script>
 </head><body data-content-page="true" class="cl-page exploration-page slimbot-page">
 <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
 <div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#lab">↖ 回到探索分類</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div>
 <nav class="yk-content-nav" aria-label="四大主導覽"><a href="index.html#about"><span>01</span>我是誰</a><a href="index.html#work"><span>02</span>我做過什麼</a><a href="index.html#tools"><span>03</span>我的工具房</a><a href="index.html#lab" aria-current="true"><span>04</span>我正在探索</a></nav>
 <nav class="yk-explore-nav" aria-label="我正在探索的分類"><span class="yk-explore-nav-label">探索分類</span><div><a data-explore-section="ai-visual" href="ai-visual.html"><span>01</span>AI 商業與社群視覺</a><a data-explore-section="ar" href="spark-ar.html"><span>02</span>Spark AR 濾鏡</a><a data-explore-section="kks" href="kks-interaction.html"><span>03</span>KKS 場景互動</a><a data-explore-section="automation" href="bluestacks-automation.html"><span>04</span>BlueStacks 腳本</a><a data-explore-section="videos" href="youtube.html"><span>05</span>剪輯與 YouTube</a><a data-explore-section="next" href="comfyui.html"><span>06</span>AI 影像工作流</a><a data-explore-section="slimbot" href="slimbot.html" aria-current="page"><span>07</span>SlimBot 自動化</a></div></nav>
 <main id="tool-workspace">
-  <section class="sb-hero" aria-labelledby="sb-title">
-    <header class="sb-intro">
-      <p class="cl-eyebrow">04.07 / SYSTEM AUTOMATION</p>
-      <h1 id="sb-title">SlimBot<br>社群任務自動化</h1>
-      <p class="sb-lead">把分散的社群操作，<br>整理成可追蹤的任務。</p>
-      <p class="sb-description">面向 Facebook、Instagram 與 Threads 的社群任務管理專案。由 Web 整理任務、內容提示與素材，再交給本機 Runner 串接瀏覽器操作及 AI 服務，將執行狀態與結果帶回管理端。</p>
-      <div class="sb-tags" aria-label="案例方向"><span>系統架構</span><span>Windows Runner</span><span>瀏覽器自動化</span></div>
-      <a class="sb-text-link" href="#sb-workflow">看看任務如何流動 <span aria-hidden="true">↓</span></a>
-    </header>
-    <figure class="sb-architecture">
-      <div class="sb-figure-label"><span>SYSTEM MAP / 系統架構</span><span>Web ↔ Runner</span></div>
-      <a class="sb-image-link" href="assets/slimbot-architecture-v27.jpg" target="_blank" rel="noopener" data-sb-enlarge aria-label="放大 SlimBot 系統架構圖">
-        <img src="assets/slimbot-architecture-v27.jpg" alt="SlimBot 系統架構：使用者透過 Web 建立任務，Web 讀寫 MySQL；Runner 登入、取任務與回報狀態，並串接 Selenium、AdsPower 與 OpenAI API。" width="1536" height="1024">
-        <span class="sb-image-hint">放大架構圖 ↗</span>
-      </a>
-      <figcaption>網頁負責管理，本機負責執行；以狀態與結果連接兩端。</figcaption>
-    </figure>
-  </section>
+  <header class="sb-intro">
+    <div><p class="cl-eyebrow">04.07 / SYSTEM AUTOMATION</p><h1 id="sb-title">SlimBot<br>社群任務自動化</h1></div>
+    <div class="sb-intro-copy"><p class="sb-lead">在網頁建立任務，<br>由本機執行，再集中查看結果。</p><p class="sb-description">串接 Facebook、Instagram、Threads 的社群任務管理、AI 內容生成與瀏覽器操作。</p></div>
+  </header>
 
+  <figure class="sb-architecture" id="sb-workflow">
+    <div class="sb-figure-label"><span>SYSTEM MAP / 系統架構</span><span>Web ↔ Runner</span></div>
+    <a class="sb-image-link" href="assets/slimbot-architecture-v27.jpg" target="_blank" rel="noopener" data-sb-enlarge aria-label="放大 SlimBot 系統架構圖">
+      <img src="assets/slimbot-architecture-v27.jpg" alt="SlimBot 系統架構：使用者透過 Web 建立任務，Web 讀寫 MySQL；Runner 取任務與回報狀態，串接 Selenium、AdsPower 與 OpenAI API 執行操作及生成內容。" width="1536" height="1024" fetchpriority="high">
+      <span class="sb-image-hint">放大架構圖 ↗</span>
+    </a>
+    <figcaption>建立任務 <span aria-hidden="true">→</span> 本機執行 <span aria-hidden="true">→</span> 回報結果</figcaption>
+  </figure>
 
-  <nav class="sb-section-nav" aria-label="案例內容"><a href="#sb-capabilities">任務能力</a><a href="#sb-workflow">執行流程</a><a href="#sb-operations">操作介面</a><a href="#sb-mechanisms">技術設計</a><a href="#sb-handoff">部署交接</a></nav>
-
-  <section class="sb-capabilities" id="sb-capabilities" aria-labelledby="sb-capabilities-title">
-    <div class="sb-section-heading"><div><p class="cl-eyebrow">01 / SOCIAL TASKS</p><h2 id="sb-capabilities-title">把社群需求，整理成任務</h2></div><p>從內容方向、素材，到執行數量。</p></div>
-    <p class="sb-section-intro">一次任務包含平台、類型、摘要與執行數量；依任務需求，再填入目標貼文、AI 提示或上傳素材。管理端把等待執行與已執行的任務分開，方便追蹤後續處理。</p>
-    <div class="sb-task-table-wrap"><table class="sb-task-table"><caption>目前 Web 程式提供的任務選項</caption><thead><tr><th scope="col">任務類型</th><th scope="col">Facebook</th><th scope="col">Instagram</th><th scope="col">Threads</th></tr></thead><tbody>
-      <tr><th scope="row">AI 內容貼文</th><td>有</td><td>有</td><td>有</td></tr>
-      <tr><th scope="row">AI 內容回覆</th><td>有</td><td>有</td><td>有</td></tr>
-      <tr><th scope="row">貼文按讚</th><td>有</td><td>有</td><td>有</td></tr>
-      <tr><th scope="row">限時動態</th><td>有</td><td class="sb-unavailable">未提供</td><td class="sb-unavailable">未提供</td></tr>
-    </tbody></table></div>
-    <div class="sb-content-pair">
-      <article><span class="sb-feature-number">CONTENT / MATERIALS</span><h3>內容與素材一起設定</h3><p>文字提示可指定內容方向、語氣與重點；支援的任務可選擇自備圖片／影片，或提供 AI 繪圖提示。回覆類型再搭配目標貼文網址，讓內容與操作對象一起保存。</p></article>
-      <article><span class="sb-feature-number">FORM / VALIDATION</span><h3>依平台調整輸入規則</h3><ul><li>Facebook 限時動態：一張圖片，文字可留空，最多 120 字。</li><li>Instagram 貼文：需提供素材，或啟用 AI 圖片生成。</li><li>Threads 貼文：自選附件最多 10 個。</li></ul></article>
-    </div>
-    <p class="sb-caption">以上為程式中的功能與表單規則；各平台的實際執行結果仍需搭配實機測試確認。</p>
-  </section>
-
-  <section class="sb-workflow" id="sb-workflow" aria-labelledby="sb-workflow-title">
-    <div class="sb-section-heading"><div><p class="cl-eyebrow">02 / TASK JOURNEY</p><h2 id="sb-workflow-title">一項任務，如何完成旅程？</h2></div><p>點選步驟，查看架構中的分工。</p></div>
-    <div class="sb-flow-buttons" role="group" aria-label="任務流程步驟" hidden>
-      <button type="button" aria-pressed="true" aria-controls="sb-step-1"><span>01 / WEB</span><strong>建立任務</strong><i aria-hidden="true">→</i></button>
-      <button type="button" aria-pressed="false" aria-controls="sb-step-2"><span>02 / RUNNER</span><strong>接收與執行</strong><i aria-hidden="true">→</i></button>
-      <button type="button" aria-pressed="false" aria-controls="sb-step-3"><span>03 / SERVICES</span><strong>串接工具</strong><i aria-hidden="true">→</i></button>
-      <button type="button" aria-pressed="false" aria-controls="sb-step-4"><span>04 / FEEDBACK</span><strong>回報與追查</strong><i aria-hidden="true">↗</i></button>
-    </div>
-    <div class="sb-flow-panels" aria-live="polite" aria-atomic="true">
-      <article class="sb-flow-panel" id="sb-step-1"><div><span class="sb-panel-label">使用者 → SlimBot Web</span><h3>把需求整理成可管理的任務</h3><p>選擇社群平台與任務類型，填寫摘要、執行數量、AI 提示與所需素材。Web 端依平台檢查必填內容，並將任務、附件與執行流程關聯保存。</p></div><dl><div><dt>這一步的重點</dt><dd>任務與資料集中管理</dd></div><div><dt>架構使用</dt><dd>PHP · MySQL · Tailwind · JavaScript</dd></div></dl></article>
-      <article class="sb-flow-panel" id="sb-step-2"><div><span class="sb-panel-label">SlimBot Web ↔ Runner</span><h3>由桌面程式接手執行</h3><p>Runner 登入後，由使用者啟動監控。領取 API 依可用瀏覽器槽位與任務剩餘數量分配工作，並建立每次執行紀錄；沒有空位時先跳過領取。</p></div><dl><div><dt>這一步的重點</dt><dd>依可用槽位分配工作</dd></div><div><dt>架構使用</dt><dd>Python · pywebview · Windows</dd></div></dl></article>
-      <article class="sb-flow-panel" id="sb-step-3"><div><span class="sb-panel-label">Runner → 瀏覽器與 AI 服務</span><h3>把不同工具接進同一個流程</h3><p>架構中由 AdsPower 提供瀏覽器環境，Selenium 控制瀏覽器執行任務；OpenAI API 則負責文案與圖片生成。讓環境管理、操作與內容生成各自分工。</p></div><dl><div><dt>這一步的重點</dt><dd>依任務串接所需能力</dd></div><div><dt>架構使用</dt><dd>AdsPower Local API · Selenium · OpenAI API</dd></div></dl></article>
-      <article class="sb-flow-panel" id="sb-step-4"><div><span class="sb-panel-label">Runner → Web → 使用者</span><h3>讓執行過程有跡可循</h3><p>執行中以 Heartbeat 更新狀態；結束後回寫成功、失敗或取消，累計處理數量並保存結果及錯誤資訊。管理端可查看任務進度，Runner 也提供本機錯誤紀錄。</p></div><dl><div><dt>這一步的重點</dt><dd>狀態可見，問題可追查</dd></div><div><dt>回報資訊</dt><dd>執行狀態 · Heartbeat · 結果 · 錯誤原因</dd></div></dl></article>
-    </div>
-    <p class="sb-caption">依系統架構、Web API 與 Runner 介面整理的流程說明。</p>
-  </section>
-
-  <section class="sb-runner" id="sb-operations" aria-labelledby="sb-runner-title">
-    <div class="sb-section-heading"><div><p class="cl-eyebrow">03 / WEB + RUNNER</p><h2 id="sb-runner-title">從建立任務，到查看結果</h2></div><p>網頁管理與本機操作，各有清楚的入口。</p></div>
-    <div class="sb-feature-grid sb-operations-grid">
-      <article><span class="sb-feature-number">WEB / DASHBOARD</span><h3>執行狀況總覽</h3><p>儀表板呈現 Facebook、Instagram 任務統計、環境數量與執行中清單，讓使用者先掌握目前的工作狀態。</p></article>
-      <article><span class="sb-feature-number">WEB / TASKS</span><h3>任務與素材管理</h3><p>以平台切換任務列表，分開查看等待中與已執行項目。任務表單依類型顯示文字、網址、AI 圖片及附件欄位。</p></article>
-      <article><span class="sb-feature-number">WEB + RUNNER / PROFILES</span><h3>帳號與人物設定</h3><p>管理 Profile 資訊與人物設定文字，並在領取任務時帶入對應情境，作為內容生成與執行時的參考。</p></article>
-      <article><span class="sb-feature-number">WEB / ROLES</span><h3>管理員與使用者</h3><p>介面區分管理員與一般使用者，提供帳號、系統設定與不同管理入口，將系統維護和日常操作分工。</p></article>
-      <article><span class="sb-feature-number">RUNNER / CONNECTION</span><h3>連線與模型設定</h3><p>在本機設定 Web、AdsPower、文字與圖片模型，以及瀏覽器數量。儲存設定後，由使用者手動啟動監控。</p></article>
-      <article><span class="sb-feature-number">RUNNER / MONITORING</span><h3>任務監控與錯誤</h3><p>透過任務卡片查看執行狀態、保留停止操作，並以獨立頁籤整理最近的本機錯誤與任務名稱。</p></article>
+  <section class="sb-highlights" aria-labelledby="sb-highlights-title">
+    <h2 id="sb-highlights-title">三個重點</h2>
+    <div class="sb-feature-grid">
+      <article><span class="sb-feature-number">01 / MANAGE</span><h3>任務集中管理</h3><p>在 Web 整理社群平台、任務內容與素材，統一查看待執行工作。</p></article>
+      <article><span class="sb-feature-number">02 / AUTOMATE</span><h3>串接 AI 與自動化</h3><p>由本機 Runner 串接 AI 文案與圖片生成，再透過瀏覽器工具執行任務。</p></article>
+      <article><span class="sb-feature-number">03 / TRACK</span><h3>進度與結果可追蹤</h3><p>將執行狀態、結果與錯誤帶回管理端，方便掌握進度與後續處理。</p></article>
     </div>
   </section>
-
-  <section class="sb-mechanisms" id="sb-mechanisms" aria-labelledby="sb-mechanisms-title">
-    <div class="sb-section-heading"><div><p class="cl-eyebrow">04 / EXECUTION DESIGN</p><h2 id="sb-mechanisms-title">執行之外，還要處理中斷與追查</h2></div><p>展開查看程式中的處理機制。</p></div>
-    <details class="sb-detail" open><summary><span><small>01 / DISPATCH</small>依容量領取，分開記錄每次執行</span><i aria-hidden="true">＋</i></summary><div class="sb-detail-content"><p>領取 API 接收可用瀏覽器槽位數，檢查任務剩餘數量並選擇可用 Profile。程式透過資料庫交易與資料列鎖定更新任務，同時建立個別執行紀錄，作為後續回報的依據。</p><p class="sb-code-note">tasks：任務與數量　／　task_runs：每次執行</p></div></details>
-    <details class="sb-detail"><summary><span><small>02 / RECOVERY</small>用心跳辨識中斷，回收逾時狀態</span><i aria-hidden="true">＋</i></summary><div class="sb-detail-content"><p>執行中的工作回報 Heartbeat。程式在檢查時，會將預設超過 120 秒未更新的執行紀錄標為取消；若該任務沒有其他執行中的紀錄，而且尚未達到處理數量，便回到等待佇列。這項設計用來處理 Runner 中斷後仍停留在「執行中」的情況。</p><p class="sb-code-note">heartbeat_at：最後回報　／　queued：重新等待領取</p></div></details>
-    <details class="sb-detail"><summary><span><small>03 / TRACEABILITY</small>將內容、流程與結果分開保存</span><i aria-hidden="true">＋</i></summary><div class="sb-detail-content"><p>任務的提示、附件與執行情境放在獨立資料結構，操作步驟則以 JSON 流程定義管理，並有讀取與儲存 API。完成回報保存結果、錯誤訊息與截圖路徑欄位，同時累計成功與失敗次數，讓問題可以追到特定執行紀錄。</p><p class="sb-code-note">task_payloads：任務內容　／　task_flow_versions：流程定義</p></div></details>
-    <p class="sb-caption">上述機制已有程式實作；跨使用者的任務權限、重複回報及中斷恢復，仍需整合測試確認。</p>
-  </section>
-
-  <section class="sb-handoff" id="sb-handoff" aria-labelledby="sb-handoff-title">
-    <div class="sb-section-heading"><div><p class="cl-eyebrow">05 / DEPLOYMENT + HANDOFF</p><h2 id="sb-handoff-title">把環境建置，也整理成可交接的流程</h2></div><p>從資料庫、Web 服務，到登入驗證。</p></div>
-    <ol class="sb-deploy-list">
-      <li><span>01</span><div><h3>建立服務與資料庫</h3><p>部署文件記錄 Zeabur 專案、MySQL 服務與資料表匯入，涵蓋任務、執行紀錄、流程及帳號資料結構。</p></div></li>
-      <li><span>02</span><div><h3>配置 Web 環境</h3><p>部署 PHP 專案，透過環境變數設定資料庫連線與網站位置，再完成網域與 DNS 綁定。</p></div></li>
-      <li><span>03</span><div><h3>串接登入驗證</h3><p>設定 Cloudflare Turnstile。Web 登入程式會檢查驗證結果與帳號密碼，再建立登入狀態。</p></div></li>
-      <li><span>04</span><div><h3>交接操作與維護</h3><p>以部署說明、設定修改文件及操作錄影保留建置步驟；文件也交代環境變數更新後重啟，以及資料庫管理工具用畢後停用。</p></div></li>
-    </ol>
-    <div class="sb-materials"><span>案例資料</span><p>Web 專案原始碼 · Windows Runner 封裝 · 資料庫結構 · 部署文件 · 部署錄影</p></div>
-  </section>
-
-
-  <section class="sb-focus" aria-labelledby="sb-focus-title"><div><p class="cl-eyebrow">EXPLORATION FOCUS</p><h2 id="sb-focus-title">讓自動化，也能被管理。</h2></div><p>這個案例把社群操作拆成任務、素材、環境與執行紀錄。探索重點在於，當內容生成與瀏覽器操作串在一起時，如何讓使用者知道工作進行到哪裡、問題發生在哪一次執行，以及後續如何維護。</p></section>
   <a class="exploration-back" href="index.html#lab">↖ 回到探索主題</a>
 </main>
 <dialog class="sb-lightbox" id="sb-image-dialog" aria-labelledby="sb-dialog-title">
