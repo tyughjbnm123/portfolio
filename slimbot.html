@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18">
 <link rel="stylesheet" href="assets/creative-lab.css?v=20260921-v18">
 <link rel="stylesheet" href="assets/exploration-pages.css?v=20260921-v18">
-<link rel="stylesheet" href="assets/slimbot-v28.css">
+<link rel="stylesheet" href="assets/slimbot-v28.css?v=20260924-components">
 <script src="assets/site-shell.js"></script><script defer src="assets/slimbot-v28.js"></script>
 </head><body data-content-page="true" class="cl-page exploration-page slimbot-page">
 <a class="yk-skip" href="#tool-workspace">跳至主要內容</a>
@@ -16,25 +16,28 @@
 <main id="tool-workspace">
   <header class="sb-intro">
     <div><p class="cl-eyebrow">04.07 / SYSTEM AUTOMATION</p><h1 id="sb-title">SlimBot<br>社群任務自動化</h1></div>
-    <div class="sb-intro-copy"><p class="sb-lead">在網頁建立任務，<br>由本機執行，再集中查看結果。</p><p class="sb-description">串接 Facebook、Instagram、Threads 的社群任務管理、AI 內容生成與瀏覽器操作。</p></div>
+    <div class="sb-intro-copy"><p class="sb-lead">減少社群經營的重複操作，<br>讓多個帳號的任務能集中管理與追蹤。</p><p class="sb-description">串接 Facebook、Instagram、Threads 的社群任務管理、AI 內容生成與瀏覽器操作。</p></div>
   </header>
 
   <figure class="sb-architecture" id="sb-workflow">
     <div class="sb-figure-label"><span>SYSTEM MAP / 系統架構</span><span>Web ↔ Runner</span></div>
     <a class="sb-image-link" href="assets/slimbot-architecture-v27.jpg" target="_blank" rel="noopener" data-sb-enlarge aria-label="放大 SlimBot 系統架構圖">
       <img src="assets/slimbot-architecture-v27.jpg" alt="SlimBot 系統架構：使用者透過 Web 建立任務，Web 讀寫 MySQL；Runner 取任務與回報狀態，串接 Selenium、AdsPower 與 OpenAI API 執行操作及生成內容。" width="1536" height="1024" fetchpriority="high">
-      <span class="sb-image-hint">放大架構圖 ↗</span>
     </a>
     <figcaption>建立任務 <span aria-hidden="true">→</span> 本機執行 <span aria-hidden="true">→</span> 回報結果</figcaption>
   </figure>
 
   <section class="sb-highlights" aria-labelledby="sb-highlights-title">
-    <h2 id="sb-highlights-title">三個重點</h2>
-    <div class="sb-feature-grid">
-      <article><span class="sb-feature-number">01 / MANAGE</span><h3>任務集中管理</h3><p>在 Web 整理社群平台、任務內容與素材，統一查看待執行工作。</p></article>
-      <article><span class="sb-feature-number">02 / AUTOMATE</span><h3>串接 AI 與自動化</h3><p>由本機 Runner 串接 AI 文案與圖片生成，再透過瀏覽器工具執行任務。</p></article>
-      <article><span class="sb-feature-number">03 / TRACK</span><h3>進度與結果可追蹤</h3><p>將執行狀態、結果與錯誤帶回管理端，方便掌握進度與後續處理。</p></article>
-    </div>
+    <h2 id="sb-highlights-title">元件分工</h2>
+    <dl class="sb-component-list">
+      <div class="sb-component-row"><dt><strong>SlimBot Web</strong><span>｜管理介面</span></dt><dd>集中建立任務、管理帳號與查看結果。</dd></div>
+      <div class="sb-component-row"><dt><strong>Runner</strong><span>｜本機執行</span></dt><dd>取得任務並執行操作，將進度與結果傳回管理端。</dd></div>
+      <div class="sb-component-row"><dt><strong>AdsPower</strong><span>｜指紋瀏覽器</span></dt><dd>分開保存各帳號的瀏覽環境與登入狀態，減少混用。</dd></div>
+      <div class="sb-component-row"><dt><strong>Selenium</strong><span>｜網頁自動化</span></dt><dd>自動完成點擊、輸入與頁面切換，減少重複操作。</dd></div>
+      <div class="sb-component-row"><dt><strong>OpenAI API</strong><span>｜內容生成</span></dt><dd>依任務產生文案與圖片，協助準備內容初稿。</dd></div>
+      <div class="sb-component-row"><dt><strong>MySQL</strong><span>｜資料保存</span></dt><dd>保存任務與執行紀錄，方便查詢和追蹤問題。</dd></div>
+      <div class="sb-component-row"><dt><strong>Heartbeat</strong><span>｜狀態回報</span></dt><dd>定期確認執行端是否在線，協助發現中斷。</dd></div>
+    </dl>
   </section>
   <a class="exploration-back" href="index.html#lab">↖ 回到探索主題</a>
 </main>
