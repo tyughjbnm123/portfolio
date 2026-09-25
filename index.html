@@ -3,8 +3,8 @@
  <div class="yk-shell">
   <header class="yk-nav"><button type="button" class="yk-home" aria-label="返回首頁">YI-CHI KUO<span>PERSONAL UNIVERSE</span></button><span class="yk-nav-note">策略思考 · 技術實作 · 創意探索</span><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></header>
   <div class="yk-home-view">
-   <div class="yk-intro"><div class="yk-eyebrow"><i></i> MARTECH × AI × AUTOMATION</div><h1>把想法做成作品，<span>把流程做成工具。</span></h1><p>我是郭奕圻。從這裡，探索我的四個面向。</p></div>
-   <div class="yk-world-stage" aria-label="四個互動入口">
+   <div class="yk-intro"><div class="yk-eyebrow"><i></i> MARTECH × AI × AUTOMATION</div><h1>把想法做成作品，<span>把流程做成工具。</span></h1><p>我是郭奕圻。從這裡，探索我的五個面向。</p></div>
+   <div class="yk-world-stage" aria-label="五個互動入口">
     <canvas class="yk-links-canvas" aria-hidden="true"></canvas>
     <span class="yk-center" aria-hidden="true">IDEAS<br><small>IN MOTION</small></span>
     <button type="button" class="yk-portal yk-about" data-open="about" aria-label="我是誰：自我介紹、工作方法與經歷" aria-controls="yk-detail" aria-expanded="false">
@@ -21,7 +21,11 @@
     </button>
     <button type="button" class="yk-portal yk-lab" data-open="lab" aria-label="我正在探索：AI 視覺、AR、遊戲修改與自動化" aria-controls="yk-detail" aria-expanded="false">
      <span class="yk-art yk-lab-art"><span class="yk-lab-back"><img data-asset="flower" alt="AI 花季視覺"></span><span class="yk-lab-front"><img data-asset="zhen" alt="AI 商業視覺"></span><span class="yk-spark">✳</span></span>
-     <span class="yk-label"><small>04 / PLAY</small><strong>我正在探索 <span>↗</span></strong><span class="yk-preview">AI 視覺、影音與創意實驗</span></span>
+     <span class="yk-label"><small>04 / LAB</small><strong>我正在探索 <span>↗</span></strong><span class="yk-preview">AI 視覺、影音與創意實驗</span></span>
+    </button>
+    <button type="button" class="yk-portal yk-games" data-open="games" aria-label="我的遊戲室：2048 與共用排行榜" aria-controls="yk-detail" aria-expanded="false">
+     <span class="yk-art yk-game-art" aria-hidden="true"><span class="yk-mini-board"><i>2</i><i>4</i><i>8</i><i>2048</i></span><span class="yk-game-spark">✦</span></span>
+     <span class="yk-label"><small>05 / GAMES</small><strong>我的遊戲室 <span>↗</span></strong><span class="yk-preview">玩一局，讓想法變成遊戲</span></span>
     </button>
    </div>
    <footer class="yk-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span></footer>
@@ -31,6 +35,13 @@
    <div class="yk-detail-body"></div>
   </section>
  </div>
+ <template id="yk-games-content">
+  <div class="yk-detail-heading"><span class="yk-eyebrow">05 / GAMES</span><h2>我的遊戲室</h2><p>玩一局，讓想法變成遊戲。</p></div>
+  <a class="yk-game-card" href="2048.html" aria-label="開始遊玩 2048">
+   <span class="yk-game-cover" aria-hidden="true"><span class="yk-cover-board"><i>2</i><i>4</i><i></i><i>8</i><i>16</i><i>32</i><i>64</i><i></i><i></i><i>128</i><i>256</i><i>512</i><i>2</i><i></i><i>1024</i><i>2048</i></span></span>
+   <span class="yk-game-card-copy"><small>01 / NUMBER PUZZLE</small><strong>2048</strong><span>滑動、合併，一步步拼出 2048。<br>結算後留下暱稱，一起挑戰排行榜。</span><span class="yk-game-tags">電腦／手機 · 單人 · 共用排行榜</span><span class="yk-game-start">開始遊玩 ↗</span></span>
+  </a>
+ </template>
  <template id="yk-about-content">
   <div class="yk-detail-heading"><span class="yk-eyebrow">01 / ABOUT ME</span><h2>關於我</h2></div>
   <div class="yk-about-layout yk-resume-intro">
@@ -201,6 +212,7 @@
 @media(hover:none){#yk-world .yk-preview{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){#yk-world *,#yk-world *::before,#yk-world *::after{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="assets/game-room.css?v=20260925-1">
 <script id="yk-assets">const ykImages={"profile":"assets/profile.jpg","alain":"assets/alain-ducasse.jpg","flow":"assets/mirror-shop-automation.jpg","zhen":"assets/lora-zhenzhen-sample.jpg","flower":"assets/lora-flower-sample.jpg"};</script>
 <script>
 (()=>{
@@ -218,7 +230,7 @@ let active=-1,lastTrigger=null,w=800,h=440,time=0,last=0,raf=0,inView=true,accen
 function assets(scope){scope.querySelectorAll('img[data-asset]').forEach(img=>{img.src=ykImages[img.dataset.asset];});}
 function setActive(portal){portals.forEach(p=>p.classList.toggle('yk-active',p===portal));active=portals.indexOf(portal);if(portal)stage.dataset.active=portal.dataset.open;else delete stage.dataset.active;draw();}
 portals.forEach(p=>{p.addEventListener('pointerenter',()=>{if(matchMedia('(hover:hover)').matches)setActive(p);});p.addEventListener('pointerleave',()=>{if(document.activeElement!==p)setActive(null);});p.addEventListener('focus',()=>setActive(p));p.addEventListener('blur',()=>setActive(null));});
-function open(key,trigger){if(location.hash!=="#"+key)history.replaceState(null,"","#"+key);lastTrigger=trigger;home.hidden=true;detail.hidden=false;const template=root.querySelector('#yk-'+key+'-content');body.replaceChildren(template.content.cloneNode(true));assets(body);bindDetail(key);root.querySelector('.yk-detail-counter').textContent={about:'01 / ABOUT',work:'02 / WORK',tools:'03 / TOOLS',lab:'04 / PLAY'}[key];portals.forEach(p=>p.setAttribute('aria-expanded',String(p.dataset.open===key)));setActive(null);back.focus({preventScroll:true});restart();}
+function open(key,trigger){if(location.hash!=="#"+key)history.replaceState(null,"","#"+key);lastTrigger=trigger;home.hidden=true;detail.hidden=false;const template=root.querySelector('#yk-'+key+'-content');body.replaceChildren(template.content.cloneNode(true));assets(body);bindDetail(key);root.querySelector('.yk-detail-counter').textContent={about:'01 / ABOUT',work:'02 / WORK',tools:'03 / TOOLS',lab:'04 / LAB',games:'05 / GAMES'}[key];portals.forEach(p=>p.setAttribute('aria-expanded',String(p.dataset.open===key)));setActive(null);back.focus({preventScroll:true});restart();}
 function bindDetail(key){
  if(key==='about'){
   const methods=[['先確認，要解決誰的什麼問題。','盤點使用情境、商業目標、系統限制與成功標準，讓團隊對問題有共同理解。'],['把想法拆成可討論、可執行的範圍。','梳理流程與規格，定義優先順序、時程及責任分工。例如官網專案需要一起考慮資訊架構、內容移轉與前後台需求。'],['交付的不只是上線，還有可持續運作的流程。','協調設計、工程與行銷，追蹤風險、測試與驗收，並整理上線後的維護與改善項目。']];
@@ -247,7 +259,7 @@ function restart(){if(raf)cancelAnimationFrame(raf);raf=0;last=0;if(inView&&!hom
 function render(){root.style.setProperty('--yk-zoom',String(settings.zoom));getColor();draw();}
 assets(root);render();new ResizeObserver(size).observe(stage);new IntersectionObserver(e=>{inView=e[0].isIntersecting;restart();}).observe(root);matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);size();
 window.addEventListener('yk:theme',render);
-function syncRoute(){const key=location.hash.slice(1);if(['about','work','tools','lab'].includes(key))open(key,root.querySelector('[data-open="'+key+'"]'));else if(!detail.hidden)goHome();}
+function syncRoute(){const key=location.hash.slice(1);if(['about','work','tools','lab','games'].includes(key))open(key,root.querySelector('[data-open="'+key+'"]'));else if(!detail.hidden)goHome();}
 window.addEventListener('hashchange',syncRoute);syncRoute();
 })();
 </script>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>2048｜我的遊戲室 · YI-CHI KUO</title>
+  <meta name="description" content="合併相同數字，挑戰 2048。支援鍵盤與手機滑動，結算後留下暱稱，與其他訪客一起挑戰排行榜。">
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/game2048.css?v=20260925-1">
+  <script src="assets/site-shell.js"></script>
+  <script defer src="assets/game2048-core.js?v=20260926-edge2"></script>
+  <script defer src="assets/game2048.js?v=20260926-edge2"></script>
+</head>
+<body class="game-page">
+  <a class="yk-skip" href="#board">跳到遊戲</a>
+  <header class="game-nav"><a href="index.html#games">← 我的遊戲室</a><span>YI-CHI KUO <small>PLAY A LITTLE.</small></span><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></header>
+  <main class="game-layout">
+    <section class="game-main" aria-labelledby="game-title">
+      <div class="game-heading"><div><p class="eyebrow">01 / NUMBER PUZZLE</p><h1 id="game-title">2048<span>一步一步，合而為一。</span></h1></div><span class="game-badge">2 × 2 × 2 …</span></div>
+      <div class="game-toolbar"><div class="score-group"><div><small>本局分數</small><strong id="score">0</strong></div><div><small>個人最佳</small><strong id="best">0</strong></div></div><div class="game-actions"><button id="sound" type="button" class="icon-button" aria-label="開啟音效" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path class="sound-waves" d="M15 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/></svg></button><button id="new-game" type="button">新的一局 ↻</button></div></div>
+      <div class="board-wrap">
+        <div id="board" class="board" role="group" tabindex="0" aria-label="2048 棋盤。使用方向鍵或 WASD 移動方塊。" aria-describedby="game-help"><div class="board-cells" aria-hidden="true"></div><div class="tile-layer"></div></div>
+        <div class="game-overlay" id="pause-overlay" hidden><strong>休息一下</strong><p>棋盤已保留，準備好再繼續。</p><button id="resume" class="primary" type="button">繼續遊戲</button></div>
+      </div>
+      <p id="game-help" class="game-help">電腦按方向鍵或 WASD，手機在棋盤上滑動。<br>新格子固定為 <strong>2</strong>，從滑動反方向的邊緣出現。<br>相同數字合併，達成 <strong>2048</strong> 或無法移動時結算。</p>
+      <div class="game-bottom"><span id="move-count">0 步</span><div class="direction-pad" aria-label="移動方向"><button data-direction="left" aria-label="向左移動">←</button><button data-direction="up" aria-label="向上移動">↑</button><button data-direction="down" aria-label="向下移動">↓</button><button data-direction="right" aria-label="向右移動">→</button></div><button id="pause" type="button">暫停</button></div>
+      <p id="game-message" class="subtle" role="status"></p><span id="announcement" class="sr-only" aria-live="polite"></span>
+    </section>
+    <aside class="leaderboard" aria-labelledby="leaderboard-title"><div class="leaderboard-heading"><div><p class="eyebrow">SHARED HIGH SCORES</p><h2 id="leaderboard-title">留下你的名字。</h2></div><button id="refresh" class="icon-button" type="button" aria-label="重新整理排行榜">↻</button></div><p class="leaderboard-intro">每一局，都有自己的位置。<br>所有訪客共用 · 最高分前 20 名</p><div class="leaderboard-labels"><span>玩家</span><span>分數</span></div><ol id="rank-list"></ol><p id="rank-status" class="rank-status" role="status">正在讀取排行榜…</p><p class="leaderboard-note">結算後可填寫暱稱上榜。<br>同分依較早送出的紀錄排序。</p></aside>
+  </main>
+  <dialog id="result-dialog" aria-labelledby="result-title"><form id="result-form"><p class="eyebrow">YOUR LITTLE ACHIEVEMENT</p><h2 id="result-title">這一局，很不錯。</h2><p id="result-description"></p><div class="result-score"><strong id="final-score">0</strong><span>分</span></div><p id="final-detail" class="subtle"></p><label for="player-name">在排行榜留下暱稱</label><input id="player-name" name="nickname" maxlength="16" autocomplete="nickname" placeholder="你的暱稱" aria-describedby="name-hint" required><p id="name-hint" class="subtle">1–16 字。暱稱與成績將公開顯示，請勿填入聯絡資料。</p><p id="submit-status" role="status"></p><button id="submit-score" class="primary" type="submit">送出成績 ↗</button><button id="result-close" type="button" class="text-button">先看看排行榜</button></form></dialog>
+  <dialog id="restart-dialog" aria-labelledby="restart-title"><h2 id="restart-title">開始新的一局？</h2><p>目前這局尚未結算，重新開始會放棄本局進度。</p><div class="dialog-actions"><button id="restart-cancel" type="button">繼續這一局</button><button id="restart-confirm" class="primary" type="button">重新開始</button></div></dialog>
+  <footer class="game-footer">小小的遊戲，大大的 2048。<span>© 2026 YI-CHI KUO</span></footer>
+</body></html>
