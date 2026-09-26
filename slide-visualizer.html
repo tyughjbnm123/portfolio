@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant" class="sv-document">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>簡報圖解助手｜郭奕圻的工具房</title>
+  <meta name="description" content="貼上內容，選擇表達目的，比較三種圖解提案。修改文字與配色，下載 SVG 或 PNG 放進簡報。">
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/slide-visualizer.css?v=20260926-mvp">
+  <script src="assets/site-shell.js"></script>
+  <script defer src="assets/slide-visualizer-core.js?v=20260926-mvp"></script>
+  <script defer src="assets/slide-visualizer.js?v=20260926-mvp"></script>
+</head>
+<body class="yk-tool-page sv-page">
+  <a class="yk-skip" href="#sv-content">跳到內容輸入</a>
+  <header class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></header>
+  <main class="sv-main">
+    <div class="sv-heading"><div><p class="sv-kicker">08 / SLIDE VISUALIZER</p><h1>簡報圖解助手</h1><p>把想說的，變成看得懂的圖。</p></div><span class="sv-heading-note">一段內容 → 三種表達方式</span></div>
+    <div class="sv-workspace">
+      <aside class="sv-input-panel">
+        <form id="sv-form">
+          <div class="sv-section-title"><h2><span>01</span> 你想表達什麼？</h2><button type="button" class="sv-text-button" id="sv-example">套用範例</button></div>
+          <label for="sv-purpose">這一頁的目的</label>
+          <select id="sv-purpose" name="purpose"><option value="process">解釋流程</option><option value="compare">比較差異</option><option value="change">說明改善</option><option value="system">介紹架構與分工</option><option value="plan">規劃時程與階段</option><option value="results">呈現成果</option></select>
+          <label for="sv-content">內容與重點</label>
+          <textarea id="sv-content" name="content" rows="9" maxlength="2000" required aria-describedby="sv-content-help sv-input-note" placeholder="貼上一段文字，或每行寫一個重點。"></textarea>
+          <div class="sv-field-meta"><span id="sv-content-help">每張圖 2–6 個重點，條列更容易整理。</span><span id="sv-count">0 / 2000</span></div>
+          <label for="sv-takeaway">希望觀眾記住的一句話 <span class="sv-optional">選填</span></label>
+          <input id="sv-takeaway" name="takeaway" maxlength="90" placeholder="例：把分散的社群工作集中管理">
+          <button class="sv-primary sv-generate" type="submit">看看三種圖解 <span aria-hidden="true">↗</span></button>
+          <p id="sv-input-note" class="sv-status" role="status"></p>
+          <p class="sv-local-note">依表達目的與文字重點套用版型，可再自行調整。內容只保留在此瀏覽器。</p>
+        </form>
+      </aside>
+      <section class="sv-results" aria-labelledby="sv-results-heading">
+        <div class="sv-section-title"><h2 id="sv-results-heading"><span>02</span> 選一種說法</h2><span id="sv-result-state" class="sv-state">示範內容</span></div>
+        <div id="sv-proposals" class="sv-proposals" role="group" aria-label="三種圖解提案"></div>
+        <section class="sv-preview-panel" aria-labelledby="sv-preview-heading">
+          <div class="sv-preview-bar"><h3 id="sv-preview-heading">圖解預覽</h3><div class="sv-palette" role="group" aria-label="圖解配色"><button type="button" data-palette="sage" aria-label="鼠尾草配色" aria-pressed="true"><i class="sv-swatch sage"></i></button><button type="button" data-palette="blue" aria-label="商務藍配色" aria-pressed="false"><i class="sv-swatch blue"></i></button><button type="button" data-palette="sand" aria-label="暖沙配色" aria-pressed="false"><i class="sv-swatch sand"></i></button></div></div>
+          <div id="sv-canvas" class="sv-canvas" role="img" aria-label="簡報圖解預覽"></div>
+          <p class="sv-layout-tip" id="sv-layout-tip"></p>
+          <div class="sv-export"><span>16:9 · 可放進你的簡報</span><div><button type="button" id="sv-copy">複製文案</button><button type="button" id="sv-svg">下載 SVG</button><button type="button" id="sv-png" class="sv-primary">下載 PNG ↗</button></div></div>
+          <p id="sv-export-status" class="sv-status" role="status"></p>
+          <a id="sv-export-file" class="sv-download-link" hidden download>若未開始下載，點此儲存圖檔 ↗</a>
+          <textarea id="sv-copy-fallback" class="sv-copy-fallback" readonly hidden aria-label="可手動複製的圖解文案"></textarea>
+        </section>
+        <details class="sv-editor" open>
+          <summary><span><b>03</b> 調整成你的版本</span><span aria-hidden="true">＋</span></summary>
+          <div class="sv-editor-body"><div class="sv-editor-head"><div><label for="sv-title">簡報標題</label><input id="sv-title" maxlength="64"></div><div><label for="sv-caption">補充結論或下一步 <span class="sv-optional">選填</span></label><input id="sv-caption" maxlength="90" placeholder="補充一句，讓這張圖更完整"></div></div>
+          <div class="sv-points-heading"><span>圖解重點</span><small>調整順序後，預覽會同步更新。</small></div><div id="sv-points"></div>
+          <div class="sv-editor-footer"><button type="button" id="sv-add">＋ 新增重點</button><span>每點最多 96 字，最多 6 點。</span></div></div>
+        </details>
+      </section>
+    </div>
+    <footer class="sv-footer">先選對表達方式，再讓畫面說清楚。<span>© 2026 YI-CHI KUO</span></footer>
+  </main>
+  <noscript><p>請開啟 JavaScript，才能產生與下載圖解。</p></noscript>
+</body>
+</html>
