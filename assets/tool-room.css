@@ -1,5 +1,5 @@
 /* Tool overview: a result illustration plus one clear task. */
-.yk-index-page #yk-world .yk-tool-picker{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:0 0 22px}
+.yk-index-page #yk-world .yk-tool-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 0 22px}
 .yk-index-page #yk-world .yk-tool-picker button{min-width:0;padding:13px 10px;flex-direction:row;gap:9px;justify-content:center;border:1px solid var(--yk-line);border-radius:12px;background:transparent;transition:background .2s,transform .2s}
 .yk-index-page #yk-world .yk-tool-picker button>span{display:inline;width:auto;height:auto;padding:0;border:0;background:transparent;transform:none;font:12px/1.5 var(--yk-font);color:var(--yk-muted)}
 .yk-index-page #yk-world .yk-tool-picker button strong{font-size:14px;font-weight:500;white-space:nowrap}
