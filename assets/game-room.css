@@ -1,0 +1,23 @@
+#yk-world .yk-games{width:22%;left:35%;top:12px}#yk-world .yk-game-art{width:140px;height:125px;animation-delay:-2s}#yk-world .yk-mini-board{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:115px;height:115px;padding:7px;border:1px solid var(--yk-line);border-radius:13px;background:var(--yk-soft);transform:rotate(-9deg);box-shadow:0 10px 28px #0001;transition:transform .3s}#yk-world .yk-mini-board i{display:grid;place-items:center;border-radius:6px;background:#d9e6c7;color:#354329;font:600 22px var(--yk-font)}#yk-world .yk-mini-board i:nth-child(2){background:#abc878}#yk-world .yk-mini-board i:nth-child(3){background:#648638;color:white}#yk-world .yk-mini-board i:last-child{font-size:17px;background:#c4e88f;transform:translate(7px,3px) rotate(9deg);box-shadow:0 4px 10px #0002}#yk-world .yk-game-spark{position:absolute;right:9px;top:0;color:var(--yk-accent);font-size:24px}#yk-world .yk-games:is(:hover,:focus-visible) .yk-mini-board{transform:rotate(0) translateY(-4px)}#yk-world .yk-game-card{display:grid;grid-template-columns:minmax(220px,40%) 1fr;max-width:840px;border:1px solid var(--yk-line);border-radius:18px;overflow:hidden;color:var(--yk-ink);text-decoration:none;background:var(--yk-surface);transition:border-color .2s,transform .2s}#yk-world .yk-game-card:hover{border-color:var(--yk-accent);transform:translateY(-3px)}#yk-world .yk-game-cover{display:grid;place-items:center;padding:36px;background:var(--yk-soft);min-height:300px}#yk-world .yk-cover-board{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:9px;background:var(--yk-bg);border:1px solid var(--yk-line);border-radius:12px;transform:rotate(-7deg);width:230px;height:230px;box-shadow:0 15px 24px #0002}#yk-world .yk-cover-board i{display:grid;place-items:center;font-style:normal;background:#d9e6c7;color:#354329;border-radius:6px;font-size:18px;font-weight:600}#yk-world .yk-cover-board i:empty{background:var(--yk-soft)}#yk-world .yk-cover-board i:nth-child(n+6):not(:empty){background:#719747;color:white;font-size:15px}#yk-world .yk-cover-board i:last-child{background:#c4e88f;color:#263a13;transform:scale(1.13)}#yk-world .yk-game-card-copy{display:flex;flex-direction:column;align-items:start;padding:36px;gap:16px}#yk-world .yk-game-card-copy>small{font-size:10px;color:var(--yk-accent);letter-spacing:.12em}#yk-world .yk-game-card-copy>strong{font-size:42px;font-weight:550;line-height:1}#yk-world .yk-game-card-copy>span{font-size:15px;line-height:1.8;color:var(--yk-muted)}#yk-world .yk-game-card-copy .yk-game-tags{font-size:11px}#yk-world .yk-game-card-copy .yk-game-start{background:var(--yk-accent);color:var(--yk-bg);padding:9px 19px;border-radius:99px;font-size:14px;margin-top:4px}@media(max-width:740px) and (min-width:551px){#yk-world .yk-games{width:25%;left:33%;top:0}#yk-world .yk-game-art{width:120px;height:115px}#yk-world .yk-mini-board{width:103px;height:103px}#yk-world .yk-games .yk-preview{font-size:11px}}@media(max-width:650px){#yk-world .yk-game-card{grid-template-columns:1fr}#yk-world .yk-game-cover{min-height:230px;padding:24px}#yk-world .yk-cover-board{width:185px;height:185px}#yk-world .yk-game-card-copy{padding:26px}#yk-world .yk-game-card-copy>strong{font-size:34px}}@media(max-width:550px){
+  #yk-world .yk-games{grid-column:1/-1;position:relative;left:auto;top:auto;width:100%;min-height:212px;display:flex;align-items:center;justify-content:center;gap:24px;padding:28px 0}
+  #yk-world .yk-games .yk-art{margin:0;width:156px;height:156px;flex:0 0 156px}
+  #yk-world .yk-games .yk-mini-board{width:148px;height:148px;padding:9px;gap:6px;border-radius:16px}
+  #yk-world .yk-games .yk-mini-board i{font-size:29px}
+  #yk-world .yk-games .yk-mini-board i:last-child{font-size:22px}
+  #yk-world .yk-games .yk-game-spark{font-size:30px;right:0;top:-8px}
+  #yk-world .yk-games .yk-label{margin-top:0;min-width:0;max-width:185px}
+  #yk-world .yk-games .yk-label>small{font-size:10px;margin-bottom:9px}
+  #yk-world .yk-games .yk-label strong{font-size:22px}
+  #yk-world .yk-games .yk-preview{min-height:0;max-width:185px;font-size:13px;margin-top:10px;line-height:1.7}
+}
+@media(max-width:380px){
+  #yk-world .yk-games{gap:18px}
+  #yk-world .yk-games .yk-art{width:136px;height:136px;flex-basis:136px}
+  #yk-world .yk-games .yk-mini-board{width:132px;height:132px}
+  #yk-world .yk-games .yk-label strong{font-size:20px}
+}
+@media(max-width:350px){
+  #yk-world .yk-games{flex-direction:column;gap:22px;text-align:center}
+  #yk-world .yk-games .yk-label{max-width:none}
+  #yk-world .yk-games .yk-preview{max-width:none}
+}

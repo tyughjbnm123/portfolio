@@ -1,0 +1,28 @@
+.games-document{zoom:1!important}
+.games-page{margin:0;background:var(--yk-bg);color:var(--yk-ink);font:16px/1.6 var(--yk-font);padding:0 28px;min-height:100dvh}
+.games-page *{box-sizing:border-box}
+.games-page .games-header{max-width:1024px;min-height:86px}
+.games-page .games-header .yk-site-brand{font-size:14px!important}
+.games-subnav{max-width:1080px;margin:20px auto 0;padding:0 28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:14px/1.4 var(--yk-font)}
+.games-page .games-subnav{max-width:1024px;padding:0}
+.games-subnav a{display:inline-flex;gap:9px;align-items:center;color:var(--yk-muted);text-decoration:none;border:1px solid var(--yk-line);border-radius:99px;padding:10px 17px;min-height:42px;transition:background .2s,color .2s}
+.games-subnav a>span{font-size:10px;opacity:.7;letter-spacing:.05em}
+.games-subnav a:hover{background:var(--yk-soft);color:var(--yk-ink)}
+.games-subnav a[aria-current=page]{background:var(--yk-ink);color:var(--yk-bg);border-color:var(--yk-ink)}
+.games-subnav a:focus-visible,.games-page a:focus-visible{outline:2px solid var(--yk-accent);outline-offset:4px}
+.game-page .games-subnav+.game-layout{margin-top:28px}
+#yk-world.games-directory{max-width:1024px;margin:40px auto 64px}
+.games-heading{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:36px}
+.games-eyebrow{font-size:11px;letter-spacing:.17em;color:var(--yk-accent);margin:0 0 10px}
+.games-heading h1{font-size:40px;font-weight:500;line-height:1.4;letter-spacing:-.04em;margin:0 0 8px}
+.games-heading p:last-child{margin:0;font-size:15px;color:var(--yk-muted)}
+.games-count{font-size:12px;color:var(--yk-muted);white-space:nowrap;padding-bottom:3px}
+.games-catalog h2{font-size:14px;font-weight:500;margin:0 0 18px;padding-top:20px;border-top:1px solid var(--yk-line)}
+#yk-world.games-directory .yk-game-card{max-width:100%;grid-template-columns:minmax(260px,42%) 1fr}
+#yk-world.games-directory .yk-game-card-copy{justify-content:center}
+#yk-world.games-directory .yk-game-start{color:var(--yk-on-accent)}
+.games-directory-footer{max-width:1024px;margin:0 auto;padding:24px 0;border-top:1px solid var(--yk-line);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:11px;color:var(--yk-muted)}
+#yk-world .yk-games-directory-link{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;padding:10px 18px;border:1px solid var(--yk-line);border-radius:99px;color:var(--yk-accent);font-size:14px;text-decoration:none}
+#yk-world .yk-games-directory-link:hover{background:var(--yk-soft);border-color:var(--yk-accent)}
+@media(max-width:650px){.games-page{padding:0 18px}.games-page .games-header{min-height:76px}.games-page .yk-site-nav-actions{gap:12px}.games-page .yk-room-back{font-size:12px}.games-subnav{padding:0 18px;gap:7px}.games-subnav a{font-size:13px;padding:9px 15px}#yk-world.games-directory{margin:30px auto 40px}.games-heading{align-items:start;gap:12px;margin-bottom:26px}.games-heading h1{font-size:30px}.games-heading p:last-child{font-size:13px;max-width:230px}.games-count{font-size:11px;margin-top:32px}#yk-world.games-directory .yk-game-card{grid-template-columns:1fr}.games-directory-footer{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.games-subnav a,#yk-world .yk-games-directory-link{transition:none}}
