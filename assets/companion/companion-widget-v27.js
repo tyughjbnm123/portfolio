@@ -30,6 +30,7 @@
       <span class="sr-only status" role="status"></span>
     </section>`;
   root.append(ui); document.body.append(host);
+  window.YKLanguage?.register(root);
   const $ = selector => root.querySelector(selector);
   const actor = $('.actor'), menu = $('.menu'), panel = $('.panel'), launcher = $('.launcher');
   const player = new window.CompanionPlayer($('.sprite'), muted => {
