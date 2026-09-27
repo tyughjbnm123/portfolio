@@ -14,18 +14,21 @@
   function restore() {
     try {
       const value = JSON.parse(read(SAVE));
-      if (value?.version !== 1 || !/^[a-f0-9-]{36}$/.test(value.id) || !Array.isArray(value.board) || value.board.length!==16 || !value.board.every(n=>Number.isInteger(n)&&n>=0&&n<=2048&&(n===0||(n>=2&&(n&(n-1))===0))) || !Number.isInteger(value.score) || value.score<0 || value.score>100000 || !Number.isInteger(value.moves)||value.moves<0||value.moves>10000) return null;
-      value.outcome=G.outcome(value.board); return value;
+      if (value?.version !== 1 || !/^[a-f0-9-]{36}$/.test(value.id) || !Array.isArray(value.board) || value.board.length!==16 || !value.board.every(n=>n===0||G.isTile(n)) || !Number.isSafeInteger(value.score) || value.score<0 || !Number.isSafeInteger(value.moves)||value.moves<0) return null;
+      // Resume unfinished older 2048 wins; a submitted run remains finalized.
+      value.outcome=value.submitted?(Math.max(...value.board)>=2048?'won':'over'):G.outcome(value.board); return value;
     } catch {return null;}
   }
   function tile(value,index) {
     const node=document.createElement('span');node.className='tile';node.dataset.value=value;node.dataset.index=index;
     node.style.setProperty('--x',index%4);node.style.setProperty('--y',Math.floor(index/4));node.textContent=value;
+    if(value>2048){node.classList.add('tile-higher');node.style.setProperty('--digits',String(value).length);}
     node.setAttribute('aria-label',`第 ${Math.floor(index/4)+1} 列、第 ${index%4+1} 格：${value}`);return node;
   }
   function render(merged=[],spawn=-1) {
     layer.replaceChildren(...game.board.flatMap((v,i)=> {if(!v)return [];const n=tile(v,i);if(merged.includes(i))n.classList.add('merged');else if(i===spawn)n.classList.add('new');return [n];}));
     $('#score').textContent=number(game.score);$('#best').textContent=number(best);$('#move-count').textContent=`${game.moves} 步`;
+    $('#score').style.setProperty('--score-digits',number(game.score).length);$('#best').style.setProperty('--score-digits',number(best).length);
     $('#pause').textContent=game.outcome==='playing'?'暫停':'查看結算';
     document.querySelectorAll('[data-direction]').forEach(b=>b.disabled=game.outcome!=='playing'||paused);
   }
@@ -40,7 +43,9 @@
     if(busy||paused||game.outcome!=='playing'||resultDialog.open||restartDialog.open)return;
     const step=G.slide(game.board,direction);if(!step.changed)return;
     busy=true;const token=++currentMove;
+    const reached2048=Math.max(...game.board)<2048&&Math.max(...step.board)>=2048;
     const spawned=G.spawn(step.board,Math.random,direction);game.board=spawned.board;game.score+=step.gain;game.moves++;game.outcome=G.outcome(game.board);
+    if(reached2048)$('#game-message').textContent='達成 2048！繼續合併，挑戰 4096、8192 與更高分。';
     if(game.score>best){best=game.score;write(BEST,String(best));}persist();beep(step.gain>0);
     for(const path of step.paths){const n=layer.querySelector(`[data-index="${path.from}"]`);if(n){n.style.setProperty('--x',path.to%4);n.style.setProperty('--y',Math.floor(path.to/4));}}
     setTimeout(()=>{if(token!==currentMove)return;render(step.merged,spawned.index);busy=false;$('#announcement').textContent=step.gain?`合併得 ${step.gain} 分，目前 ${game.score} 分。`:`已移動，目前 ${game.score} 分。`;if(game.outcome!=='playing')showResult();},reduced?0:125);
@@ -48,15 +53,15 @@
   function setPause(value) {paused=value;$('#pause-overlay').hidden=!paused;render();if(!paused)boardEl.focus({preventScroll:true});}
   function reset() {currentMove++;busy=false;game=makeGame();paused=false;$('#pause-overlay').hidden=true;$('#game-message').textContent='';resultDialog.close();restartDialog.close();persist();render();boardEl.focus({preventScroll:true});}
   function showResult() {
-    $('#result-title').textContent=game.outcome==='won'?'2048，做到了！':'這一局，很不錯。';
-    $('#result-description').textContent=game.outcome==='won'?'你把小小的數字，合成了這次的目標。':'棋盤已經無法移動，留下這次的成績吧。';
+    $('#result-title').textContent='這一局，很不錯。';
+    $('#result-description').textContent='本局已結算，留下這次的最終成績吧。';
     $('#final-score').textContent=number(game.score);$('#final-detail').textContent=`${game.moves} 步 · 最大方塊 ${Math.max(...game.board)}`;
     $('#player-name').value=game.name||read('yichi-2048-name')||'';$('#player-name').disabled=!!game.submitted;
     $('#submit-score').disabled=!!game.submitted||game.score===0;
     $('#submit-status').textContent=game.submitted?'這局成績已送出，謝謝你來玩！':game.score===0?'這局沒有得分，再挑戰一次吧。':'';$('#submit-status').dataset.error='false';
     if(!resultDialog.open)resultDialog.showModal();
   }
-  function getCloud() {if(!cloud)cloud=import('./game2048-firebase.js?v=20260925-1').catch(e=>{cloud=null;throw e;});return cloud;}
+  function getCloud() {if(!cloud)cloud=import('./game2048-firebase.js?v=20260927-continue').catch(e=>{cloud=null;throw e;});return cloud;}
   function cloudError(error) {
     if(error.code==='permission-denied')return '排行榜暫時無法存取，請稍後再試。';
     if(error.code==='auth/operation-not-allowed'||error.code==='auth/configuration-not-found')return '排行榜的訪客登入尚未啟用，請稍後再試。';

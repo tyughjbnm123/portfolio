@@ -43,11 +43,13 @@
   }
   function create(random = Math.random) { return spawn(spawn(Array(16).fill(0), random).board, random).board; }
   function canMove(board) { return directions.some(d => slide(board, d).changed); }
-  function outcome(board) { return board.includes(2048) ? 'won' : canMove(board) ? 'playing' : 'over'; }
+  function isTile(value) { return Number.isSafeInteger(value) && value >= 2 && value === 2 ** Math.round(Math.log2(value)); }
+  // 2048 is a milestone. A run finishes only when no legal moves remain.
+  function outcome(board) { return canMove(board) ? 'playing' : Math.max(...board) >= 2048 ? 'won' : 'over'; }
   function normalizeName(name) {
     const value = String(name).normalize('NFKC').trim().replace(/\s+/g, ' ');
     if (!/^[\p{L}\p{N}_ .\-]{1,16}$/u.test(value)) throw new Error('請用 1–16 個中文字、英文字、數字或空格。');
     return value;
   }
-  return {slide, spawn, create, canMove, outcome, normalizeName};
+  return {slide, spawn, create, canMove, outcome, normalizeName, isTile};
 });
