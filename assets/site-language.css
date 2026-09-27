@@ -1,0 +1,22 @@
+.yk-language-toggle{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:44px;min-height:38px;padding:6px 10px;border:1px solid var(--yk-line,#667457);border-radius:999px;background:transparent;color:inherit;font:600 12px/1.2 Arial,sans-serif;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
+.yk-language-toggle:hover{background:var(--yk-surface,#263327)}
+.yk-language-toggle:focus-visible{outline:2px solid var(--yk-accent,#bedc94);outline-offset:3px}
+.yk-language-floating{position:fixed;top:12px;right:12px;z-index:10000;background:var(--yk-bg,#172219);color:var(--yk-ink,#edf3e6)}
+.storyboard-bridge-actions{flex-wrap:wrap}
+.yk-nav>.yk-language-toggle,.game-nav>.yk-language-toggle,header.nav>.yk-language-toggle{margin-left:10px}
+html[lang=en] .yk-portal-title,html[lang=en] .yk-portal h2{line-height:1.25}
+html[lang=en] .yk-nav-note{font-size:12px;letter-spacing:0}
+html[lang=en] :is(.yk-content-nav,.yk-explore-nav>div){flex-wrap:wrap}
+html[lang=en] :is(button,.sb-button,.yk-room-back){letter-spacing:normal}
+html[lang=en] :is(.yk-resume-skills li,.yk-skill-row){min-width:0}
+html[lang=en] :is(.sv-proposal-copy,.yk-portal-copy,.yk-resume-position){overflow-wrap:break-word}
+html[lang=en] .sv-proposal-copy strong{flex-wrap:wrap}
+@media(max-width:600px){.yk-site-nav-actions{gap:7px}.yk-site-nav{flex-wrap:wrap}.yk-nav>.yk-language-toggle,.game-nav>.yk-language-toggle{margin-left:5px}.yk-language-toggle{min-width:42px;padding:6px 8px}.game-nav{gap:8px}.game-nav>span{flex:1}.yk-nav-note{display:none!important}html[lang=en] .yk-site-brand{font-size:13px!important}html[lang=en] .yk-room-back{font-size:11px}html[lang=en] .yk-nav{gap:7px}}
+@media(max-width:600px){
+  .yk-site-nav{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:12px 0}
+  .yk-site-nav-actions{display:contents}
+  .yk-site-brand{grid-column:1;grid-row:1}
+  .yk-site-nav-actions>.yk-theme-toggle{grid-column:2;grid-row:1}
+  .yk-site-nav-actions>.yk-language-toggle{grid-column:3;grid-row:1}
+  .yk-site-nav-actions>.yk-room-back{grid-column:1 / -1;grid-row:2}
+}

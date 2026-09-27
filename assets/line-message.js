@@ -4,7 +4,8 @@
   if(!C){const warning=document.createElement('p');warning.className='lc-alert';warning.setAttribute('role','alert');warning.textContent='編排器未能載入，請重新整理頁面；若持續出現，請聯絡網站維護者。';document.querySelector('main').prepend(warning);document.querySelectorAll('main button,main input,main select,main textarea').forEach(el=>el.disabled=true);return;}
   const $=id=>document.getElementById(id);
   const all=selector=>Array.from(document.querySelectorAll(selector));
-  const state=C.initial();
+  const defaults=value=>window.YKLanguage?.data(value)??value;
+  const state=defaults(C.initial());
   let selected=0,outputMode='message',compiled,toastTimer;
   const imageStates=new Map();
   const node=(tag,className,text)=>{const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;};
@@ -28,7 +29,7 @@
       strip.replaceChildren();
       state.cards.forEach((_,index)=>{const b=node('button','lc-card-select');b.type='button';b.append(node('span','lc-mini-index'),node('span','lc-mini-title'));b.addEventListener('click',()=>selectCard(index,true));strip.append(b);});
     }
-    state.cards.forEach((card,index)=>{const b=strip.children[index];b.setAttribute('aria-pressed',String(index===selected));b.setAttribute('aria-label',`編輯第 ${index+1} 張：${card.title||'未命名卡片'}`);b.children[0].textContent=`CARD ${String(index+1).padStart(2,'0')}${index===selected?'　↗':''}`;b.children[1].textContent=card.title||'未命名卡片';});
+    state.cards.forEach((card,index)=>{const b=strip.children[index];b.setAttribute('aria-pressed',String(index===selected));b.setAttribute('aria-label',`編輯第 ${index+1} 張：${card.title||'未命名卡片'}`);b.children[0].textContent=`CARD ${String(index+1).padStart(2,'0')}${index===selected?'　↗':''}`;b.children[1].dataset.i18nIgnore='';b.children[1].textContent=card.title||'未命名卡片';});
     $('card-count').textContent=`${state.cards.length} / ${C.LIMITS.cards}`;
     $('editing-label').textContent=`正在編輯第 ${selected+1} 張`;
     $('add-card').disabled=$('duplicate-card').disabled=state.cards.length>=C.LIMITS.cards;
@@ -56,7 +57,7 @@
         const placeholder=node('span','', '圖片載入中…');hero.append(placeholder);
         const url=C.webUrl(card.image,true);
         if(url){
-          const img=node('img');img.alt=card.title.trim()||'訊息圖片';img.style.objectFit=card.fit==='contain'?'contain':'cover';img.decoding='async';img.referrerPolicy='no-referrer';
+          const img=node('img');img.dataset.i18nIgnore='';img.alt=card.title.trim()||'訊息圖片';img.style.objectFit=card.fit==='contain'?'contain':'cover';img.decoding='async';img.referrerPolicy='no-referrer';
           placeholder.hidden=imageStates.get(url)?.status==='loaded';
           img.addEventListener('load',()=>{imageStates.set(url,{status:'loaded',width:img.naturalWidth,height:img.naturalHeight});placeholder.hidden=true;imageStatus();renderExport();});
           img.addEventListener('error',()=>{imageStates.set(url,{status:'error'});img.hidden=true;placeholder.hidden=false;placeholder.textContent='圖片無法載入，請檢查圖片網址';imageStatus();renderExport();});
@@ -64,13 +65,13 @@
         }else placeholder.textContent='請加入有效的 HTTPS 圖片網址';
         article.append(hero);
       }
-      const body=node('div','lc-message-body');
+      const body=node('div','lc-message-body');body.dataset.i18nIgnore='';
       for(const field of ['eyebrow','title','description','detail']){const value=card[field].trim();if(value||field==='title')body.append(node('p','lc-message-'+field,value||(field==='title'?'卡片標題':'')));}
       article.append(body);
       const footer=node('div','lc-message-footer');
       for(let n=1;n<=2;n++){
         const label=card['button'+n+'Label'].trim(),raw=card['button'+n+'Url'].trim();if(!label&&!raw)continue;
-        const action=node('button','lc-message-action',label||'按鈕文字');action.type='button';action.dataset.style=n===1?'primary':'link';
+        const action=node('button','lc-message-action',label||'按鈕文字');action.dataset.i18nIgnore='';action.type='button';action.dataset.style=n===1?'primary':'link';
         const url=C.link(raw,state.tracking,index,n-1);action.title=url||'請設定有效網址';
         action.addEventListener('click',()=>{$('preview-action').hidden=false;$('preview-action').textContent=url?`按鈕 ${n} 將前往：${url}`:'此按鈕尚未設定有效網址。';});footer.append(action);
       }
@@ -126,8 +127,8 @@
     b.addEventListener('click',()=>tab(b.dataset.panel));
     b.addEventListener('keydown',event=>{const tabs=all('[data-panel]'),i=tabs.indexOf(b);const next={ArrowRight:(i+1)%tabs.length,ArrowLeft:(i+tabs.length-1)%tabs.length,Home:0,End:tabs.length-1}[event.key];if(next!==undefined){event.preventDefault();tab(tabs[next].dataset.panel,true);}});
   });
-  all('[data-template]').forEach(b=>b.addEventListener('click',()=>{state.cards[selected]=C.card(b.dataset.template);fillForm();render();toast(`第 ${selected+1} 張已套用${b.textContent}`);}));
-  $('add-card').addEventListener('click',()=>{if(state.cards.length>=C.LIMITS.cards)return;state.cards.push(C.card('blank'));selectCard(state.cards.length-1);tab('content');$('card-title').focus();$('card-title').select();toast('已新增一張卡片');});
+  all('[data-template]').forEach(b=>b.addEventListener('click',()=>{state.cards[selected]=defaults(C.card(b.dataset.template));fillForm();render();toast(`第 ${selected+1} 張已套用${b.textContent}`);}));
+  $('add-card').addEventListener('click',()=>{if(state.cards.length>=C.LIMITS.cards)return;state.cards.push(defaults(C.card('blank')));selectCard(state.cards.length-1);tab('content');$('card-title').focus();$('card-title').select();toast('已新增一張卡片');});
   $('duplicate-card').addEventListener('click',()=>{if(state.cards.length>=C.LIMITS.cards)return;state.cards.splice(selected+1,0,{...state.cards[selected]});selectCard(selected+1);toast('已複製卡片');});
   $('delete-card').addEventListener('click',()=>{if(state.cards.length===1)return;state.cards.splice(selected,1);selectCard(Math.min(selected,state.cards.length-1),true);toast('卡片已刪除');});
   for(const [id,delta] of [['move-left',-1],['move-right',1]])$(id).addEventListener('click',()=>{selected=C.move(state.cards,selected,delta);fillForm();render();toast(`已移到第 ${selected+1} 張`);});

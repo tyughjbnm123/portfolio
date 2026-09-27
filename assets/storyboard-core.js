@@ -1,5 +1,7 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./storyboard-data.js'),require('./storyboard-3d-core.js'));else root.Storyboard=factory(root.StoryboardData,root.Storyboard3D);})(globalThis,function(D,C){
   'use strict';
+  const t=value=>globalThis.YKLanguage?.t(value)??value;
+  const isEnglish=()=>globalThis.YKLanguage?.language==='en';
   const MAX_SHOTS=12,round=n=>Math.round(n*10)/10;
   const CAM_LABELS={front:'正面平視',threeQuarterLeft:'左前方 45°',threeQuarterRight:'右前方 45°',back:'背面鏡位',ots:'過肩鏡位',lowAngle:'低角度仰拍',highAngle:'高角度俯拍',side:'側面構圖',orbit:'緩慢環繞',pushPull:'緩慢推近',none:'固定鏡頭'};
   const FRAME_LABELS={wide:'全景',medium:'中景',close:'近景',detail:'產品特寫'};
@@ -24,12 +26,23 @@
   function actionText(s){if(!s.actionId)return '保持穩定姿態，以畫面描述為準。';const a=D.ACTIONS.find(a=>a.id===s.actionId);return BODY_ACTIONS[s.actionId]||a?.zh||'未指定';}
   function prompt(project,s,index=project.shots.indexOf(s)){
     const row=timeline(project)[index];
+    if(isEnglish())return [
+      `Shot ${String(index+1).padStart(2,'0')} | ${s.name} | ${row.start.toFixed(1)}–${row.end.toFixed(1)} s`,
+      `Purpose: ${t(STAGES[s.stage])}.`, `Visual: ${s.description.trim()||'Describe the scene.'}`,
+      `Composition: ${project.ratio}, ${t(FRAME_LABELS[s.frame])}; ${t(CAM_LABELS[s.camera])}.`,
+      s.composer3d?`3D reference: ${t(C.describe(s.composer3d))}. Use the attached reference for character, object and camera placement.`:'',
+      `Action: ${t(actionText(s))}`,`Expression: ${t(expressionText(s))}`,
+      s.caption.trim()?`Caption in post-production: ${s.caption.trim()}`:'',s.narration.trim()?`Voiceover: ${s.narration.trim()}`:'',
+      'Continuity: keep the same character, outfit, lighting and product appearance. Add captions and branding in post-production.'
+    ].filter(Boolean).join('\n');
     return [`鏡頭 ${String(index+1).padStart(2,'0')}｜${s.name}｜${row.start.toFixed(1)}–${row.end.toFixed(1)} 秒`,
       `目的：${STAGES[s.stage]}。`, `畫面：${s.description.trim()||'請補充畫面內容。'}`,`構圖：${project.ratio}，${FRAME_LABELS[s.frame]}；${CAM_LABELS[s.camera]}。`,
       s.composer3d?`3D 構圖參考：${C.describe(s.composer3d)}。人物、物件與實際攝影機位置以隨附參考圖為準。`:'',`動作：${actionText(s)}`,`表情：${expressionText(s)}`,s.caption.trim()?`後製字幕：${s.caption.trim()}`:'',s.narration.trim()?`旁白：${s.narration.trim()}`:'',
       '一致性：延續同一角色、服裝、場景光線與產品外觀。字幕與品牌字樣於後製加入。'].filter(Boolean).join('\n');
   }
-  function script(project){return [`# ${project.name||'未命名廣告'}`,`商品：${project.product}\n受眾：${project.audience}\n核心訊息：${project.message}\n版型：${project.ratio}｜總長 ${total(project).toFixed(1)} 秒｜目標 ${project.target} 秒\n音樂方向：${project.music}`,
+  function script(project){if(isEnglish())return [`# ${project.name||'Untitled ad'}`,`Product: ${project.product}\nAudience: ${project.audience}\nKey message: ${project.message}\nFormat: ${project.ratio} | Total: ${total(project).toFixed(1)} s | Target: ${project.target} s\nMusic direction: ${project.music}`,
+    'Storyboard and generation prompts follow. Reference images communicate composition; expression values use this tool’s illustrative 0–4 scale and do not mean the photo has been edited.',...project.shots.map((s,i)=>prompt(project,s,i))].join('\n\n');
+    return [`# ${project.name||'未命名廣告'}`,`商品：${project.product}\n受眾：${project.audience}\n核心訊息：${project.message}\n版型：${project.ratio}｜總長 ${total(project).toFixed(1)} 秒｜目標 ${project.target} 秒\n音樂方向：${project.music}`,
     '以下為分鏡與生成指令。參考圖只用於構圖溝通；表情數值是本工具的 0–4 示意強度，不代表照片已完成變形。',...project.shots.map((s,i)=>prompt(project,s,i))].join('\n\n');}
   function warnings(project){const list=[];const diff=round(total(project)-project.target);if(diff!==0)list.push(`總長${diff>0?'超出':'少於'}目標 ${Math.abs(diff).toFixed(1)} 秒。`);project.shots.forEach((s,i)=>{if(!s.description.trim())list.push(`第 ${i+1} 鏡還沒有畫面描述。`);if(s.duration<1)list.push(`第 ${i+1} 鏡少於 1 秒，請確認動作來得及呈現。`);});return list;}
   function move(project,id,delta){const i=project.shots.findIndex(s=>s.id===id),j=i+delta;if(i<0||j<0||j>=project.shots.length)return false;[project.shots[i],project.shots[j]]=[project.shots[j],project.shots[i]];return true;}

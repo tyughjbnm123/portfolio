@@ -2,6 +2,7 @@
   'use strict';
   const V=window.SlideVisualizer,byId=id=>document.getElementById('sv-'+id),key='yichi-slide-visualizer-v1';
   const source=byId('content'),purpose=byId('purpose'),takeaway=byId('takeaway'),title=byId('title'),caption=byId('caption');
+  byId('canvas').setAttribute('data-i18n-ignore','');
   let model,dirty=false,busy=false,saveFailed=false,restoreDraft=null,downloadUrl=null,revision=0;
   try{restoreDraft=V.restore(JSON.parse(localStorage.getItem(key)));}catch{}
   function message(id,text,error=false){const el=byId(id);el.textContent=text;el.dataset.error=String(error);}
@@ -70,6 +71,7 @@
     }catch(error){message('export-status',error.message+'，請改用 SVG 下載。',true);}finally{if(url)URL.revokeObjectURL(url);busy=false;exportState();}
   });
   byId('copy').addEventListener('click',async()=>{if(!ready())return;const text=V.copyText(model);try{await navigator.clipboard.writeText(text);message('export-status','已複製標題、重點與圖解方式。');}catch{const field=byId('copy-fallback');field.value=text;field.hidden=false;field.focus();field.select();message('export-status','瀏覽器未允許自動複製，請複製下方已選取的文字。');}});
+  window.addEventListener('yk:language',()=>{if(model){paint();clearExport();}});
   if(restoreDraft){source.value=restoreDraft.source;purpose.value=restoreDraft.purpose;takeaway.value=restoreDraft.takeaway;model=restoreDraft.model;dirty=restoreDraft.dirty;paint();editors();count();byId('result-state').textContent=dirty?'內容已更動，請重新產生':'已恢復上次草稿';byId('result-state').dataset.dirty=String(dirty);message('input-note','已恢復此瀏覽器上次保留的內容。');}
   else {purpose.value='process';source.value=V.examples.process.content;takeaway.value=V.examples.process.takeaway;generate(true);}
 })();

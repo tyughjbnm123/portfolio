@@ -1,5 +1,7 @@
 (function(root){
   'use strict';
+  const t=value=>root.YKLanguage?.t(value)??value;
+  const definition=value=>Object.fromEntries(Object.entries(value).map(([k,v])=>[k,Array.isArray(v)?v.map(t):t(v)]));
   const palettes={
     sage:{bg:'#f5f3ed',paper:'#ffffff',ink:'#29372b',muted:'#62705e',accent:'#607b49',soft:'#e4ecd9',line:'#cbd7c1'},
     blue:{bg:'#f1f5fa',paper:'#ffffff',ink:'#23344e',muted:'#617089',accent:'#3a64a5',soft:'#e0e9f7',line:'#c5d4e9'},
@@ -36,7 +38,7 @@
   function numberIn(text){return clean(text).match(/[-+]?\d[\d,]*(?:\.\d+)?\s*(?:%|％|\+|倍|個月|天|小時|分鐘|萬|億|元)?/)?.[0].trim()||'';}
   function make(content,purpose,takeaway){
     const key=Object.hasOwn(purposes,purpose)?purpose:'process',points=extract(content),message=clean(takeaway).slice(0,90);
-    return {purpose:key,title:message&&message.length<=64?message:purposes[key].title,caption:message.length>64?message:'',points,palette:'sage',selected:0};
+    return {purpose:key,title:message&&message.length<=64?message:t(purposes[key].title),caption:message.length>64?message:'',points,palette:'sage',selected:0};
   }
   function restore(raw){
     if(!raw||raw.version!==1||typeof raw.source!=='string'||raw.source.length>2000||!Object.hasOwn(purposes,raw.purpose))return null;
@@ -48,7 +50,13 @@
   function units(s){return Array.from(s).reduce((sum,c)=>sum+(/[\x20-\x7e]/.test(c)?.56:1),0);}
   function wrap(text,width,size){
     const lines=[];let line='';
-    for(const char of Array.from(clean(text))){if(char==='\n'){lines.push(line);line='';continue;}if(line&&units(line+char)*size>width){lines.push(line);line=char;}else line+=char;}
+    const tokens=clean(text).match(/[A-Za-z0-9]+(?:['’.-][A-Za-z0-9]+)*|[^A-Za-z0-9]/gu)||[];
+    for(const token of tokens){
+      if(token==='\n'){lines.push(line.trimEnd());line='';continue;}
+      if(line&&units(line+token)*size>width){lines.push(line.trimEnd());line='';}
+      if(!line&&/^\s+$/.test(token))continue;
+      for(const char of token){if(line&&units(line+char)*size>width){lines.push(line);line='';}line+=char;}
+    }
     if(line||!lines.length)lines.push(line);return lines;
   }
   function textBox(text,x,y,w,h,size,color,weight=400,align='left'){
@@ -58,7 +66,7 @@
     return `<text fill="${color}" font-size="${font}" font-weight="${weight}" text-anchor="${align==='center'?'middle':'start'}">${lines.map((l,i)=>`<tspan x="${x+(align==='center'?w/2:0)}" y="${base+i*font*1.38}">${esc(l)}</tspan>`).join('')}</text>`;
   }
   function render(model,index=model.selected){
-    const purpose=purposes[model.purpose]||purposes.process,p=palettes[model.palette]||palettes.sage;
+    const purpose=definition(purposes[model.purpose]||purposes.process),p=palettes[model.palette]||palettes.sage;
     const n=model.points.length,layout=purpose.layouts[index]||purpose.layouts[0],title=clean(model.title)||purpose.title;
     const points=model.points.map(clean),out=[];
     const rect=(x,y,w,h,fill=p.paper,stroke=p.line,r=14)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" stroke="${stroke}"/>`;
@@ -95,14 +103,14 @@
       const rows=Math.ceil(n/2),h=Math.min(134,(330-(rows-1)*15)/rows),top=210+(330-(h*rows+15*(rows-1)))/2;
       const positions=points.map((_,i)=>({x:i%2?798:56,y:top+Math.floor(i/2)*(h+15)}));
       positions.forEach(pos=>out.push(line(pos.x===56?398:798,pos.y+h/2,pos.x===56?454:746,375)));
-      out.push(rect(454,307,292,136,p.soft),txt('共同目標',477,316,246,26,14,p.accent,600,'center'),txt(model.caption||model.title||'協同運作',477,349,246,77,25,p.ink,550,'center'));
+      out.push(rect(454,307,292,136,p.soft),txt(t('共同目標'),477,316,246,26,14,p.accent,600,'center'),txt(model.caption||model.title||t('協同運作'),477,349,246,77,25,p.ink,550,'center'));
       positions.forEach((pos,i)=>out.push(rect(pos.x,pos.y,346,h),txt(points[i],pos.x+20,pos.y+14,306,h-28,22)));
     }
     if(model.caption)out.push(rect(56,581,1088,62,p.soft,p.soft,10),txt(model.caption,77,589,1046,46,21,p.ink,500));
     else out.push(`<path d="M56 606 H1144" stroke="${p.line}"/>`);
     out.push('</g></svg>');return out.join('');
   }
-  function copyText(model){const p=purposes[model.purpose];return `${model.title||p.title}\n\n${model.points.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\n${model.caption?`重點：${model.caption}\n\n`:''}圖解方式：${p.names[model.selected]}`;}
-  const api={palettes,purposes,examples,extract,numberIn,make,restore,render,copyText,wrap};
+  function copyText(model){const p=definition(purposes[model.purpose]);return `${model.title||p.title}\n\n${model.points.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\n${model.caption?`${t('重點：')}${model.caption}\n\n`:''}${t('圖解方式：')}${p.names[model.selected]}`;}
+  const api={palettes,get purposes(){return Object.fromEntries(Object.entries(purposes).map(([k,v])=>[k,definition(v)]));},get examples(){return Object.fromEntries(Object.entries(examples).map(([k,v])=>[k,{content:v.content.split('\n').map(t).join('\n'),takeaway:t(v.takeaway)}]));},extract,numberIn,make,restore,render,copyText,wrap};
   if(typeof module==='object'&&module.exports)module.exports=api;else root.SlideVisualizer=api;
 })(typeof window==='undefined'?{}:window);

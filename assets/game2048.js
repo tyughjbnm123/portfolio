@@ -72,7 +72,7 @@
       const api=await timeout(getCloud()), rows=await timeout(api.leaderboard());
       $('#rank-list').replaceChildren(...rows.map((row,i)=>{
         const li=document.createElement('li'),rank=document.createElement('span'),player=document.createElement('span'),detail=document.createElement('small'),score=document.createElement('strong');
-        rank.className='rank-num';rank.textContent=String(i+1).padStart(2,'0');player.className='rank-player';player.textContent=row.name;detail.textContent=`最大 ${row.maxTile} · ${row.outcome==='won'?'達成 2048':'挑戰完成'}`;score.textContent=number(row.score);player.append(detail);li.append(rank,player,score);if(row.id===game.id)li.className='is-yours';return li;
+        rank.className='rank-num';rank.textContent=String(i+1).padStart(2,'0');player.className='rank-player';const nickname=document.createElement('span');nickname.dataset.i18nIgnore='';nickname.textContent=row.name;player.append(nickname);detail.textContent=`最大 ${row.maxTile} · ${row.outcome==='won'?'達成 2048':'挑戰完成'}`;score.textContent=number(row.score);player.append(detail);li.append(rank,player,score);if(row.id===game.id)li.className='is-yours';return li;
       }));rankLoaded=true;$('#rank-status').textContent=rows.length?'':'還沒有紀錄。第一個名字，會是你嗎？';
     } catch(e){$('#rank-status').textContent=(rankLoaded?'目前顯示上次讀取的紀錄。':'')+cloudError(e);}
     finally{rankBusy=false;$('#refresh').disabled=false;}

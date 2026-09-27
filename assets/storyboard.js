@@ -2,7 +2,7 @@
   'use strict';
   if(!globalThis.Storyboard||!globalThis.StoryboardData){const warning=document.createElement('p');warning.className='sb-warnings';warning.setAttribute('role','alert');warning.textContent='分鏡工具未能載入，請重新整理頁面；若持續出現，請聯絡網站維護者。';document.querySelector('main').prepend(warning);document.querySelectorAll('main button,main input,main select,main textarea').forEach(el=>el.disabled=true);document.querySelector('.sb-workspace').hidden=true;return;}
   const S=globalThis.Storyboard,D=S.D,$=id=>document.getElementById(id),all=q=>Array.from(document.querySelectorAll(q));
-  let project=S.demo(),selected=project.shots[0].id,filter='all',playing=false,elapsed=0,started=0,raf=0,toastTimer,dragId=null,imageTarget=null,imageBusy=false;
+  let project=globalThis.YKLanguage?.data(S.demo())??S.demo(),selected=project.shots[0].id,filter='all',playing=false,elapsed=0,started=0,raf=0,toastTimer,dragId=null,imageTarget=null,imageBusy=false;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   const current=()=>project.shots.find(s=>s.id===selected)||project.shots[0];
@@ -33,7 +33,7 @@
     project.shots.forEach((s,i)=>{
       const b=node('button','sb-shot-card');b.type='button';b.dataset.id=s.id;b.draggable=true;b.setAttribute('aria-pressed',String(s.id===selected));b.setAttribute('aria-label',`編輯第 ${i+1} 鏡 ${s.name}，${s.duration} 秒`);
       const thumb=node('div','sb-shot-thumb'),img=node('img');img.src=s.image;img.alt='';img.draggable=false;img.style.objectFit='contain';thumb.append(img,node('span','',pad(i+1)),node('span','',`${s.duration.toFixed(1)}s`));
-      const info=node('div','sb-shot-card-info');info.append(node('strong','',s.name||'未命名分鏡'),node('small','',`${rows[i].start.toFixed(1)}–${rows[i].end.toFixed(1)}s · ${S.STAGES[s.stage]}`));b.append(thumb,info);
+      const info=node('div','sb-shot-card-info');info.append(userNode('strong','',s.name||'未命名分鏡'),node('small','',`${rows[i].start.toFixed(1)}–${rows[i].end.toFixed(1)}s · ${S.STAGES[s.stage]}`));b.append(thumb,info);
       b.addEventListener('click',()=>choose(s.id,true));b.addEventListener('dragstart',e=>{stop();dragId=s.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',s.id);});
       b.addEventListener('dragover',e=>{if(dragId&&dragId!==s.id){e.preventDefault();e.dataTransfer.dropEffect='move';b.classList.add('is-drag-over');}});
       b.addEventListener('dragleave',()=>b.classList.remove('is-drag-over'));
@@ -76,10 +76,13 @@
     all('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));
   }
   function expression(){const s=current();all('[data-expression]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.expression===s.expression)));$('sb-intensity').disabled=s.expression==='custom';$('sb-intensity-label').textContent=s.expression==='custom'?'自訂 AU':s.intensity<.8?'輕微':s.intensity>1.2?'明顯':'自然';$('sb-expression-title').textContent=s.expression==='custom'?'自訂表情':D.EXPR_LABEL_ZH[s.expression];$('sb-expression-text').textContent=S.expressionText(s);all('[data-au]').forEach(el=>$('sb-au-value-'+el.dataset.au).textContent=s.aus[el.dataset.au].toFixed(1));}
+  const userNode=(...args)=>{const el=node(...args);el.dataset.i18nIgnore='';return el;};
+  for(const id of ['sb-stage-caption','sb-edit-title','sb-image-name','sb-stage-image'])$(id).dataset.i18nIgnore='';
+  window.addEventListener('yk:language',output);
   function output(){
     $('sb-script').textContent=S.script(project);const warnings=S.warnings(project);$('sb-warnings').replaceChildren(...warnings.map(t=>node('p','',t)));$('sb-warnings').hidden=!warnings.length;
     const box=$('sb-script-summary'),scroll=box.scrollLeft;box.replaceChildren();const rows=S.timeline(project);
-    project.shots.forEach((s,i)=>{const b=node('button','sb-script-tile');b.type='button';b.setAttribute('aria-pressed',String(s.id===selected));b.append(node('small','',`${pad(i+1)} / ${rows[i].start.toFixed(1)}–${rows[i].end.toFixed(1)}s`),node('strong','',s.name||'未命名分鏡'),node('p','',s.description||'尚未填寫畫面描述'));b.addEventListener('click',()=>{choose(s.id);$('sb-stage-shell').scrollIntoView({block:'center',behavior:reduced.matches?'auto':'smooth'});});box.append(b);});box.scrollLeft=scroll;
+    project.shots.forEach((s,i)=>{const b=node('button','sb-script-tile');b.type='button';b.setAttribute('aria-pressed',String(s.id===selected));b.append(node('small','',`${pad(i+1)} / ${rows[i].start.toFixed(1)}–${rows[i].end.toFixed(1)}s`),userNode('strong','',s.name||'未命名分鏡'),userNode('p','',s.description||'尚未填寫畫面描述'));b.addEventListener('click',()=>{choose(s.id);$('sb-stage-shell').scrollIntoView({block:'center',behavior:reduced.matches?'auto':'smooth'});});box.append(b);});box.scrollLeft=scroll;
   }
   function render(){render3DStatus();shotList();timeline();preview();actionList();expression();output();}
   function stop(){playing=false;cancelAnimationFrame(raf);$('sb-play').replaceChildren(document.createTextNode('▶ '),node('span','','播放分鏡'));$('sb-play').setAttribute('aria-label','播放分鏡');}
@@ -169,12 +172,11 @@
     stop();imageTarget=current();$('sb-image-file').click();
   }
   $('sb-choose-image').addEventListener('click',openImagePicker);
-  $('sb-upload-preview').addEventListener('click',openImagePicker);
   function setImageBusy(busy){
     imageBusy=busy;
-    $('sb-choose-image').disabled=$('sb-upload-preview').disabled=busy;
+    $('sb-choose-image').disabled=$('sb-build-3d').disabled=busy;
     $('sb-image-dropzone').setAttribute('aria-busy',String(busy));
-    $('sb-upload-label').textContent=busy?'正在讀取圖片…':'上傳這一鏡的圖片';
+    $('sb-upload-label').textContent=busy?'讀取中…':'上傳圖片';
   }
   async function uploadImage(file,target){
     if(!file)return;
@@ -229,5 +231,17 @@
     }catch(error){notify(error.message||'無法帶入動作專案，請重新送出或開啟下載的專案。');}
     entryURL.searchParams.delete('from');history.replaceState(null,'',entryURL);
   }
+  // Keep the same controls and upload listeners when switching between layouts.
+  const referenceLayout=matchMedia('(max-width:700px)'),referenceGroup=$('sb-image-dropzone');
+  function placeReferenceControls(){
+    const destination=$(referenceLayout.matches?'sb-reference-mobile':'sb-reference-desktop');
+    if(referenceGroup.parentElement===destination)return;
+    const focused=document.activeElement,restoreFocus=referenceGroup.contains(focused);
+    if(!referenceLayout.matches&&(restoreFocus||composerDialog.open))tab('scene');
+    destination.append(referenceGroup);
+    if(restoreFocus)focused.focus({preventScroll:true});
+  }
+  referenceLayout.addEventListener('change',placeReferenceControls);
+  placeReferenceControls();
   syncForm();render();
 })();
