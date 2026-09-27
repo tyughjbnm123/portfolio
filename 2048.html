@@ -5,25 +5,25 @@
   <title>2048｜我的遊戲室 · YI-CHI KUO</title>
   <meta name="description" content="合併相同數字，挑戰 2048。支援鍵盤與手機滑動，結算後留下暱稱，與其他訪客一起挑戰排行榜。">
   <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
-  <link rel="stylesheet" href="assets/game2048.css?v=20260925-1">
+  <link rel="stylesheet" href="assets/game2048.css?v=20260927-continue">
   <link rel="stylesheet" href="assets/games.css?v=20260926-directory">
   <script src="assets/site-shell.js"></script>
-  <script defer src="assets/game2048-core.js?v=20260926-edge2"></script>
-  <script defer src="assets/game2048.js?v=20260927-en"></script>
-<link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-en"></script><script src="assets/site-language.js?v=20260927-en"></script></head>
+  <script defer src="assets/game2048-core.js?v=20260927-continue"></script>
+  <script defer src="assets/game2048.js?v=20260927-continue"></script>
+<link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-continue"></script><script src="assets/site-language.js?v=20260927-continue"></script></head>
 <body class="game-page">
   <a class="yk-skip" href="#board">跳到遊戲</a>
   <header class="game-nav"><a href="games.html">← 遊戲目錄</a><span>YI-CHI KUO <small>PLAY A LITTLE.</small></span><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></header>
   <nav class="games-subnav" aria-label="遊戲目錄"><a href="games.html">全部遊戲</a><a href="2048.html" aria-current="page"><span>01</span>2048</a></nav>
   <main class="game-layout">
     <section class="game-main" aria-labelledby="game-title">
-      <div class="game-heading"><div><p class="eyebrow">01 / NUMBER PUZZLE</p><h1 id="game-title">2048<span>一步一步，合而為一。</span></h1></div><span class="game-badge">2 × 2 × 2 …</span></div>
+      <div class="game-heading"><div><p class="eyebrow">01 / NUMBER PUZZLE</p><h1 id="game-title">2048<span>一步一步，合而為一。</span></h1></div></div>
       <div class="game-toolbar"><div class="score-group"><div><small>本局分數</small><strong id="score">0</strong></div><div><small>個人最佳</small><strong id="best">0</strong></div></div><div class="game-actions"><button id="sound" type="button" class="icon-button" aria-label="開啟音效" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path class="sound-waves" d="M15 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/></svg></button><button id="new-game" type="button">新的一局 ↻</button></div></div>
       <div class="board-wrap">
         <div id="board" class="board" role="group" tabindex="0" aria-label="2048 棋盤。使用方向鍵或 WASD 移動方塊。" aria-describedby="game-help"><div class="board-cells" aria-hidden="true"></div><div class="tile-layer"></div></div>
         <div class="game-overlay" id="pause-overlay" hidden><strong>休息一下</strong><p>棋盤已保留，準備好再繼續。</p><button id="resume" class="primary" type="button">繼續遊戲</button></div>
       </div>
-      <p id="game-help" class="game-help">電腦按方向鍵或 WASD，手機在棋盤上滑動。<br>新格子固定為 <strong>2</strong>，從滑動反方向的邊緣出現。<br>相同數字合併，達成 <strong>2048</strong> 或無法移動時結算。</p>
+      <p id="game-help" class="game-help">電腦按方向鍵或 WASD，手機在棋盤上滑動。<br>新格子固定為 <strong>2</strong>，從滑動反方向的邊緣出現。<br>相同數字合併，達成 <strong>2048</strong> 後仍可繼續挑戰；無法移動時才結算。</p>
       <div class="game-bottom"><span id="move-count">0 步</span><div class="direction-pad" aria-label="移動方向"><button data-direction="left" aria-label="向左移動">←</button><button data-direction="up" aria-label="向上移動">↑</button><button data-direction="down" aria-label="向下移動">↓</button><button data-direction="right" aria-label="向右移動">→</button></div><button id="pause" type="button">暫停</button></div>
       <p id="game-message" class="subtle" role="status"></p><span id="announcement" class="sr-only" aria-live="polite"></span>
     </section>
