@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI 指令庫｜郭奕圻的工具房</title>
   <link rel="stylesheet" href="assets/prompt-library.css">
-<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script></head>
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-en"></script><script src="assets/site-language.js?v=20260927-en"></script></head>
 <body class="yk-tool-page" data-tool-page="prompt-library">
   <div id="loginOverlay" class="login-overlay" style="display:none;">
     <div class="login-box">
@@ -453,7 +453,7 @@
       if (!tags.includes(selectedTag)) selectedTag = "全部";
 
       elements.tagFilters.innerHTML = tags.map(tag => (
-        `<button class="tag-filter${tag === selectedTag ? " active" : ""}" type="button" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`
+        `<button class="tag-filter${tag === selectedTag ? " active" : ""}" type="button" ${tag === "全部" ? "" : 'translate="no"'} data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`
       )).join("");
     }
 
@@ -479,14 +479,14 @@
 
       elements.list.innerHTML = visiblePrompts.map(prompt => {
         const tags = prompt.tags.length
-          ? prompt.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join("")
+          ? prompt.tags.map(tag => `<span class="tag" translate="no">${escapeHtml(tag)}</span>`).join("")
           : `<span class="tag">未分類</span>`;
         const updatedDate = new Date(prompt.updatedAt).toLocaleDateString("zh-TW");
         const thumb = prompt.imageData
-          ? `<div class="prompt-thumb"><img src="${escapeHtml(prompt.imageData)}" alt="${escapeHtml(prompt.title)} 成果圖"></div>`
+          ? `<div class="prompt-thumb" translate="no"><img src="${escapeHtml(prompt.imageData)}" alt="${escapeHtml(prompt.title)} 成果圖"></div>`
           : "";
         const fullImage = prompt.imageData
-          ? `<div class="prompt-image-full"><img src="${escapeHtml(prompt.imageData)}" alt="${escapeHtml(prompt.title)} 成果圖"></div>`
+          ? `<div class="prompt-image-full" translate="no"><img src="${escapeHtml(prompt.imageData)}" alt="${escapeHtml(prompt.title)} 成果圖"></div>`
           : "";
 
         return `
@@ -494,9 +494,9 @@
             <div class="prompt-summary">
               ${thumb}
               <div>
-                <h3 class="prompt-title">${escapeHtml(prompt.title)}</h3>
+                <h3 class="prompt-title" translate="no">${escapeHtml(prompt.title)}</h3>
                 <div class="prompt-meta">
-                  <span class="tag platform-badge">${escapeHtml(prompt.platform)}</span>
+                  <span class="tag platform-badge" translate="no">${escapeHtml(prompt.platform)}</span>
                   ${tags}
                   <span>更新：${escapeHtml(updatedDate)}</span>
                 </div>

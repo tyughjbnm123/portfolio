@@ -188,7 +188,7 @@
       background-image: none;
     }
   </style>
-<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"></head>
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-en"></script><script src="assets/site-language.js?v=20260927-en"></script></head>
 <body data-content-page="true" class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
 
   <!-- NAVBAR -->
@@ -251,7 +251,7 @@
         interactive: "s23u-sop",
         stats: [
           { label: "回本時間", value: "10 個月" },
-          { label: "客訴率", value: "0%" },
+          { label: "累積粉絲", value: "200+", href: "https://www.instagram.com/s23u_256/", linkLabel: "查看 S23U Instagram（另開新分頁）" },
           { label: "首次體驗回購率", value: "100%" }
         ],
         role: "創辦人 / 執行長",
@@ -260,7 +260,7 @@
         background: "鎖定追星族群對演唱會、活動拍攝場景中高倍變焦攝影器材的短期租賃需求，自主創立 S23U 手機租賃服務，從 0 到 1 建立商業模式、行銷導流與整套營運機制。",
         challenge: "1. 從零建立信任：新創租賃服務缺乏品牌信任基礎，顧客對面交流程的資安與詐騙疑慮高。\n2. 設備風控：高單價設備透過短租流通，需要在使用便利與風險控管間取得平衡。\n3. 精準觸及：如何在有限預算下，找到真正有拍攝需求的目標族群。",
         solution: "1. 建立完整租賃 SOP：涵蓋預約、身分驗證、面交驗機、使用教學、歸還驗收的全流程規範。\n2. IG 內容經營導流：以 IG 為主要平台累積作品與客戶回饋，並佈局「台北 S23U」等在地搜尋關鍵字，建立自然搜尋與社群導流入口。\n3. 契約與風控機制：制定租賃合約條款、押金機制與異常處理規範，降低設備損壞與交易風險。",
-        results: "• 10 個月完成回本，建立穩定月現金流。\n• 客訴率 0%，首次體驗回購率達 100%。\n• 累積完整的服務設計、流程規劃、使用者體驗與商業營運經驗。"
+        results: "• 10 個月完成回本，建立穩定月現金流。\n• <a href='https://www.instagram.com/s23u_256/' target='_blank' rel='noopener noreferrer' aria-label='累積 200+ 粉絲，查看 S23U Instagram（另開新分頁）' class='text-primary underline underline-offset-4'>累積 200+ 粉絲</a>，首次體驗回購率達 100%。\n• 累積完整的服務設計、流程規劃、使用者體驗與商業營運經驗。"
       },
       "hosset-crm": {
         title: "Hosset 虎勢 CRM LINE OA 自動化工作流",
@@ -276,9 +276,9 @@
         timeline: "2026.02 - 2026.05",
         budget: "Hosset 虎勢專案研發預算",
         background: "Hosset 虎勢在線下活動與實體通路累積了大量顧客，但缺乏高效的會員留存與再行銷機制。為了建立完整的 OMO 閉環，規劃透過 LINE 官方帳號（OA）串接 Omnichat 與 Cyberbiz CRM，實現線下流量自動化洗入線上會員體系。",
-        challenge: "1. 流程繁瑣：傳統綁定會員需要顧客手動輸入大量資料，導致流失率極高。\n2. 系統孤島：Omnichat（客服與自動化推播）與 Cyberbiz（電商與 CRM 系統）的會員數據無法即時互通。\n3. 數據不透明：行銷人員無法即時掌握線下掃碼到線上綁定的漏斗轉換率。",
-        solution: "1. 掃碼預填技術：設計專屬 QR Code，顧客掃描後自動開啟 LINE 並預填「我要綁定會員」關鍵字，由機器人秒級推送 Rich Message 綁定卡片。\n2. API 雙向串接：使用 Make/n8n 作為中介，呼叫 Cyberbiz API 驗證手機號碼，綁定成功後自動將 OpenID 回傳並打上 Omnichat 標籤。\n3. 自動發券與分眾：綁定成功即時派發 $100 禮券，並打上「已綁定會員」標籤，建立自動化再行銷劇本。\n4. 數據儀表板：將所有 API 互動日誌與會員狀態同步至 Looker Studio，提供即時漏斗看板。",
-        results: "• 成功協助客戶將 LINE 會員綁定轉換率大幅提升 25%。\n• 實現掃碼、綁定、發券、標籤與數據同步全流程自動化，無須例行人工操作。\n• 營運團隊可透過 Looker Studio 即時追蹤行銷成效，實現數據驅動決策。"
+        challenge: "1. 流程繁瑣：傳統綁定會員需要顧客手動輸入大量資料，導致流失率極高。\n2. 系統孤島：Omnichat（客服與自動化推播）與 Cyberbiz（電商與 CRM 系統）的會員數據無法即時互通。",
+        solution: "1. 掃碼預填技術：設計專屬 QR Code，顧客掃描後自動開啟 LINE 並預填「我要綁定會員」關鍵字，由機器人秒級推送 Rich Message 綁定卡片。\n2. API 雙向串接：使用 Make/n8n 作為中介，呼叫 Cyberbiz API 驗證手機號碼，綁定成功後自動將 OpenID 回傳並打上 Omnichat 標籤。\n3. 自動發券與分眾：綁定成功即時派發 $100 禮券，並打上「已綁定會員」標籤，建立自動化再行銷劇本。",
+        results: "• 成功協助客戶將 LINE 會員綁定轉換率大幅提升 25%。\n• 實現掃碼、綁定、發券與標籤分眾流程自動化，無須例行人工操作。"
       },
       "alain-ducasse": {
         title: "ALAIN DUCASSE 台灣電商官網規劃與建置",
@@ -527,13 +527,6 @@
                 </div>
                 <div class="text-[11px] text-muted-foreground leading-relaxed">自動派發 $100 綁定禮券，並於 Omnichat 上打上「已綁定會員」標籤。</div>
               </div>
-              <div id="node-analytics" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 280px; top: 320px;">
-                <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
-                  <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                  <span>5. 數據分析看板</span>
-                </div>
-                <div class="text-[11px] text-muted-foreground leading-relaxed">即時將綁定率、發券率與核銷數據同步至 Looker Studio 儀表板。</div>
-              </div>
             </div>
           </div>
           <div class="lg:col-span-4 flex flex-col gap-6 h-full">
@@ -574,7 +567,6 @@
       { t: 2800, text: "[API] Cyberbiz 驗證成功！手機號碼: `0912***345`。綁定 OpenID 狀態: `SUCCESS`" },
       { t: 3400, text: "[OMNICHAT] 成功標記使用者標籤: `已綁定會員`、`2026實體活動`。" },
       { t: 4000, text: "[COUPON] 自動派發 $100 會員綁定禮券。券號: `C2026053101`" },
-      { t: 4600, text: "[DATABASE] 即時同步綁定數據至 Looker Studio 資料庫。受影響行數: 1" },
       { t: 5200, text: "[SUCCESS] 工作流運行完畢！綁定轉換率提升 25%，總耗時: 5.2 秒。" }
     ];
 
@@ -601,13 +593,12 @@
       const svg = document.getElementById('canvas-svg');
       if (!canvas || !svg) return;
 
-      const nodeIds = ['node-trigger', 'node-omnichat', 'node-cyberbiz', 'node-coupon', 'node-analytics'];
+      const nodeIds = ['node-trigger', 'node-omnichat', 'node-cyberbiz', 'node-coupon'];
       const nodes = nodeIds.map(id => ({ id, el: document.getElementById(id) }));
       const connections = [
         { from: 'node-trigger', to: 'node-omnichat' },
         { from: 'node-omnichat', to: 'node-cyberbiz' },
-        { from: 'node-cyberbiz', to: 'node-coupon' },
-        { from: 'node-coupon', to: 'node-analytics' }
+        { from: 'node-cyberbiz', to: 'node-coupon' }
       ];
 
       let activeNode = null, offsetX = 0, offsetY = 0;
@@ -637,14 +628,14 @@
         activeNode.style.left = `${left}px`;
         activeNode.style.top = `${top}px`;
         drawConnections();
-      });
+      }, {signal:caseEvents.signal});
 
       document.addEventListener('mouseup', () => {
         if (activeNode) {
           activeNode.style.transition = '';
           activeNode = null;
         }
-      });
+      }, {signal:caseEvents.signal});
 
       function drawConnections() {
         svg.querySelectorAll('path').forEach(p => p.remove());
@@ -672,7 +663,7 @@
 
       window.__hossetDrawConnections = drawConnections;
       setTimeout(drawConnections, 100);
-      window.addEventListener('resize', drawConnections);
+      window.addEventListener('resize', drawConnections, {signal:caseEvents.signal});
     }
 
     // ============ S23U SOP 流程時間軸（原技能沙盒內容）============
@@ -751,9 +742,13 @@
     }
 
     // 渲染 Case Study
+    let caseEvents;
     function renderCaseStudy() {
+      caseEvents?.abort();caseEvents=new AbortController();
       const slug = getQueryParam('slug') || 's23u-rental';
-      const data = PROJECT_DATA[slug];
+      const rawData = PROJECT_DATA[slug];
+      const localize=value=>typeof value==='string'?(window.YKLanguage?.t(value)??value):Array.isArray(value)?value.map(localize):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,localize(v)])):value;
+      const data = rawData && localize(rawData);
       const container = document.getElementById('case-study-container');
 
       if (!data) {
@@ -818,10 +813,10 @@
         <!-- 核心指標卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           ${data.stats.map(stat => `
-            <div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center">
+            ${stat.href ? `<a href="${stat.href}" target="_blank" rel="noopener noreferrer" aria-label="${stat.label} ${stat.value}，${stat.linkLabel}" class="block p-6 rounded-2xl border border-border bg-card shadow-xl text-center hover:border-primary">` : '<div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center">'}
               <div class="text-xs text-muted-foreground font-mono mb-1">${stat.label}</div>
-              <div class="text-2xl md:text-3xl font-extrabold text-primary font-mono">${stat.value}</div>
-            </div>
+              <div class="text-2xl md:text-3xl font-extrabold text-primary font-mono">${stat.value}${stat.href ? '<span class="text-sm ml-2" aria-hidden="true">↗</span>' : ''}</div>
+            ${stat.href ? '</a>' : '</div>'}
           `).join('')}
         </div>
 
@@ -913,6 +908,7 @@
 
     // 執行渲染
     renderCaseStudy();
+    window.addEventListener('yk:language', renderCaseStudy);
   </script>
 </body>
 </html>
