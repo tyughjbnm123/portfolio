@@ -7,10 +7,39 @@
 <link rel="stylesheet" href="assets/raffle.css?v=20260914-balls1">
 <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script>
 <link rel="stylesheet" href="assets/raffle-balls.css?v=20260914-balls1">
-<script src="assets/raffle-balls.js?v=20260914-balls1"></script><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-continue"></script><script src="assets/site-language.js?v=20260927-continue"></script></head>
+<link rel="stylesheet" href="assets/raffle-machines.css?v=20260930-wheel1">
+<script src="assets/raffle-balls.js?v=20260930-wheel1"></script>
+<script src="assets/raffle-wheel.js?v=20260930-wheel1"></script>
+<link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-continue"></script>
+<script>
+Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
+  '選擇抽獎機':'Choose a draw machine',
+  '切換玩法，名單、獎項與得獎紀錄都會保留。':'Switch machines while keeping your participants, prizes and results.',
+  '風火輪':'Fortune Wheel', '幸運抽球':'Lucky Ball Draw',
+  '抽獎舞台':'Draw stage', '轉動中':'Spinning', '減速中':'Slowing down',
+  '風火輪轉動中…':'The wheel is spinning…',
+  '套用名單，讓好運轉起來。':'Apply your participant list and give luck a spin.',
+  '每人一格，指針停下時揭曉得獎者。':'One slice per entry. The pointer reveals the winner.',
+  '名單較多，輪盤以名單順序的編號區間顯示；完整姓名會在下方揭曉。':'For larger lists, slices show entry-number ranges. The winner’s full name appears below.'
+});
+</script>
+<script src="assets/site-language.js?v=20260927-continue"></script></head>
 <body class="yk-tool-page" data-tool-page="raffle">
 
 <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ad-storyboard.html"><span>01</span>廣告分鏡工作台</a><a href="ai-tools.html"><span>02</span>短影片動作卡片庫</a><a href="facs-tool.html"><span>03</span>表情控制器</a><a href="line-message.html"><span>04</span>LINE 訊息編排器</a><a href="utm-builder.html"><span>05</span>UTM 連結產生器</a><a href="raffle.html" aria-current="page"><span>06</span>抽獎機</a><a href="prompt-library.html"><span>07</span>AI 指令庫</a></nav><main class="wrap" id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 06 — LUCKY DRAW</p><h1>抽獎機</h1><p class="yk-tool-description">匯入名單、設定獎項，逐一揭曉得獎結果。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>06</b></span></div>
+
+  <div class="raffle-machine-picker">
+    <div>
+      <label for="machineSelect">選擇抽獎機</label>
+      <p id="machineHelp">切換玩法，名單、獎項與得獎紀錄都會保留。</p>
+    </div>
+    <div class="raffle-machine-select">
+      <select id="machineSelect" aria-describedby="machineHelp">
+        <option value="wheel">風火輪</option>
+        <option value="balls">幸運抽球</option>
+      </select>
+    </div>
+  </div>
 
   <div class="grid">
     <!-- LEFT: pool setup -->
@@ -40,7 +69,7 @@
     </div>
 
     <!-- CENTER: lottery drum -->
-    <section class="stage ball-stage" id="ballStage" data-phase="idle" aria-label="抽獎球舞台">
+    <section class="stage ball-stage" id="ballStage" data-machine="wheel" data-phase="idle" aria-label="抽獎舞台">
       <div class="ball-stage-header">
         <div class="tier-progress">
           <span class="ball-queue-label" id="tierContext">待抽獎項</span>
@@ -49,7 +78,10 @@
         </div>
         <span class="ball-state" id="ballState">待抽獎</span>
       </div>
-      <div class="ball-display" aria-hidden="true">
+      <div class="ball-display" id="wheelDisplay" aria-hidden="true">
+        <canvas id="wheelCanvas" width="960" height="880"></canvas>
+      </div>
+      <div class="ball-display" id="ballsDisplay" aria-hidden="true" hidden>
         <canvas id="raffleCanvas" width="960" height="880"></canvas>
       </div>
       <div class="ball-result">
@@ -62,7 +94,7 @@
         <button class="ball-skip" id="skipDrawBtn" type="button" hidden>略過剩餘動畫</button>
       </div>
       <div class="empty-hint" id="emptyHint">請先在左側輸入名單並套用獎項設定</div>
-      <p class="ball-visual-note">球體為動畫示意，得獎結果會列於得獎名單。</p>
+      <p class="ball-visual-note" id="machineNote">套用名單，讓好運轉起來。</p>
     </section>
 
     <!-- RIGHT: winners -->
@@ -93,6 +125,9 @@
 let pool = [];
 let drawing = false;
 let skipAnimations = false;
+let lastReveal = null;
+const raffleCopy = (zh, en) => typeof window !== 'undefined' && window.YKLanguage?.language === 'en' ? en : zh;
+const prizeLabel = name => typeof window !== 'undefined' && window.YKLanguage ? window.YKLanguage.t(name) : name;
 
 // 獎項設定（可編輯的草稿）與套用後的正式獎項清單
 let tierConfig = [
@@ -128,25 +163,65 @@ const ballStage = document.getElementById('ballStage');
 const ballState = document.getElementById('ballState');
 const resultTier = document.getElementById('resultTier');
 const skipDrawBtn = document.getElementById('skipDrawBtn');
-const ballMachine = typeof RaffleBalls !== 'undefined' ? new RaffleBalls.Drum(document.getElementById('raffleCanvas'), phase => {
+[drawBtn, tierCountLabel, resultTier].forEach(el => el.dataset.i18nIgnore = '');
+const machineSelect = document.getElementById('machineSelect');
+const machineNote = document.getElementById('machineNote');
+let machineType = 'wheel';
+function onMachinePhase(type, phase){
+  if(type !== machineType) return;
   ballStage.dataset.phase = phase;
-  ballState.textContent = {idle:'待抽獎',mixing:'攪拌中',extracting:'出球中',revealed:'已揭曉'}[phase];
-}) : null;
+  ballState.textContent = {idle:'待抽獎',mixing:'攪拌中',extracting:'出球中',spinning:'轉動中',slowing:'減速中',revealed:'已揭曉'}[phase];
+}
+const ballMachine = typeof RaffleBalls !== 'undefined' ? new RaffleBalls.Drum(document.getElementById('raffleCanvas'), phase => onMachinePhase('balls', phase)) : null;
+const wheelMachine = typeof RaffleWheel !== 'undefined' ? new RaffleWheel.Wheel(document.getElementById('wheelCanvas'), phase => onMachinePhase('wheel', phase)) : null;
+const machines = {wheel: wheelMachine, balls: ballMachine};
+const currentMachine = () => machines[machineType];
+
+function updateMachineNote(){
+  machineNote.textContent = machineType === 'balls'
+    ? '球體為動畫示意，得獎結果會列於得獎名單。'
+    : pool.length === 0 && !winners().length ? '套用名單，讓好運轉起來。'
+    : Math.max(pool.length, wheelMachine?.entries.length || 0) > 36
+      ? '名單較多，輪盤以名單順序的編號區間顯示；完整姓名會在下方揭曉。'
+      : '每人一格，指針停下時揭曉得獎者。';
+}
+
+function selectMachine(type){
+  if(drawing){ machineSelect.value = machineType; return; }
+  machineType = type === 'balls' ? 'balls' : 'wheel';
+  machineSelect.value = machineType;
+  ballStage.dataset.machine = machineType;
+  document.getElementById('wheelDisplay').hidden = machineType !== 'wheel';
+  document.getElementById('ballsDisplay').hidden = machineType !== 'balls';
+  ballMachine?.setActive(machineType === 'balls');
+  wheelMachine?.setActive(machineType === 'wheel');
+  resetBallResult();
+  try { localStorage.setItem('yichi-raffle-machine', machineType); } catch {}
+}
+machineSelect.addEventListener('change', () => selectMachine(machineSelect.value));
 
 skipDrawBtn.addEventListener('click', () => {
   if(!drawing) return;
   skipAnimations = true;
   skipDrawBtn.hidden = true;
-  ballMachine?.finish();
+  currentMachine()?.finish();
 });
 
+function updateResultTier(){
+  resultTier.textContent = lastReveal
+    ? raffleCopy(lastReveal.prizeName + ' · 第 ' + lastReveal.ordinal + ' 位', prizeLabel(lastReveal.prizeName) + ' · Winner ' + lastReveal.ordinal)
+    : raffleCopy('本次得獎者', 'Current winner');
+}
 function resetBallResult(){
-  resultTier.textContent = '本次得獎者';
+  lastReveal = null;
+  updateResultTier();
   delete resultName.dataset.i18nIgnore;
   resultName.textContent = '等待開獎';
   resultName.className = 'result-name placeholder';
   seal.classList.remove('show');
   ballMachine?.reset();
+  wheelMachine?.reset();
+  updateMachineNote();
 }
 function briefRevealPause(ms){
   if(skipAnimations || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) return Promise.resolve();
@@ -170,13 +245,15 @@ function parseNames(text){
 }
 
 function updatePoolCount(){
-  poolCount.innerHTML = pool.length + '<small>人</small>';
+  poolCount.innerHTML = pool.length + ' <small>' + raffleCopy('人', pool.length === 1 ? 'person' : 'people') + '</small>';
   ballMachine?.setCount(pool.length);
+  wheelMachine?.setEntries(pool);
+  updateMachineNote();
   updateStageLabel();
 }
 
 function setDrawingLocked(locked){
-  [nameInput, fileInput, loadBtn, addTierBtn, applyTiersBtn, resetBtn,
+  [nameInput, fileInput, loadBtn, addTierBtn, applyTiersBtn, resetBtn, machineSelect,
     ...tierRows.querySelectorAll('input, button'), ...advancedRows.querySelectorAll('textarea')]
     .forEach(control => control.disabled = locked);
 }
@@ -344,7 +421,7 @@ applyTiersBtn.addEventListener('click', ()=>{
   updateStageLabel();
   resetBallResult();
   const total = tiers.reduce((s,t)=>s+t.count,0);
-  showToast(`已套用獎項設定，共 ${tiers.length} 個獎項、${total} 個名額`);
+  showToast(raffleCopy(`已套用獎項設定，共 ${tiers.length} 個獎項、${total} 個名額`, `Prize settings applied: ${tiers.length} prizes, ${total} places`));
 });
 
 function winners(){
@@ -355,9 +432,9 @@ function updateStageLabel(){
   document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
   if(tiers.length === 0){
     tierName.textContent = '尚未設定獎項';
-    tierCountLabel.textContent = '請先在左側設定獎項並套用';
+    tierCountLabel.textContent = raffleCopy('請先在左側設定獎項並套用', 'Set and apply your prizes first');
     drawBtn.disabled = true;
-    drawBtn.textContent = '開　始　抽　獎';
+    drawBtn.textContent = raffleCopy('開　始　抽　獎', 'Start draw');
     emptyHint.style.display = 'block';
     emptyHint.textContent = '請先在左側輸入名單並套用獎項設定';
     return;
@@ -365,16 +442,17 @@ function updateStageLabel(){
   if(currentTierIndex >= tiers.length){
     document.getElementById('tierContext').textContent = '抽獎進度';
     tierName.textContent = '🎉 所有獎項已抽完';
-    tierCountLabel.textContent = `共 ${tiers.reduce((s,t)=>s+t.drawnList.length,0)} 位得獎者`;
+    const total = tiers.reduce((s,t)=>s+t.drawnList.length,0);
+    tierCountLabel.textContent = raffleCopy(`共 ${total} 位得獎者`, `${total} ${total === 1 ? 'winner' : 'winners'}`);
     drawBtn.disabled = true;
-    drawBtn.textContent = '抽獎已結束';
+    drawBtn.textContent = raffleCopy('抽獎已結束', 'Draw complete');
     emptyHint.style.display = 'none';
     return;
   }
   const t = tiers[currentTierIndex];
   tierName.textContent = t.name;
-  tierCountLabel.textContent = `${t.drawnList.length} / ${t.count} 人`;
-  drawBtn.textContent = drawing ? '抽獎中…' : `抽出 ${t.name}`;
+  tierCountLabel.textContent = raffleCopy(`${t.drawnList.length} / ${t.count} 人`, `${t.drawnList.length} / ${t.count} drawn`);
+  drawBtn.textContent = drawing ? raffleCopy('抽獎中…', 'Drawing…') : raffleCopy(`抽出 ${t.name}`, `Draw ${prizeLabel(t.name)}`);
   const has = pool.length > 0;
   const invalidCount = tierRows.querySelectorAll('[aria-invalid="true"]').length > 0;
   drawBtn.disabled = !has || drawing || tierStructureDirty || invalidCount;
@@ -398,7 +476,8 @@ loadBtn.addEventListener('click', ()=>{
   }
   pool = names;
   updatePoolCount();
-  showToast(`已套用名單，共 ${names.length} 人`);
+  resetBallResult();
+  showToast(raffleCopy(`已套用名單，共 ${names.length} 人`, `List applied: ${names.length} participants`));
 });
 
 fileInput.addEventListener('change', (e)=>{
@@ -411,7 +490,8 @@ fileInput.addEventListener('change', (e)=>{
     const names = parseNames(ev.target.result);
     pool = names;
     updatePoolCount();
-    showToast(`已匯入 ${names.length} 人`);
+    resetBallResult();
+    showToast(raffleCopy(`已匯入 ${names.length} 人`, `Imported ${names.length} participants`));
   };
   reader.readAsText(file, 'UTF-8');
 });
@@ -476,14 +556,21 @@ function renderWinners(){
   });
 }
 
-async function rollAnimation(finalName, duration, ordinal, prizeName){
-  resultTier.textContent = prizeName + ' · 第 ' + ordinal + ' 位';
+async function rollAnimation(finalName, duration, ordinal, prizeName, candidates){
+  lastReveal = {prizeName, ordinal};
+  updateResultTier();
   resultName.className = 'result-name placeholder';
   delete resultName.dataset.i18nIgnore;
-  resultName.textContent = '幸運球攪拌中…';
+  resultName.textContent = machineType === 'wheel' ? '風火輪轉動中…' : '幸運球攪拌中…';
   try {
-    if(skipAnimations) ballMachine?.reveal(ordinal);
-    else await ballMachine?.draw({ordinal,duration});
+    if(machineType === 'wheel'){
+      const options = {entries: candidates, selectedIndex: candidates.indexOf(finalName), duration: duration + 1500};
+      if(skipAnimations) wheelMachine?.reveal(options);
+      else await wheelMachine?.draw(options);
+    } else {
+      if(skipAnimations) ballMachine?.reveal(ordinal);
+      else await ballMachine?.draw({ordinal,duration});
+    }
   } catch(error) {
     // A rendering failure must not discard or redraw a selected winner.
     ballState.textContent = '已揭曉';
@@ -515,7 +602,7 @@ drawBtn.addEventListener('click', async ()=>{
   skipAnimations = false;
   skipDrawBtn.hidden = false;
   updateStageLabel();
-  drawBtn.textContent = '抽獎中…';
+  drawBtn.textContent = raffleCopy('抽獎中…', 'Drawing…');
   setDrawingLocked(true);
   drawBtn.disabled = true;
   seal.classList.remove('show');
@@ -523,8 +610,9 @@ drawBtn.addEventListener('click', async ()=>{
   try {
     for(let i=0;i<n;i++){
       // Reserve one result, animate it, then commit it exactly once.
+      const candidates = pool.slice();
       const [chosenName] = pickDrawList(tier, 1);
-      await rollAnimation(chosenName, i === 0 ? 2600 : 1900, tier.drawnList.length + 1, tier.name);
+      await rollAnimation(chosenName, i === 0 ? 2600 : 1900, tier.drawnList.length + 1, tier.name, candidates);
       seal.classList.add('show');
       tier.drawnList.push(chosenName);
       renderWinners();
@@ -587,6 +675,13 @@ resetBtn.addEventListener('click', ()=>{
 renderTierRows();
 updatePoolCount();
 renderWinners();
+let savedMachine = 'wheel';
+try { savedMachine = localStorage.getItem('yichi-raffle-machine') || 'wheel'; } catch {}
+selectMachine(savedMachine);
+if(typeof window !== 'undefined') window.addEventListener('yk:language', () => {
+  updatePoolCount();
+  updateResultTier();
+});
 </script>
 <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer></body>
 </html>
