@@ -33,6 +33,9 @@
       this.phase = 'idle';
       this.active = true;
       this.frame = 0;
+      this.look = {wheel:palette, labels:['#203329','#203329','#fcf9eb','#203329','#203329','#203329'],
+        rim:'#203329',metal:'#abbe91',lamp:'#ffdda3',lowLamp:'#899f75',stand:'#6c8b6326',line:'#a3bc8e66',
+        glow:'#dea45d24',clear:'#dea45d00',winner:'#fff1c9',symbol:'✦'};
       this.motion = window.matchMedia('(prefers-reduced-motion: reduce)');
       this.resize = () => {
         if (!this.active || !this.ctx) return;
@@ -61,6 +64,10 @@
       this.active = active;
       if (active) this.resize();
       else { cancelAnimationFrame(this.frame); this.frame = 0; }
+    }
+    setStyle(appearance) {
+      this.look = appearance;
+      this.resize();
     }
     setEntries(entries) {
       this.pool = entries.slice();
@@ -127,24 +134,24 @@
     }
     render() {
       if (!this.active || !this.ctx) return;
-      const c = this.ctx, entries = this.entries, n = entries.length;
+      const c = this.ctx, entries = this.entries, n = entries.length, look = this.look;
       c.setTransform(this.canvas.width / W, 0, 0, this.canvas.height / H, 0, 0);
       c.clearRect(0, 0, W, H);
       const aura = c.createRadialGradient(CX, CY, R * .6, CX, CY, R + 48);
-      aura.addColorStop(0, 'rgba(222,164,93,.14)');
-      aura.addColorStop(1, 'rgba(222,164,93,0)');
+      aura.addColorStop(0, look.glow);
+      aura.addColorStop(1, look.clear);
       c.fillStyle = aura; c.fillRect(0, 0, W, H);
-      c.fillStyle = 'rgba(108,139,99,.15)';
-      c.strokeStyle = 'rgba(163,188,142,.4)'; c.lineWidth = 1.5;
+      c.fillStyle = look.stand;
+      c.strokeStyle = look.line; c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(CX - 24, CY + 135); c.lineTo(CX - 47, 397);
       c.lineTo(CX + 47, 397); c.lineTo(CX + 24, CY + 135); c.closePath(); c.fill(); c.stroke();
       c.beginPath(); c.roundRect(CX - 95, 391, 190, 24, 12); c.fill(); c.stroke();
-      c.fillStyle = '#203329'; c.beginPath(); c.arc(CX, CY, R + 15, 0, TAU); c.fill();
-      c.strokeStyle = '#abbe91'; c.lineWidth = 1.2; c.stroke();
+      c.fillStyle = look.rim; c.beginPath(); c.arc(CX, CY, R + 15, 0, TAU); c.fill();
+      c.strokeStyle = look.metal; c.lineWidth = 1.2; c.stroke();
       for (let i = 0; i < 36; i++) {
         const a = i * TAU / 36;
         const moving = this.phase === 'spinning' || this.phase === 'slowing';
-        c.fillStyle = moving && (i + Math.floor(this.rotation * 4)) % 3 === 0 ? '#ffdda3' : '#899f75';
+        c.fillStyle = moving && (i + Math.floor(this.rotation * 4)) % 3 === 0 ? look.lamp : look.lowLamp;
         c.beginPath(); c.arc(CX + Math.cos(a) * (R + 8), CY + Math.sin(a) * (R + 8), 2.1, 0, TAU); c.fill();
       }
       const slices = n ? segments(entries) : segments(['✦', '✧', '✦', '✧', '✦', '✧']);
@@ -153,12 +160,12 @@
       slices.forEach((slice, i) => {
         const a = slice.start * TAU / total, b = slice.end * TAU / total;
         const winner = this.phase === 'revealed' && this.index >= slice.start && this.index < slice.end;
-        c.fillStyle = palette[i % palette.length];
+        c.fillStyle = look.wheel[i % look.wheel.length];
         c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, a, b); c.closePath(); c.fill();
         c.strokeStyle = 'rgba(31,52,39,.32)'; c.lineWidth = 1; c.stroke();
-        if (winner) { c.strokeStyle = '#fff1c9'; c.lineWidth = 4; c.stroke(); }
+        if (winner) { c.strokeStyle = look.winner; c.lineWidth = 4; c.stroke(); }
         c.save(); c.rotate((a + b) / 2);
-        c.fillStyle = i % palette.length === 2 ? '#fcf9eb' : '#203329';
+        c.fillStyle = look.labels[i % look.labels.length];
         const font = slices.length > 20 ? 10 : slices.length > 12 ? 12 : 15;
         c.font = `600 ${font}px system-ui, sans-serif`;
         c.textAlign = 'right'; c.textBaseline = 'middle';
@@ -168,12 +175,12 @@
         c.restore();
       });
       c.restore();
-      c.fillStyle = '#203329'; c.strokeStyle = '#dcbb82'; c.lineWidth = 2;
+      c.fillStyle = look.rim; c.strokeStyle = look.metal; c.lineWidth = 2;
       c.beginPath(); c.arc(CX, CY, 35, 0, TAU); c.fill(); c.stroke();
-      c.fillStyle = '#ead0a0'; c.font = '28px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
-      c.fillText('✦', CX, CY + 1);
+      c.fillStyle = look.metal; c.font = '28px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(look.symbol, CX, CY + 1);
       // The pointer stays fixed. The selected entry's center ends directly beneath it.
-      c.fillStyle = '#edc486'; c.strokeStyle = '#654b2e'; c.lineWidth = 1.5;
+      c.fillStyle = look.metal; c.strokeStyle = look.rim; c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(CX - 12, 18); c.lineTo(CX + 12, 18);
       c.lineTo(CX + 9, 39); c.lineTo(CX, 57); c.lineTo(CX - 9, 39); c.closePath(); c.fill(); c.stroke();
       c.fillStyle = this.muted; c.font = '10px ui-monospace, monospace';

@@ -1,19 +1,113 @@
 .raffle-machine-picker {display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;margin:0 0 22px;border:1px solid var(--yk-line);border-radius:18px;background:var(--yk-surface)}
-.raffle-machine-picker label {display:block;color:var(--yk-ink);font-size:15px;font-weight:600;margin-bottom:5px}
+.raffle-machine-picker label {display:block;color:var(--yk-ink);font-size:13px;font-weight:600;margin-bottom:7px}
+.raffle-picker-intro {flex:1;min-width:0}
+.raffle-picker-intro h2 {font-size:16px;font-weight:600;color:var(--yk-ink);margin:0 0 5px}
 .raffle-machine-picker p {margin:0;color:var(--yk-muted);font-size:13px;line-height:1.65}
-.raffle-machine-select {position:relative;flex:0 0 225px}
+.raffle-picker-controls {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;flex:0 1 470px;min-width:350px}
+.raffle-picker-field {min-width:0}
+.raffle-machine-select {position:relative}
 .raffle-machine-select::after {content:'⌄';position:absolute;right:16px;top:11px;color:var(--yk-accent);pointer-events:none}
-#machineSelect {appearance:none;width:100%;min-height:46px;padding:11px 42px 11px 16px;border:1px solid var(--yk-line);border-radius:12px;background:var(--yk-bg);color:var(--yk-ink);font:500 15px var(--yk-font);cursor:pointer}
-#machineSelect:focus-visible {outline:2px solid var(--yk-accent);outline-offset:3px}
+#machineSelect,#styleSelect {appearance:none;width:100%;min-height:46px;padding:11px 36px 11px 14px;border:1px solid var(--yk-line);border-radius:12px;background:var(--yk-bg);color:var(--yk-ink);font:500 15px var(--yk-font);cursor:pointer}
+#machineSelect:focus-visible,#styleSelect:focus-visible {outline:2px solid var(--yk-accent);outline-offset:3px}
 #machineSelect:disabled {opacity:.5;cursor:wait}
-#machineSelect option {background:var(--yk-bg);color:var(--yk-ink)}
+#machineSelect option,#styleSelect option {background:var(--yk-bg);color:var(--yk-ink)}
+.raffle-style-label {display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.raffle-style-swatches {display:flex;gap:3px}
+.raffle-style-swatches i {width:9px;height:9px;border-radius:50%;background:var(--yk-accent);border:1px solid #00000012}
+.raffle-present-button {margin-top:9px;padding:6px 12px;border:1px solid var(--yk-line);border-radius:8px;background:var(--yk-bg);color:var(--yk-ink);font:500 13px var(--yk-font);cursor:pointer}
+.raffle-present-button:hover {border-color:var(--yk-accent)}
+.raffle-present-button:focus-visible,.raffle-presentation-bar :is(button,select):focus-visible {outline:2px solid var(--yk-accent);outline-offset:3px}
+.ball-stage-status {display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.raffle-draw-method {font-size:10px;color:var(--yk-muted);line-height:1.4;text-align:right}
 .ball-display[hidden] {display:none}
 #wheelCanvas {display:block;width:100%;height:100%}
 [data-machine=wheel] .ball-display {margin-bottom:0}
-[data-machine=wheel] .ball-state::before {background:#ddb779}
+[data-machine=wheel] .ball-state::before {background:var(--yk-accent)}
 [data-machine=wheel][data-phase=spinning] .ball-state::before,[data-machine=wheel][data-phase=slowing] .ball-state::before {animation:ball-light .8s ease-in-out infinite}
 @media(max-width:780px){
   .raffle-machine-picker {align-items:stretch;flex-direction:column;gap:12px;padding:16px;margin-bottom:16px}
-  .raffle-machine-select {flex-basis:auto;width:100%}
-  #machineSelect {font-size:16px}
+  .raffle-picker-controls {flex-basis:auto;min-width:0;width:100%;gap:12px}
+  #machineSelect,#styleSelect {font-size:16px}
+}
+
+/* Stage palettes are independent of the portfolio's light/dark setting. */
+#ballStage[data-raffle-style=festival] {
+  --yk-ink:#fff4dc;--yk-muted:#ecd1bd;--yk-accent:#ffce68;--yk-on-accent:#59172b;
+  --yk-surface:#64152c;--yk-soft:#90283d;--yk-line:#cb765d;
+  background:radial-gradient(circle at 50% 37%,#b43d43,transparent 56%),linear-gradient(145deg,#791831,#421428);
+  border-color:#d09b57;box-shadow:inset 0 0 0 5px #ffd26b0c,0 12px 40px #861b2520;
+}
+#ballStage[data-raffle-style=neon] {
+  --yk-ink:#fbf3ff;--yk-muted:#d3c6e9;--yk-accent:#67f5e3;--yk-on-accent:#1e1642;
+  --yk-surface:#170e2b;--yk-soft:#392358;--yk-line:#805ca5;
+  background:radial-gradient(ellipse at 70% 35%,#742ea448,transparent 55%),radial-gradient(ellipse at 10% 85%,#18697940,transparent 55%),#170e2b;
+  border-color:#b27aed;box-shadow:inset 0 0 25px #9453f520,0 0 20px #a573ed1a;
+}
+#ballStage[data-raffle-style=candy] {
+  --yk-ink:#632d51;--yk-muted:#85536c;--yk-accent:#a83873;--yk-on-accent:#ffffff;
+  --yk-surface:#fff4fa;--yk-soft:#f5dcea;--yk-line:#d99cbb;
+  background:radial-gradient(circle at 20% 27%,#ffffffa0 0 4px,transparent 5px),radial-gradient(circle at 82% 60%,#ffffff 0 5px,transparent 6px),linear-gradient(145deg,#fff3f9,#eee4fb);
+  border-color:#df9dbf;box-shadow:inset 0 0 0 5px #ffffff80,0 12px 30px #c04a8310;
+}
+#ballStage .draw-btn:not(:disabled) {background:linear-gradient(120deg,var(--yk-accent),color-mix(in srgb,var(--yk-accent) 75%,white));color:var(--yk-on-accent);border-color:var(--yk-accent);font-weight:700;box-shadow:0 5px 24px color-mix(in srgb,var(--yk-accent) 18%,transparent)}
+#ballStage .ball-result .seal {color:var(--yk-accent);border-color:var(--yk-accent);background:var(--yk-soft)}
+#ballStage .ball-result .result-name:not(.placeholder) {font-size:clamp(34px,4vw,52px);font-weight:700}
+#ballStage[data-raffle-style=neon] .ball-result .result-name:not(.placeholder) {text-shadow:0 0 20px #bf75fc70}
+#ballStage[data-raffle-style=festival] .ball-result .result-name:not(.placeholder) {color:#ffdd88}
+
+/* Presentation uses the same live stage and records; entering/exiting never reloads it. */
+.raffle-presentation-bar {display:flex;align-items:center;justify-content:center;gap:12px;min-height:76px;padding:12px 0;color:var(--yk-ink)}
+.raffle-presentation-bar strong {font-size:15px;margin-right:10px}
+.raffle-presentation-bar label {font-size:12px;color:var(--yk-muted)}
+.raffle-presentation-bar :is(select,button) {font:14px var(--yk-font);color:var(--yk-ink);background:var(--yk-surface);border:1px solid var(--yk-line);padding:9px 12px;border-radius:9px;min-height:40px;cursor:pointer}
+body[data-raffle-presentation] {padding:0 16px 16px;}
+html:has(body[data-raffle-presentation]) {zoom:1}
+body[data-raffle-presentation] :is(.yk-skip,.yk-site-nav,.yk-tool-nav,.yk-tool-heading,.raffle-machine-picker,.advanced,.yk-site-footer,.toast) {display:none!important}
+body[data-raffle-presentation] .grid {display:block!important}
+body[data-raffle-presentation] .grid>.panel {display:none}
+body[data-raffle-presentation] .wrap {max-width:none!important}
+body[data-raffle-presentation] #ballStage {
+  --record-height:min(800px,calc(100dvh - 100px),calc((100vw - 32px) * 16 / 9));
+  width:calc(var(--record-height) * 9 / 16);height:var(--record-height);min-height:0;
+  max-width:100%;margin:0 auto;gap:6px;padding:18px 16px;container-type:inline-size;
+}
+body[data-raffle-presentation] #ballStage .ball-display {flex:1;aspect-ratio:auto;min-height:0;max-width:none;margin:0;width:100%;height:0}
+body[data-raffle-presentation] #ballStage canvas {width:100%;height:100%;object-fit:contain}
+body[data-raffle-presentation] #ballStage .ball-result {min-height:0;padding:0}
+body[data-raffle-presentation] #ballStage .result-name {font-size:clamp(30px,11cqw,58px);padding:5px 0}
+body[data-raffle-presentation] #ballStage .result-name.placeholder {font-size:16px;padding:3px 0}
+body[data-raffle-presentation] #ballStage .ball-result-meta {font-size:12px;min-height:0}
+body[data-raffle-presentation] #ballStage .seal:not(.show) {display:none}
+body[data-raffle-presentation] #ballStage .ball-actions {margin-top:0;flex-shrink:0}
+body[data-raffle-presentation] #ballStage .draw-btn {min-width:0;width:100%;font-size:15px;min-height:40px;padding:8px 16px}
+body[data-raffle-presentation] #ballStage .ball-visual-note {display:none}
+body[data-raffle-presentation] #ballStage .tier-name {font-size:18px}
+body[data-raffle-presentation] #ballStage .tier-count {font-size:12px;margin-top:1px}
+body[data-raffle-presentation] #ballStage .ball-queue-label {font-size:10px;margin-bottom:1px}
+body[data-raffle-presentation] #ballStage .ball-state {font-size:11px;padding-top:2px}
+body[data-raffle-presentation=landscape] #ballStage {
+  --record-width:min(1100px,calc(100vw - 32px),calc((100dvh - 100px) * 16 / 9));
+  width:var(--record-width);height:calc(var(--record-width) * 9 / 16);display:grid;
+  grid-template-columns:1.15fr 1fr;grid-template-rows:auto minmax(0,1fr) auto auto auto;column-gap:24px;padding:24px;
+}
+body[data-raffle-presentation=landscape] #ballStage .ball-stage-header {grid-column:1/-1}
+body[data-raffle-presentation=landscape] #ballStage .ball-display {grid-row:2/-1;grid-column:1;height:100%;}
+body[data-raffle-presentation=landscape] #ballStage .ball-result {grid-row:2;grid-column:2;align-self:center;}
+body[data-raffle-presentation=landscape] #ballStage .ball-actions {grid-row:3;grid-column:2}
+body[data-raffle-presentation=landscape] #ballStage .empty-hint {grid-row:4;grid-column:2}
+body[data-raffle-presentation=landscape] #ballStage .ball-visual-note {grid-row:5;grid-column:2}
+body[data-raffle-presentation=landscape] #ballStage .result-name {font-size:clamp(28px,6cqw,64px)}
+@media(max-width:600px){
+  .raffle-presentation-bar {flex-wrap:wrap;gap:7px;min-height:76px;padding:10px 0}
+  .raffle-presentation-bar strong {font-size:13px;margin-right:0}
+  .raffle-presentation-bar label {display:none}
+  .raffle-presentation-bar :is(select,button) {font-size:12px;padding:8px;min-height:36px}
+  body[data-raffle-presentation=landscape] #ballStage {padding:12px;gap:4px 8px}
+  body[data-raffle-presentation=landscape] #ballStage :is(.tier-name,.result-name.placeholder) {font-size:13px}
+  body[data-raffle-presentation=landscape] #ballStage :is(.tier-count,.ball-state,.ball-result-meta,.ball-queue-label) {font-size:10px;line-height:1.2}
+  body[data-raffle-presentation=landscape] #ballStage .ball-queue-label {margin-bottom:0}
+  body[data-raffle-presentation=landscape] #ballStage .ball-visual-note {display:none}
+  body[data-raffle-presentation=landscape] #ballStage .draw-btn {font-size:12px;padding:6px;min-height:30px}
+  body[data-raffle-presentation=landscape] #ballStage .ball-skip {font-size:10px;padding:1px 0}
+  body[data-raffle-presentation=landscape] #ballStage .ball-result .seal {font-size:10px;min-height:0;padding:1px 8px}
 }
