@@ -7,13 +7,22 @@
 <link rel="stylesheet" href="assets/raffle.css?v=20260914-balls1">
 <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script>
 <link rel="stylesheet" href="assets/raffle-balls.css?v=20260914-balls1">
-<link rel="stylesheet" href="assets/raffle-machines.css?v=20260930-wheel1">
-<script src="assets/raffle-balls.js?v=20260930-wheel1"></script>
-<script src="assets/raffle-wheel.js?v=20260930-wheel1"></script>
+<link rel="stylesheet" href="assets/raffle-machines.css?v=20260930-styles1">
+<script src="assets/raffle-styles.js?v=20260930-styles1"></script>
+<script src="assets/raffle-balls.js?v=20260930-styles1"></script>
+<script src="assets/raffle-wheel.js?v=20260930-styles1"></script>
 <link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20260927-continue"></script>
 <script>
 Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
   '選擇抽獎機':'Choose a draw machine',
+  '抽獎機設定':'Make it your lucky draw', '視覺風格':'Visual style',
+  '玩法與風格自由搭配，切換時保留抽獎進度。':'Mix machines and styles while keeping your draw progress.',
+  '紅金慶典':'Red & Gold', '霓虹派對':'Neon Party', '糖果樂園':'Candy Land', '森林簡約':'Forest Calm',
+  '展示模式 ↗':'Presentation mode ↗', '展示模式':'Presentation mode', '退出展示':'Exit presentation',
+  '畫面比例':'Frame ratio', '直式 9:16':'Portrait 9:16', '橫式 16:9':'Landscape 16:9',
+  '只顯示機台與得獎結果，搭配螢幕錄影工具使用。':'Show the machine and results for use with your screen recorder.',
+  '名單隨機抽選':'Random draw from the list', '含指定人選':'Includes preselected winners',
+  '請先退出展示模式，設定名單與獎項。':'Exit presentation mode to set up participants and prizes.',
   '切換玩法，名單、獎項與得獎紀錄都會保留。':'Switch machines while keeping your participants, prizes and results.',
   '風火輪':'Fortune Wheel', '幸運抽球':'Lucky Ball Draw',
   '抽獎舞台':'Draw stage', '轉動中':'Spinning', '減速中':'Slowing down',
@@ -28,16 +37,45 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
 
 <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ad-storyboard.html"><span>01</span>廣告分鏡工作台</a><a href="ai-tools.html"><span>02</span>短影片動作卡片庫</a><a href="facs-tool.html"><span>03</span>表情控制器</a><a href="line-message.html"><span>04</span>LINE 訊息編排器</a><a href="utm-builder.html"><span>05</span>UTM 連結產生器</a><a href="raffle.html" aria-current="page"><span>06</span>抽獎機</a><a href="prompt-library.html"><span>07</span>AI 指令庫</a></nav><main class="wrap" id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 06 — LUCKY DRAW</p><h1>抽獎機</h1><p class="yk-tool-description">匯入名單、設定獎項，逐一揭曉得獎結果。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>06</b></span></div>
 
+  <div class="raffle-presentation-bar" id="presentationBar" hidden>
+    <strong>展示模式</strong>
+    <label for="presentationRatio">畫面比例</label>
+    <select id="presentationRatio">
+      <option value="portrait">直式 9:16</option>
+      <option value="landscape">橫式 16:9</option>
+    </select>
+    <button type="button" id="exitPresentationBtn">退出展示</button>
+  </div>
   <div class="raffle-machine-picker">
-    <div>
-      <label for="machineSelect">選擇抽獎機</label>
-      <p id="machineHelp">切換玩法，名單、獎項與得獎紀錄都會保留。</p>
+    <div class="raffle-picker-intro">
+      <h2>抽獎機設定</h2>
+      <p id="machineHelp">玩法與風格自由搭配，切換時保留抽獎進度。</p>
+      <button type="button" class="raffle-present-button" id="presentationBtn" title="只顯示機台與得獎結果，搭配螢幕錄影工具使用。">展示模式 ↗</button>
     </div>
-    <div class="raffle-machine-select">
-      <select id="machineSelect" aria-describedby="machineHelp">
-        <option value="wheel">風火輪</option>
-        <option value="balls">幸運抽球</option>
-      </select>
+    <div class="raffle-picker-controls">
+      <div class="raffle-picker-field">
+        <label for="machineSelect">選擇抽獎機</label>
+        <div class="raffle-machine-select">
+          <select id="machineSelect" aria-describedby="machineHelp">
+            <option value="wheel">風火輪</option>
+            <option value="balls">幸運抽球</option>
+          </select>
+        </div>
+      </div>
+      <div class="raffle-picker-field">
+        <div class="raffle-style-label">
+          <label for="styleSelect">視覺風格</label>
+          <span class="raffle-style-swatches" id="styleSwatches" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="raffle-machine-select">
+          <select id="styleSelect" aria-describedby="machineHelp">
+            <option value="festival">紅金慶典</option>
+            <option value="neon">霓虹派對</option>
+            <option value="candy">糖果樂園</option>
+            <option value="forest">森林簡約</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -69,14 +107,14 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
     </div>
 
     <!-- CENTER: lottery drum -->
-    <section class="stage ball-stage" id="ballStage" data-machine="wheel" data-phase="idle" aria-label="抽獎舞台">
+    <section class="stage ball-stage" id="ballStage" data-machine="wheel" data-raffle-style="festival" data-phase="idle" aria-label="抽獎舞台">
       <div class="ball-stage-header">
         <div class="tier-progress">
           <span class="ball-queue-label" id="tierContext">待抽獎項</span>
           <div class="tier-name" id="tierName">尚未設定獎項</div>
           <div class="tier-count" id="tierCountLabel">請先在左側設定獎項</div>
         </div>
-        <span class="ball-state" id="ballState">待抽獎</span>
+        <div class="ball-stage-status"><span class="ball-state" id="ballState">待抽獎</span><span class="raffle-draw-method" id="drawMethod">名單隨機抽選</span></div>
       </div>
       <div class="ball-display" id="wheelDisplay" aria-hidden="true">
         <canvas id="wheelCanvas" width="960" height="880"></canvas>
@@ -126,6 +164,8 @@ let pool = [];
 let drawing = false;
 let skipAnimations = false;
 let lastReveal = null;
+let batchIncludesPreset = null;
+let presenting = false;
 const raffleCopy = (zh, en) => typeof window !== 'undefined' && window.YKLanguage?.language === 'en' ? en : zh;
 const prizeLabel = name => typeof window !== 'undefined' && window.YKLanguage ? window.YKLanguage.t(name) : name;
 
@@ -165,6 +205,7 @@ const resultTier = document.getElementById('resultTier');
 const skipDrawBtn = document.getElementById('skipDrawBtn');
 [drawBtn, tierCountLabel, resultTier].forEach(el => el.dataset.i18nIgnore = '');
 const machineSelect = document.getElementById('machineSelect');
+const styleSelect = document.getElementById('styleSelect');
 const machineNote = document.getElementById('machineNote');
 let machineType = 'wheel';
 function onMachinePhase(type, phase){
@@ -176,6 +217,28 @@ const ballMachine = typeof RaffleBalls !== 'undefined' ? new RaffleBalls.Drum(do
 const wheelMachine = typeof RaffleWheel !== 'undefined' ? new RaffleWheel.Wheel(document.getElementById('wheelCanvas'), phase => onMachinePhase('wheel', phase)) : null;
 const machines = {wheel: wheelMachine, balls: ballMachine};
 const currentMachine = () => machines[machineType];
+
+function updateDrawMethod(){
+  const pending = tiers[currentTierIndex];
+  const includesPreset = batchIncludesPreset ?? Boolean(pending?.forcedRemaining.some(name => pool.includes(name)));
+  document.getElementById('drawMethod').textContent = includesPreset ? '含指定人選' : '名單隨機抽選';
+}
+
+function setPresentation(enabled){
+  presenting = enabled;
+  if(enabled) document.body.dataset.rafflePresentation = document.getElementById('presentationRatio').value === 'landscape' ? 'landscape' : 'portrait';
+  else delete document.body.dataset.rafflePresentation;
+  document.getElementById('presentationBar').hidden = !enabled;
+  updateStageLabel();
+  updateDrawMethod();
+  window.scrollTo({top:0,behavior:'instant'});
+  document.getElementById(enabled ? 'exitPresentationBtn' : 'presentationBtn').focus({preventScroll:true});
+}
+document.getElementById('presentationBtn').addEventListener('click', () => setPresentation(true));
+document.getElementById('exitPresentationBtn').addEventListener('click', () => setPresentation(false));
+document.getElementById('presentationRatio').addEventListener('change', () => {
+  if(presenting) document.body.dataset.rafflePresentation = document.getElementById('presentationRatio').value === 'landscape' ? 'landscape' : 'portrait';
+});
 
 function updateMachineNote(){
   machineNote.textContent = machineType === 'balls'
@@ -200,6 +263,24 @@ function selectMachine(type){
 }
 machineSelect.addEventListener('change', () => selectMachine(machineSelect.value));
 
+function selectRaffleStyle(value){
+  const name = ['festival','neon','candy','forest'].includes(value) ? value : 'festival';
+  styleSelect.value = name;
+  ballStage.dataset.raffleStyle = name;
+  document.getElementById('tool-workspace').dataset.raffleStyle = name;
+  if(typeof RaffleStyles !== 'undefined'){
+    const appearance = RaffleStyles.get(name);
+    ballMachine?.setStyle(appearance);
+    wheelMachine?.setStyle(appearance);
+    document.getElementById('styleSwatches').querySelectorAll('i').forEach((dot, i) => {
+      dot.style.backgroundColor = appearance.wheel[i];
+    });
+  }
+  try { localStorage.setItem('yichi-raffle-style', name); } catch {}
+}
+// Appearance can change during a spin without restarting it or choosing a new winner.
+styleSelect.addEventListener('change', () => selectRaffleStyle(styleSelect.value));
+
 skipDrawBtn.addEventListener('click', () => {
   if(!drawing) return;
   skipAnimations = true;
@@ -214,6 +295,8 @@ function updateResultTier(){
 }
 function resetBallResult(){
   lastReveal = null;
+  batchIncludesPreset = null;
+  updateDrawMethod();
   updateResultTier();
   delete resultName.dataset.i18nIgnore;
   resultName.textContent = '等待開獎';
@@ -429,6 +512,15 @@ function winners(){
 }
 
 function updateStageLabel(){
+  updateDrawStageLabels();
+  if(presenting && lastReveal && !drawing){
+    document.getElementById('tierContext').textContent = '本次獎項';
+    tierName.textContent = lastReveal.prizeName;
+    tierCountLabel.textContent = raffleCopy(`已揭曉第 ${lastReveal.ordinal} 位`, `Winner ${lastReveal.ordinal} revealed`);
+  }
+}
+function updateDrawStageLabels(){
+  updateDrawMethod();
   document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
   if(tiers.length === 0){
     tierName.textContent = '尚未設定獎項';
@@ -436,7 +528,7 @@ function updateStageLabel(){
     drawBtn.disabled = true;
     drawBtn.textContent = raffleCopy('開　始　抽　獎', 'Start draw');
     emptyHint.style.display = 'block';
-    emptyHint.textContent = '請先在左側輸入名單並套用獎項設定';
+    emptyHint.textContent = presenting ? '請先退出展示模式，設定名單與獎項。' : '請先在左側輸入名單並套用獎項設定';
     return;
   }
   if(currentTierIndex >= tiers.length){
@@ -461,7 +553,7 @@ function updateStageLabel(){
     emptyHint.textContent = tierStructureDirty ? '獎項已新增或移除，請先套用獎項設定' : '獎項人數請填入大於或等於 1 的整數';
   } else if(!has){
     emptyHint.style.display = 'block';
-    emptyHint.textContent = '名單人數不足，請先套用名單';
+    emptyHint.textContent = presenting ? '請先退出展示模式，設定名單與獎項。' : '名單人數不足，請先套用名單';
   } else {
     emptyHint.style.display = 'none';
   }
@@ -599,6 +691,7 @@ drawBtn.addEventListener('click', async ()=>{
   }
 
   drawing = true;
+  batchIncludesPreset = tier.forcedRemaining.some(name => pool.includes(name));
   skipAnimations = false;
   skipDrawBtn.hidden = false;
   updateStageLabel();
@@ -619,7 +712,7 @@ drawBtn.addEventListener('click', async ()=>{
       updatePoolCount();
       updateStageLabel();
       if(i < n - 1){
-        await briefRevealPause(950);
+        await briefRevealPause(presenting ? 2800 : 950);
         seal.classList.remove('show');
       }
     }
@@ -678,9 +771,15 @@ renderWinners();
 let savedMachine = 'wheel';
 try { savedMachine = localStorage.getItem('yichi-raffle-machine') || 'wheel'; } catch {}
 selectMachine(savedMachine);
+let savedStyle = 'festival';
+try { savedStyle = localStorage.getItem('yichi-raffle-style') || 'festival'; } catch {}
+selectRaffleStyle(savedStyle);
 if(typeof window !== 'undefined') window.addEventListener('yk:language', () => {
   updatePoolCount();
   updateResultTier();
+});
+if(typeof window !== 'undefined') window.addEventListener('keydown', event => {
+  if(event.key === 'Escape' && presenting) setPresentation(false);
 });
 </script>
 <footer class="yk-site-footer"><span>© 2026 郭奕圻 YI-CHI KUO</span><a href="index.html#tools">返回工具房 ↗</a></footer></body>
