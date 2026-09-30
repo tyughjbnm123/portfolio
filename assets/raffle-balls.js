@@ -47,7 +47,7 @@
   class Drum {
     constructor(canvas,onPhase=()=>{}){
       this.canvas=canvas;this.ctx=canvas.getContext('2d');this.onPhase=onPhase;
-      this.balls=makeBalls(0);this.count=0;this.phase='idle';this.frame=0;this.visible=true;
+      this.balls=makeBalls(0);this.count=0;this.phase='idle';this.frame=0;this.visible=true;this.active=true;
       this.motion=window.matchMedia('(prefers-reduced-motion: reduce)');
       this.resize=()=>{
         if(!this.ctx)return;
@@ -69,6 +69,11 @@
       document.addEventListener('visibilitychange',()=>{if(!document.hidden){this.last=0;this.schedule();}});
       this.motion.addEventListener('change',()=>{if(this.motion.matches&&this.resolve)this.finish();this.render(performance.now());this.schedule();});
       this.resize();this.schedule();
+    }
+    setActive(active){
+      this.active=active;
+      if(active){this.last=0;this.resize();this.schedule();}
+      else{cancelAnimationFrame(this.frame);this.frame=0;}
     }
     setCount(count){
       const changed=this.count!==count;
@@ -104,13 +109,13 @@
       const resolve=this.resolve;this.resolve=null;resolve?.();
     }
     schedule(){
-      if(!this.ctx||this.frame||document.hidden||!this.visible)return;
+      if(!this.active||!this.ctx||this.frame||document.hidden||!this.visible)return;
       if(this.motion.matches){this.render(performance.now());return;}
       this.frame=requestAnimationFrame(t=>this.tick(t));
     }
     tick(now){
       this.frame=0;
-      if(document.hidden||!this.visible){this.last=0;return;}
+      if(!this.active||document.hidden||!this.visible){this.last=0;return;}
       const dt=this.last?clamp((now-this.last)/16.667,0,2):1;this.last=now;
       if(this.phase==='mixing'&&(now-this.start)>this.duration*.64){
         this.phase='extracting';

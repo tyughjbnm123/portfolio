@@ -1,0 +1,19 @@
+.raffle-machine-picker {display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;margin:0 0 22px;border:1px solid var(--yk-line);border-radius:18px;background:var(--yk-surface)}
+.raffle-machine-picker label {display:block;color:var(--yk-ink);font-size:15px;font-weight:600;margin-bottom:5px}
+.raffle-machine-picker p {margin:0;color:var(--yk-muted);font-size:13px;line-height:1.65}
+.raffle-machine-select {position:relative;flex:0 0 225px}
+.raffle-machine-select::after {content:'⌄';position:absolute;right:16px;top:11px;color:var(--yk-accent);pointer-events:none}
+#machineSelect {appearance:none;width:100%;min-height:46px;padding:11px 42px 11px 16px;border:1px solid var(--yk-line);border-radius:12px;background:var(--yk-bg);color:var(--yk-ink);font:500 15px var(--yk-font);cursor:pointer}
+#machineSelect:focus-visible {outline:2px solid var(--yk-accent);outline-offset:3px}
+#machineSelect:disabled {opacity:.5;cursor:wait}
+#machineSelect option {background:var(--yk-bg);color:var(--yk-ink)}
+.ball-display[hidden] {display:none}
+#wheelCanvas {display:block;width:100%;height:100%}
+[data-machine=wheel] .ball-display {margin-bottom:0}
+[data-machine=wheel] .ball-state::before {background:#ddb779}
+[data-machine=wheel][data-phase=spinning] .ball-state::before,[data-machine=wheel][data-phase=slowing] .ball-state::before {animation:ball-light .8s ease-in-out infinite}
+@media(max-width:780px){
+  .raffle-machine-picker {align-items:stretch;flex-direction:column;gap:12px;padding:16px;margin-bottom:16px}
+  .raffle-machine-select {flex-basis:auto;width:100%}
+  #machineSelect {font-size:16px}
+}
