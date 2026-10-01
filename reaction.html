@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant" class="games-document">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>反應挑戰｜我的遊戲室 · YI-CHI KUO</title>
+  <meta name="description" content="等燈變綠，立刻按下！5 回合測試你的反應，支援手機觸控與電腦空白鍵，留下暱稱挑戰共用排行榜。">
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/games.css?v=20261001-themes2">
+  <link rel="stylesheet" href="assets/reaction.css?v=20261001-themes2">
+  <script src="assets/site-shell.js"></script>
+  <link rel="stylesheet" href="assets/site-language.css?v=20260927-en">
+  <script src="assets/site-english.js?v=20260927-continue"></script>
+  <script src="assets/reaction-language.js?v=20261001-themes2"></script>
+  <script src="assets/site-language.js?v=20260927-continue"></script>
+  <script defer src="assets/reaction-core.js?v=20261001-reaction1"></script>
+  <script defer src="assets/reaction.js?v=20261001-themes2"></script>
+</head>
+<body class="games-page reaction-page">
+  <a class="yk-skip" href="#reaction-pad">跳到遊戲</a>
+  <header class="yk-site-nav games-header"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PLAY A LITTLE.</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="games.html">← 遊戲目錄</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></header>
+  <nav class="games-subnav" aria-label="遊戲目錄"><a href="games.html">全部遊戲</a><a href="2048.html"><span>01</span>2048</a><a href="reaction.html" aria-current="page"><span>02</span>反應挑戰</a></nav>
+  <main class="reaction-layout">
+    <section class="reaction-main" aria-labelledby="reaction-title">
+      <p class="games-eyebrow">02 / REFLEX CHALLENGE</p>
+      <div class="reaction-heading"><div><h1 id="reaction-title">反應挑戰</h1><p>快一點，就差這一下。</p></div><span class="reaction-badge">5 ROUNDS</span></div>
+      <fieldset class="reaction-theme-picker"><legend>遊戲色系</legend><div class="reaction-theme-options">
+        <button type="button" data-reaction-theme="violet" aria-pressed="true"><i aria-hidden="true"></i>電光紫</button>
+        <button type="button" data-reaction-theme="ocean" aria-pressed="false"><i aria-hidden="true"></i>海洋藍</button>
+        <button type="button" data-reaction-theme="sunset" aria-pressed="false"><i aria-hidden="true"></i>日落橘</button>
+        <button type="button" data-reaction-theme="forest" aria-pressed="false"><i aria-hidden="true"></i>森林綠</button>
+      </div></fieldset>
+      <div class="reaction-toolbar"><span id="round-label" data-i18n-ignore></span><button id="restart-reaction" type="button">重新開始 ↻</button></div>
+      <button id="reaction-pad" type="button" class="reaction-pad" data-state="idle" aria-describedby="reaction-help" data-i18n-ignore>
+        <span class="reaction-orbit" aria-hidden="true"><span class="reaction-light"></span></span>
+        <span id="pad-kicker" class="pad-kicker"></span><strong id="pad-title"></strong><span id="pad-hint" class="pad-hint"></span>
+        <span class="pad-key" aria-hidden="true">SPACE / TAP</span>
+      </button>
+      <p id="reaction-help" class="reaction-help">點擊畫面或按空白鍵開始。等燈變綠、出現「按！」再出手；搶跑須重試該回合。</p>
+      <ol id="round-results" class="round-results" aria-label="五回合成績" data-i18n-ignore></ol>
+      <div class="reaction-stats"><div><span>本局平均</span><strong id="current-average">—</strong></div><div><span>最快一次</span><strong id="fastest-time">—</strong></div><div><span>個人最佳平均</span><strong id="personal-best">—</strong></div></div>
+      <p id="reaction-status" class="reaction-status" role="status" data-i18n-ignore></p>
+      <section id="reaction-result" class="reaction-result" aria-labelledby="result-title" hidden>
+        <p class="games-eyebrow">FIVE MOMENTS. ONE RESULT.</p><h2 id="result-title">這次，你有多快？</h2>
+        <p id="result-comparison" data-i18n-ignore></p>
+        <form id="reaction-form"><label for="reaction-name">在排行榜留下暱稱</label><div class="reaction-submit-row"><input id="reaction-name" name="nickname" maxlength="16" autocomplete="nickname" placeholder="你的暱稱" required aria-describedby="reaction-name-hint"><button id="submit-reaction" type="submit">送出成績 ↗</button></div><p id="reaction-name-hint">1–16 字。暱稱與成績會公開顯示。</p><p id="submit-status" role="status" data-i18n-ignore></p></form>
+      </section>
+    </section>
+    <aside class="reaction-ranking" aria-labelledby="ranking-title">
+      <div class="ranking-heading"><div><p class="games-eyebrow">THE QUICK LIST</p><h2 id="ranking-title">誰的反應最快？</h2></div><button id="refresh-reaction" type="button" aria-label="重新整理排行榜">↻</button></div>
+      <p class="ranking-intro">所有訪客共用 · 平均反應前 20 名<br>5 回合平均越低，排名越前面。</p>
+      <div class="ranking-labels"><span>玩家</span><span>平均 / ms</span></div><ol id="reaction-ranks" data-i18n-ignore></ol><p id="rank-status" role="status" data-i18n-ignore></p>
+      <div class="reaction-how"><h3>怎麼玩？</h3><ol><li>按下開始，等待 2～5 秒。</li><li>看到綠燈與「按！」，立刻按下。</li><li>完成 5 回合，留下你的成績。</li></ol><p>搶跑不計分，重試同一回合。切換分頁時暫停該回合，回來後重新開始。</p></div>
+    </aside>
+  </main>
+  <footer class="games-directory-footer"><span>專心等一下，好運不如好反應。</span><span>© 2026 YI-CHI KUO</span></footer>
+</body></html>
