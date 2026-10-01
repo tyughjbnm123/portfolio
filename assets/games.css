@@ -26,3 +26,14 @@
 #yk-world .yk-games-directory-link:hover{background:var(--yk-soft);border-color:var(--yk-accent)}
 @media(max-width:650px){.games-page{padding:0 18px}.games-page .games-header{min-height:76px}.games-page .yk-site-nav-actions{gap:12px}.games-page .yk-room-back{font-size:12px}.games-subnav{padding:0 18px;gap:7px}.games-subnav a{font-size:13px;padding:9px 15px}#yk-world.games-directory{margin:30px auto 40px}.games-heading{align-items:start;gap:12px;margin-bottom:26px}.games-heading h1{font-size:30px}.games-heading p:last-child{font-size:13px;max-width:230px}.games-count{font-size:11px;margin-top:32px}#yk-world.games-directory .yk-game-card{grid-template-columns:1fr}.games-directory-footer{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.games-subnav a,#yk-world .yk-games-directory-link{transition:none}}
+
+#yk-world .yk-game-card+.yk-game-card{margin-top:22px}
+#yk-world .yk-reaction-cover{background:radial-gradient(circle at 50% 42%,#393064,#121b35);color:#ece7ff}
+#yk-world .yk-reflex-orbit{width:220px;height:220px;border:1px solid #b7a1ff65;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:13px;position:relative}
+#yk-world .yk-reflex-orbit:before{content:'';position:absolute;inset:16px;border:1px solid #b7a1ff35;border-radius:50%}
+#yk-world .yk-reflex-orbit i{width:47px;height:47px;border-radius:50%;background:#b7a1ff;box-shadow:0 0 45px #a483ff55}
+#yk-world .yk-reflex-orbit b{font:700 36px var(--yk-font);letter-spacing:-.05em}
+#yk-world .yk-reflex-orbit small{font:9px ui-monospace,monospace;letter-spacing:.2em;color:#bcb5d9}
+#yk-world .yk-reaction-card .yk-game-card-copy .yk-game-start{background:#6546c7;color:#ffffff}
+#yk-world .yk-reaction-card .yk-game-card-copy>strong{font-size:34px;line-height:1.25}
+@media(max-width:650px){#yk-world .yk-reflex-orbit{width:190px;height:190px}#yk-world .yk-reaction-card .yk-game-card-copy>strong{font-size:30px}}
