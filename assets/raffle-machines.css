@@ -14,9 +14,6 @@
 .raffle-style-label {display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .raffle-style-swatches {display:flex;gap:3px}
 .raffle-style-swatches i {width:9px;height:9px;border-radius:50%;background:var(--yk-accent);border:1px solid #00000012}
-.raffle-present-button {margin-top:9px;padding:6px 12px;border:1px solid var(--yk-line);border-radius:8px;background:var(--yk-bg);color:var(--yk-ink);font:500 13px var(--yk-font);cursor:pointer}
-.raffle-present-button:hover {border-color:var(--yk-accent)}
-.raffle-present-button:focus-visible,.raffle-presentation-bar :is(button,select):focus-visible {outline:2px solid var(--yk-accent);outline-offset:3px}
 .ball-stage-status {display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 .raffle-draw-method {font-size:10px;color:var(--yk-muted);line-height:1.4;text-align:right}
 .ball-display[hidden] {display:none}
@@ -30,7 +27,7 @@
   #machineSelect,#styleSelect {font-size:16px}
 }
 
-/* Stage palettes are independent of the portfolio's light/dark setting. */
+/* Festival and neon have lit stages. Candy follows the surrounding light/dark palette. */
 #ballStage[data-raffle-style=festival] {
   --yk-ink:#fff4dc;--yk-muted:#ecd1bd;--yk-accent:#ffce68;--yk-on-accent:#59172b;
   --yk-surface:#64152c;--yk-soft:#90283d;--yk-line:#cb765d;
@@ -44,70 +41,15 @@
   border-color:#b27aed;box-shadow:inset 0 0 25px #9453f520,0 0 20px #a573ed1a;
 }
 #ballStage[data-raffle-style=candy] {
-  --yk-ink:#632d51;--yk-muted:#85536c;--yk-accent:#a83873;--yk-on-accent:#ffffff;
-  --yk-surface:#fff4fa;--yk-soft:#f5dcea;--yk-line:#d99cbb;
-  background:radial-gradient(circle at 20% 27%,#ffffffa0 0 4px,transparent 5px),radial-gradient(circle at 82% 60%,#ffffff 0 5px,transparent 6px),linear-gradient(145deg,#fff3f9,#eee4fb);
-  border-color:#df9dbf;box-shadow:inset 0 0 0 5px #ffffff80,0 12px 30px #c04a8310;
+  background:radial-gradient(ellipse at 50% 33%,light-dark(#ffd5de80,#b452742b),transparent 66%),linear-gradient(150deg,var(--yk-surface),var(--yk-soft));
+  border-color:var(--yk-line);box-shadow:inset 0 0 0 4px light-dark(#ffffff90,#ffb5ce0a),0 12px 30px var(--raffle-shadow);
 }
+#ballStage[data-raffle-style=candy] .empty-hint {color:var(--yk-muted)}
+#fortuneCanvas {display:block;width:100%;height:100%}
+[data-machine=fortune][data-phase=shaking] .ball-state::before,
+[data-machine=fortune][data-phase=drawing] .ball-state::before {animation:ball-light .8s ease-in-out infinite}
 #ballStage .draw-btn:not(:disabled) {background:linear-gradient(120deg,var(--yk-accent),color-mix(in srgb,var(--yk-accent) 75%,white));color:var(--yk-on-accent);border-color:var(--yk-accent);font-weight:700;box-shadow:0 5px 24px color-mix(in srgb,var(--yk-accent) 18%,transparent)}
 #ballStage .ball-result .seal {color:var(--yk-accent);border-color:var(--yk-accent);background:var(--yk-soft)}
 #ballStage .ball-result .result-name:not(.placeholder) {font-size:clamp(34px,4vw,52px);font-weight:700}
 #ballStage[data-raffle-style=neon] .ball-result .result-name:not(.placeholder) {text-shadow:0 0 20px #bf75fc70}
 #ballStage[data-raffle-style=festival] .ball-result .result-name:not(.placeholder) {color:#ffdd88}
-
-/* Presentation uses the same live stage and records; entering/exiting never reloads it. */
-.raffle-presentation-bar {display:flex;align-items:center;justify-content:center;gap:12px;min-height:76px;padding:12px 0;color:var(--yk-ink)}
-.raffle-presentation-bar strong {font-size:15px;margin-right:10px}
-.raffle-presentation-bar label {font-size:12px;color:var(--yk-muted)}
-.raffle-presentation-bar :is(select,button) {font:14px var(--yk-font);color:var(--yk-ink);background:var(--yk-surface);border:1px solid var(--yk-line);padding:9px 12px;border-radius:9px;min-height:40px;cursor:pointer}
-body[data-raffle-presentation] {padding:0 16px 16px;}
-html:has(body[data-raffle-presentation]) {zoom:1}
-body[data-raffle-presentation] :is(.yk-skip,.yk-site-nav,.yk-tool-nav,.yk-tool-heading,.raffle-machine-picker,.advanced,.yk-site-footer,.toast) {display:none!important}
-body[data-raffle-presentation] .grid {display:block!important}
-body[data-raffle-presentation] .grid>.panel {display:none}
-body[data-raffle-presentation] .wrap {max-width:none!important}
-body[data-raffle-presentation] #ballStage {
-  --record-height:min(800px,calc(100dvh - 100px),calc((100vw - 32px) * 16 / 9));
-  width:calc(var(--record-height) * 9 / 16);height:var(--record-height);min-height:0;
-  max-width:100%;margin:0 auto;gap:6px;padding:18px 16px;container-type:inline-size;
-}
-body[data-raffle-presentation] #ballStage .ball-display {flex:1;aspect-ratio:auto;min-height:0;max-width:none;margin:0;width:100%;height:0}
-body[data-raffle-presentation] #ballStage canvas {width:100%;height:100%;object-fit:contain}
-body[data-raffle-presentation] #ballStage .ball-result {min-height:0;padding:0}
-body[data-raffle-presentation] #ballStage .result-name {font-size:clamp(30px,11cqw,58px);padding:5px 0}
-body[data-raffle-presentation] #ballStage .result-name.placeholder {font-size:16px;padding:3px 0}
-body[data-raffle-presentation] #ballStage .ball-result-meta {font-size:12px;min-height:0}
-body[data-raffle-presentation] #ballStage .seal:not(.show) {display:none}
-body[data-raffle-presentation] #ballStage .ball-actions {margin-top:0;flex-shrink:0}
-body[data-raffle-presentation] #ballStage .draw-btn {min-width:0;width:100%;font-size:15px;min-height:40px;padding:8px 16px}
-body[data-raffle-presentation] #ballStage .ball-visual-note {display:none}
-body[data-raffle-presentation] #ballStage .tier-name {font-size:18px}
-body[data-raffle-presentation] #ballStage .tier-count {font-size:12px;margin-top:1px}
-body[data-raffle-presentation] #ballStage .ball-queue-label {font-size:10px;margin-bottom:1px}
-body[data-raffle-presentation] #ballStage .ball-state {font-size:11px;padding-top:2px}
-body[data-raffle-presentation=landscape] #ballStage {
-  --record-width:min(1100px,calc(100vw - 32px),calc((100dvh - 100px) * 16 / 9));
-  width:var(--record-width);height:calc(var(--record-width) * 9 / 16);display:grid;
-  grid-template-columns:1.15fr 1fr;grid-template-rows:auto minmax(0,1fr) auto auto auto;column-gap:24px;padding:24px;
-}
-body[data-raffle-presentation=landscape] #ballStage .ball-stage-header {grid-column:1/-1}
-body[data-raffle-presentation=landscape] #ballStage .ball-display {grid-row:2/-1;grid-column:1;height:100%;}
-body[data-raffle-presentation=landscape] #ballStage .ball-result {grid-row:2;grid-column:2;align-self:center;}
-body[data-raffle-presentation=landscape] #ballStage .ball-actions {grid-row:3;grid-column:2}
-body[data-raffle-presentation=landscape] #ballStage .empty-hint {grid-row:4;grid-column:2}
-body[data-raffle-presentation=landscape] #ballStage .ball-visual-note {grid-row:5;grid-column:2}
-body[data-raffle-presentation=landscape] #ballStage .result-name {font-size:clamp(28px,6cqw,64px)}
-@media(max-width:600px){
-  .raffle-presentation-bar {flex-wrap:wrap;gap:7px;min-height:76px;padding:10px 0}
-  .raffle-presentation-bar strong {font-size:13px;margin-right:0}
-  .raffle-presentation-bar label {display:none}
-  .raffle-presentation-bar :is(select,button) {font-size:12px;padding:8px;min-height:36px}
-  body[data-raffle-presentation=landscape] #ballStage {padding:12px;gap:4px 8px}
-  body[data-raffle-presentation=landscape] #ballStage :is(.tier-name,.result-name.placeholder) {font-size:13px}
-  body[data-raffle-presentation=landscape] #ballStage :is(.tier-count,.ball-state,.ball-result-meta,.ball-queue-label) {font-size:10px;line-height:1.2}
-  body[data-raffle-presentation=landscape] #ballStage .ball-queue-label {margin-bottom:0}
-  body[data-raffle-presentation=landscape] #ballStage .ball-visual-note {display:none}
-  body[data-raffle-presentation=landscape] #ballStage .draw-btn {font-size:12px;padding:6px;min-height:30px}
-  body[data-raffle-presentation=landscape] #ballStage .ball-skip {font-size:10px;padding:1px 0}
-  body[data-raffle-presentation=landscape] #ballStage .ball-result .seal {font-size:10px;min-height:0;padding:1px 8px}
-}

@@ -168,7 +168,7 @@
       c.save();c.translate(CX,CY);c.rotate(this.motion.matches?0:now/(this.phase==='mixing'?210:18000));
       for(let i=0;i<3;i++){c.rotate(Math.PI*2/3);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(35,-55,120,-32);c.stroke();}
       c.restore();
-      c.globalAlpha=this.count===0&&this.phase==='idle'?.34:this.phase==='revealed'?.42:1;
+      c.globalAlpha=this.count===0&&this.phase==='idle'?(this.look.idleOpacity??.34):this.phase==='revealed'?.42:1;
       this.balls.forEach(b=>this.ball(b.x,b.y,b.r,b.color,b.rotation));
       c.restore();
       const rim=c.createLinearGradient(90,20,360,340);

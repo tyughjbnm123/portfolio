@@ -19,12 +19,12 @@
       shine:'#dbccffc9', glass:'#a471f522', winner:'#aefff2', symbol:'✧'
     },
     candy: {
-      wheel:['#ffa2c8','#9cddf3','#d5b6fa','#ffe599','#a9e5c8','#ffbda8'],
+      wheel:['#ff9cba','#8ed9ce','#efb1cf','#ffdc8e','#a8d9ee','#ffba95'],
       labels:['#5b2244','#17445c','#432464','#5b3d13','#215346','#63382e'],
-      balls:[['#fff1f8','#f994c4','#bb4d81'],['#edfbff','#8ed9ed','#418baf'],['#f8eeff','#c9a3f1','#8b5eb5'],['#fffbea','#ffe397','#bd943f']],
-      rim:'#fff2f8', metal:'#bc658e', lamp:'#ffffff', lowLamp:'#e78eb7',
-      stand:'#e98fbb22', line:'#b7659077', glow:'#f485c82b', clear:'#f485c800',
-      shine:'#ffffffd9', glass:'#c68ce422', winner:'#953760', symbol:'♥'
+      balls:[['#ffeaf1','#f77fa8','#ba3f68'],['#e2fff6','#70cbb6','#347d71'],['#fff0dd','#ffb17f','#b66c40'],['#fff8d5','#f1ce6b','#a68532']],
+      rim:'#f8d7df', metal:'#c66786', lamp:'#fff8de', lowLamp:'#d97b9d',
+      stand:'#e792aa30', line:'#c76c8dad', glow:'#f28caa27', clear:'#f28caa00',
+      shine:'#ffe6eed9', glass:'#ec97b525', winner:'#b43b69', symbol:'♥', idleOpacity:.68
     },
     forest: {
       wheel:['#bcd796','#e8d6ae','#608a76','#d69769','#8faa7a','#eedfc6'],
