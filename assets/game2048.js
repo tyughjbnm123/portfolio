@@ -61,7 +61,7 @@
     $('#submit-status').textContent=game.submitted?'這局成績已送出，謝謝你來玩！':game.score===0?'這局沒有得分，再挑戰一次吧。':'';$('#submit-status').dataset.error='false';
     if(!resultDialog.open)resultDialog.showModal();
   }
-  function getCloud() {if(!cloud)cloud=import('./game2048-firebase.js?v=20260927-continue').catch(e=>{cloud=null;throw e;});return cloud;}
+  function getCloud() {if(!cloud)cloud=import('./game2048-firebase.js?v=20261002-games1').catch(e=>{cloud=null;throw e;});return cloud;}
   function cloudError(error) {
     if(error.code==='permission-denied')return '排行榜暫時無法存取，請稍後再試。';
     if(error.code==='auth/operation-not-allowed'||error.code==='auth/configuration-not-found')return '排行榜的訪客登入尚未啟用，請稍後再試。';

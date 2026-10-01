@@ -108,7 +108,7 @@
     $('submit-status').textContent=notices[submitMessage]||'';
   }
   function persist(){if(completed)save(LAST,JSON.stringify({...completed,sent}));}
-  function cloudApi(){return cloud ||= import('./reaction-firebase.js?v=20261001-reaction1').catch(e=>{cloud=null;throw e;});}
+  function cloudApi(){return cloud ||= import('./reaction-firebase.js?v=20261002-games1').catch(e=>{cloud=null;throw e;});}
   function withTimeout(promise){let timeout;return Promise.race([promise,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('timeout')),12000);})]).finally(()=>clearTimeout(timeout));}
   function errorCode(e){return e.code==='permission-denied'?'permission':e.message==='cooldown'?'cooldown':String(e.code||'').startsWith('auth/')?'auth':'network';}
   function renderRanks(){

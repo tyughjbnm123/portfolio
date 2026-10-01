@@ -1,7 +1,6 @@
-import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import {app} from './games-firebase-app.js?v=20261002-games1';
 import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import {getFirestore,collection,query,orderBy,limit,getDocsFromServer,doc,getDocFromServer,writeBatch,serverTimestamp} from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-const app=getApps().find(a=>a.name==='portfolio-games')||initializeApp({apiKey:'AIzaSyByl0rQEYKVbhsGBKILvgaBr8EFw0AqO0E',authDomain:'my-prompt-library-d15ff.firebaseapp.com',projectId:'my-prompt-library-d15ff',storageBucket:'my-prompt-library-d15ff.firebasestorage.app',messagingSenderId:'32943955220',appId:'1:32943955220:web:5d5ccc2ebf37bb4816b601'},'portfolio-games');
 const db=getFirestore(app),auth=getAuth(app);let signingIn;
 async function player(){await auth.authStateReady();if(auth.currentUser)return auth.currentUser;return signingIn ||= signInAnonymously(auth).then(v=>v.user).finally(()=>{signingIn=null;});}
 export async function leaderboard(){
