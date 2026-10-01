@@ -1,0 +1,133 @@
+/* A raffle style covers the complete recording frame, including the site shell.
+   All selectors stay on this page; the site's light/dark preference still works. */
+body[data-tool-page=raffle][data-raffle-style=festival] {
+  --yk-bg:light-dark(#fff3e5,#250c17);
+  --yk-surface:light-dark(#fffaf2,#421725);
+  --yk-soft:light-dark(#fbe5d1,#612139);
+  --yk-ink:light-dark(#5c2030,#fff3dd);
+  --yk-muted:light-dark(#885343,#ddbaaa);
+  --yk-line:light-dark(#dfbca0,#86503e);
+  --yk-accent:light-dark(#ac273f,#ffd279);
+  --yk-on-accent:light-dark(#ffffff,#40121e);
+  --yk-danger:light-dark(#ac2036,#ffac9b);
+  --raffle-spotlight:light-dark(#f9ca8780,#c3473738);
+  --raffle-confetti:light-dark(#b5703a24,#ffd37a20);
+  --raffle-wash:light-dark(#f8dcda66,#701d303d);
+  --raffle-shadow:light-dark(#82372110,#09030740);
+}
+body[data-tool-page=raffle][data-raffle-style=neon] {
+  --yk-bg:light-dark(#f1ecff,#100a20);
+  --yk-surface:light-dark(#fcfaff,#211333);
+  --yk-soft:light-dark(#e4dafa,#34204d);
+  --yk-ink:light-dark(#311752,#f8f1ff);
+  --yk-muted:light-dark(#67547e,#cbb8dd);
+  --yk-line:light-dark(#c3adde,#664783);
+  --yk-accent:light-dark(#6d30b2,#68f1df);
+  --yk-on-accent:light-dark(#ffffff,#142b31);
+  --yk-danger:light-dark(#a62e72,#ffacd8);
+  --raffle-spotlight:light-dark(#be94ff55,#8e37f13d);
+  --raffle-confetti:light-dark(#8546b523,#b18bea23);
+  --raffle-wash:light-dark(#78e8e93b,#12647b25);
+  --raffle-shadow:light-dark(#5e2ca516,#0601114d);
+}
+body[data-tool-page=raffle][data-raffle-style=candy] {
+  --yk-bg:light-dark(#fff0f7,#302034);
+  --yk-surface:light-dark(#fffafd,#432c49);
+  --yk-soft:light-dark(#f9deed,#5c3b5d);
+  --yk-ink:light-dark(#642d50,#ffedf7);
+  --yk-muted:light-dark(#83556f,#e3bdd8);
+  --yk-line:light-dark(#e0b1cc,#916985);
+  --yk-accent:light-dark(#a43672,#ffb4d8);
+  --yk-on-accent:light-dark(#ffffff,#51223c);
+  --yk-danger:light-dark(#a82e58,#ffb1c2);
+  --raffle-spotlight:light-dark(#e4c4ff70,#b476d132);
+  --raffle-confetti:light-dark(#cd78a72e,#fcbadd26);
+  --raffle-wash:light-dark(#b8e5ef55,#b273aa20);
+  --raffle-shadow:light-dark(#ac4b7d10,#160e2040);
+}
+body[data-tool-page=raffle][data-raffle-style=forest] {
+  --yk-bg:light-dark(#f2f4e9,#101b17);
+  --yk-surface:light-dark(#fcfdf6,#1c3025);
+  --yk-soft:light-dark(#e4ecd9,#2b4230);
+  --yk-ink:light-dark(#2e422d,#f1f4e3);
+  --yk-muted:light-dark(#60715a,#b6c5ab);
+  --yk-line:light-dark(#c6d3ba,#4e674b);
+  --yk-accent:light-dark(#50702f,#c9e49d);
+  --yk-on-accent:light-dark(#ffffff,#233118);
+  --yk-danger:light-dark(#a64136,#ffb6a6);
+  --raffle-spotlight:light-dark(#cfe4ad55,#7aab4830);
+  --raffle-confetti:light-dark(#78925a20,#abc48b18);
+  --raffle-wash:light-dark(#f0dfa347,#806b2420);
+  --raffle-shadow:light-dark(#29451f0d,#06100a40);
+}
+body[data-tool-page=raffle][data-raffle-style] {
+  background-color:var(--yk-bg);
+  background-image:
+    radial-gradient(ellipse at 50% 0%,var(--raffle-spotlight),transparent 66%),
+    radial-gradient(circle at 1px 1px,var(--raffle-confetti) 1px,transparent 1.7px),
+    linear-gradient(125deg,var(--raffle-wash),transparent 65%);
+  background-size:100% 950px,36px 36px,100% 100%;
+  background-repeat:no-repeat,repeat,no-repeat;
+  color:var(--yk-ink);
+  scrollbar-color:var(--yk-line) var(--yk-bg);
+}
+[data-tool-page=raffle][data-raffle-style] .yk-site-nav {
+  border-color:var(--yk-line);
+}
+[data-tool-page=raffle][data-raffle-style] .yk-tool-nav a[aria-current=page] {
+  background:var(--yk-accent);color:var(--yk-on-accent);border-color:var(--yk-accent);
+}
+[data-tool-page=raffle][data-raffle-style] .yk-tool-heading h1 {
+  font-weight:700;letter-spacing:.02em;
+}
+[data-tool-page=raffle][data-raffle-style] .yk-orbit {
+  background:var(--yk-surface);box-shadow:0 0 32px var(--raffle-spotlight);
+}
+[data-tool-page=raffle][data-raffle-style] :is(.raffle-machine-picker,.grid>.panel,.advanced) {
+  background:linear-gradient(150deg,var(--yk-surface),color-mix(in srgb,var(--yk-surface) 82%,var(--yk-soft)));
+  border-color:var(--yk-line);
+  box-shadow:0 12px 32px var(--raffle-shadow);
+}
+[data-tool-page=raffle][data-raffle-style] .raffle-machine-picker {
+  border-top:3px solid var(--yk-accent);
+}
+[data-tool-page=raffle][data-raffle-style] .panel h2 {
+  margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--yk-line);
+  font-weight:700;
+}
+[data-tool-page=raffle][data-raffle-style] .panel h2::before {
+  width:7px;height:7px;border-radius:2px;transform:rotate(45deg);
+  box-shadow:0 0 12px var(--raffle-spotlight);
+}
+[data-tool-page=raffle][data-raffle-style] :is(.file-btn,.btn-ghost,.raffle-present-button) {
+  background:color-mix(in srgb,var(--yk-soft) 40%,transparent);
+  color:var(--yk-ink);border-color:var(--yk-line);
+}
+[data-tool-page=raffle][data-raffle-style] :is(.file-btn,.btn-ghost,.raffle-present-button):hover:not(:disabled) {
+  color:var(--yk-ink);background:var(--yk-soft);border-color:var(--yk-accent);
+}
+[data-tool-page=raffle][data-raffle-style] :is(#loadBtn,#applyTiersBtn) {
+  color:var(--yk-accent);border-color:color-mix(in srgb,var(--yk-accent) 60%,var(--yk-line));
+  background:color-mix(in srgb,var(--yk-accent) 9%,var(--yk-surface));
+}
+[data-tool-page=raffle][data-raffle-style] .tier-row input[type=text] {min-width:0}
+[data-tool-page=raffle][data-raffle-style] .winner-empty {
+  border:1px dashed var(--yk-line);border-radius:12px;
+  background:color-mix(in srgb,var(--yk-bg) 60%,transparent);
+}
+[data-tool-page=raffle][data-raffle-style] .winner-item {
+  background:var(--yk-soft);border-color:var(--yk-line);border-left:3px solid var(--yk-accent);
+}
+[data-tool-page=raffle][data-raffle-style] .winner-item .name {overflow-wrap:anywhere;min-width:0}
+[data-tool-page=raffle][data-raffle-style] .winner-item .idx {
+  width:28px;height:28px;display:grid;place-items:center;border-radius:50%;
+  color:var(--yk-on-accent);background:var(--yk-accent);font-size:12px;
+}
+[data-tool-page=raffle][data-raffle-style] .tier-header {font-size:15px;letter-spacing:.02em}
+[data-tool-page=raffle][data-raffle-style] .tier-header .count {font-size:12px}
+[data-tool-page=raffle][data-raffle-style] .raffle-presentation-bar :is(select,button) {
+  box-shadow:0 4px 16px var(--raffle-shadow);
+}
+@media(prefers-reduced-motion:reduce) {
+  [data-tool-page=raffle][data-raffle-style] :is(.yk-orbit i,.yk-tool-kicker span,.winner-item) {animation:none}
+}

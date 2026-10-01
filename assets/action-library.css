@@ -48,3 +48,16 @@ body[data-tool-page=ai-tools] .yk-site-nav{min-height:78px}body[data-tool-page=a
   .ac-image-help{flex-wrap:wrap;gap:4px}
   #ac-dialog-art{max-width:180px}
 }
+
+/* Give native popup rows an opaque surface; transparent selects can otherwise
+   produce pale text on a white popup in desktop browsers using the dark theme. */
+[data-tool-page=ai-tools] select {color-scheme:inherit}
+[data-tool-page=ai-tools] select :is(option,optgroup) {
+  color:var(--yk-ink);background-color:var(--yk-surface);
+}
+[data-tool-page=ai-tools] .ac-filter-row select {
+  background:var(--yk-surface)!important;
+  border:1px solid var(--yk-line)!important;
+  color:var(--yk-ink);
+  padding:6px 10px!important;min-height:40px!important;
+}
