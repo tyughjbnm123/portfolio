@@ -10,12 +10,12 @@
   const allowMotion = () => !reduced.matches || motionRequested;
   const state = { open: false, ready: false, menu: false, mode: 'idle', busy: false, closing: false };
   let position = saved.position && Number.isFinite(saved.position.x) && Number.isFinite(saved.position.y) ? saved.position : null;
-  let transition = 0, drag = null, suppressClick = false;
+  let transition = 0, drag = null, suppressClick = false, notes = null, notesLoading = null;
   const labels = { idle: '安靜待機', welcome: '打個招呼', drag: '跟著你移動', dance: '跳一支舞', yawn: '打個哈欠', bye: '下次見' };
   const speaker = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-on" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/></svg>';
   const host = document.createElement('div'); host.id = 'yk-companion-widget';
   const root = host.attachShadow({ mode: 'open' });
-  const sheet = document.createElement('link'); sheet.rel = 'stylesheet'; sheet.href = new URL('companion-widget-v23.css', base).href;
+  const sheet = document.createElement('link'); sheet.rel = 'stylesheet'; sheet.href = new URL('companion-widget-v23.css?v=20261002-notes1', base).href;
   root.append(sheet);
   const ui = document.createElement('div');
   ui.innerHTML = `<button class="launcher" type="button" aria-expanded="false" aria-controls="pet-panel"><span aria-hidden="true">✧</span> 召喚小精靈</button>
@@ -24,6 +24,7 @@
       <div class="load-status" hidden><p role="status" class="loading">角色準備中…</p><button class="retry" type="button" hidden>重新載入</button><button class="cancel" type="button">收起</button></div>
       <div class="menu" id="pet-menu" role="group" aria-label="小精靈選單" hidden>
         <button class="dance" type="button" aria-pressed="false">♪ 跳舞</button>
+        <button class="note-open" type="button">幫我記一下</button>
         <button class="voice icon-button" type="button" aria-label="關閉聲音" title="關閉聲音" aria-pressed="false">${speaker}</button>
         <button class="close icon-button" type="button" aria-label="收起小精靈" title="收起小精靈"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       </div>
@@ -50,6 +51,7 @@
     try { localStorage.setItem(key, JSON.stringify({ open: state.open, position, motionEnabled: motionRequested })); } catch {}
   }
   function layoutMenu() {
+    notes?.layout();
     if (!state.menu) return;
     const r = host.getBoundingClientRect(), m = menu.getBoundingClientRect(), zoom = scale();
     let x = r.left + (r.width - m.width) / 2, y = r.top - m.height - 8;
@@ -159,6 +161,7 @@
     }
   }
   function finishClose() {
+    notes?.close();
     transition++; resetDrag(); player.still();
     state.open = state.menu = state.closing = state.busy = false; state.mode = 'idle';
     host.style.left = host.style.top = host.style.right = host.style.bottom = '';
@@ -179,6 +182,21 @@
   });
   $('.dance').addEventListener('click', () => { motionRequested = true; remember(); player.unlock(); if (state.mode === 'dance') returnToIdle(); else run('dance'); });
   $('.voice').addEventListener('click', () => { player.toggleMuted(); });
+  $('.note-open').addEventListener('click', async () => {
+    $('.note-open').disabled = true;
+    try {
+      notesLoading ||= import(new URL('companion-notes.js?v=20261002-notes1', base).href).then(module => module.createNotes({
+        root, host,
+        onClose: () => actor.focus({preventScroll:true}),
+        onComplete: () => {
+          if (state.open && state.ready && !state.closing && allowMotion()) run('dance', {sound:false});
+        }
+      })).catch(error => { notesLoading = null; throw error; });
+      notes = await notesLoading;
+      if (state.open && !state.closing) { state.menu = false; render(); notes.open(); }
+    } catch { $('.status').textContent = '便條暫時無法載入，請再試一次。'; }
+    finally { $('.note-open').disabled = false; }
+  });
   actor.addEventListener('click', event => {
     if (suppressClick && event.detail !== 0) { suppressClick = false; return; }
     motionRequested = true; remember();
@@ -221,6 +239,7 @@
   root.addEventListener('keydown', event => {
     if (event.key === 'Escape' && state.open) {
       event.preventDefault(); event.stopPropagation();
+      if (notes?.isOpen) { notes.close(); return; }
       if (state.menu) { state.menu = false; render(); actor.focus({ preventScroll: true }); } else close();
       return;
     }
