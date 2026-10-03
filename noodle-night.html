@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant" class="games-document">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>凌晨牛肉麵｜我的遊戲室 · YI-CHI KUO</title>
+  <meta name="description" content="在凌晨 3 點前開車抵達麵店，閃過車輛，再親手煮一碗牛肉麵。支援電腦與手機的小遊戲。">
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/games.css?v=20261002-noodle1">
+  <link rel="stylesheet" href="assets/noodle-night.css?v=20261002-noodle1">
+  <script src="assets/site-shell.js"></script>
+  <link rel="stylesheet" href="assets/site-language.css?v=20260927-en">
+  <script src="assets/site-english.js?v=20261002-brandnotes1"></script>
+  <script src="assets/reaction-language.js?v=20261001-themes2"></script>
+  <script src="assets/noodle-language.js?v=20261002-noodle1"></script>
+  <script src="assets/site-language.js?v=20260927-continue"></script>
+  <script defer src="assets/noodle-core.js?v=20261002-noodle1"></script>
+  <script defer src="assets/noodle-night.js?v=20261002-noodle1"></script>
+</head>
+<body class="games-page noodle-page">
+  <a class="yk-skip" href="#night-scene">跳到遊戲</a>
+  <header class="yk-site-nav games-header"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PLAY A LITTLE.</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="games.html">← 遊戲目錄</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></header>
+  <nav class="games-subnav" aria-label="遊戲目錄"><a href="games.html">全部遊戲</a><a href="2048.html"><span>01</span>2048</a><a href="reaction.html"><span>02</span>反應挑戰</a><a href="noodle-night.html" aria-current="page"><span>03</span>凌晨牛肉麵</a></nav>
+  <main class="night-layout">
+    <div class="night-heading"><div><p class="night-eyebrow">03 / A LITTLE MIDNIGHT MISSION</p><h1>凌晨牛肉麵<span aria-hidden="true">✦</span></h1><p>城市睡了，你的宵夜才正要開始。</p></div><span class="night-edition">DRIVE. COOK. ENJOY.<br><b>02:50 → 03:00</b></span></div>
+    <div class="night-grid">
+      <section class="night-game" aria-label="凌晨牛肉麵遊戲">
+        <div class="night-dashboard"><div><span>現在時間</span><strong id="night-clock" data-i18n-ignore>02:50</strong></div><div><span id="distance-label" data-i18n-ignore>距離麵店</span><strong id="night-distance" data-i18n-ignore>3.20 <small>km</small></strong></div><button id="night-pause" type="button" disabled data-i18n-ignore>暫停 Ⅱ</button></div>
+        <div class="night-route" role="progressbar" aria-label="到店進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="night-progress"></i></div>
+        <div id="night-scene" class="night-scene" tabindex="0" role="group" aria-label="開車場景，使用左右方向鍵或 A、D 切換車道。" aria-describedby="night-help" data-i18n-ignore>
+          <canvas id="night-canvas" width="960" height="880" aria-hidden="true"></canvas>
+          <span id="night-sign" class="night-sign">牛肉麵 <b>OPEN TILL 03:00</b></span>
+          <div class="night-overlay" id="night-overlay">
+            <p class="overlay-kicker" id="overlay-kicker">THE LAST BOWL OF THE NIGHT</p>
+            <h2 id="overlay-title">夜路的盡頭，<br>有一碗熱湯。</h2>
+            <p id="overlay-copy">凌晨 2:50，距離麵店還有 3.2 公里。<br>3 點前到店，為自己煮一碗牛肉麵。</p>
+            <div class="overlay-result" id="overlay-result" hidden></div>
+            <button id="night-primary" type="button">出發去煮麵 →</button>
+          </div>
+          <div id="night-cooking" class="night-cooking" hidden>
+            <p id="cook-kicker" class="overlay-kicker"></p><h2 id="cook-title"></h2><p id="cook-hint"></p>
+            <div id="cook-meter" class="cook-meter"><span class="cook-target"></span><i id="cook-needle"></i><small>PERFECT</small></div>
+            <div id="cook-garnishes" class="cook-garnishes" hidden><button type="button" data-garnish="beef">＋ 牛肉</button><button type="button" data-garnish="greens">＋ 青菜</button></div>
+            <button id="cook-action" type="button"></button>
+            <p id="cook-feedback" role="status"></p>
+          </div>
+        </div>
+        <div class="night-controls"><button id="night-left" type="button" aria-label="向左切換車道" disabled>← <span>A</span></button><p id="night-road-hint" data-i18n-ignore>左右換道，準時到店。</p><button id="night-right" type="button" aria-label="向右切換車道" disabled><span>D</span> →</button></div>
+        <p id="night-live" class="night-live" role="status" data-i18n-ignore></p>
+      </section>
+      <aside class="night-brief">
+        <div class="night-ticket"><p class="night-eyebrow">TONIGHT'S ORDER</p><h2>一個人的深夜任務</h2><div class="night-ticket-line"><span>目的地</span><strong>轉角牛肉麵</strong></div><div class="night-ticket-line"><span>到店期限</span><strong>凌晨 03:00 前</strong></div><div class="night-ticket-line"><span>任務獎勵</span><strong>一碗熱騰騰的麵</strong></div><div class="ticket-tear"></div><ol class="night-steps"><li id="step-drive" aria-current="step"><b>01</b><div><strong>開過夜晚的城市</strong><p>閃過車輛和路障。碰撞會減速，並損失 4 秒倒數。</p></div></li><li id="step-cook"><b>02</b><div><strong>煮出你的宵夜</strong><p>指針進入綠色區域時起鍋、加湯，再放入牛肉與青菜。</p></div></li></ol><p class="night-small">3 點前抵達就算準時。煮麵階段不倒數，可以慢慢來。</p></div>
+        <div class="night-record"><span>個人最佳</span><strong id="night-best" data-i18n-ignore>—</strong><small>紀錄保存在目前瀏覽器</small></div>
+        <p id="night-help" class="night-help">電腦：← → 或 A / D 換道，P 暫停。<br>手機：點下方左右按鈕。<br>遊戲中的 10 分鐘約為現實 70 秒；切換分頁會自動暫停。</p>
+      </aside>
+    </div>
+    <noscript><p>請啟用 JavaScript 以遊玩凌晨牛肉麵。</p></noscript>
+  </main>
+  <footer class="games-directory-footer"><span>把夜路走完，把肚子填滿。</span><span>© 2026 YI-CHI KUO</span></footer>
+</body></html>
