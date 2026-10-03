@@ -37,3 +37,16 @@
 #yk-world .yk-reaction-card .yk-game-card-copy .yk-game-start{background:#6546c7;color:#ffffff}
 #yk-world .yk-reaction-card .yk-game-card-copy>strong{font-size:34px;line-height:1.25}
 @media(max-width:650px){#yk-world .yk-reflex-orbit{width:190px;height:190px}#yk-world .yk-reaction-card .yk-game-card-copy>strong{font-size:30px}}
+
+#yk-world .yk-noodle-cover{background:radial-gradient(ellipse at 80% 55%,#754955,#1c293e 65%);position:relative;min-height:270px;overflow:hidden;color:#ffcca0}
+#yk-world .noodle-cover-time{position:absolute;top:28px;left:30px;font:17px ui-monospace,monospace;letter-spacing:.04em;z-index:1}
+#yk-world .noodle-cover-time i{font-style:normal;font-size:13px;color:#bbb7c2;margin:0 10px}
+#yk-world .noodle-cover-road{position:absolute;top:85px;bottom:-30px;left:25%;width:125px;background:#3a445b;border-left:2px solid #bd956e;border-right:2px solid #bd956e;transform:rotate(18deg)}
+#yk-world .noodle-cover-road:before{content:'';position:absolute;top:0;bottom:0;left:50%;border-left:2px dashed #d3cfbf7d}
+#yk-world .noodle-cover-road b{position:absolute;left:14px;top:90px;width:35px;height:60px;border-radius:8px;background:#ecb181;box-shadow:0 5px 0 #152137,0 -24px 40px #efc69b44;border:3px solid #d19877}
+#yk-world .noodle-cover-road b:before{content:'';position:absolute;inset:12px 3px 26px;background:#27384b;border-radius:3px}
+#yk-world .noodle-cover-shop{position:absolute;right:13%;top:108px;display:flex;align-items:center;flex-direction:column;gap:9px;border:1px solid #c79379;padding:16px 13px;font:600 26px var(--yk-font);border-radius:4px;box-shadow:0 0 25px #e68e602e;background:#673b45}
+#yk-world .noodle-cover-shop small{font:7px ui-monospace,monospace;letter-spacing:.08em;color:#f6dbc4}
+#yk-world .yk-noodle-card .yk-game-card-copy>strong{font-size:34px;line-height:1.25}
+#yk-world .yk-noodle-card .yk-game-card-copy .yk-game-start{background:#94462f;color:#fff3e6}
+@media(max-width:650px){#yk-world .yk-noodle-card .yk-game-card-copy>strong{font-size:30px}}
