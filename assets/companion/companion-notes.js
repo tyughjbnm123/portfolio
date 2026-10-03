@@ -11,7 +11,7 @@ export function writeNote(storage, value) {
   try { storage.setItem(KEY, JSON.stringify(value)); return true; } catch { return false; }
 }
 
-export function createNotes({root, host, onComplete, onClose}) {
+export function createNotes({root, host, onComplete, onClose, onSave = () => {}}) {
   let storage;
   try { storage = window.localStorage; } catch {}
   let note = readNote(storage), deleted = null, editing = !note, message = '';
@@ -86,7 +86,7 @@ export function createNotes({root, host, onComplete, onClose}) {
     const text = input.value.trim().slice(0, LIMIT);
     if (!text) { message = 'empty'; render(); input.focus(); return; }
     if (!commit({text, done: note?.text === text && note.done === true})) return;
-    editing = false; deleted = null; message = 'saved'; render(); check.focus({preventScroll:true});
+    editing = false; deleted = null; message = 'saved'; render(); check.focus({preventScroll:true}); onSave();
   });
   input.addEventListener('input', () => { $('.note-count').textContent = input.value.length + ' / ' + LIMIT; });
   $('.note-edit').addEventListener('click', () => { input.value = note.text; editing = true; message = ''; render(); input.focus(); });
