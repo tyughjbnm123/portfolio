@@ -23,7 +23,7 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
   '抽獎機設定':'Make it your lucky draw', '視覺風格':'Visual style',
   '玩法與風格自由搭配，切換時保留抽獎進度。':'Mix machines and styles while keeping your draw progress.',
   '紅金慶典':'Red & Gold', '霓虹派對':'Neon Party', '糖果樂園':'Candy Land', '森林簡約':'Forest Calm',
-  '名單隨機抽選':'Random draw from the list', '含指定人選':'Includes preselected winners',
+  '名單隨機抽選':'Random draw from the list',
   '切換玩法，名單、獎項與得獎紀錄都會保留。':'Switch machines while keeping your participants, prizes and results.',
   '風火輪':'Fortune Wheel', '幸運抽球':'Lucky Ball Draw', '好運求籤':'Fortune Sticks',
   '搖籤中':'Shaking', '抽籤中':'Drawing a stick', '籤筒搖動中…':'The fortune sticks are shaking…',
@@ -227,7 +227,7 @@ const drawFocus = typeof RaffleFocus !== 'undefined' ? RaffleFocus.mount({
 function updateDrawMethod(){
   const pending = tiers[currentTierIndex];
   const includesPreset = batchIncludesPreset ?? Boolean(pending?.forcedRemaining.some(name => pool.includes(name)));
-  document.getElementById('drawMethod').textContent = includesPreset ? '含指定人選' : '名單隨機抽選';
+  document.getElementById('drawMethod').textContent = includesPreset ? : '名單隨機抽選';
 }
 
 function updateMachineNote(){
