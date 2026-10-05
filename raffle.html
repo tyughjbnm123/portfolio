@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="assets/raffle-balls.css?v=20260914-balls1">
 <link rel="stylesheet" href="assets/raffle-machines.css?v=20261001-fortune1">
 <link rel="stylesheet" href="assets/raffle-page.css?v=20261001-fortune1">
+<link rel="stylesheet" href="assets/raffle-focus.css?v=20261005-focus1">
+<script src="assets/raffle-focus.js?v=20261005-focus1"></script>
 <script src="assets/raffle-styles.js?v=20261001-fortune1"></script>
 <script src="assets/raffle-balls.js?v=20261001-fortune1"></script>
 <script src="assets/raffle-wheel.js?v=20261001-fortune1"></script>
@@ -16,6 +18,7 @@
 <link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script>
 <script>
 Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
+  '返回設定':'Back to setup', '開獎畫面':'Draw view', '本次獎項':'Current prize',
   '選擇抽獎機':'Choose a draw machine',
   '抽獎機設定':'Make it your lucky draw', '視覺風格':'Visual style',
   '玩法與風格自由搭配，切換時保留抽獎進度。':'Mix machines and styles while keeping your draw progress.',
@@ -99,6 +102,7 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
 
     <!-- CENTER: lottery drum -->
     <section class="stage ball-stage" id="ballStage" data-machine="wheel" data-raffle-style="festival" data-phase="idle" aria-label="抽獎舞台">
+      <button type="button" class="raffle-focus-close" id="closeDrawFocus">← 返回設定</button>
       <div class="ball-stage-header">
         <div class="tier-progress">
           <span class="ball-queue-label" id="tierContext">待抽獎項</span>
@@ -152,6 +156,7 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
     </div>
   </details>
 </main><div class="toast" id="toast"></div>
+<dialog id="raffleFocus" aria-label="開獎畫面"></dialog>
 
 <script>
 let pool = [];
@@ -211,6 +216,13 @@ const wheelMachine = typeof RaffleWheel !== 'undefined' ? new RaffleWheel.Wheel(
 const fortuneMachine = typeof RaffleFortune !== 'undefined' ? new RaffleFortune.Fortune(document.getElementById('fortuneCanvas'), phase => onMachinePhase('fortune', phase)) : null;
 const machines = {wheel: wheelMachine, balls: ballMachine, fortune: fortuneMachine};
 const currentMachine = () => machines[machineType];
+const drawFocus = typeof RaffleFocus !== 'undefined' ? RaffleFocus.mount({
+  stage: ballStage,
+  dialog: document.getElementById('raffleFocus'),
+  closeButton: document.getElementById('closeDrawFocus'),
+  drawButton: drawBtn,
+  onClose: () => updateStageLabel()
+}) : null;
 
 function updateDrawMethod(){
   const pending = tiers[currentTierIndex];
@@ -493,7 +505,12 @@ function winners(){
 
 function updateStageLabel(){
   updateDrawStageLabels();
-
+  // Keep the just-revealed prize on screen; the button still names the next draw.
+  if(drawFocus?.active && !drawing && lastReveal){
+    document.getElementById('tierContext').textContent = '本次獎項';
+    tierName.textContent = lastReveal.prizeName;
+    tierCountLabel.textContent = raffleCopy(`已揭曉 ${lastReveal.ordinal} 位`, `${lastReveal.ordinal} revealed`);
+  }
 }
 function updateDrawStageLabels(){
   updateDrawMethod();
@@ -676,6 +693,7 @@ drawBtn.addEventListener('click', async ()=>{
   drawBtn.disabled = true;
   seal.classList.remove('show');
 
+  drawFocus?.begin();
   try {
     for(let i=0;i<n;i++){
       // Reserve one result, animate it, then commit it exactly once.
@@ -702,6 +720,7 @@ drawBtn.addEventListener('click', async ()=>{
     setDrawingLocked(false);
     selectPendingTier();
     updateStageLabel();
+    drawFocus?.complete();
   }
 });
 
