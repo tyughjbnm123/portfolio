@@ -23,7 +23,6 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
   '抽獎機設定':'Make it your lucky draw', '視覺風格':'Visual style',
   '玩法與風格自由搭配，切換時保留抽獎進度。':'Mix machines and styles while keeping your draw progress.',
   '紅金慶典':'Red & Gold', '霓虹派對':'Neon Party', '糖果樂園':'Candy Land', '森林簡約':'Forest Calm',
-  '名單隨機抽選':'Random draw from the list',
   '切換玩法，名單、獎項與得獎紀錄都會保留。':'Switch machines while keeping your participants, prizes and results.',
   '風火輪':'Fortune Wheel', '幸運抽球':'Lucky Ball Draw', '好運求籤':'Fortune Sticks',
   '搖籤中':'Shaking', '抽籤中':'Drawing a stick', '籤筒搖動中…':'The fortune sticks are shaking…',
@@ -109,7 +108,7 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
           <div class="tier-name" id="tierName">尚未設定獎項</div>
           <div class="tier-count" id="tierCountLabel">請先在左側設定獎項</div>
         </div>
-        <div class="ball-stage-status"><span class="ball-state" id="ballState">待抽獎</span><span class="raffle-draw-method" id="drawMethod">名單隨機抽選</span></div>
+        <div class="ball-stage-status"><span class="ball-state" id="ballState">待抽獎</span></div>
       </div>
       <div class="ball-display" id="wheelDisplay" aria-hidden="true">
         <canvas id="wheelCanvas" width="960" height="880"></canvas>
@@ -163,7 +162,6 @@ let pool = [];
 let drawing = false;
 let skipAnimations = false;
 let lastReveal = null;
-let batchIncludesPreset = null;
 const raffleCopy = (zh, en) => typeof window !== 'undefined' && window.YKLanguage?.language === 'en' ? en : zh;
 const prizeLabel = name => typeof window !== 'undefined' && window.YKLanguage ? window.YKLanguage.t(name) : name;
 
@@ -224,12 +222,6 @@ const drawFocus = typeof RaffleFocus !== 'undefined' ? RaffleFocus.mount({
   onClose: () => updateStageLabel()
 }) : null;
 
-function updateDrawMethod(){
-  const pending = tiers[currentTierIndex];
-  const includesPreset = batchIncludesPreset ?? Boolean(pending?.forcedRemaining.some(name => pool.includes(name)));
-  document.getElementById('drawMethod').textContent = includesPreset ? : '名單隨機抽選';
-}
-
 function updateMachineNote(){
   machineNote.textContent = machineType === 'fortune'
     ? '搖一搖籤筒，抽出好運；籤號代表本獎項的得獎順序。'
@@ -287,9 +279,7 @@ function updateResultTier(){
 }
 function resetBallResult(){
   lastReveal = null;
-  batchIncludesPreset = null;
-  updateDrawMethod();
-  updateResultTier();
+  batchIncludesPreset = null;  updateResultTier();
   delete resultName.dataset.i18nIgnore;
   resultName.textContent = '等待開獎';
   resultName.className = 'result-name placeholder';
@@ -512,9 +502,7 @@ function updateStageLabel(){
     tierCountLabel.textContent = raffleCopy(`已揭曉 ${lastReveal.ordinal} 位`, `${lastReveal.ordinal} revealed`);
   }
 }
-function updateDrawStageLabels(){
-  updateDrawMethod();
-  document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
+function updateDrawStageLabels(){  document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
   if(tiers.length === 0){
     tierName.textContent = '尚未設定獎項';
     tierCountLabel.textContent = raffleCopy('請先在左側設定獎項並套用', 'Set and apply your prizes first');
@@ -684,7 +672,6 @@ drawBtn.addEventListener('click', async ()=>{
   }
 
   drawing = true;
-  batchIncludesPreset = tier.forcedRemaining.some(name => pool.includes(name));
   skipAnimations = false;
   skipDrawBtn.hidden = false;
   updateStageLabel();
