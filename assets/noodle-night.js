@@ -50,7 +50,7 @@
     if(game.distance>G.DISTANCE-230){
       const y=-60+(game.distance-(G.DISTANCE-230))/230*230;
       for(let i=0;i<8;i++)rect(134+i*27,y,16,25,0,'#c3c6cb99');
-      rect(130,y-55,220,29,4,'#344a48');text(tr('下一站：轉角牛肉麵','NEXT: CORNER NOODLES'),240,y-36,'#e5e6c8',12);
+      rect(130,y-55,220,29,4,'#344a48');text(tr('前方：你的家','HOME AHEAD'),240,y-36,'#e5e6c8',12);
     }
     for(const item of game.traffic){
       const x=162+item.lane*78,y=item.y*440;
@@ -90,8 +90,8 @@
   }
   function updateHUD(){
     put('night-clock',G.clock(game.phase==='ready'?0:game.elapsed));
-    put('distance-label',tr('距離麵店','TO THE SHOP'));
-    put('night-distance',game.distance>=G.DISTANCE?tr('已抵達','ARRIVED'):`${((G.DISTANCE-game.distance)/1000).toFixed(2)} km`);
+    put('distance-label',tr('距離家裡','DISTANCE HOME'));
+    put('night-distance',game.distance>=G.DISTANCE?tr('已到家','HOME'):`${((G.DISTANCE-game.distance)/1000).toFixed(2)} km`);
     $('night-progress').style.width=`${game.distance/G.DISTANCE*100}%`;
     document.querySelector('.night-route').setAttribute('aria-valuenow',Math.floor(game.distance/G.DISTANCE*100));
     const driving=game.phase==='drive'&&!game.paused;
@@ -99,7 +99,7 @@
     $('night-pause').disabled=!['drive','cook'].includes(game.phase);
     put('night-pause',game.paused?tr('繼續 ▷','Resume ▷'):tr('暫停 Ⅱ','Pause Ⅱ'));
     put('night-best',best||'—');
-    put('night-road-hint',driving?tr('← → / A D 換道','← → / A D to steer'):tr('左右換道，準時到店。','Switch lanes. Arrive on time.'));
+    put('night-road-hint',driving?(game.accelerating&&game.slow===0?tr('↑ 加速中 · ← → / A D 換道','↑ Boosting · ← → / A D to steer'):tr('← → / A D 換道 · 按住 ↑ 加速','← → / A D to steer · Hold ↑ to boost')):tr('左右換道，準時到家。','Switch lanes. Get home on time.'));
   }
   function render(){
     panel.dataset.phase=game.phase;updateHUD();
@@ -107,18 +107,18 @@
     $('night-cooking').hidden=!cooking;
     const overlay=game.paused||['ready','arrived','late','served'].includes(game.phase);
     $('night-overlay').hidden=!overlay;$('overlay-result').hidden=game.phase!=='served'||game.paused;
-    $('night-sign').innerHTML=tr('牛肉麵','NOODLES')+' <b>OPEN TILL 03:00</b>';
-    scene.setAttribute('aria-label',tr('開車場景，使用左右方向鍵或 A、D 切換車道。','Driving scene. Use Left / Right or A / D to change lanes.'));
+    $('night-sign').innerHTML=tr('回家煮麵','HOME')+' <b>BEFORE 03:00</b>';
+    scene.setAttribute('aria-label',tr('開車場景，使用左右方向鍵或 A、D 切換車道，按住向上方向鍵加速。','Driving scene. Use Left / Right or A / D to change lanes. Hold Up to accelerate.'));
     for(const [id,active] of [['step-drive',!['cook','served'].includes(game.phase)],['step-cook',['cook','served'].includes(game.phase)]]){
       if(active)$(id).setAttribute('aria-current','step');else $(id).removeAttribute('aria-current');
     }
     if(overlay){
       let title,copy,label,kicker;
       if(game.paused){kicker='TAKE A LITTLE BREAK';title=tr('先停一下。','Take a breath.');copy=tr('時間和進度都停在這裡，準備好再繼續。','Your time and progress are paused. Continue when you are ready.');label=tr('繼續這趟旅程 →','Continue →');}
-      else if(game.phase==='ready'){kicker='THE LAST BOWL OF THE NIGHT';title=tr('夜路的盡頭，\n有一碗熱湯。','A late-night drive.\nA warm bowl awaits.');copy=tr('凌晨 2:50，距離麵店還有 3.2 公里。\n3 點前到店，為自己煮一碗牛肉麵。','It’s 2:50 AM. The noodle shop is 3.2 km away.\nArrive before 3 AM and make yourself a bowl.');label=tr('出發去煮麵 →','Let’s get cooking →');}
-      else if(game.phase==='arrived'){kicker='YOU MADE IT';title=tr('到了，爐火還開著。','Just in time.');copy=tr(`你在 ${G.clock(game.arrival)} 抵達，路上碰撞 ${game.hits} 次。\n接下來，換你當一回深夜主廚。`,`You arrived at ${G.clock(game.arrival)}, with ${game.hits} bumps.\nTime to be the midnight chef.`);label=tr('進店煮麵 →','Into the kitchen →');}
-      else if(game.phase==='late'){kicker='THE CITY HAS FALLEN ASLEEP';title=tr('差一點，打烊了。','A little too late.');copy=tr('3 點了，麵店已經熄燈。\n再試一次，換道閃開車輛和路障。','It’s 3 AM. The shop has closed.\nTry again and steer around the traffic.');label=tr('再開一趟 →','Try another drive →');}
-      else {const r=game.result;kicker='YOUR MIDNIGHT SPECIAL';title=r.stars===3?tr('這碗，值得這趟夜路。','Worth the midnight drive.'):tr('熱騰騰的宵夜，上桌。','Your midnight meal is served.');copy=tr(`準時抵達，完成 ${r.stars} 星牛肉麵。\n${r.stars===3?'火候與湯量都剛剛好。':'下次抓準綠色區域，挑戰更好口感。'}`,`On time, with a ${r.stars}-star bowl.\n${r.stars===3?'Perfect noodles. Just enough broth.':'Aim for the green zones for a tastier bowl.'}`);label=tr('再煮一碗 ↻','One more bowl ↻');put('overlay-result',`${'★'.repeat(r.stars)}${'☆'.repeat(3-r.stars)}  ·  ${r.score} ${tr('分','PTS')}`);}
+      else if(game.phase==='ready'){kicker='THE LAST BOWL OF THE NIGHT';title=tr('夜路的盡頭，\n有一碗熱湯。','A late-night drive.\nA warm bowl awaits.');copy=tr('凌晨 2:50，距離家裡還有 3.2 公里。\n趕在 3 點前回家，親手煮一碗牛肉麵。','It’s 2:50 AM. Home is still 3.2 km away.\nGet home before 3 AM and cook a bowl of beef noodles.');label=tr('開車回家 →','Drive home →');}
+      else if(game.phase==='arrived'){kicker='HOME SWEET HOME';title=tr('到家了，準備開火。','Home in time. Let’s cook.');copy=tr(`你在 ${G.clock(game.arrival)} 回到家，路上碰撞 ${game.hits} 次。\n走進廚房，為自己煮一碗熱騰騰的牛肉麵。`,`You got home at ${G.clock(game.arrival)}, with ${game.hits} bumps.\nHead into your kitchen and cook a warm bowl of beef noodles.`);label=tr('進廚房煮麵 →','Into the kitchen →');}
+      else if(game.phase==='late'){kicker='THE CITY HAS FALLEN ASLEEP';title=tr('差一點，沒趕上三點。','A little too late.');copy=tr('已經凌晨 3 點，還沒回到家。\n再試一次，換道閃開車輛和路障。','It’s 3 AM, and you haven’t made it home.\nTry again and steer around the traffic.');label=tr('再開一趟 →','Try another drive →');}
+      else {const r=game.result;kicker='YOUR MIDNIGHT SPECIAL';title=r.stars===3?tr('這碗，值得這趟夜路。','Worth the midnight drive.'):tr('熱騰騰的宵夜，上桌。','Your midnight meal is served.');copy=tr(`準時到家，完成 ${r.stars} 星牛肉麵。\n${r.stars===3?'火候與湯量都剛剛好。':'下次抓準綠色區域，挑戰更好口感。'}`,`Home on time, with a ${r.stars}-star bowl.\n${r.stars===3?'Perfect noodles. Just enough broth.':'Aim for the green zones for a tastier bowl.'}`);label=tr('再煮一碗 ↻','One more bowl ↻');put('overlay-result',`${'★'.repeat(r.stars)}${'☆'.repeat(3-r.stars)}  ·  ${r.score} ${tr('分','PTS')}`);}
       put('overlay-title',title);$('overlay-title').style.whiteSpace='pre-line';
       put('overlay-copy',copy);$('overlay-copy').style.whiteSpace='pre-line';
       put('overlay-kicker',kicker);put('night-primary',label);
@@ -156,7 +156,7 @@
   function start(){game.reset();game.start();lastPhase='drive';lastHits=0;stored=false;feedback='';put('night-live',tr('出發！你的車是杏色的那一台。','Let’s go! You’re driving the apricot-colored car.'));render();scene.focus({preventScroll:true});panel.scrollIntoView({block:'center',behavior:'instant'});startLoop();}
   $('night-primary').addEventListener('click',()=>{
     if(game.paused){resume();return;}
-    if(game.phase==='arrived'){game.beginCooking();lastPhase='cook';put('night-live',tr('已準時抵達，現在專心煮麵。','Arrived on time. Enjoy the cooking.'));render();$('cook-action').focus({preventScroll:true});startLoop();return;}
+    if(game.phase==='arrived'){game.beginCooking();lastPhase='cook';put('night-live',tr('已準時到家，現在專心煮麵。','Home on time. Enjoy the cooking.'));render();$('cook-action').focus({preventScroll:true});startLoop();return;}
     if(['ready','late','served'].includes(game.phase))start();
   });
   $('night-left').addEventListener('click',()=>game.move(-1));$('night-right').addEventListener('click',()=>game.move(1));
@@ -173,12 +173,14 @@
   document.addEventListener('keydown',e=>{
     if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,[contenteditable]'))return;
     if(['ArrowLeft','ArrowRight','KeyA','KeyD'].includes(e.code)&&game.phase==='drive'&&!game.paused){e.preventDefault();if(!e.repeat)game.move(['ArrowLeft','KeyA'].includes(e.code)?-1:1);}
+    else if(e.code==='ArrowUp'&&game.phase==='drive'&&!game.paused){e.preventDefault();if(!e.repeat){game.accelerate(true);updateHUD();}}
     else if(e.code==='KeyP'&&['drive','cook'].includes(game.phase)){e.preventDefault();if(!e.repeat)game.paused?resume():pause();}
     else if(e.code==='Space'&&game.phase==='cook'&&!game.paused&&!e.target.closest('button,a')){e.preventDefault();if(!e.repeat)cookingAction();}
   });
+  document.addEventListener('keyup',e=>{if(e.code==='ArrowUp'){game.accelerate(false);updateHUD();}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
   window.addEventListener('blur',pause);
-  window.addEventListener('pagehide',stop);
+  window.addEventListener('pagehide',()=>{game.accelerate(false);stop();});
   window.addEventListener('yk:language',()=>{feedback='';put('night-live','');render();});
   render();
 })();

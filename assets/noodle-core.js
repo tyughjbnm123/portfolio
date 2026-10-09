@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const LIMIT=70, DISTANCE=3200, SPEED=64, PENALTY=4;
+  const LIMIT=70, DISTANCE=3200, SPEED=64, PENALTY=4, BOOST=1.6;
   const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
   function clock(seconds){
     const minutes=170+Math.min(10,Math.floor(clamp(seconds,0,LIMIT)/LIMIT*10));
@@ -9,7 +9,7 @@
   class Session {
     constructor(random=Math.random){this.random=random;this.reset();}
     reset(){
-      Object.assign(this,{phase:'ready',paused:false,lane:1,x:1,elapsed:0,distance:0,hits:0,
+      Object.assign(this,{phase:'ready',paused:false,accelerating:false,lane:1,x:1,elapsed:0,distance:0,hits:0,
         invincible:0,slow:0,spawnIn:1.6,traffic:[],arrival:0,cookStage:0,cookTime:0,quality:[],garnishes:[],lastAction:''});
     }
     start(){if(this.phase!=='ready')return false;this.phase='drive';return true;}
@@ -17,10 +17,11 @@
       if(this.phase!=='drive'||this.paused||![-1,1].includes(direction))return false;
       this.lane=clamp(this.lane+direction,0,2);return true;
     }
-    pause(){if(!['drive','cook'].includes(this.phase))return false;this.paused=true;return true;}
+    accelerate(active){this.accelerating=Boolean(active)&&this.phase==='drive'&&!this.paused;return this.accelerating;}
+    pause(){if(!['drive','cook'].includes(this.phase))return false;this.paused=true;this.accelerating=false;return true;}
     resume(){if(!this.paused)return false;this.paused=false;return true;}
     spawn(){
-      // Every row leaves at least one lane open, with over two seconds of warning.
+      // Every row leaves at least one lane open.
       const pick=()=>clamp(this.random(),0,.999999);
       const safe=Math.floor(pick()*3), double=this.distance>850&&pick()>.52;
       let occupied=[0,1,2].filter(l=>l!==safe);
@@ -31,7 +32,7 @@
     hit(){
       if(this.phase!=='drive'||this.paused||this.invincible>0)return false;
       this.hits++;this.elapsed=Math.min(LIMIT,this.elapsed+PENALTY);this.invincible=1.8;this.slow=1.2;
-      this.lastAction='hit';if(this.elapsed>=LIMIT)this.phase='late';return true;
+      this.lastAction='hit';if(this.elapsed>=LIMIT){this.phase='late';this.accelerating=false;}return true;
     }
     tick(dt){
       if(this.paused||!Number.isFinite(dt)||dt<=0)return;
@@ -43,19 +44,21 @@
       if(this.phase==='cook'){this.cookTime+=dt;return;}
       if(this.phase!=='drive')return;
       this.elapsed+=dt;
-      if(this.elapsed>=LIMIT){this.elapsed=LIMIT;this.phase='late';return;}
+      if(this.elapsed>=LIMIT){this.elapsed=LIMIT;this.phase='late';this.accelerating=false;return;}
       this.invincible=Math.max(0,this.invincible-dt);this.slow=Math.max(0,this.slow-dt);
       this.x+=(this.lane-this.x)*Math.min(1,dt*15);
-      const pace=this.slow>0?.28:1;
+      const boost=this.accelerating&&this.slow===0?BOOST:1;
+      const pace=this.slow>0?.28:boost;
       this.distance=Math.min(DISTANCE,this.distance+SPEED*pace*dt);
-      this.spawnIn-=dt;
+      // Keep obstacle spacing consistent with the faster road movement.
+      this.spawnIn-=dt*boost;
       if(this.spawnIn<=0&&this.distance<DISTANCE-220)this.spawn();
       for(const car of this.traffic){
         car.y+=dt*(.32+.025*this.distance/DISTANCE)*pace;
         if(!car.passed&&car.y>.735&&car.y<.945&&Math.abs(car.lane-this.x)<.46){car.passed=true;this.hit();}
       }
       this.traffic=this.traffic.filter(car=>car.y<1.18);
-      if(this.phase==='drive'&&this.distance>=DISTANCE){this.phase='arrived';this.arrival=this.elapsed;this.traffic=[];}
+      if(this.phase==='drive'&&this.distance>=DISTANCE){this.phase='arrived';this.accelerating=false;this.arrival=this.elapsed;this.traffic=[];}
     }
     beginCooking(){if(this.phase!=='arrived')return false;this.phase='cook';this.cookTime=0;return true;}
     get meter(){return (1-Math.cos(this.cookTime*1.8))*50;}
@@ -79,6 +82,6 @@
       return {score,hits:this.hits,arrival:this.arrival,cooking,stars:cooking>=280?3:cooking>=200?2:1};
     }
   }
-  const api={Session,LIMIT,DISTANCE,SPEED,PENALTY,clock};
+  const api={Session,LIMIT,DISTANCE,SPEED,PENALTY,BOOST,clock};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.NoodleGame=api;
 })(typeof window==='undefined'?{}:window);
