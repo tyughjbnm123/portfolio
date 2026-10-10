@@ -1,0 +1,13 @@
+.mouth-trial {border:1px solid var(--yk-line);border-radius:10px;padding:14px;margin-bottom:18px;background:var(--yk-bg)}
+.mouth-trial-heading {display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px}
+.mouth-trial-heading h2 {font-size:16px;font-weight:600;color:var(--yk-ink)}
+.mouth-trial-heading span {font-size:12px;color:var(--yk-muted);white-space:nowrap}
+.mouth-presets {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.mouth-presets button,.mouth-mode button {font:inherit;font-size:14px;border:1px solid var(--yk-line);border-radius:7px;min-height:36px;padding:6px;color:var(--yk-ink);background:transparent;cursor:pointer}
+.mouth-presets button:hover,.mouth-mode button:hover {border-color:var(--yk-accent)}
+.mouth-presets button[aria-pressed=true],.mouth-mode button[aria-pressed=true] {background:var(--yk-accent);color:var(--yk-bg);border-color:var(--yk-accent)}
+.mouth-trial button:focus-visible {outline:2px solid var(--yk-accent);outline-offset:2px}
+.mouth-trial .ctrl-row {min-height:36px;flex-wrap:nowrap}
+.mouth-trial .ctrl-label {width:64px}
+.mouth-mode {display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.mouth-trial-help {font-size:12px;line-height:1.7;color:var(--yk-muted);margin-top:9px}

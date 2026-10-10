@@ -140,6 +140,10 @@
       this.map=new Float32Array(GRID*GRID*2);
       this.cache=new Map();this.original=false;this.frame=0;this.request=0;
       this.motion=window.matchMedia('(prefers-reduced-motion: reduce)');
+      this.mouthEnabled=false;
+      this.mouth=root.FacsMouth?new root.FacsMouth.MouthPreview(()=>{
+        this.draw();window.dispatchEvent(new Event('facs:mouth-ready'));
+      }):null;
     }
     async setFace(face) {
       const key=face.id+':'+(face.revision||0);
@@ -186,6 +190,13 @@
       this.target=AU.map(au=>strength(state[au]));
       if(this.source && !this.frame) this.frame=requestAnimationFrame(()=>this.animate());
     }
+    setMouthMode(enabled) {
+      const changed=this.mouthEnabled!==enabled;
+      const previousKey=this.mouth?.key;
+      this.mouthEnabled=enabled;
+      if(enabled)this.mouth?.load(this.faceId);
+      if((changed||previousKey!==this.mouth?.key)&&this.source&&!this.frame)this.frame=requestAnimationFrame(()=>this.animate());
+    }
     setOriginal(original) {
       this.original=original;
       this.photo.hidden=!this.source || !original;
@@ -207,8 +218,19 @@
       if(!this.source) return;
       if(this.values.every(v=>v<.00001)) this.ctx.putImageData(this.source,0,0);
       else {
-        combine(this.fields,this.values,this.map);
-        warp(this.source.data,this.output.data,this.map,this.source.width,this.source.height);
+        let source=this.source.data,values=this.values;
+        if(this.mouthEnabled&&this.mouth?.supported(this.faceId)){
+          if(!this.mouthBuffer||this.mouthBuffer.length!==source.length)this.mouthBuffer=new Uint8ClampedArray(source.length);
+          this.mouthBuffer.set(source);
+          const raw=Object.fromEntries(AU.map((au,i)=>[au,Math.atanh(this.values[i]*Math.tanh(1.8))/.45]));
+          this.mouth.render(this.mouthBuffer,raw);
+          source=this.mouthBuffer;
+          // Smile and jaw are already represented by the reference morph.
+          // All remaining controls still deform the composed portrait.
+          values=this.values.map((v,i)=>['AU12','AU26','AU27'].includes(AU[i])?0:v);
+        }
+        combine(this.fields,values,this.map);
+        warp(source,this.output.data,this.map,this.source.width,this.source.height);
         this.ctx.putImageData(this.output,0,0);
       }
     }
