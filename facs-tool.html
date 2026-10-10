@@ -8,8 +8,10 @@
 <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script>
 <link rel="stylesheet" href="assets/facs-preview.css?v=20260912-photo2">
 <link rel="stylesheet" href="assets/facs-upload.css?v=20260919-upload2">
-<script src="assets/facs-preview.js?v=20260919-upload1"></script>
-<script src="assets/facs-upload.js?v=20260919-upload2"></script><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script><script src="assets/site-language.js?v=20260927-continue"></script></head>
+<link rel="stylesheet" href="assets/facs-mouth.css?v=20261010-all2">
+<script src="assets/facs-mouth.js?v=20261010-all2"></script>
+<script src="assets/facs-preview.js?v=20261010-all2"></script>
+<script src="assets/facs-upload.js?v=20260919-upload2"></script><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script><script src="assets/facs-mouth-language.js?v=20261010-all2"></script><script src="assets/site-language.js?v=20260927-continue"></script></head>
 <body class="yk-tool-page" data-tool-page="facs-tool">
 
 <a class="yk-skip" href="#tool-workspace">跳至工具操作區</a><div class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="index.html#tools">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></div><nav class="yk-tool-nav" aria-label="工具導覽"><a href="ad-storyboard.html"><span>01</span>廣告分鏡工作台</a><a href="ai-tools.html"><span>02</span>短影片動作卡片庫</a><a href="facs-tool.html" aria-current="page"><span>03</span>表情控制器</a><a href="line-message.html"><span>04</span>LINE 訊息編排器</a><a href="utm-builder.html"><span>05</span>UTM 連結產生器</a><a href="raffle.html"><span>06</span>抽獎機</a><a href="prompt-library.html"><span>07</span>AI 指令庫</a></nav><main id="tool-workspace"><div class="yk-tool-heading"><div><p class="yk-tool-kicker"><span></span> TOOL ROOM / 03 — EXPRESSION LAB</p><h1>表情控制器</h1><p class="yk-tool-description">上傳照片或選擇角色，調整五官動作，把表情轉成可用的描述。</p></div><span class="yk-orbit" aria-hidden="true"><i></i><b>03</b></span></div><a class="yk-storyboard-link" href="ad-storyboard.html">試用整合版：把動作、表情與運鏡放進廣告分鏡工作台 ↗</a><div class="main-grid">
@@ -51,6 +53,8 @@
   <div class="panel controls-panel">
     <div class="panel-label">FACS 表情控制器</div>
 
+
+
     <div style="margin-bottom:12px">
       <div class="ctrl-group-title">▸ 預設表情</div>
       <div class="preset-row">
@@ -81,6 +85,23 @@
     <div class="ctrl-group" id="group-nose">
       <div class="ctrl-group-title">▸ 鼻部</div>
     </div>
+    <section class="mouth-trial" aria-labelledby="mouthTrialTitle">
+      <div class="mouth-trial-heading"><h2 id="mouthTrialTitle">笑容與張嘴</h2><span>嘴型試作</span></div>
+      <div class="mouth-presets" role="group" aria-label="嘴型試用">
+        <button type="button" data-mouth="closed" onclick="applyMouthPreset('closed')">閉嘴</button>
+        <button type="button" data-mouth="smile" onclick="applyMouthPreset('smile')">微露齒笑</button>
+        <button type="button" data-mouth="open" onclick="applyMouthPreset('open')">自然張嘴</button>
+        <button type="button" data-mouth="openSmile" onclick="applyMouthPreset('openSmile')">開口笑</button>
+      </div>
+      <div class="ctrl-row"><label class="ctrl-label" for="mouthSmile">笑容</label><input class="ctrl-slider" id="mouthSmile" type="range" min="0" max="4" step="0.1" value="0" oninput="update('AU12',this.value)"><span class="ctrl-val" id="mouthSmileValue">0.0</span></div>
+      <div class="ctrl-row"><label class="ctrl-label" for="mouthOpen">張嘴</label><input class="ctrl-slider" id="mouthOpen" type="range" min="0" max="4" step="0.1" value="0" oninput="update('AU26',this.value)"><span class="ctrl-val" id="mouthOpenValue">0.0</span></div>
+      <div class="mouth-mode" role="group" aria-label="牙齒呈現">
+        <button type="button" data-teeth="source" onclick="setTeethMode('source')">沿用原照</button>
+        <button type="button" data-teeth="natural" onclick="setTeethMode('natural')">自然露齒</button>
+      </div>
+      <p class="mouth-trial-help" id="mouthPreviewHelp" role="status">六個內建角色皆支援露齒預覽；閉嘴時不露齒。</p>
+    </section>
+
     <div class="ctrl-group" id="group-upper">
       <div class="ctrl-group-title">▸ 上唇與嘴角</div>
     </div>
@@ -181,6 +202,50 @@ function scaledPreset(name, intensity) {
 let currentPresetName = 'neutral';
 let currentIntensity = 'natural';
 let isCustomState = false;
+let teethMode = 'natural';
+const MOUTH_PRESETS = {closed:[0,0],smile:[1.8,0],open:[0,1.2],openSmile:[1.8,1.2]};
+
+function setTeethMode(mode) {
+  teethMode=mode==='natural'?'natural':'source';
+  refreshAllViews();
+}
+function applyMouthPreset(name) {
+  const pair=MOUTH_PRESETS[name];if(!pair)return;
+  teethMode='natural';
+  // Mouth-only presets preserve the brows and eyes the user has chosen.
+  for(const au of FacsMouth.MOUTH_AUS)state[au]=0;
+  state.AU12=pair[0];state.AU26=pair[1];isCustomState=true;
+  for(const au of FacsMouth.MOUTH_AUS){
+    document.getElementById(au).value=state[au];
+    document.getElementById('v_'+au).textContent=state[au].toFixed(1);
+    document.getElementById('i_'+au).textContent=intensityLabel(state[au]);
+  }
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  setPreviewOriginal(false);refreshAllViews();
+}
+function refreshMouthUI() {
+  for(const [id,au] of [['mouthSmile','AU12'],['mouthOpen','AU26']]){
+    document.getElementById(id).value=state[au];
+    document.getElementById(id+'Value').textContent=state[au].toFixed(1);
+  }
+  document.querySelectorAll('[data-teeth]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.teeth===teethMode)));
+  document.querySelectorAll('[data-mouth]').forEach(b=>{
+    const pair=MOUTH_PRESETS[b.dataset.mouth];
+    const matches=teethMode==='natural'&&state.AU12===pair[0]&&state.AU26===pair[1]&&[...FacsMouth.MOUTH_AUS].filter(au=>!['AU12','AU26'].includes(au)).every(au=>state[au]===0);
+    b.setAttribute('aria-pressed',String(matches));
+  });
+  let message;
+  if(teethMode==='source')message='沿用原照的牙齒狀態，以局部變形示意嘴型。';
+  else if(!FacsMouth.hasReference(photoPreview.faceId))message='此照片尚無露齒素材；預覽維持局部變形，露齒設定仍會寫入指令。';
+  else if(photoPreview.mouth?.failed)message='嘴型素材未載入，暫用原照變形；JSON 與文字指令仍可使用。';
+  else if(!photoPreview.mouth?.sources)message='正在載入此角色的嘴型素材…';
+  else if(state.AU12>1.8||state.AU26+state.AU27*.6>1.2)message='強烈設定已寫入指令；此試作的畫面僅示意到自然幅度。';
+  else message='六個內建角色皆支援露齒預覽；閉嘴時不露齒。';
+  document.getElementById('mouthPreviewHelp').textContent=message;
+  document.getElementById('facePreviewNote').textContent=teethMode==='natural'&&FacsMouth.hasReference(photoPreview.faceId)
+    ?'嘴型素材試作：局部融合露齒與張嘴參考；其他五官以原照變形。'
+    :'以原照片局部變形示意表情；此照片不會自動生成牙齒或新的臉部細節。';
+}
 
 // ============ 臉型定義 ============
 const faceTypes = [
@@ -281,10 +346,12 @@ function refreshAllViews() {
   renderJSON();
   renderDescription();
   drawFace();
+  refreshMouthUI();
 }
 
 function update(au, val) {
   state[au] = parseFloat(val);
+  document.getElementById(au).value = state[au];
   document.getElementById('v_' + au).textContent = parseFloat(val).toFixed(1);
   document.getElementById('i_' + au).textContent = intensityLabel(parseFloat(val));
   isCustomState = true;
@@ -320,6 +387,7 @@ function setIntensity(level) {
 }
 
 function resetAll() {
+  teethMode='natural';
   currentIntensity = 'natural';
   document.querySelectorAll('.intensity-btn').forEach(b => b.classList.toggle('active', b.dataset.intensity === 'natural'));
   applyPreset('neutral', null);
@@ -332,6 +400,7 @@ function isNeutralState() {
 function drawFace() {
   photoPreview.setState(state);
   photoPreview.setFace(currentFace);
+  photoPreview.setMouthMode(teethMode==='natural');
   updatePreviewLabels();
 }
 
@@ -345,12 +414,13 @@ function buildActionUnitsObject() {
 function buildExpressionPayload() {
   // FACP is this site's custom format. L/R refer to the subject, not the viewer.
   return {
-    protocol_version: 'FACP1.2',
+    protocol_version: 'FACP1.3',
     face_type: currentFace.id,
     expression_label: isCustomState ? 'custom' : EXPR_LABEL_EN[currentPresetName],
     intensity: isCustomState ? 'custom' : currentIntensity,
     side_reference: 'subject',
     action_units: buildActionUnitsObject(),
+    mouth_settings: {teeth:teethMode==='natural'?'natural_when_open':'preserve_source'},
     ...(currentFace.id==='user_photo'?{photo_reference:{source:'local_upload',width:currentFace.width,height:currentFace.height,crop_ratio:currentFace.cropRatio,landmark_space:'normalized_480x480',landmarks:currentFace.anchors}}:{})
   };
 }
@@ -469,8 +539,14 @@ function generateAIDescription() {
     clauses.push('下巴略微上抬');
   }
   if (state.AU26 > 0.15 || state.AU27 > 0.15) {
-    clauses.push(state.AU27 > 1 ? '嘴巴明顯張開' : '嘴巴略微張開');
+    clauses.push(state.AU27 > 1 || state.AU26 > 1.8 ? '嘴巴明顯張開' : '嘴巴略微張開');
   }
+
+  if(teethMode==='natural'){
+    if(state.AU12>.15||state.AU26>.15||state.AU27>.15||state.AU10>.15||state.AU16>.15){
+      clauses.push('嘴唇自然分開，適度露出上排牙齒；牙齒維持自然比例與柔和色澤，張嘴時保留口腔陰影，不把牙齒隨下顎拉長');
+    }else clauses.push('嘴唇自然閉合，不額外露出牙齒');
+  }else clauses.push('沿用原照片的牙齒可見狀態，不額外新增牙齒細節');
 
   const body = clauses.length ? clauses.join('，') : '臉部肌肉維持自然放鬆';
 
@@ -482,6 +558,7 @@ function renderDescription() {
 }
 
 window.addEventListener('yk:language',renderDescription);
+window.addEventListener('facs:mouth-ready',refreshMouthUI);
 
 function copyDescription() {
   const text = window.YKLanguage?.t(generateAIDescription()) ?? generateAIDescription();
