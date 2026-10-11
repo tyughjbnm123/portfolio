@@ -11,11 +11,13 @@
 <link rel="stylesheet" href="assets/raffle-page.css?v=20261001-fortune1">
 <link rel="stylesheet" href="assets/raffle-focus.css?v=20261005-focus1">
 <script src="assets/raffle-focus.js?v=20261005-focus1"></script>
+<link rel="stylesheet" href="assets/raffle-prizes.css?v=20261011-1">
 <script src="assets/raffle-styles.js?v=20261001-fortune1"></script>
 <script src="assets/raffle-balls.js?v=20261001-fortune1"></script>
 <script src="assets/raffle-wheel.js?v=20261001-fortune1"></script>
 <script src="assets/raffle-fortune.js?v=20261001-fortune1"></script>
 <link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script>
+<script src="assets/raffle-prizes.js?v=20261011-1"></script>
 <script>
 Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
   '返回設定':'Back to setup', '開獎畫面':'Draw view', '本次獎項':'Current prize',
@@ -94,6 +96,7 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
 
       <hr class="panel-divider">
       <h2>獎項設定</h2>
+      <p class="prize-image-help">JPG／PNG／WebP · 每張 5 MB 以內<br>圖片僅供本次抽獎使用，重新整理後需重傳。</p>
       <div id="tierRows"></div>
       <button class="btn btn-ghost" id="addTierBtn">＋ 新增獎項</button>
       <button class="btn btn-ghost" id="applyTiersBtn">套用獎項設定</button>
@@ -103,10 +106,13 @@ Object.assign(window.YKEnglish || (window.YKEnglish = {}), {
     <section class="stage ball-stage" id="ballStage" data-machine="wheel" data-raffle-style="festival" data-phase="idle" aria-label="抽獎舞台">
       <button type="button" class="raffle-focus-close" id="closeDrawFocus">← 返回設定</button>
       <div class="ball-stage-header">
+        <div class="prize-heading">
+        <img id="stagePrizeImage" alt="" hidden>
         <div class="tier-progress">
           <span class="ball-queue-label" id="tierContext">待抽獎項</span>
           <div class="tier-name" id="tierName">尚未設定獎項</div>
           <div class="tier-count" id="tierCountLabel">請先在左側設定獎項</div>
+        </div>
         </div>
         <div class="ball-stage-status"><span class="ball-state" id="ballState">待抽獎</span></div>
       </div>
@@ -175,6 +181,7 @@ let presetConfig = ['', '', '']; // 每個獎項對應的「指定得獎人」�
 let tiers = [];       // 套用後：[{name, count, drawnList:[], forcedRemaining:[]}]
 let currentTierIndex = 0;
 let tierStructureDirty = false;
+let prizeImagesProcessing = 0;
 
 const advancedRows = document.getElementById('advancedRows');
 
@@ -279,13 +286,15 @@ function updateResultTier(){
 }
 function resetBallResult(){
   lastReveal = null;
-  batchIncludesPreset = null;  updateResultTier();
+  batchIncludesPreset = null;
+  updateResultTier();
   delete resultName.dataset.i18nIgnore;
   resultName.textContent = '等待開獎';
   resultName.className = 'result-name placeholder';
   seal.classList.remove('show');
   Object.values(machines).forEach(machine => machine?.reset());
   updateMachineNote();
+  updateStageLabel();
 }
 function briefRevealPause(ms){
   if(skipAnimations || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) return Promise.resolve();
@@ -355,6 +364,7 @@ function syncTierInput(input){
 function syncVisibleTierInputs(){
   let valid = true;
   tierRows.querySelectorAll('input').forEach(input => {
+    if(!input.dataset.field) return;
     if(!syncTierInput(input)) valid = false;
   });
   if(!valid) showToast('獎項人數請填入大於或等於 1 的整數');
@@ -372,9 +382,25 @@ function renderTierRows(){
       <button class="remove-tier" data-idx="${i}" title="移除此獎項">✕</button>
     `;
     tierRows.appendChild(row);
+    if(typeof RafflePrizeImages !== 'undefined') RafflePrizeImages.mount({
+      row, tier: t,
+      canEdit: () => !drawing && tierConfig.includes(t),
+      onChange: () => { syncLiveTier(tierConfig.indexOf(t)); updateStageLabel(); },
+      onBusy: delta => {
+        prizeImagesProcessing += delta;
+        applyTiersBtn.disabled = drawing || prizeImagesProcessing > 0;
+        addTierBtn.disabled = drawing || prizeImagesProcessing > 0;
+        tierRows.querySelectorAll('.remove-tier').forEach(button => {
+          button.disabled = drawing || prizeImagesProcessing > 0;
+        });
+        updateStageLabel();
+      },
+      onError: showToast
+    });
   });
 
   tierRows.querySelectorAll('input').forEach(inp=>{
+    if(!inp.dataset.field) return;
     inp.addEventListener('input', (e)=>{
       if(drawing){ syncTierInput(e.target); return; }
       syncTierInput(e.target);
@@ -385,7 +411,7 @@ function renderTierRows(){
 
   tierRows.querySelectorAll('.remove-tier').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
-      if(drawing) return;
+      if(drawing || prizeImagesProcessing) return;
       const idx = parseInt(e.target.dataset.idx);
       tiers.forEach(t => {
         if(t.sourceIndex === idx) t.sourceIndex = -1;
@@ -418,6 +444,7 @@ function syncLiveTier(configIdx){
     showToast(`「${t.name}」已抽出 ${t.drawnList.length} 位；要減少人數，請先重置得獎紀錄`);
   }
   t.count = tierConfig[configIdx].count;
+  t.image = tierConfig[configIdx].image || null;
 
   selectPendingTier();
   renderWinners();
@@ -444,7 +471,7 @@ function renderAdvancedRows(){
 }
 
 addTierBtn.addEventListener('click', ()=>{
-  if(drawing) return;
+  if(drawing || prizeImagesProcessing) return;
   tierStructureDirty = tiers.length > 0;
   tierConfig.push({ name:`第${tierConfig.length+1}獎`, count:1 });
   presetConfig.push('');
@@ -453,7 +480,7 @@ addTierBtn.addEventListener('click', ()=>{
 });
 
 applyTiersBtn.addEventListener('click', ()=>{
-  if(drawing || !syncVisibleTierInputs()) return;
+  if(drawing || prizeImagesProcessing || !syncVisibleTierInputs()) return;
   const validEntries = tierConfig
     .map((t, i) => ({ t, i }))
     .filter(x => x.t.name.trim().length > 0 && x.t.count > 0);
@@ -471,12 +498,13 @@ applyTiersBtn.addEventListener('click', ()=>{
     return {
       name: x.t.name.trim(),
       count: x.t.count,
+      image: x.t.image || null,
       drawnList: [],
       forcedRemaining: forcedNames,
       sourceIndex: x.i
     };
   });
-  tierConfig = tiers.map(t => ({ name:t.name, count:t.count }));
+  tierConfig = tiers.map(t => ({ name:t.name, count:t.count, image:t.image }));
   presetConfig = tiers.map(t => t.forcedRemaining.join('\n'));
   tiers.forEach((t, i) => t.sourceIndex = i); // 重新對齊索引，確保之後即時同步能對上正確的獎項
   currentTierIndex = 0;
@@ -501,8 +529,16 @@ function updateStageLabel(){
     tierName.textContent = lastReveal.prizeName;
     tierCountLabel.textContent = raffleCopy(`已揭曉 ${lastReveal.ordinal} 位`, `${lastReveal.ordinal} revealed`);
   }
+  if(typeof RafflePrizeImages !== 'undefined') {
+    const displayedPrize = drawFocus?.active && !drawing && lastReveal
+      ? {name: lastReveal.prizeName, image: lastReveal.prizeImage}
+      : tiers[currentTierIndex];
+    RafflePrizeImages.present(document.getElementById('stagePrizeImage'), displayedPrize);
+  }
+  if(prizeImagesProcessing) drawBtn.disabled = true;
 }
-function updateDrawStageLabels(){  document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
+function updateDrawStageLabels(){
+  document.getElementById('tierContext').textContent = drawing ? '本次獎項' : '待抽獎項';
   if(tiers.length === 0){
     tierName.textContent = '尚未設定獎項';
     tierCountLabel.textContent = raffleCopy('請先在左側設定獎項並套用', 'Set and apply your prizes first');
@@ -629,8 +665,8 @@ function renderWinners(){
   });
 }
 
-async function rollAnimation(finalName, duration, ordinal, prizeName, candidates){
-  lastReveal = {prizeName, ordinal};
+async function rollAnimation(finalName, duration, ordinal, prizeName, candidates, prizeImage = null){
+  lastReveal = {prizeName, ordinal, prizeImage};
   updateResultTier();
   resultName.className = 'result-name placeholder';
   delete resultName.dataset.i18nIgnore;
@@ -655,7 +691,7 @@ async function rollAnimation(finalName, duration, ordinal, prizeName, candidates
 }
 
 drawBtn.addEventListener('click', async ()=>{
-  if(drawing) return;
+  if(drawing || prizeImagesProcessing) return;
   if(tierStructureDirty){ showToast('請先套用獎項設定'); return; }
   if(!syncVisibleTierInputs()) return;
   selectPendingTier();
@@ -686,7 +722,7 @@ drawBtn.addEventListener('click', async ()=>{
       // Reserve one result, animate it, then commit it exactly once.
       const candidates = pool.slice();
       const [chosenName] = pickDrawList(tier, 1);
-      await rollAnimation(chosenName, i === 0 ? 2600 : 1900, tier.drawnList.length + 1, tier.name, candidates);
+      await rollAnimation(chosenName, i === 0 ? 2600 : 1900, tier.drawnList.length + 1, tier.name, candidates, tier.image);
       seal.classList.add('show');
       tier.drawnList.push(chosenName);
       renderWinners();
