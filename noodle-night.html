@@ -6,15 +6,15 @@
   <meta name="description" content="在凌晨 3 點前開車回到家，閃過車輛，再親手煮一碗牛肉麵。支援電腦與手機的小遊戲。">
   <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
   <link rel="stylesheet" href="assets/games.css?v=20261002-noodle1">
-  <link rel="stylesheet" href="assets/noodle-night.css?v=20261002-noodle1">
+  <link rel="stylesheet" href="assets/noodle-night.css?v=20261012-touchboost1">
   <script src="assets/site-shell.js"></script>
   <link rel="stylesheet" href="assets/site-language.css?v=20260927-en">
   <script src="assets/site-english.js?v=20261002-brandnotes1"></script>
   <script src="assets/reaction-language.js?v=20261001-themes2"></script>
-  <script src="assets/noodle-language.js?v=20261009-homeboost1"></script>
+  <script src="assets/noodle-language.js?v=20261012-touchboost1"></script>
   <script src="assets/site-language.js?v=20260927-continue"></script>
   <script defer src="assets/noodle-core.js?v=20261009-homeboost1"></script>
-  <script defer src="assets/noodle-night.js?v=20261009-homeboost1"></script>
+  <script defer src="assets/noodle-night.js?v=20261012-touchboost1"></script>
 </head>
 <body class="games-page noodle-page">
   <a class="yk-skip" href="#night-scene">跳到遊戲</a>
@@ -44,13 +44,18 @@
             <p id="cook-feedback" role="status"></p>
           </div>
         </div>
-        <div class="night-controls"><button id="night-left" type="button" aria-label="向左切換車道" disabled>← <span>A</span></button><p id="night-road-hint" data-i18n-ignore>左右換道，準時到家。</p><button id="night-right" type="button" aria-label="向右切換車道" disabled><span>D</span> →</button></div>
+        <div class="night-controls">
+          <button id="night-left" type="button" aria-label="向左切換車道" disabled>← <span>A</span></button>
+          <button id="night-right" type="button" aria-label="向右切換車道" disabled><span>D</span> →</button>
+          <button id="night-boost" type="button" aria-pressed="false" disabled data-i18n-ignore><b id="night-boost-label">↑ 加速</b><span id="night-boost-help">按住加速</span></button>
+          <p id="night-road-hint" data-i18n-ignore>左右換道，準時到家。</p>
+        </div>
         <p id="night-live" class="night-live" role="status" data-i18n-ignore></p>
       </section>
       <aside class="night-brief">
         <div class="night-ticket"><p class="night-eyebrow">TONIGHT'S MISSION</p><h2>一個人的深夜任務</h2><div class="night-ticket-line"><span>目的地</span><strong>家裡</strong></div><div class="night-ticket-line"><span>到家期限</span><strong>凌晨 03:00 前</strong></div><div class="night-ticket-line"><span>任務獎勵</span><strong>一碗熱騰騰的麵</strong></div><div class="ticket-tear"></div><ol class="night-steps"><li id="step-drive" aria-current="step"><b>01</b><div><strong>開過夜晚的城市</strong><p>閃過車輛和路障。碰撞會減速，並損失 4 秒倒數。</p></div></li><li id="step-cook"><b>02</b><div><strong>煮出你的宵夜</strong><p>指針進入綠色區域時起鍋、加湯，再放入牛肉與青菜。</p></div></li></ol><p class="night-small">3 點前到家就算準時。煮麵階段不倒數，可以慢慢來。</p></div>
         <div class="night-record"><span>個人最佳</span><strong id="night-best" data-i18n-ignore>—</strong><small>紀錄保存在目前瀏覽器</small></div>
-        <p id="night-help" class="night-help">電腦：← → 或 A / D 換道，按住 ↑ 加速，P 暫停。<br>手機：點下方左右按鈕。<br>遊戲中的 10 分鐘約為現實 70 秒；切換分頁會自動暫停。</p>
+        <p id="night-help" class="night-help">電腦：← → 或 A / D 換道，按住 ↑ 加速，P 暫停。<br>手機：按住加速，可同時點左右按鈕換道。<br>遊戲中的 10 分鐘約為現實 70 秒；切換分頁會自動暫停。</p>
       </aside>
     </div>
     <noscript><p>請啟用 JavaScript 以遊玩凌晨牛肉麵。</p></noscript>
