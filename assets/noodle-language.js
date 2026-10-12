@@ -12,7 +12,7 @@ Object.assign(window.YKEnglish||(window.YKEnglish={}),{
   '3 點前到家就算準時。煮麵階段不倒數，可以慢慢來。':'Get home before 3 AM. There is no countdown in the kitchen, so take your time.',
   '紀錄保存在目前瀏覽器':'Records stay in this browser',
   '電腦：← → 或 A / D 換道，按住 ↑ 加速，P 暫停。':'Desktop: ← → or A / D to steer. Hold ↑ to boost. P to pause.',
-  '手機：點下方左右按鈕。':'Mobile: tap the left and right buttons.',
+  '手機：按住加速，可同時點左右按鈕換道。':'Mobile: hold Boost and tap the left or right button at the same time to steer.',
   '遊戲中的 10 分鐘約為現實 70 秒；切換分頁會自動暫停。':'10 in-game minutes are about 70 real seconds. Leaving the tab pauses the game.',
   '請啟用 JavaScript 以遊玩凌晨牛肉麵。':'Enable JavaScript to play Midnight Noodles.',
   '把夜路走完，把肚子填滿。':'One night drive. One good meal.',

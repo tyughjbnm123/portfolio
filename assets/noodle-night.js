@@ -4,6 +4,7 @@
   const canvas=$('night-canvas'),ctx=canvas.getContext('2d'),scene=$('night-scene'),panel=document.querySelector('.night-game');
   const bestKey='yichi-noodle-best-v1';
   let frame=0,last=0,best=0,feedback='',lastPhase='ready',lastHits=0,stored=false;
+  const boostButton=$('night-boost'),boostPointers=new Set(),boostKeys=new Set();
   const tr=(zh,en)=>window.YKLanguage?.language==='en'?en:zh;
   const put=(id,value)=>{const el=$(id);if(el.textContent!==String(value))el.textContent=String(value);};
   try{const value=Number(localStorage.getItem(bestKey));if(Number.isInteger(value)&&value>=0&&value<=10000)best=value;}catch{}
@@ -95,11 +96,16 @@
     $('night-progress').style.width=`${game.distance/G.DISTANCE*100}%`;
     document.querySelector('.night-route').setAttribute('aria-valuenow',Math.floor(game.distance/G.DISTANCE*100));
     const driving=game.phase==='drive'&&!game.paused;
-    $('night-left').disabled=!driving;$('night-right').disabled=!driving;
+    $('night-left').disabled=!driving;$('night-right').disabled=!driving;boostButton.disabled=!driving;
+    boostButton.setAttribute('aria-pressed',game.accelerating);
+    put('night-boost-label',game.accelerating?tr('↑ 加速中','↑ Boosting'):tr('↑ 加速','↑ Boost'));
+    put('night-boost-help',game.accelerating?tr('放開減速','Release to slow'):tr('按住加速','Hold to boost'));
+    boostButton.setAttribute('aria-label',tr('按住加速，放開減速；鍵盤可按住向上鍵，或聚焦按鈕後按住空白鍵。','Hold to accelerate, release to slow. Hold Up, or hold Space when this button is focused.'));
     $('night-pause').disabled=!['drive','cook'].includes(game.phase);
     put('night-pause',game.paused?tr('繼續 ▷','Resume ▷'):tr('暫停 Ⅱ','Pause Ⅱ'));
     put('night-best',best||'—');
-    put('night-road-hint',driving?(game.accelerating&&game.slow===0?tr('↑ 加速中 · ← → / A D 換道','↑ Boosting · ← → / A D to steer'):tr('← → / A D 換道 · 按住 ↑ 加速','← → / A D to steer · Hold ↑ to boost')):tr('左右換道，準時到家。','Switch lanes. Get home on time.'));
+    const touch=window.matchMedia?.('(any-pointer: coarse)').matches;
+    put('night-road-hint',driving?(touch?tr('按住加速，同時點 ← → 換道','Hold Boost and tap ← → to steer'):(game.accelerating&&game.slow===0?tr('↑ 加速中 · ← → / A D 換道','↑ Boosting · ← → / A D to steer'):tr('← → / A D 換道 · 按住 ↑ 加速','← → / A D to steer · Hold ↑ to boost'))):tr('左右換道，準時到家。','Switch lanes. Get home on time.'));
   }
   function render(){
     panel.dataset.phase=game.phase;updateHUD();
@@ -108,7 +114,7 @@
     const overlay=game.paused||['ready','arrived','late','served'].includes(game.phase);
     $('night-overlay').hidden=!overlay;$('overlay-result').hidden=game.phase!=='served'||game.paused;
     $('night-sign').innerHTML=tr('回家煮麵','HOME')+' <b>BEFORE 03:00</b>';
-    scene.setAttribute('aria-label',tr('開車場景，使用左右方向鍵或 A、D 切換車道，按住向上方向鍵加速。','Driving scene. Use Left / Right or A / D to change lanes. Hold Up to accelerate.'));
+    scene.setAttribute('aria-label',tr('開車場景，使用左右方向鍵、A／D 或下方箭頭換道，按住向上鍵或加速按鈕加速。','Driving scene. Use Left / Right, A / D or the arrow buttons to steer. Hold Up or the Boost button to accelerate.'));
     for(const [id,active] of [['step-drive',!['cook','served'].includes(game.phase)],['step-cook',['cook','served'].includes(game.phase)]]){
       if(active)$(id).setAttribute('aria-current','step');else $(id).removeAttribute('aria-current');
     }
@@ -140,7 +146,7 @@
   function startLoop(){stop();if(!game.paused&&['drive','cook'].includes(game.phase))frame=requestAnimationFrame(loop);}
   function checkTransition(){
     if(game.hits!==lastHits){lastHits=game.hits;put('night-live',tr('碰撞了！減速，倒數損失 4 秒。','Bump! Slowed down and lost 4 seconds.'));}
-    if(game.phase!==lastPhase){lastPhase=game.phase;render();if(['arrived','late','served'].includes(game.phase))$('night-primary').focus({preventScroll:true});}
+    if(game.phase!==lastPhase){clearBoost();lastPhase=game.phase;render();if(['arrived','late','served'].includes(game.phase))$('night-primary').focus({preventScroll:true});}
   }
   function loop(now){
     const dt=last?(now-last)/1000:0;last=now;
@@ -151,16 +157,39 @@
     draw();
     if(!game.paused&&['drive','cook'].includes(game.phase))frame=requestAnimationFrame(loop);else stop();
   }
-  function pause(){if(!game.pause())return;stop();render();$('night-primary').focus({preventScroll:true});}
+  function syncBoost(){game.accelerate(boostPointers.size>0||boostKeys.size>0);updateHUD();}
+  function clearBoost(){
+    const pointers=[...boostPointers];boostPointers.clear();boostKeys.clear();game.accelerate(false);
+    for(const id of pointers){if(boostButton.hasPointerCapture(id))boostButton.releasePointerCapture(id);}
+  }
+  function pause(){clearBoost();if(!game.pause())return;stop();render();$('night-primary').focus({preventScroll:true});}
   function resume(){if(!game.resume())return;render();scene.focus({preventScroll:true});startLoop();}
-  function start(){game.reset();game.start();lastPhase='drive';lastHits=0;stored=false;feedback='';put('night-live',tr('出發！你的車是杏色的那一台。','Let’s go! You’re driving the apricot-colored car.'));render();scene.focus({preventScroll:true});panel.scrollIntoView({block:'center',behavior:'instant'});startLoop();}
+  function start(){clearBoost();game.reset();game.start();lastPhase='drive';lastHits=0;stored=false;feedback='';put('night-live',tr('出發！你的車是杏色的那一台。','Let’s go! You’re driving the apricot-colored car.'));render();scene.focus({preventScroll:true});panel.scrollIntoView({block:'center',behavior:'instant'});startLoop();}
   $('night-primary').addEventListener('click',()=>{
     if(game.paused){resume();return;}
     if(game.phase==='arrived'){game.beginCooking();lastPhase='cook';put('night-live',tr('已準時到家，現在專心煮麵。','Home on time. Enjoy the cooking.'));render();$('cook-action').focus({preventScroll:true});startLoop();return;}
     if(['ready','late','served'].includes(game.phase))start();
   });
-  $('night-left').addEventListener('click',()=>game.move(-1));$('night-right').addEventListener('click',()=>game.move(1));
-  $('night-pause').addEventListener('click',()=>game.paused?resume():pause());
+  for(const [id,direction] of [['night-left',-1],['night-right',1]]){
+    const button=$(id);
+    // Pointer events also handle a second finger while the first holds Boost.
+    button.addEventListener('pointerdown',e=>{if(e.button!==0||button.disabled)return;e.preventDefault();game.move(direction);});
+    button.addEventListener('click',e=>{if(!e.detail)game.move(direction);}); // Keyboard / assistive activation only.
+    button.addEventListener('contextmenu',e=>e.preventDefault());
+  }
+  boostButton.addEventListener('pointerdown',e=>{
+    if(e.button!==0||boostButton.disabled)return;e.preventDefault();boostPointers.add(e.pointerId);
+    try{boostButton.setPointerCapture(e.pointerId);}catch{} // Document release remains a fallback.
+    syncBoost();
+  });
+  function releaseBoost(e){if(boostPointers.delete(e.pointerId))syncBoost();}
+  for(const event of ['pointerup','pointercancel','lostpointercapture'])boostButton.addEventListener(event,releaseBoost);
+  for(const event of ['pointerup','pointercancel'])document.addEventListener(event,releaseBoost);
+  boostButton.addEventListener('contextmenu',e=>e.preventDefault());
+  boostButton.addEventListener('blur',()=>{boostKeys.delete('Space');boostKeys.delete('Enter');syncBoost();});
+  const togglePause=()=>game.paused?resume():pause();
+  $('night-pause').addEventListener('pointerdown',e=>{if(e.button!==0||$('night-pause').disabled)return;e.preventDefault();togglePause();});
+  $('night-pause').addEventListener('click',e=>{if(!e.detail)togglePause();});
   function cookingAction(){
     if(game.cookStage<2){const q=game.cook();if(q===null)return;feedback=q===100?tr('剛剛好！＋100','Perfect! +100'):q===65?tr('還不錯！＋65','Pretty good! +65'):tr('下次再抓準一點。＋30','A little early or late. +30');render();}
     else if(game.serve()){
@@ -173,14 +202,14 @@
   document.addEventListener('keydown',e=>{
     if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,[contenteditable]'))return;
     if(['ArrowLeft','ArrowRight','KeyA','KeyD'].includes(e.code)&&game.phase==='drive'&&!game.paused){e.preventDefault();if(!e.repeat)game.move(['ArrowLeft','KeyA'].includes(e.code)?-1:1);}
-    else if(e.code==='ArrowUp'&&game.phase==='drive'&&!game.paused){e.preventDefault();if(!e.repeat){game.accelerate(true);updateHUD();}}
+    else if((e.code==='ArrowUp'||(e.target===boostButton&&['Space','Enter'].includes(e.code)))&&game.phase==='drive'&&!game.paused){e.preventDefault();if(!e.repeat){boostKeys.add(e.code);syncBoost();}}
     else if(e.code==='KeyP'&&['drive','cook'].includes(game.phase)){e.preventDefault();if(!e.repeat)game.paused?resume():pause();}
     else if(e.code==='Space'&&game.phase==='cook'&&!game.paused&&!e.target.closest('button,a')){e.preventDefault();if(!e.repeat)cookingAction();}
   });
-  document.addEventListener('keyup',e=>{if(e.code==='ArrowUp'){game.accelerate(false);updateHUD();}});
+  document.addEventListener('keyup',e=>{if(boostKeys.delete(e.code))syncBoost();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
   window.addEventListener('blur',pause);
-  window.addEventListener('pagehide',()=>{game.accelerate(false);stop();});
+  window.addEventListener('pagehide',()=>{clearBoost();stop();updateHUD();});
   window.addEventListener('yk:language',()=>{feedback='';put('night-live','');render();});
   render();
 })();
