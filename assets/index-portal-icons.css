@@ -1,0 +1,88 @@
+/* Only the five homepage entrance visuals; original detail views stay untouched. */
+.yk-index-page #yk-world .yk-icon-entrances .yk-portal{display:flex;flex-direction:column;align-items:center;text-align:center;transform:none}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-visual{position:relative;display:block;width:164px;height:146px;max-width:100%;margin:0;flex:none;animation:none;scale:1;transform:none;transition:none}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon,.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original{position:absolute;inset:0;display:grid;grid-template:minmax(0,1fr)/minmax(0,1fr);place-items:center;color:var(--yk-accent);transition:opacity .24s ease,transform .32s cubic-bezier(.2,.75,.3,1),visibility .24s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon{opacity:1;visibility:visible;transform:none}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon .yk-tool-art{position:relative;display:block;width:160px;height:106px;margin:0;scale:1;animation:yk-entry-float 6.6s ease-in-out infinite}
+.yk-index-page #yk-world .yk-icon-entrances .yk-tools .yk-entry-icon .yk-tool-art{animation-delay:-2.6s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon .yk-tool-main{text-align:left}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon .yk-code-track i{animation-duration:3.8s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-object{display:block;width:164px;height:146px;max-width:100%;overflow:visible;filter:drop-shadow(0 9px 10px #00000020);animation:yk-entry-float 6.6s ease-in-out infinite}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-face{fill:var(--yk-surface);stroke:var(--yk-line)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-soft{fill:var(--yk-soft);stroke:var(--yk-line)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-accent{stroke:var(--yk-accent)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-ink{fill:var(--yk-accent);opacity:.65}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-bright{fill:var(--yk-accent)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-work{animation-delay:-1.5s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-lab{animation-delay:-3.7s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-object-games{animation-delay:-4.8s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-badge-sway{transform-box:view-box;transform-origin:82px 20px;transform:rotate(-4deg);animation:yk-badge-sway 7s ease-in-out infinite}
+.yk-index-page #yk-world .yk-icon-entrances .yk-folder-pages{animation:yk-page-peek 7s ease-in-out infinite;animation-delay:-1.5s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-flask-liquid{fill:var(--yk-accent);opacity:.45}
+.yk-index-page #yk-world .yk-icon-entrances .yk-liquid-sheen{stroke:var(--yk-accent);opacity:.8}
+.yk-index-page #yk-world .yk-icon-entrances .yk-bubble{fill:var(--yk-accent);animation:yk-bubble-rise 4.8s ease-in infinite}
+.yk-index-page #yk-world .yk-icon-entrances .yk-bubble-two{animation-delay:-1.6s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-bubble-three{animation-delay:-3.2s}
+.yk-index-page #yk-world .yk-icon-entrances .yk-controller-button{fill:var(--yk-accent);opacity:.55;animation:yk-button-glow 7s ease-in-out infinite}
+.yk-index-page #yk-world .yk-icon-entrances .yk-controller-button-two{animation-delay:-3.5s}
+@keyframes yk-badge-sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(-1deg)}}
+@keyframes yk-page-peek{0%,70%,100%{transform:translateY(0)}35%{transform:translateY(-5px)}}
+@keyframes yk-bubble-rise{0%{opacity:0;transform:translateY(7px)}30%,65%{opacity:.8}100%{opacity:0;transform:translateY(-20px)}}
+@keyframes yk-button-glow{0%,35%,80%,100%{opacity:.55}55%{opacity:1}}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original{opacity:0;visibility:hidden;transform:translateY(2px) scale(.88);pointer-events:none}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original>.yk-art{margin:0;animation:none;scale:1;max-width:none}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-photo-art{width:126px;height:164px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-photo-tag{left:-8px;bottom:15px;font-size:6px;padding:6px 7px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-photo-dot{width:17px;height:17px;border-width:4px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-stack{width:174px;height:122px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-stack-front,.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-stack-back{width:138px;height:108px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-stack-front{top:10px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-stack-front img{height:80px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-stack-front>span{font-size:5px;padding:4px 2px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-lab-art{width:151px;height:98px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-spark{font-size:28px;right:-13px;top:-19px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-game-art{width:140px;height:125px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-mini-board{width:115px;height:115px;padding:7px;gap:5px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-mini-board i{font-size:22px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-mini-board i:last-child{font-size:17px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-game-spark{font-size:24px;right:9px;top:0}
+@keyframes yk-entry-float{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px)}}
+.yk-index-page #yk-world .yk-icon-entrances .yk-label{display:block;margin-top:18px;width:100%;max-width:260px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-label>small{font-size:10px;margin-bottom:8px;letter-spacing:.14em}
+.yk-index-page #yk-world .yk-icon-entrances .yk-label strong{font-size:19px;font-weight:500;line-height:1.4}
+.yk-index-page #yk-world .yk-icon-entrances .yk-preview{max-width:none;font-size:12px;line-height:1.7;margin-top:8px}
+.yk-index-page #yk-world .yk-icon-entrances .yk-center{display:none}
+.yk-index-page #yk-world .yk-icon-entrances .yk-links-canvas{opacity:.3}
+.yk-index-page #yk-world .yk-icon-entrances[data-active] .yk-portal:not(.yk-active){opacity:1;filter:none;scale:1}
+.yk-index-page #yk-world .yk-icon-entrances .yk-portal:not(.yk-tools):focus-visible .yk-entry-icon{opacity:0;visibility:hidden;transform:scale(.92)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-portal:focus-visible .yk-entry-original{opacity:1;visibility:visible;transform:translateY(-5px) scale(1.08)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-tools:focus-visible .yk-entry-icon{transform:translateY(-4px) scale(1.10)}
+.yk-index-page #yk-world .yk-icon-entrances .yk-tools:focus-visible .yk-tool-main{transform:rotate(0) translateY(-4px)}
+@media(hover:hover) and (pointer:fine){
+ .yk-index-page #yk-world .yk-icon-entrances .yk-portal:not(.yk-tools):hover .yk-entry-icon{opacity:0;visibility:hidden;transform:scale(.92)}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-portal:hover .yk-entry-original{opacity:1;visibility:visible;transform:translateY(-5px) scale(1.08)}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-tools:hover .yk-entry-icon{transform:translateY(-4px) scale(1.10)}
+}
+@media(max-width:740px){
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-visual{width:140px;height:130px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-label strong{font-size:17px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-original .yk-photo-art{width:116px;height:144px}
+}
+@media(max-width:550px){
+ .yk-index-page #yk-world .yk-icon-entrances{gap:26px 14px;min-height:0}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-portal{align-self:start;min-height:0;padding:0;gap:0}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-visual{width:126px;height:116px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon .yk-tool-art{width:126px;height:94px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-object{width:126px;height:116px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-label{margin-top:14px;max-width:100%}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-label>small{font-size:9px;margin-bottom:6px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-label strong{font-size:16px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-preview{font-size:12px;margin-top:7px;min-height:0}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-games{grid-column:1/-1;width:100%}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-games .yk-label{max-width:260px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-links-canvas{opacity:.15}
+}
+@media(prefers-reduced-motion:reduce){
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon,.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original,.yk-index-page #yk-world .yk-icon-entrances .yk-tool-main{transition:none}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon *,.yk-index-page #yk-world .yk-icon-entrances .yk-spark{animation:none}
+}
