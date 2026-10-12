@@ -263,22 +263,36 @@
         results: "• 10 個月完成回本，建立穩定月現金流。\n• <a href='https://www.instagram.com/s23u_256/' target='_blank' rel='noopener noreferrer' aria-label='累積 200+ 粉絲，查看 S23U Instagram（另開新分頁）' class='text-primary underline underline-offset-4'>累積 200+ 粉絲</a>，首次體驗回購率達 100%。\n• 累積完整的服務設計、流程規劃、使用者體驗與商業營運經驗。"
       },
       "hosset-crm": {
-        title: "Hosset 虎勢 CRM LINE OA 自動化工作流",
-        category: "MARTECH_AUTOMATION",
-        heroImage: "assets/omnichat-flow.jpg",
-        interactive: "hosset-canvas",
-        stats: [
-          { label: "綁定轉換率", value: "+25%" },
-          { label: "API 響應時間", value: "<1.5s" },
-          { label: "資料同步", value: "準即時" }
+        "title": "HOSSET 虎勢｜Omnichat 購物車再行銷與 CRM 流程規劃",
+        "category": "MARTECH_AUTOMATION",
+        "heroImage": "assets/omnichat-flow.jpg",
+        "interactive": "hosset-canvas",
+        "statusCards": [
+          {
+            "code": "VERIFIED",
+            "heading": "Pixel 與商品事件",
+            "detail": "Omnichat Pixel 已接收到加入購物車事件與商品資料。"
+          },
+          {
+            "code": "IMPLEMENTED",
+            "heading": "購物車再行銷流程",
+            "detail": "已設定並實際使用相關 Omnichat 流程。"
+          },
+          {
+            "code": "PLANNED",
+            "heading": "n8n 會員／訂單分群",
+            "detail": "規劃整理 Cyberbiz 資料，提供 Omnichat 分群與旅程使用。",
+            "verifyNote": "身份對應、資料取得方式、更新權限與旅程入口條件待確認。"
+          }
         ],
-        role: "MarTech 規劃與自動化 PM",
-        timeline: "2026.02 - 2026.05",
-        budget: "Hosset 虎勢專案研發預算",
-        background: "Hosset 虎勢在線下活動與實體通路累積了大量顧客，但缺乏高效的會員留存與再行銷機制。為了建立完整的 OMO 閉環，規劃透過 LINE 官方帳號（OA）串接 Omnichat 與 Cyberbiz CRM，實現線下流量自動化洗入線上會員體系。",
-        challenge: "1. 流程繁瑣：傳統綁定會員需要顧客手動輸入大量資料，導致流失率極高。\n2. 系統孤島：Omnichat（客服與自動化推播）與 Cyberbiz（電商與 CRM 系統）的會員數據無法即時互通。",
-        solution: "1. 掃碼預填技術：設計專屬 QR Code，顧客掃描後自動開啟 LINE 並預填「我要綁定會員」關鍵字，由機器人秒級推送 Rich Message 綁定卡片。\n2. API 雙向串接：使用 Make/n8n 作為中介，呼叫 Cyberbiz API 驗證手機號碼，綁定成功後自動將 OpenID 回傳並打上 Omnichat 標籤。\n3. 自動發券與分眾：綁定成功即時派發 $100 禮券，並打上「已綁定會員」標籤，建立自動化再行銷劇本。",
-        results: "• 成功協助客戶將 LINE 會員綁定轉換率大幅提升 25%。\n• 實現掃碼、綁定、發券與標籤分眾流程自動化，無須例行人工操作。"
+        "role": "MarTech / CRM Project Manager",
+        "timeline": "2026.02 - 2026.05",
+        "budget": "Hosset 虎勢專案研發預算",
+        "background": "虎勢使用 Cyberbiz 電商與 Omnichat，希望透過 LINE 與 CRM 提升未結帳顧客的後續溝通能力。",
+        "challenge": "1. 加入購物車後，Omnichat 需要能辨識顧客與商品事件。\n2. Omnichat 的聯絡人辨識會受到 LINE 綁定、Cookie、瀏覽器與裝置條件影響。\n3. Cyberbiz 與 Omnichat 的會員、訂單、標籤資料格式不同，後續若要做更多顧客旅程，需要先整理會員身份與資料對應方式。",
+        "solution": "1.【已驗證 / VERIFIED】驗證 Omnichat Pixel 的 add_to_cart 事件與商品資料是否正確進入系統。\n2.【已設定／實際使用 / IMPLEMENTED】梳理購物車再行銷的觸發條件，包括 LINE 綁定、同一瀏覽器、未完成結帳及等待時間。\n3.【規劃中 / PLANNED】以 n8n 作為資料整理與分群層，讀取 Cyberbiz 會員／訂單資料，再更新 Omnichat 可使用的標籤或屬性。\n4.【待確認 / TO VERIFY】會員身份對應、資料取得方式、Omnichat 更新權限與旅程入口條件。",
+        "resultsHeading": "4. 成果／目前狀態 (Current Status)",
+        "results": "• 已確認 Omnichat Pixel 可接收到加入購物車事件與商品資料。\n• 已建立購物車再行銷流程的條件理解與維運邏輯。\n• n8n × Cyberbiz × Omnichat 的會員／訂單分群整合仍屬規劃中，尚未完成正式串接與驗收。\n• 未提供逐筆訊息發送、轉換率提升或營收增加的證據，因此不宣稱成效數字。"
       },
       "alain-ducasse": {
         title: "ALAIN DUCASSE 台灣電商官網規劃與建置",
@@ -315,22 +329,38 @@
         results: "• 建立可辨識會員來源的 CRM 基礎與一致的 Tag 命名邏輯。\n• 將「導流」由單純加好友轉為可追蹤的會員資料來源。\n• 為後續 Segment、Journey Automation 與 POS 資料整合預留架構。\n• 目前僅 Phase 1（Data Foundation）已落地上線，Phase 2-4 為規劃／評估階段，尚未實作。"
       },
       "n8n-attendance": {
-        title: "n8n｜內部打卡系統與流程自動化",
-        category: "SYSTEM_AUTOMATION",
-        heroImage: "assets/n8n-attendance-architecture.png",
-        diagramImage: "assets/n8n-attendance-workflow.png",
-        stats: [
-          { label: "觸發方式", value: "LINE Webhook" },
-          { label: "資料儲存", value: "Google Sheets" },
-          { label: "狀態管理", value: "3 種狀態" }
+        "title": "n8n｜內部打卡系統與流程自動化",
+        "category": "SYSTEM_AUTOMATION",
+        "heroImage": "assets/n8n-attendance-architecture.png",
+        "diagramImage": "assets/n8n-attendance-workflow.png",
+        "heroCaption": "既有架構圖包含補打卡入口；入口存在不代表申請與主管審核已完成。",
+        "diagramCaption": "原流程圖的補打卡分支標示「尚未實作」；本次僅將基本打卡、查詢與錯誤通知列為已完成。",
+        "statusCards": [
+          {
+            "code": "IMPLEMENTED",
+            "heading": "LINE 打卡與紀錄查詢",
+            "detail": "LINE Webhook、User ID 識別、員工主檔查找、上下班打卡、紀錄查詢、Google Sheets 讀寫、LINE Reply、Error Alert。"
+          },
+          {
+            "code": "PLANNED",
+            "heading": "補打卡與主管審核",
+            "detail": "補打卡申請、Manager Approval、Pending / Approved / Rejected 完整狀態流尚未完整實作或開放。"
+          },
+          {
+            "code": "PLANNED",
+            "heading": "後續改善情境",
+            "detail": "防代打、跨日打卡、Concurrent Request 與重複點擊處理。",
+            "verifyNote": "上述情境的處理規則與驗證方式仍需確認。"
+          }
         ],
-        role: "Workflow / Automation Designer",
-        timeline: "內部專案／持續維護",
-        budget: "內部工具專案，無外部預算",
-        background: "內部出勤流程需要降低人工紀錄與行政處理成本，因此以 n8n 建立可由 LINE 觸發的打卡與出勤管理 Workflow：LINE User → Webhook → User ID Validation → Action Detection（Clock In / Clock Out / Attendance Query / Missing Punch Request）→ Google Sheets → Response / Status Update。",
-        challenge: "1. 如何確認打卡者身分，避免只靠使用者輸入姓名。\n2. 如何判斷上班、下班、查詢與補打卡等不同 Intent。\n3. 補打卡流程需包含申請、審核、狀態更新與資料回寫。\n4. Workflow 需考慮重複打卡、找不到員工、資料缺漏等異常情境。",
-        solution: "1. 使用 LINE User ID 作為身分識別依據，取代手動輸入姓名。\n2. 透過 n8n 條件節點進行 Intent / Action 分流（上班、下班、查詢、補打卡）。\n3. 以 Google Sheets 作為初期資料儲存與查詢來源。\n4. 建立補打卡狀態機制，區分 Pending / Approved / Rejected。\n5. 增加錯誤處理與防呆邏輯，處理重複打卡與資料缺漏情境。",
-        results: "• 將人工出勤紀錄轉為可追蹤的自動化 Workflow。\n• 建立身分識別、條件判斷、資料寫入與狀態管理完整流程。\n• 累積 Webhook、Data Mapping、Branch Logic 與 Error Handling 實務經驗。"
+        "role": "Workflow / Automation Designer",
+        "timeline": "內部專案／持續維護",
+        "budget": "內部工具專案，無外部預算",
+        "background": "內部出勤流程希望降低人工紀錄與查詢成本，因此以 LINE 作為使用入口，透過 n8n 串接員工主檔與 Google Sheets。",
+        "challenge": "1. 如何用 LINE User ID 辨識員工身分。\n2. 如何判斷打卡、下班與查詢等不同操作。\n3. 如何避免找不到員工、資料缺漏與重複操作造成錯誤。\n4. 補打卡、主管審核與跨日等情境仍需要後續完善。",
+        "solution": "1. 使用 LINE User ID 對應員工主檔。\n2. 依訊息／指令判斷打卡、下班與查詢。\n3. 依當日紀錄判斷 Clock In / Clock Out。\n4. 使用 Google Sheets 儲存與查詢出勤資料。\n5. 共用 Error Alert 處理已綁定 Workflow 的錯誤通知。",
+        "resultsHeading": "4. 成果／目前狀態 (Current Status)",
+        "results": "• 已完成 LINE 打卡、下班與紀錄查詢基本流程。\n• 建立 LINE User ID 身分識別與 Google Sheets 資料寫入／查詢流程。\n• 已有錯誤通知機制。\n• 補打卡與主管審核仍為後續規劃，尚未完整開放。\n• 防代打、跨日、Concurrency 與重複點擊仍是後續改善項目。"
       },
       "mirror-shop-automation": {
         title: "鏡好買｜電商訂單與供應商 Workflow Automation",
@@ -477,18 +507,18 @@
     const HOSSET_CANVAS_HTML = `
       <div class="space-y-6 pt-4">
         <div class="flex items-center space-x-2 text-xs font-mono text-primary font-bold">
-          <span>互動展示：這個工作流實際上是怎麼運作的</span>
+          <span>PLANNED｜會員／訂單資料分群構想</span>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[650px]">
           <div class="lg:col-span-8 rounded-2xl border border-border bg-card/10 backdrop-blur-md relative overflow-hidden shadow-2xl flex flex-col h-full">
             <div class="bg-muted px-4 py-3 flex items-center justify-between border-b border-border z-10">
               <div class="flex items-center space-x-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
-                <span class="text-xs font-bold font-mono">HOSSET_LINE_CRM_WORKFLOW.json</span>
+                <span class="text-xs font-bold font-mono">HOSSET_CRM_PLAN</span>
               </div>
               <button onclick="runWorkflow()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:opacity-90 transition-all flex items-center space-x-1.5 cursor-pointer">
                 <i data-lucide="play" class="w-3.5 h-3.5"></i>
-                <span>運行工作流</span>
+                <span>檢視規劃步驟</span>
               </button>
             </div>
             <div id="canvas-container" class="flex-grow relative canvas-grid overflow-hidden select-none">
@@ -502,30 +532,30 @@
               <div id="node-trigger" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 40px; top: 80px;">
                 <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
                   <i data-lucide="qr-code" class="w-4 h-4"></i>
-                  <span>1. LINE 掃碼觸發</span>
+                  <span>1. Cyberbiz 資料來源</span>
                 </div>
-                <div class="text-[11px] text-muted-foreground leading-relaxed">線下活動/DM 掃描 QR Code，自動預填「我要綁定會員」關鍵字。</div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">PLANNED｜會員／訂單資料，讀取方式待確認。</div>
               </div>
               <div id="node-omnichat" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 280px; top: 80px;">
                 <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
                   <i data-lucide="bot" class="w-4 h-4"></i>
-                  <span>2. Omnichat 機器人</span>
+                  <span>2. n8n 整理與分群</span>
                 </div>
-                <div class="text-[11px] text-muted-foreground leading-relaxed">辨識關鍵字，推送 Rich Message 綁定引導圖卡。</div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">PLANNED｜整理欄位、身份對應與分群條件。</div>
               </div>
               <div id="node-cyberbiz" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 520px; top: 80px;">
                 <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
                   <i data-lucide="database" class="w-4 h-4"></i>
-                  <span>3. Cyberbiz 串接</span>
+                  <span>3. Omnichat 標籤／屬性</span>
                 </div>
-                <div class="text-[11px] text-muted-foreground leading-relaxed">呼叫 Cyberbiz API，驗證手機號碼並綁定 OpenID 會員卡。</div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">PLANNED｜更新可供分群的資料，更新權限待確認。</div>
               </div>
               <div id="node-coupon" class="absolute p-4 rounded-xl border border-primary bg-card/90 shadow-lg z-10 w-[200px] cursor-move transition-shadow hover:shadow-primary/10" style="left: 520px; top: 320px;">
                 <div class="flex items-center space-x-2 text-primary font-bold text-xs font-mono mb-2">
                   <i data-lucide="ticket" class="w-4 h-4"></i>
-                  <span>4. 自動發券與標籤</span>
+                  <span>4. Omnichat 旅程入口</span>
                 </div>
-                <div class="text-[11px] text-muted-foreground leading-relaxed">自動派發 $100 綁定禮券，並於 Omnichat 上打上「已綁定會員」標籤。</div>
+                <div class="text-[11px] text-muted-foreground leading-relaxed">PLANNED｜由標籤或屬性進入旅程，入口條件待確認。</div>
               </div>
             </div>
           </div>
@@ -533,19 +563,19 @@
             <div class="rounded-2xl border border-border bg-card shadow-xl p-5 flex flex-col flex-grow overflow-hidden">
               <div class="flex items-center space-x-2 text-xs font-bold font-mono border-b border-border pb-3 mb-3">
                 <i data-lucide="terminal" class="w-4 h-4 text-primary animate-pulse"></i>
-                <span>RUNNING_LOG // 即時運行控制台</span>
+                <span>規劃說明｜非 API 執行紀錄</span>
               </div>
               <div id="log-container" class="flex-grow font-mono text-[11px] leading-relaxed text-primary overflow-y-auto space-y-2 max-h-[220px]">
-                <div class="text-muted-foreground">點擊左側「運行工作流」按鈕以模擬即時 API 呼叫日誌...</div>
+                <div class="text-muted-foreground">點擊「檢視規劃步驟」查看構想；尚未正式串接與驗收。</div>
               </div>
             </div>
             <div class="rounded-2xl border border-border bg-card shadow-xl p-5 flex flex-col h-[280px]">
               <div class="flex items-center space-x-2 text-xs font-bold font-mono border-b border-border pb-3 mb-3">
                 <i data-lucide="image" class="w-4 h-4 text-primary"></i>
-                <span>PROOF_OF_WORK // 真實 Omnichat 流程截圖</span>
+                <span>IMPLEMENTED｜既有 Omnichat 流程截圖</span>
               </div>
               <div class="flex-grow rounded-xl overflow-hidden border border-border bg-black/40 relative group cursor-pointer" onclick="openLightbox('assets/omnichat-flow.jpg')">
-                <img src="assets/omnichat-flow.jpg" alt="Omnichat LINE 自動化流程圖" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <img src="assets/omnichat-flow.jpg" alt="既有 Omnichat 購物車再行銷流程截圖" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <div class="text-xs font-mono font-bold text-white flex items-center space-x-1.5">
                     <i data-lucide="maximize-2" class="w-4 h-4"></i>
@@ -559,32 +589,22 @@
       </div>
     `;
 
-    const HOSSET_LOGS = [
-      { t: 0, text: "[INFO] 正在初始化 HOSSET_LINE_CRM_WORKFLOW 工作流..." },
-      { t: 600, text: "[TRIGGER] 偵測到線下活動 QR Code 掃描事件。使用者 OpenID: `U91a2b3c4...`" },
-      { t: 1200, text: "[OMNICHAT] 成功辨識預填關鍵字「我要綁定會員」，發送 Rich Message 綁定引導圖卡。" },
-      { t: 2000, text: "[API] 呼叫 Cyberbiz 會員驗證介面 (POST /api/v1/member/verify)..." },
-      { t: 2800, text: "[API] Cyberbiz 驗證成功！手機號碼: `0912***345`。綁定 OpenID 狀態: `SUCCESS`" },
-      { t: 3400, text: "[OMNICHAT] 成功標記使用者標籤: `已綁定會員`、`2026實體活動`。" },
-      { t: 4000, text: "[COUPON] 自動派發 $100 會員綁定禮券。券號: `C2026053101`" },
-      { t: 5200, text: "[SUCCESS] 工作流運行完畢！綁定轉換率提升 25%，總耗時: 5.2 秒。" }
-    ];
+    const HOSSET_PLAN_NOTES = [
+      "[PLANNED] 以 n8n 整理 Cyberbiz 會員／訂單資料，提供 Omnichat 分群與旅程使用。",
+      "[TO VERIFY] 確認會員身份對應與 Cyberbiz 資料取得方式。",
+      "[TO VERIFY] 確認 Omnichat 標籤／屬性更新權限與旅程入口條件。",
+      "[PLANNED] 尚未完成正式串接與驗收；本區不執行 API 或發送訊息。"
+];
 
     function runWorkflow() {
       const container = document.getElementById('log-container');
       if (!container) return;
-      container.innerHTML = "";
-      HOSSET_LOGS.forEach(log => {
-        setTimeout(() => {
-          const div = document.createElement('div');
-          if (log.text.includes('[SUCCESS]')) div.className = "text-green-400 font-bold";
-          else if (log.text.includes('[TRIGGER]')) div.className = "text-yellow-400";
-          else if (log.text.includes('[API]')) div.className = "text-blue-400";
-          else div.className = "text-primary";
-          div.textContent = log.text;
-          container.appendChild(div);
-          container.scrollTop = container.scrollHeight;
-        }, log.t);
+      container.replaceChildren();
+      HOSSET_PLAN_NOTES.forEach(note => {
+        const line = document.createElement('div');
+        line.className = 'text-primary';
+        line.textContent = window.YKLanguage?.t(note) ?? note;
+        container.appendChild(line);
       });
     }
 
@@ -808,11 +828,19 @@
           <div class="yk-case-hero" data-case-kind="${data.category}">
             ${heroMedia}
           </div>
+          ${data.heroCaption ? `<p class="text-sm text-muted-foreground">${data.heroCaption}</p>` : ''}
         </div>
 
         <!-- 核心指標卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          ${data.stats.map(stat => `
+          ${data.statusCards ? data.statusCards.map(card => `
+            <div class="p-6 rounded-2xl border border-border bg-card shadow-xl space-y-3" data-case-status="${card.code}">
+              <span translate="no" class="inline-block rounded border border-primary/20 bg-primary/5 px-2 py-0.5 text-xs font-mono text-primary">${card.code}</span>
+              <div class="font-bold text-primary">${card.heading}</div>
+              <p class="text-sm text-muted-foreground leading-relaxed">${card.detail}</p>
+              ${card.verifyNote ? `<div class="pt-3 border-t border-border space-y-2"><span translate="no" class="inline-block rounded border border-primary/20 px-2 py-0.5 text-xs font-mono text-primary">TO VERIFY</span><p class="text-sm text-muted-foreground leading-relaxed">${card.verifyNote}</p></div>` : ''}
+            </div>
+          `).join('') : data.stats.map(stat => `
             ${stat.href ? `<a href="${stat.href}" target="_blank" rel="noopener noreferrer" aria-label="${stat.label} ${stat.value}，${stat.linkLabel}" class="block p-6 rounded-2xl border border-border bg-card shadow-xl text-center hover:border-primary">` : '<div class="p-6 rounded-2xl border border-border bg-card shadow-xl text-center">'}
               <div class="text-xs text-muted-foreground font-mono mb-1">${stat.label}</div>
               <div class="text-2xl md:text-3xl font-extrabold text-primary font-mono">${stat.value}${stat.href ? '<span class="text-sm ml-2" aria-hidden="true">↗</span>' : ''}</div>
@@ -841,6 +869,7 @@
         </div>
 
         ${diagramMedia}
+        ${data.diagramCaption ? `<p class="text-sm text-muted-foreground">${data.diagramCaption}</p>` : ''}
 
         <!-- 詳細 Case Study 內容 -->
         <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6">
@@ -876,7 +905,7 @@
             <div class="p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-4 shadow-xl">
               <h3 class="text-sm font-bold font-mono text-primary flex items-center space-x-2">
                 <i data-lucide="award" class="w-4 h-4"></i>
-                <span>4. 成果與影響 (Results)</span>
+                <span>${data.resultsHeading || '4. 成果與影響 (Results)'}</span>
               </h3>
               <ul class="space-y-3">
                 ${data.results.split('\n').map(li => `
