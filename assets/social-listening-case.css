@@ -1,0 +1,19 @@
+/* Styles scoped to the social-listening case only. */
+.yk-case-hero[data-case-kind="MARKET_INSIGHT"] img{object-fit:cover;object-position:center}
+.yk-listening-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;list-style:none;padding:0;margin:0}
+.yk-listening-flow li{position:relative;padding:22px 18px;background:var(--yk-soft);border:1px solid var(--yk-line);border-radius:16px;min-width:0}
+.yk-listening-flow li+li:before{content:'→';position:absolute;left:-23px;top:42%;color:var(--yk-accent)}
+.yk-listening-flow small{display:block;color:var(--yk-muted);font-size:12px;margin-bottom:12px}
+.yk-listening-flow strong{display:block;font-size:18px;font-weight:500}
+.yk-listening-flow p{margin:6px 0 0!important}
+.yk-listening-insights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.yk-listening-insights article{border-top:2px solid var(--yk-accent);padding:18px 0}
+.yk-listening-insights h3{font-size:19px;margin:0 0 10px}
+.yk-listening-evidence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.yk-listening-evidence figure{margin:0;min-width:0}
+.yk-listening-evidence a{display:block;padding:16px;background:white;border:1px solid var(--yk-line);border-radius:16px;aspect-ratio:1.6}
+.yk-listening-evidence img{width:100%;height:100%;object-fit:contain}
+.yk-listening-evidence figcaption{padding-top:12px;font-size:16px;color:var(--yk-ink)}
+.yk-listening-note{color:var(--yk-muted);font-size:14px!important}
+.yk-listening-tools a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:700px){.yk-listening-flow{grid-template-columns:1fr;gap:24px}.yk-listening-flow li{padding:16px 20px}.yk-listening-flow li+li:before{content:'↓';top:-27px;left:50%}.yk-listening-flow small{display:inline;margin-right:12px}.yk-listening-flow strong{display:inline}.yk-listening-insights,.yk-listening-evidence{grid-template-columns:1fr}.yk-listening-evidence a{aspect-ratio:1.5}}
