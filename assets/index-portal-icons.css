@@ -1,4 +1,11 @@
 /* Only the five homepage entrance visuals; original detail views stay untouched. */
+/* Match the visible reading order to the existing 01–05 DOM and keyboard order. */
+@media(min-width:551px){
+ .yk-index-page #yk-world .yk-icon-entrances{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:26px 16px;height:auto;min-height:490px;padding:28px 0 20px}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-portal{position:relative;left:auto;top:auto;width:100%;min-width:0;grid-column:span 2;align-self:start}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-lab{grid-column:2/span 2}
+ .yk-index-page #yk-world .yk-icon-entrances .yk-games{grid-column:4/span 2}
+}
 .yk-index-page #yk-world .yk-icon-entrances .yk-portal{display:flex;flex-direction:column;align-items:center;text-align:center;transform:none}
 .yk-index-page #yk-world .yk-icon-entrances .yk-entry-visual{position:relative;display:block;width:164px;height:146px;max-width:100%;margin:0;flex:none;animation:none;scale:1;transform:none;transition:none}
 .yk-index-page #yk-world .yk-icon-entrances .yk-entry-icon,.yk-index-page #yk-world .yk-icon-entrances .yk-entry-original{position:absolute;inset:0;display:grid;grid-template:minmax(0,1fr)/minmax(0,1fr);place-items:center;color:var(--yk-accent);transition:opacity .24s ease,transform .32s cubic-bezier(.2,.75,.3,1),visibility .24s}

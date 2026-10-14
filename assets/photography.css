@@ -1,0 +1,18 @@
+/* Equal 4:3 gallery frames. The original image is kept intact for the lightbox. */
+.photography-gallery { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 24px; }
+.photography-gallery figure { margin:0;min-width:0; }
+.photography-gallery .cl-art-link { width:100%;aspect-ratio:4 / 3;border:1px solid var(--yk-line); }
+.photography-gallery .cl-art-link img { display:block;width:100%;height:100%;object-fit:cover;object-position:center; }
+.photography-gallery figcaption { display:flex;justify-content:space-between;gap:16px;align-items:baseline;margin-top:14px; }
+.photography-gallery h2 { font-size:18px;font-weight:500; }
+.photography-gallery figcaption>span { color:var(--yk-accent);font-size:11px;letter-spacing:.08em; }
+.photography-gallery .cl-art-link:focus-visible { outline:2px solid var(--yk-accent);outline-offset:4px; }
+.photography-lightbox>img { object-fit:contain; }
+.photography-lightbox>p:empty { display:none; }
+@media(max-width:600px) {
+  .photography-gallery { grid-template-columns:1fr;gap:28px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .photography-gallery .cl-art-link img { transition:none; }
+  .photography-gallery .cl-art-link:hover img { transform:none; }
+}
