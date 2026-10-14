@@ -1094,7 +1094,8 @@
     function renderCaseStudy() {
       caseEvents?.abort();caseEvents=new AbortController();
       const slug = getQueryParam('slug') || 's23u-rental';
-      const rawData = PROJECT_DATA[slug];
+      const cmsRecord = window.PortfolioContent?.cases?.[slug];
+      const rawData = cmsRecord === undefined ? PROJECT_DATA[slug] : cmsRecord;
       const localize=value=>typeof value==='string'?(window.YKLanguage?.t(value)??value):Array.isArray(value)?value.map(localize):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,localize(v)])):value;
       const data = rawData && localize(rawData);
       const sectionLabels = localize(rawData?.sectionLabels || LISTENING_LABELS);
@@ -1358,6 +1359,8 @@
     // 執行渲染
     renderCaseStudy();
     window.addEventListener('yk:language', renderCaseStudy);
+    window.addEventListener('portfolio:content', renderCaseStudy);
   </script>
+<script src="assets/cms/config.js"></script><script type="module" src="assets/cms/public.js"></script>
 </body>
 </html>
