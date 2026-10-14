@@ -188,7 +188,7 @@
       background-image: none;
     }
   </style>
-<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script><script src="assets/site-language.js?v=20260927-continue"></script></head>
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script><script src="assets/social-listening-language.js?v=20261014"></script><script src="assets/kol-language.js?v=20261014-creators"></script><script src="assets/site-language.js?v=20260927-continue"></script><link rel="stylesheet" href="assets/social-listening-case.css?v=20261014"><link rel="stylesheet" href="assets/kol-case.css?v=20261014-creators"><script src="assets/kol-schedule.js?v=20261014-creators" defer></script></head>
 <body data-content-page="true" class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
 
   <!-- NAVBAR -->
@@ -243,7 +243,335 @@
 
   <!-- 專案數據 JS 庫 -->
   <script>
+    const LISTENING_LABELS = {"workflow": "我的協作流程", "insights": "提案中的觀察", "evidence": "原提案分析素材", "source": "原提案第 9 頁，觀測期間：2023.01.01–2023.12.31。點圖可放大。", "scope": "文字雲反映觀測範圍內的討論，不代表整體市場占有率。", "tools": "工具與理解", "category": "輿情與競品分析", "cta": "查看 Case Study", "expand": "開啟原圖"};
     const PROJECT_DATA = {
+      "panasonic-kol": {
+        "title": "Panasonic 音響｜社群創作者合作",
+        "category": "KOL_MARKETING",
+        "heroImage": "assets/kol-li-haowei.png",
+        "presentation": "creator-record",
+        "recordLabels": {
+                "category": "社群合作",
+                "intro": "與音樂、生活風格創作者合作，分享 Panasonic SC-PM700 的聆聽體驗與使用情境。",
+                "content": "合作內容",
+                "role": "我負責的部分",
+                "expand": "點圖查看完整素材",
+                "schedule": "排程協調",
+                "source": "合作素材取自原提案。統計期間：2023.09–2024.01。"
+        },
+        "heroCaption": "讓品牌商品重點，成為創作者能自然呈現的內容。",
+        "stats": [
+                {
+                        "label": "合作規模",
+                        "value": "3 位創作者"
+                },
+                {
+                        "label": "內容產出",
+                        "value": "FB／IG 共 6 篇"
+                },
+                {
+                        "label": "推廣商品",
+                        "value": "SC-PM700"
+                }
+        ],
+        "role": "KOL 專案執行｜找人、Brief、審稿、排程、結案整理",
+        "timeline": "2023.09–2024.01（原提案統計期間）",
+        "sectionLabels": {
+                "workflow": "我負責的五個環節",
+                "insights": "兩種內容切入點",
+                "evidence": "合作內容實例",
+                "source": "原提案第 13 頁合作素材，統計期間：2023.09–2024.01。點圖可放大。",
+                "scope": "素材保留原貌，呈現創作者的實際合作內容。",
+                "expand": "開啟原圖"
+        },
+        "workflow": [
+                {
+                        "title": "找人",
+                        "detail": "評估人選與商品契合度"
+                },
+                {
+                        "title": "Brief 溝通",
+                        "detail": "整理商品重點與內容方向"
+                },
+                {
+                        "title": "審稿",
+                        "detail": "確認商品資訊與內容呈現"
+                },
+                {
+                        "title": "排程",
+                        "detail": "追蹤交稿與上線時程"
+                },
+                {
+                        "title": "結案整理",
+                        "detail": "彙整合作內容與成效資料"
+                }
+        ],
+        "insights": [
+                {
+                        "title": "音樂類創作者",
+                        "detail": "以音樂聆聽與體驗分享，呈現音質與播放功能。"
+                },
+                {
+                        "title": "生活風格／時尚類",
+                        "detail": "把音響放進生活情境，呈現居家風格與聆聽享受。"
+                }
+        ],
+        "evidenceGallery": [
+                {
+                        "src": "assets/kol-li-haowei.png",
+                        "caption": "李浩瑋｜音樂類合作"
+                },
+                {
+                        "src": "assets/kol-zheng-yilin.png",
+                        "caption": "鄭怡琳｜音樂類合作"
+                },
+                {
+                        "src": "assets/kol-mars.png",
+                        "caption": "Mars｜生活風格合作"
+                }
+        ],
+        "scheduleExample": {
+                "title": "KOL 與媒體合作｜排程協調",
+                "tag": "重新繪製・示意排程",
+                "description": "協調商品提供、內容審核與上線時程，依專案變動調整排程。",
+                "situation": "變動情境",
+                "storyFooter": "對齊品牌與合作方",
+                "boardLabel": "合作進度一覽",
+                "boardTitle": "三方協作排程",
+                "original": "原定排程",
+                "adjusted": "延後調整",
+                "compare": "比較示意排程",
+                "originalHint": "原先約定的製作、審稿與上線順序。",
+                "adjustedHint": "交付時間改變，連動調整製作、審稿與上線。",
+                "collaborator": "協作對象",
+                "ghost": "虛線：原定製作時段",
+                "legend": [
+                        {
+                                "kind": "brief",
+                                "label": "Brief"
+                        },
+                        {
+                                "kind": "build",
+                                "label": "製作"
+                        },
+                        {
+                                "kind": "review",
+                                "label": "審稿"
+                        },
+                        {
+                                "kind": "live",
+                                "label": "上線"
+                        }
+                ],
+                "weeks": [
+                        "第 1 週",
+                        "第 2 週",
+                        "第 3 週",
+                        "第 4 週",
+                        "第 5 週",
+                        "第 6 週"
+                ],
+                "rows": [
+                        {
+                                "name": "創作者 A",
+                                "type": "影音內容",
+                                "tasks": [
+                                        {
+                                                "label": "Brief",
+                                                "start": 1,
+                                                "span": 1,
+                                                "kind": "brief",
+                                                "adjustedStart": 1,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "內容製作",
+                                                "start": 2,
+                                                "span": 2,
+                                                "kind": "build",
+                                                "adjustedStart": 3,
+                                                "adjustedSpan": 2
+                                        },
+                                        {
+                                                "label": "審稿",
+                                                "start": 4,
+                                                "span": 1,
+                                                "kind": "review",
+                                                "adjustedStart": 5,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "上線",
+                                                "start": 5,
+                                                "span": 1,
+                                                "kind": "live",
+                                                "adjustedStart": 6,
+                                                "adjustedSpan": 1
+                                        }
+                                ]
+                        },
+                        {
+                                "name": "創作者 B",
+                                "type": "社群內容",
+                                "tasks": [
+                                        {
+                                                "label": "Brief",
+                                                "start": 1,
+                                                "span": 1,
+                                                "kind": "brief",
+                                                "adjustedStart": 1,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "內容製作",
+                                                "start": 2,
+                                                "span": 1,
+                                                "kind": "build",
+                                                "adjustedStart": 3,
+                                                "adjustedSpan": 2
+                                        },
+                                        {
+                                                "label": "審稿",
+                                                "start": 3,
+                                                "span": 1,
+                                                "kind": "review",
+                                                "adjustedStart": 5,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "上線",
+                                                "start": 4,
+                                                "span": 1,
+                                                "kind": "live",
+                                                "adjustedStart": 6,
+                                                "adjustedSpan": 1
+                                        }
+                                ]
+                        },
+                        {
+                                "name": "媒體 C",
+                                "type": "媒體報導",
+                                "tasks": [
+                                        {
+                                                "label": "Brief",
+                                                "start": 2,
+                                                "span": 1,
+                                                "kind": "brief",
+                                                "adjustedStart": 2,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "撰稿",
+                                                "start": 3,
+                                                "span": 1,
+                                                "kind": "build",
+                                                "adjustedStart": 4,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "審稿",
+                                                "start": 4,
+                                                "span": 1,
+                                                "kind": "review",
+                                                "adjustedStart": 5,
+                                                "adjustedSpan": 1
+                                        },
+                                        {
+                                                "label": "刊登",
+                                                "start": 5,
+                                                "span": 1,
+                                                "kind": "live",
+                                                "adjustedStart": 6,
+                                                "adjustedSpan": 1
+                                        }
+                                ]
+                        }
+                ],
+                "adjustmentLabel": "商品交付延後",
+                "adjustment": [
+                        "確認交付日",
+                        "重排製作與審稿",
+                        "更新上線時程"
+                ],
+                "note": "匿名角色與週次皆為示意，非實際專案排程。"
+        },
+        "background": "Panasonic SC-PM700 組合音響透過音樂與生活風格創作者，介紹商品功能及使用情境。",
+        "challenge": "1. 找到與商品及溝通方向契合的人選。\n2. 在品牌資訊與創作者風格之間對齊內容。\n3. 協調審稿、交付與上線時程。",
+        "solution": "1. 找人並整理 Brief，說明商品重點與內容方向。\n2. 審稿、彙整調整意見，追蹤交稿與上線。\n3. 整理合作貼文與成效資料，納入結案回顧。",
+        "resultsHeading": "4. 交付內容",
+        "results": "• 三位創作者，FB／IG 合計六篇合作貼文。\n• 涵蓋音樂體驗與生活風格兩種內容方向。\n• 完成合作內容、排程與結案資料整理。"
+},
+      "panasonic-social-listening": {
+        "title": "Panasonic 音響｜輿情觀察與競品提案",
+        "category": "MARKET_INSIGHT",
+        "heroImage": "assets/social-listening-cover.svg",
+        "heroCaption": "從網路討論到廣宣建議：此案主要負責專案協調與提案整合。",
+        "stats": [
+                {
+                        "label": "分析素材",
+                        "value": "聲量與口碑"
+                },
+                {
+                        "label": "比較對象",
+                        "value": "品牌與競品"
+                },
+                {
+                        "label": "交付內容",
+                        "value": "廣宣提案"
+                }
+        ],
+        "role": "專案協調／提案整合",
+        "timeline": "2024 年廣宣提案（回顧 2023 年資料）",
+        "tools": "相關工具使用經驗：OpView、QuickseeK",
+        "knowledge": "理解網路爬蟲的資料蒐集概念，能使用輿情系統輔助競品分析。",
+        "workflow": [
+                {
+                        "title": "彙整觀察",
+                        "detail": "聲量／口碑／競品動態"
+                },
+                {
+                        "title": "釐清重點",
+                        "detail": "對齊資料與溝通方向"
+                },
+                {
+                        "title": "協調提案",
+                        "detail": "整合團隊分析與建議"
+                },
+                {
+                        "title": "廣宣建議",
+                        "detail": "商品訴求與媒體規劃"
+                }
+        ],
+        "insights": [
+                {
+                        "title": "Sound Bar",
+                        "detail": "討論連結電視與電影情境，整理影音效果的溝通方向。"
+                },
+                {
+                        "title": "組合音響",
+                        "detail": "關注音質、低音與無線連線，整理商品功能訴求。"
+                },
+                {
+                        "title": "競品廣宣",
+                        "detail": "比較新品、評測與販促操作，作為後續媒體規劃參考。"
+                }
+        ],
+        "evidenceGallery": [
+                {
+                        "src": "assets/social-listening-soundbar.png",
+                        "caption": "Sound Bar 討論文字雲"
+                },
+                {
+                        "src": "assets/social-listening-audio.png",
+                        "caption": "組合音響討論文字雲"
+                }
+        ],
+        "background": "2024 年 Panasonic 音響廣宣提案，需要回顧既有宣傳，並結合市場討論與競品觀察，整理下一年度的溝通方向。",
+        "challenge": "1. 聲量包含活動回文與一般討論，需要區分來源再解讀。\n2. 不同品牌的資料涵蓋期間不完全一致，比較時需要留意範圍。\n3. 團隊分析必須整理成客戶可理解的商品訴求與媒體建議。",
+        "solution": "1. 配合團隊彙整品牌聲量、口碑討論與競品廣宣資料。\n2. 協調提案內容，串連消費者關注點、商品特性與媒體方向。\n3. 將「重低音／藍牙」等觀察整理進廣告素材與溝通建議。",
+        "resultsHeading": "4. 交付與經驗",
+        "results": "• 完成市場與競品觀察的提案整合。\n• 累積將分析資料轉成廣宣討論依據的經驗。\n• 此處呈現提案內容，不以聲量變化宣稱個人帶來的銷售成效。"
+},
       "s23u-rental": {
         title: "S23U 手機租賃服務 — 從 0 到 1 自主創業",
         category: "PROJECT_MANAGEMENT",
@@ -769,6 +1097,7 @@
       const rawData = PROJECT_DATA[slug];
       const localize=value=>typeof value==='string'?(window.YKLanguage?.t(value)??value):Array.isArray(value)?value.map(localize):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,localize(v)])):value;
       const data = rawData && localize(rawData);
+      const sectionLabels = localize(rawData?.sectionLabels || LISTENING_LABELS);
       const container = document.getElementById('case-study-container');
 
       if (!data) {
@@ -818,6 +1147,62 @@
            </div>`
         : '';
 
+      if (data.presentation === 'creator-record') {
+        container.innerHTML = `        <article class="yk-kol-record">
+          <header class="yk-case-title yk-kol-record-header">
+            <span class="yk-kol-record-kicker">${data.recordLabels.category}</span>
+            <h1>${data.title}</h1>
+            <p>${data.recordLabels.intro}</p>
+            <ul class="yk-kol-record-meta">${data.stats.map(item=>`<li>${item.value}</li>`).join('')}</ul>
+          </header>
+          <section class="yk-kol-record-gallery" aria-labelledby="kol-cooperation-title">
+            <div class="yk-kol-record-section-heading"><h2 id="kol-cooperation-title">${data.recordLabels.content}</h2><span>${data.recordLabels.expand}</span></div>
+            <div class="yk-kol-record-shots">${data.evidenceGallery.map(item=>`<figure><a href="${item.src}" target="_blank" rel="noopener noreferrer" aria-label="${item.caption} — ${data.recordLabels.expand}"><img src="${item.src}" alt="${item.caption}" loading="eager"></a><figcaption>${item.caption}</figcaption></figure>`).join('')}</div>
+          </section>
+          <section class="yk-kol-record-role" aria-labelledby="kol-my-work">
+            <h2 id="kol-my-work">${data.recordLabels.role}</h2>
+            <ul>${data.workflow.map(step=>`<li><h3>${step.title}</h3><p>${step.detail}</p></li>`).join('')}</ul>
+          </section>
+          <details class="yk-kol-schedule-supplement">
+            <summary><span>${data.recordLabels.schedule}</span><span class="yk-kol-details-chevron" aria-hidden="true">＋</span></summary>
+            <div class="yk-kol-supplement-content">        ${data.scheduleExample ? `<section class="yk-kol-schedule" data-scenario="adjusted" aria-labelledby="kol-schedule-title">
+          <header class="yk-kol-schedule-heading">
+            <div><span class="yk-kol-schedule-tag"><span></span>${data.scheduleExample.tag}</span><h2 id="kol-schedule-title">${data.scheduleExample.title}</h2><p>${data.scheduleExample.description}</p></div>
+            <svg class="yk-kol-heading-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M12 17h26v30H12zM25 8h26v30H38" stroke="currentColor" stroke-width="1.5"/><path d="m21 33 5 5 13-15" stroke="currentColor" stroke-width="2.5"/></svg>
+          </header>
+          <figure class="yk-kol-schedule-board" aria-labelledby="kol-schedule-title" aria-describedby="kol-schedule-note">
+            <aside class="yk-kol-schedule-story">
+              <span class="yk-kol-story-kicker">${data.scheduleExample.situation}</span>
+              <h3>${data.scheduleExample.adjustmentLabel}</h3>
+              <div class="yk-kol-delivery-art" aria-hidden="true">
+                <svg viewBox="0 0 240 155" fill="none"><path d="M10 141h224M20 28h208" stroke="#88a18d" stroke-opacity=".24"/><rect x="24" y="34" width="116" height="102" rx="13" fill="#2a4e3e" stroke="#7b9a7d"/><path d="M24 65h116M53 25v18M112 25v18" stroke="#9bb695" stroke-width="3" stroke-linecap="round"/><rect x="41" y="80" width="29" height="23" rx="5" stroke="#a4b5a3" stroke-dasharray="3 4"/><path d="m45 99 21-15" stroke="#9baa96"/><path d="M82 92h77" stroke="#d1e8b3" stroke-width="2" stroke-dasharray="4 5"/><path d="m150 84 9 8-9 8" stroke="#d1e8b3" stroke-width="2"/><g transform="rotate(7 189 99)"><rect x="159" y="62" width="63" height="73" rx="10" fill="#d1e8b3"/><path d="M159 80h63M175 56v14M204 56v14" stroke="#2a4e3e" stroke-width="3" stroke-linecap="round"/><path d="m176 108 9 8 17-22" stroke="#244331" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g><circle cx="204" cy="26" r="5" fill="#d1e8b3"/><path d="M164 19v14m-7-7h14" stroke="#d1e8b3" stroke-width="1.5"/></svg>
+              </div>
+              <ol class="yk-kol-coordination-steps">${data.scheduleExample.adjustment.map((step,i)=>`<li><span class="yk-kol-step-index">0${i+1}</span><strong>${step}</strong></li>`).join('')}</ol>
+              <div class="yk-kol-story-footer"><i data-lucide="workflow" aria-hidden="true"></i><span>${data.scheduleExample.storyFooter}</span></div>
+            </aside>
+            <div class="yk-kol-schedule-main">
+              <div class="yk-kol-board-toolbar">
+                <div><span class="yk-kol-board-eyebrow">${data.scheduleExample.boardLabel}</span><h3>${data.scheduleExample.boardTitle}</h3></div>
+                <div class="yk-kol-scenario-toggle" role="group" aria-label="${data.scheduleExample.compare}"><button type="button" data-kol-scenario="original" aria-pressed="false">${data.scheduleExample.original}</button><button type="button" data-kol-scenario="adjusted" aria-pressed="true">${data.scheduleExample.adjusted}</button></div>
+              </div>
+              <div class="yk-kol-scenario-message"><i data-lucide="move-right" aria-hidden="true"></i><span data-for-scenario="original" hidden>${data.scheduleExample.originalHint}</span><span data-for-scenario="adjusted">${data.scheduleExample.adjustedHint}</span></div>
+              <div class="yk-kol-schedule-axis" aria-hidden="true"><span>${data.scheduleExample.collaborator}</span><div class="yk-kol-schedule-week-grid">${data.scheduleExample.weeks.map((week,i)=>`<span><small>W${i+1}</small>${week}</span>`).join('')}</div></div>
+              <div class="yk-kol-schedule-rows">${data.scheduleExample.rows.map((row,index)=>`<div class="yk-kol-schedule-row"><div class="yk-kol-role"><span class="yk-kol-role-avatar"><i data-lucide="${index===2?'newspaper':index===1?'image':'video'}" aria-hidden="true"></i></span><div><strong>${row.name}</strong><small>${row.type}</small></div></div><div class="yk-kol-track-wrap"><div class="yk-kol-original-ghost" aria-hidden="true" style="--start:${row.tasks.find(task=>task.kind==='build').start};--span:${row.tasks.find(task=>task.kind==='build').span}"></div><ol class="yk-kol-schedule-track" aria-label="${row.name}">${row.tasks.map(task=>`<li data-kind="${task.kind}" style="--start:${task.start};--span:${task.span};--new-start:${task.adjustedStart};--new-span:${task.adjustedSpan}" data-original-label="${task.label}: ${data.scheduleExample.weeks[task.start-1]}${task.span>1?' – '+data.scheduleExample.weeks[task.start+task.span-2]:''}" data-adjusted-label="${task.label}: ${data.scheduleExample.weeks[task.adjustedStart-1]}${task.adjustedSpan>1?' – '+data.scheduleExample.weeks[task.adjustedStart+task.adjustedSpan-2]:''}" aria-label="${task.label}: ${data.scheduleExample.weeks[task.adjustedStart-1]}${task.adjustedSpan>1?' – '+data.scheduleExample.weeks[task.adjustedStart+task.adjustedSpan-2]:''}"><span>${task.label}</span></li>`).join('')}</ol></div></div>`).join('')}</div>
+              <div class="yk-kol-board-legend">${data.scheduleExample.legend.map(item=>`<span><i data-stage="${item.kind}"></i>${item.label}</span>`).join('')}<span class="yk-kol-ghost-legend"><i></i>${data.scheduleExample.ghost}</span></div>
+              <figcaption id="kol-schedule-note"><i data-lucide="shield-check" aria-hidden="true"></i><span>${data.scheduleExample.note}</span></figcaption>
+            </div>
+          </figure>
+        </section>` : ''}
+
+</div>
+          </details>
+          <footer class="yk-kol-record-source">${data.recordLabels.source}</footer>
+        </article>
+`;
+        lucide.createIcons();
+        return;
+      }
+
       container.innerHTML = `
         <!-- 專案大圖與標題 -->
         <div class="space-y-6">
@@ -860,13 +1245,48 @@
                 <th class="p-4 bg-muted/40 font-mono text-xs text-muted-foreground">專案時程</th>
                 <td class="p-4 font-mono">${data.timeline}</td>
               </tr>
-              <tr>
+              ${data.budget ? `<tr>
                 <th class="p-4 bg-muted/40 font-mono text-xs text-muted-foreground">預算規模</th>
                 <td class="p-4 font-mono text-muted-foreground">${data.budget}</td>
-              </tr>
+              </tr>` : ''}
+              ${data.tools ? `<tr><th class="p-4 bg-muted/40 font-mono text-xs text-muted-foreground">${sectionLabels.tools}</th><td class="p-4 yk-listening-tools"><p>${data.tools.replace('OpView','<a href="https://www.opview.com.tw/" target="_blank" rel="noopener noreferrer">OpView</a>').replace('QuickseeK','<a href="https://www.quickseek.com.tw/" target="_blank" rel="noopener noreferrer">QuickseeK</a>')}</p><p class="text-muted-foreground">${data.knowledge}</p></td></tr>` : ''}
             </tbody>
           </table>
         </div>
+
+
+        ${data.workflow ? `<section class="space-y-5 yk-listening" aria-labelledby="listening-workflow"><h2 id="listening-workflow" class="text-lg font-bold">${sectionLabels.workflow}</h2><ol class="yk-listening-flow${data.category === 'KOL_MARKETING' ? ' yk-kol-flow' : ''}">${data.workflow.map((step,i)=>`<li><small>0${i+1}</small><strong>${step.title}</strong><p class="text-muted-foreground">${step.detail}</p></li>`).join('')}</ol></section>` : ''}
+        ${data.insights ? `<section class="space-y-5 yk-listening"><h2 class="text-lg font-bold">${sectionLabels.insights}</h2><div class="yk-listening-insights${data.category === 'KOL_MARKETING' ? ' yk-kol-insights' : ''}">${data.insights.map(item=>`<article><h3>${item.title}</h3><p class="text-muted-foreground">${item.detail}</p></article>`).join('')}</div></section>` : ''}
+        ${data.evidenceGallery ? `<section class="space-y-5 yk-listening"><h2 class="text-lg font-bold">${sectionLabels.evidence}</h2><p class="yk-listening-note">${sectionLabels.source}</p><div class="yk-listening-evidence${data.category === 'KOL_MARKETING' ? ' yk-kol-evidence' : ''}">${data.evidenceGallery.map(item=>`<figure><a href="${item.src}" target="_blank" rel="noopener noreferrer" aria-label="${item.caption} — ${sectionLabels.expand}"><img src="${item.src}" alt="${item.caption}" loading="lazy"></a><figcaption>${item.caption}</figcaption></figure>`).join('')}</div><p class="yk-listening-note">${sectionLabels.scope}</p></section>` : ''}
+
+        ${data.scheduleExample ? `<section class="yk-kol-schedule" data-scenario="adjusted" aria-labelledby="kol-schedule-title">
+          <header class="yk-kol-schedule-heading">
+            <div><span class="yk-kol-schedule-tag"><span></span>${data.scheduleExample.tag}</span><h2 id="kol-schedule-title">${data.scheduleExample.title}</h2><p>${data.scheduleExample.description}</p></div>
+            <svg class="yk-kol-heading-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M12 17h26v30H12zM25 8h26v30H38" stroke="currentColor" stroke-width="1.5"/><path d="m21 33 5 5 13-15" stroke="currentColor" stroke-width="2.5"/></svg>
+          </header>
+          <figure class="yk-kol-schedule-board" aria-labelledby="kol-schedule-title" aria-describedby="kol-schedule-note">
+            <aside class="yk-kol-schedule-story">
+              <span class="yk-kol-story-kicker">${data.scheduleExample.situation}</span>
+              <h3>${data.scheduleExample.adjustmentLabel}</h3>
+              <div class="yk-kol-delivery-art" aria-hidden="true">
+                <svg viewBox="0 0 240 155" fill="none"><path d="M10 141h224M20 28h208" stroke="#88a18d" stroke-opacity=".24"/><rect x="24" y="34" width="116" height="102" rx="13" fill="#2a4e3e" stroke="#7b9a7d"/><path d="M24 65h116M53 25v18M112 25v18" stroke="#9bb695" stroke-width="3" stroke-linecap="round"/><rect x="41" y="80" width="29" height="23" rx="5" stroke="#a4b5a3" stroke-dasharray="3 4"/><path d="m45 99 21-15" stroke="#9baa96"/><path d="M82 92h77" stroke="#d1e8b3" stroke-width="2" stroke-dasharray="4 5"/><path d="m150 84 9 8-9 8" stroke="#d1e8b3" stroke-width="2"/><g transform="rotate(7 189 99)"><rect x="159" y="62" width="63" height="73" rx="10" fill="#d1e8b3"/><path d="M159 80h63M175 56v14M204 56v14" stroke="#2a4e3e" stroke-width="3" stroke-linecap="round"/><path d="m176 108 9 8 17-22" stroke="#244331" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g><circle cx="204" cy="26" r="5" fill="#d1e8b3"/><path d="M164 19v14m-7-7h14" stroke="#d1e8b3" stroke-width="1.5"/></svg>
+              </div>
+              <ol class="yk-kol-coordination-steps">${data.scheduleExample.adjustment.map((step,i)=>`<li><span class="yk-kol-step-index">0${i+1}</span><strong>${step}</strong></li>`).join('')}</ol>
+              <div class="yk-kol-story-footer"><i data-lucide="workflow" aria-hidden="true"></i><span>${data.scheduleExample.storyFooter}</span></div>
+            </aside>
+            <div class="yk-kol-schedule-main">
+              <div class="yk-kol-board-toolbar">
+                <div><span class="yk-kol-board-eyebrow">${data.scheduleExample.boardLabel}</span><h3>${data.scheduleExample.boardTitle}</h3></div>
+                <div class="yk-kol-scenario-toggle" role="group" aria-label="${data.scheduleExample.compare}"><button type="button" data-kol-scenario="original" aria-pressed="false">${data.scheduleExample.original}</button><button type="button" data-kol-scenario="adjusted" aria-pressed="true">${data.scheduleExample.adjusted}</button></div>
+              </div>
+              <div class="yk-kol-scenario-message"><i data-lucide="move-right" aria-hidden="true"></i><span data-for-scenario="original" hidden>${data.scheduleExample.originalHint}</span><span data-for-scenario="adjusted">${data.scheduleExample.adjustedHint}</span></div>
+              <div class="yk-kol-schedule-axis" aria-hidden="true"><span>${data.scheduleExample.collaborator}</span><div class="yk-kol-schedule-week-grid">${data.scheduleExample.weeks.map((week,i)=>`<span><small>W${i+1}</small>${week}</span>`).join('')}</div></div>
+              <div class="yk-kol-schedule-rows">${data.scheduleExample.rows.map((row,index)=>`<div class="yk-kol-schedule-row"><div class="yk-kol-role"><span class="yk-kol-role-avatar"><i data-lucide="${index===2?'newspaper':index===1?'image':'video'}" aria-hidden="true"></i></span><div><strong>${row.name}</strong><small>${row.type}</small></div></div><div class="yk-kol-track-wrap"><div class="yk-kol-original-ghost" aria-hidden="true" style="--start:${row.tasks.find(task=>task.kind==='build').start};--span:${row.tasks.find(task=>task.kind==='build').span}"></div><ol class="yk-kol-schedule-track" aria-label="${row.name}">${row.tasks.map(task=>`<li data-kind="${task.kind}" style="--start:${task.start};--span:${task.span};--new-start:${task.adjustedStart};--new-span:${task.adjustedSpan}" data-original-label="${task.label}: ${data.scheduleExample.weeks[task.start-1]}${task.span>1?' – '+data.scheduleExample.weeks[task.start+task.span-2]:''}" data-adjusted-label="${task.label}: ${data.scheduleExample.weeks[task.adjustedStart-1]}${task.adjustedSpan>1?' – '+data.scheduleExample.weeks[task.adjustedStart+task.adjustedSpan-2]:''}" aria-label="${task.label}: ${data.scheduleExample.weeks[task.adjustedStart-1]}${task.adjustedSpan>1?' – '+data.scheduleExample.weeks[task.adjustedStart+task.adjustedSpan-2]:''}"><span>${task.label}</span></li>`).join('')}</ol></div></div>`).join('')}</div>
+              <div class="yk-kol-board-legend">${data.scheduleExample.legend.map(item=>`<span><i data-stage="${item.kind}"></i>${item.label}</span>`).join('')}<span class="yk-kol-ghost-legend"><i></i>${data.scheduleExample.ghost}</span></div>
+              <figcaption id="kol-schedule-note"><i data-lucide="shield-check" aria-hidden="true"></i><span>${data.scheduleExample.note}</span></figcaption>
+            </div>
+          </figure>
+        </section>` : ''}
 
         ${diagramMedia}
         ${data.diagramCaption ? `<p class="text-sm text-muted-foreground">${data.diagramCaption}</p>` : ''}
