@@ -18,6 +18,17 @@
   apply();
   system.addEventListener('change',apply);
   document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.yk-content-nav').forEach(nav => {
+      nav.setAttribute('aria-label', '主導覽');
+      if (!nav.querySelector('a[href="index.html#games"]')) {
+        const games = document.createElement('a');
+        games.href = 'index.html#games';
+        const number = document.createElement('span');
+        number.textContent = '05';
+        games.append(number, document.createTextNode('我的遊戲室'));
+        nav.append(games);
+      }
+    });
     apply();
     const toolNav=document.querySelector('.yk-tool-nav'),activeTool=toolNav?.querySelector('[aria-current="page"]');
     if(toolNav&&activeTool&&matchMedia('(max-width:780px)').matches){const bounds=toolNav.getBoundingClientRect(),item=activeTool.getBoundingClientRect();toolNav.scrollLeft=Math.max(0,item.left-bounds.left-(toolNav.clientWidth-item.width)/2);}
