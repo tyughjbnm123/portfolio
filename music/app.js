@@ -1,5 +1,5 @@
-import {DEFAULTS,LIMITS,makeDocument,validateDocument,stylePrompt,noteName} from './model.js';
-import {PianoAudio,TAIL,encodeWav} from './audio.js';
+import {DEFAULTS,LIMITS,makeDocument,validateDocument,stylePrompt,noteName} from './model.js?v=88-keys';
+import {PianoAudio,TAIL,encodeWav} from './audio.js?v=88-keys';
 
 const $=id=>document.getElementById(id),STORAGE='yk-melody-v1';
 const codes=['KeyZ','KeyS','KeyX','KeyD','KeyC','KeyV','KeyG','KeyB','KeyH','KeyN','KeyJ','KeyM','KeyQ','Digit2','KeyW','Digit3','KeyE','KeyR','Digit5','KeyT','Digit6','KeyY','Digit7','KeyU'];
@@ -8,6 +8,7 @@ let settings={...DEFAULTS},notes=[],duration=0,mode='idle',busy=false,ready=fals
 const held=new Map(),keys=new Map();
 let metroTimer=null,nextBeat=0,beatNumber=0;
 const audio=new PianoAudio(state=>{if(state==='suspended'||state==='interrupted'||state==='closed'){interrupt('音訊已暫停，點「啟用鋼琴」即可繼續。');ready=false;update();}});
+const allPitches=Array.from({length:LIMITS.maxMidi-LIMITS.minMidi+1},(_,i)=>LIMITS.minMidi+i);
 const range=()=>Array.from({length:24},(_,i)=>(settings.octave+1)*12+i);
 const elapsed=()=>Math.min(LIMITS.duration,Math.max(0,audio.now-recordAt));
 const time=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(1).padStart(4,'0')}`;
@@ -16,18 +17,20 @@ function save(){try{const pending=new Set([...held.values()].map(v=>v.note)),at=
 function restore(){try{const raw=localStorage.getItem(STORAGE);if(raw){const d=validateDocument(JSON.parse(raw));({settings,notes,duration}=d);$('save-status').textContent='已恢復上次旋律與設定';}}catch{message('上次的暫存資料無法讀取。你仍可演奏，或匯入先前下載的 JSON。',true);}}
 function syncForm(){for(const k of Object.keys(DEFAULTS)){if(k==='metronome')$(k).checked=settings[k];else $(k).value=settings[k];}$('velocity-value').textContent=Math.round(settings.velocity*100)+'%';$('volume-value').textContent=Math.round(settings.volume*100)+'%';prompt();}
 function prompt(){$('prompt').value=stylePrompt(settings);$('prompt-bpm').textContent=settings.bpm+' BPM';}
-function buildKeys(){keys.clear();$('piano').replaceChildren();let whites=0;for(const [i,midi] of range().entries()){const b=document.createElement('button'),isBlack=black.has(midi%12);b.type='button';b.className='piano-key '+(isBlack?'black':'white');b.dataset.midi=midi;b.setAttribute('aria-label',`${noteName(midi)}，鍵盤 ${codes[i].replace(/Key|Digit/g,'')}`);b.setAttribute('aria-pressed','false');b.innerHTML=`<span class="pitch">${noteName(midi)}</span><span class="keycap">${codes[i].replace(/Key|Digit/g,'')}</span>`;if(isBlack)b.style.left=(whites/14*100-2.15)+'%';else whites++;
+function buildKeys(){keys.clear();$('piano').replaceChildren();let whites=0;for(const midi of allPitches){const b=document.createElement('button'),isBlack=black.has(midi%12);b.type='button';b.className='piano-key '+(isBlack?'black':'white')+(midi===60?' middle-c':'');b.dataset.midi=midi;b.setAttribute('aria-pressed','false');b.innerHTML='<span class="pitch">'+noteName(midi)+'</span><span class="keycap"></span>';if(isBlack)b.style.left='calc('+whites/52*100+'% - var(--black-key-width) / 2)';else whites++;
  b.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();if(begin('pointer:'+e.pointerId,midi)){b.setPointerCapture(e.pointerId);}});
  for(const event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,e=>end('pointer:'+e.pointerId));
  b.addEventListener('contextmenu',e=>e.preventDefault());b.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();if(!e.repeat)begin('accessible:'+midi,midi);}});b.addEventListener('keyup',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();end('accessible:'+midi);}});b.addEventListener('blur',()=>end('accessible:'+midi));
  $('piano').append(b);keys.set(midi,b);}
- update();requestAnimationFrame(syncScroll);}
+ updateKeycaps();update();requestAnimationFrame(()=>jumpTo((settings.octave+1)*12));}
+function updateKeycaps(){const mapped=range();for(const [m,b]of keys){const i=mapped.indexOf(m),cap=b.querySelector('.keycap'),label=i<0?'':codes[i].replace(/Key|Digit/g,'');cap.textContent=label;cap.hidden=i<0;b.classList.toggle('mapped',i>=0);b.setAttribute('aria-label',noteName(m)+(m===60?'，中央 C':'')+(label?'，鍵盤 '+label:''));}}
+function jumpTo(midi){const el=$('piano-scroll'),key=keys.get(midi);if(!key)return;el.scrollLeft=key.offsetLeft+key.offsetWidth/2-el.clientWidth/2;syncScroll();}
 function update(){const recording=mode==='recording',playing=mode==='playing',has=notes.length>0;
  $('record').disabled=busy||!ready||mode!=='idle';$('stop-record').disabled=!recording;$('play').disabled=busy||!has||mode!=='idle';$('stop-play').disabled=!playing;$('clear').disabled=busy||mode!=='idle'||(!has&&!duration);$('wav').disabled=busy||!has||mode!=='idle';$('json').disabled=busy||!has||mode!=='idle';$('import').disabled=busy||mode!=='idle';$('enable').disabled=busy||mode!=='idle';$('enable').textContent=busy?'準備中…':ready?'鋼琴已啟用':'啟用鋼琴';$('octave').disabled=busy||playing;$('volume').disabled=busy;for(const k of ['bpm','metronome'])$(k).disabled=busy;
  $('state').textContent=recording?'正在錄製':playing?'正在播放':busy?'處理中':'等待演奏';$('state').className='state'+(recording?' recording':playing?' playing':'');$('piano').dataset.ready=ready;for(const b of keys.values())b.disabled=!ready||playing||busy;
  $('note-count').textContent=has?`${notes.length} 個音符 · ${duration.toFixed(1)} 秒`:'尚無音符';if(mode==='idle')$('clock').textContent=time(duration);
 }
-async function prepare(midis=range()){
+async function prepare(midis=allPitches){
  await audio.unlock(settings.volume);await audio.load(midis,(n,total)=>{$('audio-status').textContent=`載入鋼琴取樣 ${n} / ${total}`;});
  $('audio-status').textContent='聲音已啟用 · 可同時彈奏多個音';
 }
@@ -40,7 +43,7 @@ function end(token,at=elapsed(),persist=true){const h=held.get(token);if(!h)retu
 function releaseHeld(at=elapsed()){for(const key of [...held.keys()])end(key,at,false);audio.releaseAll();}
 function startRecord(){if(!ready||busy||mode!=='idle')return;if(notes.length&&!confirm('開始新的錄製會取代目前旋律。繼續嗎？'))return;message('');releaseHeld();audio.silence();invalidateWav();notes=[];duration=0;recordAt=audio.now;mode='recording';save();drawTimeline();update();syncMetro(true);}
 function stopRecord(){if(mode!=='recording')return;const t=elapsed();releaseHeld(t);duration=Math.min(LIMITS.duration,Math.max(t,...notes.map(n=>n.start+n.duration),0));mode='idle';stopMetro();save();drawTimeline();drawTable();update();}
-async function play(){if(mode!=='idle'||busy||!notes.length)return;releaseHeld();stopMetro();busy=true;update();const token=++operation;try{await prepare([...range(),...notes.map(n=>n.midi)]);if(token!==operation)return;ready=true;audio.silence();playAt=audio.now+.08;audio.play(notes,playAt);mode='playing';message('');}catch(e){message(e.message,true);}finally{busy=false;update();}}
+async function play(){if(mode!=='idle'||busy||!notes.length)return;releaseHeld();stopMetro();busy=true;update();const token=++operation;try{await prepare(allPitches);if(token!==operation)return;ready=true;audio.silence();playAt=audio.now+.08;audio.play(notes,playAt);mode='playing';message('');}catch(e){message(e.message,true);}finally{busy=false;update();}}
 function stopPlay(){audio.stopPlayback();if(mode==='playing')mode='idle';for(const b of keys.values()){b.classList.remove('playing');b.setAttribute('aria-pressed','false');}updatePlayhead(0);update();}
 function clear(){if(mode!=='idle'||busy)return;if((notes.length||duration)&&!confirm('清除目前的旋律？下載的檔案不受影響。'))return;releaseHeld();audio.silence();notes=[];duration=0;invalidateWav();save();drawTimeline();drawTable();update();message('已清除旋律。');}
 function interrupt(text){operation++;if(mode==='recording')stopRecord();releaseHeld();stopPlay();stopMetro();audio.silence();save();if(text)message(text);}
@@ -71,18 +74,19 @@ function frame(now){if(mode==='recording'){const t=elapsed();$('clock').textCont
 $('enable').addEventListener('click',enable);$('record').addEventListener('click',startRecord);$('stop-record').addEventListener('click',stopRecord);$('play').addEventListener('click',play);$('stop-play').addEventListener('click',stopPlay);$('clear').addEventListener('click',clear);$('wav').addEventListener('click',exportWav);$('json').addEventListener('click',()=>download(new Blob([JSON.stringify(makeDocument(settings,notes,duration),null,2)],{type:'application/json'}),'旋律-'+stamp()+'.json'));$('import').addEventListener('click',()=>$('json-file').click());$('json-file').addEventListener('change',e=>importJSON(e.target.files[0]));$('copy').addEventListener('click',copyPrompt);
 for(const k of Object.keys(DEFAULTS))$(k).addEventListener(k==='volume'||k==='velocity'||k==='extra'?'input':'change',()=>{
  if(k==='bpm'){const v=Number($('bpm').value);if(!Number.isInteger(v)||v<40||v>240){$('bpm').value=settings.bpm;message('BPM 請填入 40 到 240 之間的整數。',true);return;}}
- if(k==='octave'){releaseHeld();if(mode==='recording'){duration=elapsed();save();}ready=false;}
+ if(k==='octave'){releaseHeld();if(mode==='recording')duration=elapsed();}
  settings[k]=k==='metronome'?$(k).checked:typeof DEFAULTS[k]==='number'?Number($(k).value):$(k).value;
  if(k==='volume'){audio.setVolume(settings.volume);invalidateWav();}if(k==='bpm'||k==='metronome')syncMetro(true);syncForm();save();
- if(k==='octave'){buildKeys();if(mode==='recording'){// End the take before loading another range, retaining held-note durations.
- stopRecord();message('八度已切換；本次錄製已保存。載入音色後可開始新的一段。');}enable();}
+ if(k==='octave'){updateKeycaps();jumpTo((settings.octave+1)*12);drawTimeline();drawTable();update();}
 });
 window.addEventListener('keydown',e=>{if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,textarea,select,[contenteditable=true]'))return;const i=codes.indexOf(e.code);if(i<0)return;e.preventDefault();if(!ready){message('請先點「啟用鋼琴」，讓瀏覽器開啟聲音。');return;}begin('keyboard:'+e.code,range()[i]);});
 window.addEventListener('keyup',e=>{if(codes.includes(e.code))end('keyboard:'+e.code);});
 window.addEventListener('blur',()=>interrupt());document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});window.addEventListener('pagehide',()=>interrupt());
 restore();syncForm();buildKeys();drawTimeline();drawTable();update();requestAnimationFrame(frame);
 setInterval(()=>{if(mode==='recording')save();},2000);
-function syncScroll(){const el=$('piano-scroll'),max=el.scrollWidth-el.clientWidth;$('keyboard-position').hidden=max<2;$('key-position').value=max?el.scrollLeft/max*100:0;}
+function syncScroll(){const el=$('piano-scroll'),max=el.scrollWidth-el.clientWidth;$('keyboard-position').hidden=max<2;$('key-position').value=max?el.scrollLeft/max*100:0;const visible=[...keys].filter(([,b])=>b.offsetLeft+b.offsetWidth>el.scrollLeft+1&&b.offsetLeft<el.scrollLeft+el.clientWidth-1).map(([m])=>m);$('visible-range').textContent=visible.length?'目前：'+noteName(visible[0])+' — '+noteName(visible.at(-1)):'';}
 $('piano-scroll').addEventListener('scroll',syncScroll,{passive:true});window.addEventListener('resize',syncScroll);
 $('key-position').addEventListener('input',()=>{const el=$('piano-scroll');el.scrollLeft=Number($('key-position').value)/100*(el.scrollWidth-el.clientWidth);});
 $('keys-left').addEventListener('click',()=>{$('piano-scroll').scrollBy({left:-280,behavior:'auto'});});$('keys-right').addEventListener('click',()=>{$('piano-scroll').scrollBy({left:280,behavior:'auto'});});
+
+document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>jumpTo(Number(b.dataset.jump))));

@@ -4,3 +4,14 @@
 .music-page .panel h2{font:500 21px/1.5 var(--yk-font);letter-spacing:.3px}.music-page .piano-key:disabled{opacity:1}.music-page .yk-theme-toggle{padding:0;border-radius:50%;min-height:38px}.keyboard-position{display:flex;align-items:center;gap:14px;margin-top:8px}.keyboard-position button{font-size:12px;white-space:nowrap;padding:8px 10px}.keyboard-position input{min-width:0;touch-action:pan-x}.music-page .panel{padding:28px}.music-page .yk-site-brand span{font-size:10px;font-weight:400;letter-spacing:.21em}.music-page .sound-info summary{font-size:12px}.music-page .description{line-height:1.8}
 @media(max-width:600px){.music-page .panel{padding:18px}.music-page .panel h2{font-size:18px}.music-page .keyboard-help{font-size:11px}.music-page :is(input:not([type=range]),select,textarea){font-size:16px}}
 @media(prefers-reduced-motion:reduce){.music-page *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Full 88-key instrument; keep the page width independent of the keyboard. */
+.music-page .instrument{min-width:0;overflow:hidden}
+.music-page .piano{--white-key-width:44px;--black-key-width:27px;width:calc(var(--white-key-width) * 52);min-width:0}
+.music-page .piano-key.white{flex:1 1 0;width:var(--white-key-width)}
+.music-page .piano-key.black{width:var(--black-key-width)}
+.piano-key .pitch{margin-bottom:17px;font-size:11px}.piano-key.mapped .pitch{margin-bottom:0}.piano-key .keycap{padding:1px 4px;font-size:10px}
+.music-page .piano-key.white.mapped{border-top:4px solid #aec68d}
+.music-page .piano-key.middle-c .pitch{color:#395823;font-weight:700}.music-page .piano-key.middle-c .pitch:before{content:'';display:block;width:5px;height:5px;border-radius:50%;background:#77985a;margin:0 auto 7px}
+.keyboard-overview{display:flex;align-items:center;gap:20px;margin:8px 0 14px;flex-wrap:wrap}.keyboard-range{display:flex;align-items:baseline;gap:10px}.keyboard-range strong{font-size:20px;font-weight:500;color:var(--yk-accent)}.keyboard-range span,.visible-range{font-size:12px;color:var(--yk-muted)}.visible-range{margin-left:auto;font-variant-numeric:tabular-nums;min-width:120px;text-align:right}.register-jumps{display:flex;gap:6px}.music-page .register-jumps button{min-height:38px;padding:8px 14px;font-size:12px;border-radius:20px;background:transparent}.music-page .register-jumps button[data-jump="60"]{background:var(--yk-soft)}
+@media(max-width:600px){.music-page .piano{--white-key-width:56px;--black-key-width:34px}.keyboard-overview{gap:12px}.keyboard-range{width:100%}.visible-range{min-width:90px;font-size:11px}.music-page .register-jumps button{min-height:44px;padding:8px 11px;font-size:12px}.register-jumps{gap:5px}.music-page .piano-settings select{width:145px}}

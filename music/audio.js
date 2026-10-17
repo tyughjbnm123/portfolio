@@ -1,4 +1,4 @@
-export const SAMPLE_MIDIS=Array.from({length:20},(_,i)=>36+i*3);
+export const SAMPLE_MIDIS=Array.from({length:30},(_,i)=>21+i*3);
 export const RELEASE=.85,TAIL=2.4,SAMPLE_RATE=44100;
 const nearest=midi=>SAMPLE_MIDIS.reduce((a,b)=>Math.abs(b-midi)<Math.abs(a-midi)?b:a);
 const filename=midi=>['C','Ds','Fs','A'][(midi%12)/3]+(Math.floor(midi/12)-1)+'.mp3';
