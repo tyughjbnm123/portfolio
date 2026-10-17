@@ -1,0 +1,14 @@
+Piano samples: Salamander Grand Piano by Alexander Holm.
+License: Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+https://creativecommons.org/licenses/by/3.0/
+Source (MP3 distribution): https://github.com/Tonejs/audio/tree/master/salamander
+Original source: http://rytmenpinne.posterous.com/pages/salamander-grand-piano
+
+This tool uses a subset of the MP3 samples, nearest-note pitch transposition,
+amplitude-based velocity, a release envelope, compression and algorithmic reverb.
+It does not implement the full original multi-velocity sample instrument.
+The downloaded WAV contains an attribution comment; retain this credit when sharing.
+
+鋼琴取樣：Alexander Holm 的 Salamander Grand Piano，採 CC BY 3.0 授權。
+本工具使用部分 MP3 取樣、鄰近音移調、音量力度、收音包絡、壓縮與合成殘響。
+分享匯出的音樂時，請保留作者、音色名稱、授權及來源連結。
