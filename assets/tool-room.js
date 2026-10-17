@@ -9,6 +9,7 @@
     {id:'raffle',short:'抽獎機',title:'抽獎機',category:'行銷與活動',purpose:'名單準備好，下一位幸運兒是誰？',description:'匯入名單、自訂獎項與名額，用抽獎球動畫揭曉得獎者，最後帶走得獎名單。',path:'raffle.html',imageVersion:'20260919-machine',steps:['匯入名單','設定獎項與人數','抽獎與複製結果'],alt:'抽獎工具實際的透明球槽、繽紛抽獎球與機台底座，右側為三位示範得獎者名單。'},
     {id:'prompt',short:'AI 指令庫',title:'AI 指令庫',category:'工作整理',purpose:'把指令與圖片效果一起收藏。',description:'保存指令內容與成果圖，透過關鍵字、平台和標籤找到需要的指令，再複製取用；新增與管理需登入。',path:'prompt-library.html',imageVersion:'20260920-prompt-image',steps:['查看成果圖','找到對應指令','複製取用'],alt:'左側是零食品牌聚會視覺的示範指令，右側是三位好友在暖紅餐桌分享零食的既有作品，示意指令與圖片一起收藏。'},
     {id:'slides',short:'簡報圖解',title:'簡報圖解助手',category:'簡報與溝通',purpose:'把想說的，變成看得懂的圖。',description:'貼上內容、選擇表達目的，比較三種圖解方式。調整文字與配色，再下載圖片放進簡報。',path:'slide-visualizer.html',image:'assets/tool-preview-slides.svg?v=20260926-mvp',steps:['整理表達重點','比較三種圖解','修改與下載'],alt:'簡報圖解助手示範：建立任務、在本機執行、回報結果，整理為三步流程圖。'}
+    ,{id:'music',short:'旋律創作',title:'旋律創作工具',category:'音樂創作',purpose:'把腦中的旋律，留下來。',description:'用虛擬鋼琴彈奏與錄製，保留音長、停頓和和弦。下載 WAV 與音符資料，再整理成可貼到 Suno 的風格描述。',path:'music/',image:'assets/tool-preview-music.webp?v=20261017',steps:['彈奏與錄製','下載旋律音檔','整理風格指令'],alt:'旋律創作工具實際畫面：兩個八度的鋼琴、錄製控制與音符時間軸。'}
   ];
   function mount(container){
     const picker=container.querySelector('.yk-tool-picker'),showcase=container.querySelector('.yk-tool-showcase'),image=showcase.querySelector('img');

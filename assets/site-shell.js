@@ -1,4 +1,5 @@
 (() => {
+  const musicURL = new URL('../music/', document.currentScript.src);
   const doc = document.documentElement;
   let mode = 'auto';
   try { mode = localStorage.getItem('yichi-color-scheme') || 'auto'; } catch {}
@@ -18,6 +19,16 @@
   apply();
   system.addEventListener('change',apply);
   document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.yk-tool-nav').forEach(nav => {
+      if (![...nav.querySelectorAll('a')].some(a => a.href === musicURL.href)) {
+        const link = document.createElement('a');
+        link.href = musicURL.href;
+        const number = document.createElement('span');
+        number.textContent = '09';
+        link.append(number, document.createTextNode('旋律創作'));
+        nav.append(link);
+      }
+    });
     document.querySelectorAll('.yk-content-nav').forEach(nav => {
       nav.setAttribute('aria-label', '主導覽');
       if (!nav.querySelector('a[href="index.html#games"]')) {
