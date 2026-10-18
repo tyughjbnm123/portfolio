@@ -11,29 +11,284 @@
     {id:'slides',short:'簡報圖解',title:'簡報圖解助手',category:'簡報與溝通',purpose:'把想說的，變成看得懂的圖。',description:'貼上內容、選擇表達目的，比較三種圖解方式。調整文字與配色，再下載圖片放進簡報。',path:'slide-visualizer.html',image:'assets/tool-preview-slides.svg?v=20260926-mvp',steps:['整理表達重點','比較三種圖解','修改與下載'],alt:'簡報圖解助手示範：建立任務、在本機執行、回報結果，整理為三步流程圖。'}
     ,{id:'music',short:'旋律創作',title:'旋律創作工具',category:'音樂創作',purpose:'把腦中的旋律，留下來。',description:'用虛擬鋼琴彈奏與錄製，保留音長、停頓和和弦。下載 WAV 與音符資料，再整理成可貼到 Suno 的風格描述。',path:'music/',image:'assets/tool-preview-music.webp?v=20261017',steps:['彈奏與錄製','下載旋律音檔','整理風格指令'],alt:'旋律創作工具實際畫面：兩個八度的鋼琴、錄製控制與音符時間軸。'}
   ];
+
+  const categories=[
+  {
+    "id": "visual",
+    "title": "影像與影片",
+    "en": "Image & video",
+    "description": "準備畫面，整理拍攝與創作素材。",
+    "descriptionEn": "Plan scenes and prepare visual material."
+  },
+  {
+    "id": "audio",
+    "title": "音樂與聲音",
+    "en": "Music & sound",
+    "description": "從一段旋律開始，留下聲音的想法。",
+    "descriptionEn": "Capture a musical idea, one note at a time."
+  },
+  {
+    "id": "marketing",
+    "title": "行銷與活動",
+    "en": "Marketing & events",
+    "description": "編排訊息、標記來源，準備互動活動。",
+    "descriptionEn": "Prepare messages, campaign links and events."
+  },
+  {
+    "id": "work",
+    "title": "工作與簡報",
+    "en": "Work & presentations",
+    "description": "把資訊整理好，讓想法更容易傳達。",
+    "descriptionEn": "Organize information and make ideas clearer."
+  }
+];
+  const details={
+  "storyboard": {
+    "group": "visual",
+    "tags": [
+      "分鏡",
+      "影片"
+    ],
+    "tagsEn": [
+      "Storyboard",
+      "Video"
+    ],
+    "en": {
+      "short": "Storyboard",
+      "title": "Ad storyboard studio",
+      "purpose": "Turn scenes, dialogue and timing into an ad.",
+      "description": "Arrange reference images, captions, voiceover and timing; preview and export a storyboard.",
+      "steps": [
+        "Arrange scenes",
+        "Add dialogue and timing",
+        "Preview and export"
+      ],
+      "alt": "Storyboard preview with reference images and a timeline."
+    }
+  },
+  "video": {
+    "group": "visual",
+    "tags": [
+      "動作",
+      "參考素材"
+    ],
+    "tagsEn": [
+      "Motion",
+      "References"
+    ],
+    "en": {
+      "short": "Action cards",
+      "title": "Short-video action cards",
+      "purpose": "Find a movement for your next scene.",
+      "description": "Compare starting and finishing poses, then add the selected movement to your storyboard.",
+      "steps": [
+        "Choose a movement",
+        "Compare poses",
+        "Add to storyboard"
+      ],
+      "alt": "Starting and finishing poses for a waving action."
+    }
+  },
+  "facs": {
+    "group": "visual",
+    "tags": [
+      "表情",
+      "AI 描述"
+    ],
+    "tagsEn": [
+      "Expression",
+      "AI prompts"
+    ],
+    "en": {
+      "short": "Expressions",
+      "title": "Expression controller",
+      "purpose": "Make “a more natural smile” more specific.",
+      "description": "Align facial features, adjust expression sliders and prepare an expression description.",
+      "steps": [
+        "Upload a portrait",
+        "Align and adjust",
+        "Get a description"
+      ],
+      "alt": "A portrait with facial landmarks and expression sliders."
+    }
+  },
+  "line": {
+    "group": "marketing",
+    "tags": [
+      "LINE",
+      "訊息預覽"
+    ],
+    "tagsEn": [
+      "LINE",
+      "Message preview"
+    ],
+    "en": {
+      "short": "LINE messages",
+      "title": "LINE message composer",
+      "purpose": "See your message before you send it.",
+      "description": "Arrange images, copy and buttons; preview a carousel message and export Flex Message data.",
+      "steps": [
+        "Arrange content",
+        "Preview the message",
+        "Export"
+      ],
+      "alt": "Product cards in a LINE message preview."
+    }
+  },
+  "utm": {
+    "group": "marketing",
+    "tags": [
+      "追蹤連結",
+      "流量分析"
+    ],
+    "tagsEn": [
+      "Tracking links",
+      "Analytics"
+    ],
+    "en": {
+      "short": "UTM links",
+      "title": "UTM link builder",
+      "purpose": "Give every campaign link a clear source.",
+      "description": "Add a destination, source, medium and campaign name to create a tracking link.",
+      "steps": [
+        "Enter a URL",
+        "Add campaign details",
+        "Copy the link"
+      ],
+      "alt": "A campaign URL with source, medium and campaign parameters."
+    }
+  },
+  "raffle": {
+    "group": "marketing",
+    "tags": [
+      "抽獎",
+      "名單"
+    ],
+    "tagsEn": [
+      "Raffle",
+      "Participants"
+    ],
+    "en": {
+      "short": "Raffle",
+      "title": "Raffle machine",
+      "purpose": "The list is ready. Who will be next?",
+      "description": "Import participants, configure prizes and draw winners; copy the results when finished.",
+      "steps": [
+        "Import participants",
+        "Set prizes",
+        "Draw and copy results"
+      ],
+      "alt": "Raffle machine and a sample winners list."
+    }
+  },
+  "prompt": {
+    "group": "work",
+    "tags": [
+      "AI 指令",
+      "素材收藏"
+    ],
+    "tagsEn": [
+      "AI prompts",
+      "Collections"
+    ],
+    "notice": "新增與管理需登入",
+    "noticeEn": "Sign-in required to add or manage",
+    "en": {
+      "short": "Prompt library",
+      "title": "AI prompt library",
+      "purpose": "Keep a prompt and its visual result together.",
+      "description": "Browse prompts and result images, search by keyword or tag, and copy a prompt. Adding and managing entries requires sign-in.",
+      "steps": [
+        "View results",
+        "Find a prompt",
+        "Copy and use"
+      ],
+      "alt": "An example prompt beside its visual result."
+    }
+  },
+  "slides": {
+    "group": "work",
+    "tags": [
+      "圖解",
+      "簡報"
+    ],
+    "tagsEn": [
+      "Diagrams",
+      "Slides"
+    ],
+    "en": {
+      "short": "Slide diagrams",
+      "title": "Slide diagram helper",
+      "purpose": "Turn what you want to say into a clear diagram.",
+      "description": "Choose a communication goal, compare diagram layouts, edit text and colors, then download.",
+      "steps": [
+        "Define the message",
+        "Compare layouts",
+        "Edit and download"
+      ],
+      "alt": "A three-step process diagram in the slide helper."
+    }
+  },
+  "music": {
+    "group": "audio",
+    "tags": [
+      "鋼琴",
+      "旋律",
+      "Suno"
+    ],
+    "tagsEn": [
+      "Piano",
+      "Melody",
+      "Suno"
+    ],
+    "en": {
+      "short": "Melody studio",
+      "title": "Melody studio",
+      "purpose": "Keep the melody in your head.",
+      "description": "Play an 88-key piano, record notes, rests and chords, download WAV and JSON, and prepare an English style and melody description.",
+      "steps": [
+        "Play and record",
+        "Download the melody",
+        "Prepare a prompt"
+      ],
+      "alt": "An 88-key piano with recording controls and a note timeline."
+    }
+  }
+};
+  tools.forEach(tool=>Object.assign(tool,details[tool.id],{category:categories.find(c=>c.id===details[tool.id].group).title}));
+  tools.find(t=>t.id==='music').alt='旋律創作工具：88 鍵鋼琴、錄製控制與音符時間軸。';
+  const language=()=>{try{return root.YKLanguage?.language||root.document?.documentElement.dataset.language||(root.localStorage?.getItem('yichi-language')==='en'?'en':'zh');}catch{return 'zh';}};
+  const text=(tool,key,lang=language())=>lang==='en'?(tool.en?.[key]??tool[key]):tool[key];
   function mount(container){
     const picker=container.querySelector('.yk-tool-picker'),showcase=container.querySelector('.yk-tool-showcase'),image=showcase.querySelector('img');
-    const buttons=[];
+    const featured=['storyboard','music','line','slides'].map(id=>tools.find(t=>t.id===id));
+    const browse=container.querySelector('.yk-tool-browse');
+    [picker,showcase,browse].filter(Boolean).forEach(el=>el.setAttribute('data-i18n-ignore',''));
+    const buttons=[];let selected=featured[0];
     function select(tool){
-      buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.tool===tool.id)));
-      image.src=tool.image||`assets/tool-preview-${tool.id}.webp${tool.imageVersion?'?v='+tool.imageVersion:''}`;image.alt=tool.alt;
-      showcase.querySelector('.yk-tool-category').textContent=tool.category;
-      showcase.querySelector('h3').textContent=tool.title;
-      showcase.querySelector('.yk-tool-purpose').textContent=tool.purpose;
-      showcase.querySelector('.yk-tool-description').textContent=tool.description;
+      selected=tool;const en=language()==='en';
+      buttons.forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.tool===tool.id));button.querySelector('strong').textContent=text(tools.find(t=>t.id===button.dataset.tool),'short');});
+      if(browse){browse.querySelector('span').textContent=en?'A few tools to start with':'先挑一個工具開始';browse.querySelector('a').textContent=en?'Browse all tools ↗':'查看全部工具 ↗';}
+      image.src=tool.image||`assets/tool-preview-${tool.id}.webp${tool.imageVersion?'?v='+tool.imageVersion:''}`;image.alt=text(tool,'alt');
+      showcase.querySelector('figcaption').textContent=en?'Tool preview':'功能示意';
+      const cat=categories.find(c=>c.id===tool.group);showcase.querySelector('.yk-tool-category').textContent=en?cat.en:cat.title;
+      showcase.querySelector('h3').textContent=text(tool,'title');
+      showcase.querySelector('.yk-tool-purpose').textContent=text(tool,'purpose');
+      showcase.querySelector('.yk-tool-description').textContent=text(tool,'description');
       const steps=showcase.querySelector('.yk-tool-flow');steps.replaceChildren();
-      tool.steps.forEach(text=>{const li=document.createElement('li');li.textContent=text;steps.append(li);});
-      const link=showcase.querySelector('.yk-tool-live');link.href=tool.path;link.textContent='開啟'+tool.short+' ↗';
+      text(tool,'steps').forEach(value=>{const li=document.createElement('li');li.textContent=value;steps.append(li);});
+      const link=showcase.querySelector('.yk-tool-live');link.href=tool.path;link.textContent=(en?'Open ':'開啟')+text(tool,'short')+' ↗';
       showcase.dataset.tool=tool.id;
       if(!matchMedia('(prefers-reduced-motion: reduce)').matches)image.animate([{opacity:.55,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:280,easing:'ease-out'});
     }
-    tools.forEach((tool,index)=>{
+    picker.replaceChildren();featured.forEach((tool,index)=>{
       const button=document.createElement('button');button.type='button';button.dataset.tool=tool.id;
       const number=document.createElement('span');number.textContent=String(index+1).padStart(2,'0');
-      const label=document.createElement('strong');label.textContent=tool.short;button.append(number,label);
+      const label=document.createElement('strong');button.append(number,label);
       button.addEventListener('click',()=>select(tool));picker.append(button);buttons.push(button);
     });
-    select(tools[0]);
+    const refresh=()=>{if(!picker.isConnected){root.removeEventListener('yk:language',refresh);return;}select(selected);};
+    root.addEventListener('yk:language',refresh);select(selected);
   }
-  const api={tools,mount};if(typeof module==='object'&&module.exports)module.exports=api;else root.ToolRoom=api;
+  const api={tools,categories,text,language,mount};if(typeof module==='object'&&module.exports)module.exports=api;else root.ToolRoom=api;
 })(typeof window==='undefined'?{}:window);
