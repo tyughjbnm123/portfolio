@@ -1,0 +1,6 @@
+/* Original exploration artwork; homepage portal icons are separate. */
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-cover{height:170px;border-bottom:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-explore-photo img{width:100%;height:100%;object-fit:cover;object-position:center}
+@media(max-width:600px){
+ .yk-index-page #yk-world .yk-explore-grid .yk-explore-cover{height:136px}
+}
