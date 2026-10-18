@@ -1,0 +1,13 @@
+.melody-description-box{margin:22px 0 26px;padding:18px;border:1px solid var(--yk-line);border-radius:14px;background:var(--yk-bg)}
+.melody-description-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.melody-kicker{font-size:11px;letter-spacing:.08em;color:var(--yk-accent);font-weight:600}
+.melody-badge{font-size:11px;color:var(--yk-muted);border:1px solid var(--yk-line);padding:4px 8px;border-radius:20px}
+#melody-analysis-hint{margin:12px 0;line-height:1.7}
+.melody-summary-stats{font-size:13px;color:var(--yk-accent);margin:18px 0 14px;font-variant-numeric:tabular-nums}
+#melody-summary-list{margin:0 0 16px}
+#melody-summary-list>div{padding:12px 0;border-top:1px solid var(--yk-line)}
+#melody-summary-list dt{font-size:12px;font-weight:600;margin-bottom:5px}
+#melody-summary-list dd{margin:0;font-size:13px;line-height:1.75;color:var(--yk-muted)}
+.melody-analysis-limit{margin:14px 0 0!important;line-height:1.7}
+#prompt{min-height:180px;resize:vertical;line-height:1.75}
+@media(max-width:520px){.melody-description-box{padding:14px}.melody-description-box button{white-space:normal;min-height:44px}}
