@@ -3,6 +3,8 @@
   const {tools,categories,text}=window.ToolRoom;
   let language='zh';try{language=localStorage.getItem('yichi-language')==='en'?'en':'zh';}catch{}
   const copy={skip:['跳至工具清單','Skip to tools'],back:['↖ 回到首頁','↖ Home'],footer:['回到首頁 ↗','Back home ↗'],about:['我是誰','About'],work:['我做過什麼','Work'],tools:['我的工具房','My tools'],lab:['我正在探索','Explorations'],games:['我的遊戲室','Games'],lead:['把想做的事，變成可以直接使用的工具。','Find a tool for the thing you want to make.'],searchLabel:['搜尋工具','Search tools'],empty:['沒有找到符合的工具','No matching tools'],emptyHint:['試試其他關鍵字，或清除篩選查看全部工具。','Try another keyword, or clear the filters to see all tools.'],reset:['查看全部工具','Show all tools'],all:['全部工具','All tools'],allFilter:['全部','All'],allDescription:['從用途出發，找到適合這次任務的工具。','Start with what you want to do.'],open:['開啟工具 ↗','Open tool ↗'],searchPlaceholder:['搜尋工具名稱或用途，例如：分鏡、鋼琴、LINE','Search tools or tasks: storyboard, piano, LINE'],clear:['清除搜尋','Clear search'],filter:['依用途篩選','Filter by purpose'],find:['尋找工具','Find a tool'],navigation:['主導覽','Main navigation']};
+  Object.assign(copy,{chooseCategory:['先選一個分類','Choose a category'],browseAll:['瀏覽全部工具 ↗','Browse all tools ↗'],backCategories:['← 回到分類','← Back to categories'],explore:['查看工具 ↗','Explore tools ↗']});
+  copy.lead=['選一個方向，找到這次用得上的工具。','Choose a direction. Find the tools for your next idea.'];
   const t=key=>copy[key][language==='en'?1:0];
   const icons={
     storyboard:'<g transform="rotate(-5 110 70)"><rect class="soft" x="45" y="18" width="127" height="95" rx="8"/><rect class="paper" x="31" y="30" width="142" height="88" rx="8"/><path d="M32 48h140" class="faint"/><circle class="solid" cx="42" cy="39" r="2"/><circle class="solid" cx="50" cy="39" r="2"/><rect x="43" y="60" width="32" height="30" rx="3"/><path d="m47 82 9-12 13 15M84 64h33m-33 9h48m-48 9h25M43 102h106"/><path class="solid" d="m147 64 15 10-15 10z"/></g>',
@@ -16,15 +18,31 @@
     slides:'<rect class="soft" x="28" y="22" width="164" height="97" rx="8"/><rect class="paper" x="36" y="30" width="148" height="76" rx="4"/><path d="M52 44h53m-53 7h82M110 119v12m-22 0h44" class="faint"/><rect x="48" y="65" width="30" height="23" rx="4"/><rect x="95" y="65" width="30" height="23" rx="4"/><rect x="142" y="65" width="30" height="23" rx="4"/><path d="M79 76h13m-5-4 5 4-5 4m39-4h13m-5-4 5 4-5 4"/>'
   };
   const search=document.getElementById('tool-search'),filters=document.getElementById('catalog-filters'),grid=document.getElementById('catalog-grid');
-  let category='all';
+  let category='home';
   const normalize=value=>value.normalize('NFKC').toLocaleLowerCase().replace(/臺/g,'台').trim();
   const ordered=categories.flatMap(c=>tools.filter(tool=>tool.group===c.id));
-  function readRoute(){const params=new URL(location.href).searchParams;category=categories.some(c=>c.id===params.get('category'))?params.get('category'):'all';search.value=(params.get('q')||'').slice(0,100);}
-  function route(push=false){const url=new URL(location.href);category==='all'?url.searchParams.delete('category'):url.searchParams.set('category',category);search.value.trim()?url.searchParams.set('q',search.value.trim()):url.searchParams.delete('q');if(url.href!==location.href)history[push?'pushState':'replaceState'](null,'',url);}
+  function readRoute(){const params=new URL(location.href).searchParams;search.value=(params.get('q')||'').slice(0,100);const requested=params.get('category');category=categories.some(c=>c.id===requested)?requested:requested==='all'||search.value.trim()?'all':'home';}
+  function route(push=false){const url=new URL(location.href);category==='home'?url.searchParams.delete('category'):url.searchParams.set('category',category);search.value.trim()?url.searchParams.set('q',search.value.trim()):url.searchParams.delete('q');if(url.href!==location.href)history[push?'pushState':'replaceState'](null,'',url);}
   function node(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el;}
   const countFor=id=>id==='all'?tools.length:tools.filter(tool=>tool.group===id).length;
+  function navigate(value,focus=false){category=value;search.value='';route(true);renderResults();if(focus)document.getElementById(value==='home'?'catalog-landing-title':'category-title').focus({preventScroll:true});}
+  function bindNavigation(link,value){link.addEventListener('click',event=>{if(event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();navigate(value,true);});}
+  function buildCategories(){
+    const parent=document.getElementById('catalog-categories');parent.replaceChildren();
+    const categoryIcons={visual:'storyboard',audio:'music',marketing:'line',work:'slides'};
+    categories.forEach((cat,index)=>{
+      const card=node('a','catalog-category-card');card.href='tools.html?category='+cat.id;card.setAttribute('aria-labelledby','category-'+cat.id);
+      const art=node('div','catalog-art');art.setAttribute('aria-hidden','true');art.innerHTML=`<svg viewBox="0 0 220 140" focusable="false">${icons[categoryIcons[cat.id]]}</svg>`;
+      const content=node('div','catalog-category-content'),title=node('h3','',language==='en'?cat.en:cat.title);title.id='category-'+cat.id;
+      const count=countFor(cat.id),amount=language==='en'?`${count} ${count===1?'tool':'tools'}`:`${count} 個工具`;
+      content.append(node('span','catalog-category-number',String(index+1).padStart(2,'0')+' / '+amount),title,node('p','',language==='en'?cat.descriptionEn:cat.description),node('span','catalog-category-examples',tools.filter(tool=>tool.group===cat.id).map(tool=>text(tool,'short',language)).join(' · ')),node('span','catalog-category-enter',t('explore')));
+      card.append(art,content);bindNavigation(card,cat.id);parent.append(card);
+    });
+  }
   function buildFilters(){filters.replaceChildren();for(const cat of [{id:'all',title:t('allFilter'),en:t('allFilter')},...categories]){const b=node('button','');b.type='button';b.dataset.category=cat.id;b.append(node('span','',language==='en'?cat.en:cat.title),node('small','',String(countFor(cat.id))));b.setAttribute('aria-pressed',String(category===cat.id));b.setAttribute('aria-controls','catalog-grid');b.addEventListener('click',()=>{category=cat.id;route(true);renderResults();});filters.append(b);}}
   function renderResults(){
+    const landing=category==='home';document.getElementById('catalog-landing').hidden=!landing;document.getElementById('catalog-results').hidden=landing;filters.hidden=landing;document.body.classList.toggle('catalog-is-landing',landing);document.getElementById('search-clear').hidden=!search.value;
+    if(landing){grid.replaceChildren();document.getElementById('catalog-count').textContent='';return;}
     const terms=normalize(search.value).split(/\s+/).filter(Boolean);
     const matches=ordered.filter(tool=>{const haystack=normalize([tool.title,tool.short,tool.purpose,tool.description,tool.category,...tool.tags,...tool.tagsEn,...Object.values(tool.en).flat()].join(' '));return(category==='all'||tool.group===category)&&terms.every(q=>haystack.includes(q));});
     filters.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===category)));
@@ -42,9 +60,10 @@
     }
   }
   function themeLabel(){const dark=document.documentElement.dataset.ykTheme==='dark';const b=document.querySelector('.yk-theme-toggle');b.setAttribute('aria-label',language==='en'?(dark?'Switch to light theme':'Switch to dark theme'):(dark?'切換至淺色':'切換至深色'));b.title=b.getAttribute('aria-label');}
-  function translate(){document.documentElement.lang=language==='en'?'en':'zh-Hant';document.documentElement.dataset.language=language;document.title=t('tools')+'｜YI-CHI KUO';document.querySelectorAll('[data-copy]').forEach(el=>el.textContent=t(el.dataset.copy));search.placeholder=t('searchPlaceholder');filters.setAttribute('aria-label',t('filter'));document.querySelector('.catalog-controls').setAttribute('aria-label',t('find'));document.querySelector('.yk-content-nav').setAttribute('aria-label',t('navigation'));document.getElementById('search-clear').setAttribute('aria-label',t('clear'));const b=document.querySelector('.catalog-language');b.textContent=language==='en'?'中文':'EN';b.setAttribute('aria-label',language==='en'?'切換至繁體中文':'Switch to English');themeLabel();buildFilters();renderResults();}
+  function translate(){document.documentElement.lang=language==='en'?'en':'zh-Hant';document.documentElement.dataset.language=language;document.title=t('tools')+'｜YI-CHI KUO';document.querySelectorAll('[data-copy]').forEach(el=>el.textContent=t(el.dataset.copy));search.placeholder=t('searchPlaceholder');filters.setAttribute('aria-label',t('filter'));document.querySelector('.catalog-controls').setAttribute('aria-label',t('find'));document.querySelector('.yk-content-nav').setAttribute('aria-label',t('navigation'));document.getElementById('search-clear').setAttribute('aria-label',t('clear'));const b=document.querySelector('.catalog-language');b.textContent=language==='en'?'中文':'EN';b.setAttribute('aria-label',language==='en'?'切換至繁體中文':'Switch to English');themeLabel();buildCategories();buildFilters();renderResults();}
   document.querySelector('.catalog-language').addEventListener('click',()=>{language=language==='en'?'zh':'en';try{localStorage.setItem('yichi-language',language);}catch{}translate();window.dispatchEvent(new CustomEvent('yk:language',{detail:{language}}));});
-  search.addEventListener('input',()=>{route();renderResults();});search.addEventListener('keydown',e=>{if(e.key==='Escape'){search.value='';route();renderResults();}});
+  search.addEventListener('input',()=>{if(category==='home')category='all';route();renderResults();});search.addEventListener('keydown',e=>{if(e.key==='Escape'){search.value='';route();renderResults();}});
+  document.getElementById('catalog-landing-title').tabIndex=-1;bindNavigation(document.getElementById('catalog-back'),'home');bindNavigation(document.getElementById('catalog-all'),'all');
   document.getElementById('search-clear').addEventListener('click',()=>{search.value='';route();renderResults();search.focus();});
   document.getElementById('catalog-reset').addEventListener('click',()=>{search.value='';category='all';route(true);renderResults();search.focus();});
   window.addEventListener('popstate',()=>{readRoute();renderResults();});window.addEventListener('yk:theme',themeLabel);
