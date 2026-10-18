@@ -23,6 +23,7 @@
     document.querySelectorAll('a[href]').forEach(link=>{
       const url=new URL(link.href);
       if(url.href===new URL('index.html#tools',siteRoot).href)link.href=new URL('tools.html',siteRoot).href;
+      if(url.href===new URL('index.html#work',siteRoot).href)link.href=new URL('projects.html',siteRoot).href;
     });
     if(document.body.classList.contains('yk-tool-page')) {
       function mountToolNavigation(){
