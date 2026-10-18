@@ -1,6 +1,27 @@
-/* Original exploration artwork; homepage portal icons are separate. */
-.yk-index-page #yk-world .yk-explore-grid .yk-explore-cover{height:170px;border-bottom:1px solid var(--yk-line)}
+/* Match projects.html: 1320px content, 32px gaps, 16:10 covers and 24px copy padding.
+   Only the active exploration detail is widened; homepage portals stay unchanged. */
+body.yk-index-page:has(.yk-detail-body > .yk-explore-grid){padding-inline:32px}
+.yk-index-page #yk-world .yk-detail:has(.yk-explore-grid){padding-inline:0}
+.yk-index-page #yk-world .yk-detail-body:has(> .yk-explore-grid){max-width:1320px}
+.yk-index-page #yk-world .yk-explore-grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:32px;padding:5px 0 20px}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-card{display:flex;flex-direction:column;border-radius:18px;height:100%;min-width:0}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-cover{height:auto;aspect-ratio:16/10;flex:none;border-bottom:1px solid var(--yk-line)}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-copy{padding:24px;min-height:228px;flex:1;min-width:0}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-kind{font-size:12px;line-height:1.5;letter-spacing:.06em}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-copy h3{font-size:18px;line-height:1.375;min-height:2.75em;margin:8px 0;overflow-wrap:anywhere}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-copy p{font-size:13px;line-height:1.85;margin:0;overflow-wrap:anywhere}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-art{gap:12px}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-art img{width:42%;height:78%;object-fit:contain;flex:0 1 42%}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-ar{padding-bottom:26px;gap:12px}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-ar img{height:78%;width:auto;max-width:32%;aspect-ratio:9/16;object-fit:cover}
+.yk-index-page #yk-world .yk-explore-grid .yk-explore-automation img{width:65%;height:85%;object-fit:contain}
 .yk-index-page #yk-world .yk-explore-photo img{width:100%;height:100%;object-fit:cover;object-position:center}
-@media(max-width:600px){
- .yk-index-page #yk-world .yk-explore-grid .yk-explore-cover{height:136px}
+@media(min-width:768px){
+ .yk-index-page #yk-world .yk-explore-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:1024px){
+ .yk-index-page #yk-world .yk-explore-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ body.yk-index-page:has(.yk-detail-body > .yk-explore-grid){padding-inline:18px}
 }
