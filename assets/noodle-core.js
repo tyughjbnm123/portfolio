@@ -2,6 +2,9 @@
   'use strict';
   const LIMIT=70, DISTANCE=3200, SPEED=64, PENALTY=4, BOOST=1.6;
   const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
+  // World distance and the painted arrival line share the same road geometry.
+  const ROAD=Object.freeze({playerY:370,carHalfLength:34,pixelsPerMetre:.65,finishStripeHeight:25});
+  function finishLineY(distance){return ROAD.playerY-ROAD.carHalfLength-(DISTANCE-clamp(distance,0,DISTANCE))*ROAD.pixelsPerMetre;}
   function clock(seconds){
     const minutes=170+Math.min(10,Math.floor(clamp(seconds,0,LIMIT)/LIMIT*10));
     return `${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`;
@@ -58,7 +61,7 @@
         if(!car.passed&&car.y>.735&&car.y<.945&&Math.abs(car.lane-this.x)<.46){car.passed=true;this.hit();}
       }
       this.traffic=this.traffic.filter(car=>car.y<1.18);
-      if(this.phase==='drive'&&this.distance>=DISTANCE){this.phase='arrived';this.accelerating=false;this.arrival=this.elapsed;this.traffic=[];}
+      if(this.phase==='drive'&&finishLineY(this.distance)>=ROAD.playerY-ROAD.carHalfLength){this.phase='arrived';this.accelerating=false;this.arrival=this.elapsed;this.traffic=[];}
     }
     beginCooking(){if(this.phase!=='arrived')return false;this.phase='cook';this.cookTime=0;return true;}
     get meter(){return (1-Math.cos(this.cookTime*1.8))*50;}
@@ -82,6 +85,6 @@
       return {score,hits:this.hits,arrival:this.arrival,cooking,stars:cooking>=280?3:cooking>=200?2:1};
     }
   }
-  const api={Session,LIMIT,DISTANCE,SPEED,PENALTY,BOOST,clock};
+  const api={Session,LIMIT,DISTANCE,SPEED,PENALTY,BOOST,ROAD,finishLineY,clock};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.NoodleGame=api;
 })(typeof window==='undefined'?{}:window);

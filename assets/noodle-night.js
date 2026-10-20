@@ -26,7 +26,7 @@
   }
   function drawRoad(){
     rect(0,0,480,440,0,'#141e30');
-    const travel=game.distance*.65;
+    const travel=game.distance*G.ROAD.pixelsPerMetre;
     for(let side=0;side<2;side++){
       const bx=side?381:9;
       for(let row=-1;row<5;row++){
@@ -48,17 +48,19 @@
     rect(122,0,236,440,0,'#29344a');
     line(124,0,124,440,'#e1b07f88',2);line(356,0,356,440,'#e1b07f88',2);
     ctx.setLineDash([20,23]);ctx.lineDashOffset=-travel%43;line(201,0,201,440,'#c4c9d14d',2);line(279,0,279,440,'#c4c9d14d',2);ctx.setLineDash([]);
-    if(game.distance>G.DISTANCE-230){
-      const y=-60+(game.distance-(G.DISTANCE-230))/230*230;
-      for(let i=0;i<8;i++)rect(134+i*27,y,16,25,0,'#c3c6cb99');
-      rect(130,y-55,220,29,4,'#344a48');text(tr('前方：你的家','HOME AHEAD'),240,y-36,'#e5e6c8',12);
+    const finishY=G.finishLineY(game.distance);
+    if(finishY>0){
+      // The lower edge is the arrival boundary: it meets the front bumper at 0 m.
+      const y=finishY-G.ROAD.finishStripeHeight;
+      for(let i=0;i<8;i++)rect(134+i*27,y,16,G.ROAD.finishStripeHeight,0,'#c3c6cb99');
+      rect(130,y-55,220,29,4,'#344a48');text(game.phase==='arrived'?tr('已抵達：你的家','HOME'):tr('前方：你的家','HOME AHEAD'),240,y-36,'#e5e6c8',12);
     }
     for(const item of game.traffic){
       const x=162+item.lane*78,y=item.y*440;
       if(item.kind==='car')car(x,y,['#a6b8ba','#ad858f','#8694b0'][item.color]);
       else{rect(x-22,y-12,44,27,3,'#bd7e62');line(x-17,y+10,x-5,y-8,'#f4d1a6',5);line(x+4,y+10,x+16,y-8,'#f4d1a6',5);rect(x-24,y+14,48,5,2,'#141e30');}
     }
-    car(162+game.x*78,370,'#f0b580',true);
+    car(162+game.x*78,G.ROAD.playerY,'#f0b580',true);
     if(game.phase==='drive'){
       rect(137,16,206,29,14,'#101c30cb');
       text(tr(`剩餘 ${Math.max(0,Math.ceil(G.LIMIT-game.elapsed))} 秒抵達`,`ARRIVE IN ${Math.max(0,Math.ceil(G.LIMIT-game.elapsed))} s`),240,35,'#f9dcc0',12);
