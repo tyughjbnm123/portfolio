@@ -281,7 +281,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
   </nav>
 
   <div class="top-right">
-    <nav class="switch panel" aria-label="切換版本"><span aria-current="page">島嶼版</span><a href="#" data-base="index.html">⇄ 網頁版</a></nav>
+    <nav class="switch panel" aria-label="切換版本"><span aria-current="page">島嶼版</span><a href="#" data-base="index.html?view=web">⇄ 網頁版</a></nav>
     <button class="index-toggle panel" id="index-toggle" type="button" aria-controls="index" aria-expanded="false">☰ 清單</button>
   </div>
 
@@ -358,6 +358,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
 
 /* ---------- content ---------- */
+try{ localStorage.setItem('yk-view','island'); }catch{}
 const BASE = /github\.io$|^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? '' : 'https://tyughjbnm123.github.io/portfolio/';
 const url = p => /^https?:/.test(p) ? p : BASE + p;
 const D = [
@@ -385,7 +386,7 @@ const D = [
     {g:'品牌與活動', t:'EVOASIS 媒體活動', s:'兩天一夜媒體行程', id:'oasis-media'},
     {g:'創業', t:'S23U 手機租賃服務', s:'從零建立，10 個月回本', id:'s23u-rental'}]},
   {key:'tools', no:'03', en:'TOOLS', name:'我的工具房', sub:'讓重複工作，簡單一點', page:'tools.html',
-   lede:'自己做給自己和團隊用的小工具：分鏡、訊息、追蹤連結、抽獎與 AI 指令整理。',
+   lede:'自己做給自己和團隊用的小工具：分鏡、訊息、追蹤連結、抽獎、PRD 與 AI 指令整理。',
    say:'工具房裡都是我自己做的小工具。',
    items:[
     {g:'影片創作', t:'廣告分鏡工作台', s:'畫面、台詞與秒數', id:'tool-storyboard'},
@@ -396,6 +397,7 @@ const D = [
     {g:'行銷與活動', t:'抽獎機', s:'名單匯入、動畫揭曉', id:'tool-raffle'},
     {g:'工作與溝通', t:'AI 指令庫', s:'指令與圖片效果收藏', id:'tool-prompt'},
     {g:'工作與溝通', t:'簡報圖解助手', s:'把想說的變成圖', id:'tool-slides'},
+    {g:'工作與溝通', t:'PRD 產生器', s:'需求寫清楚，自動排成 PRD', id:'tool-prd'},
     {g:'音樂', t:'旋律創作工具', s:'把腦中的旋律留下來', id:'tool-music'}]},
   {key:'lab', no:'04', en:'LAB', name:'我正在探索', sub:'AI 視覺、影音與創意實驗', page:'index.html#lab',
    lede:'還在實驗中的方向：AI 影像、AR 濾鏡、遊戲模組、自動化腳本與攝影。',
