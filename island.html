@@ -230,6 +230,13 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .sprite img{display:block;width:100%;height:auto}
 @keyframes float{50%{transform:translateY(-8px)}}
 .comp-bubble{position:absolute;bottom:0;left:-110px;width:220px}
+.comp-fig-anchor{width:0;height:0;position:relative}
+.comp-fig{position:absolute;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));animation:float 3.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
+.comp-fig img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
+.comp-fig:focus-visible{outline:2px solid var(--c-comp);outline-offset:4px;border-radius:12px}
+.comp-fig.playing{animation:none}
+.comp-sound{margin-left:10px;border:0;background:none;padding:0;font:inherit;font-size:12px;color:var(--muted);cursor:pointer}
+.comp-sound:hover{color:var(--ink)}
 .hunt{position:absolute;top:calc(92px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 32px));padding:16px 18px;display:grid;gap:10px;z-index:6;border-top:4px solid var(--accent)}
 .hunt h3{margin:0;font-size:18px;line-height:1.35}
 .hunt p{margin:0;font-size:13px;line-height:1.65;color:var(--muted)}
@@ -922,13 +929,55 @@ cyl(1.1,1.25,.25,12,mat(0xf1e6f0),0,2,0,comp);
 tree(comp,-2.6,-1.6,.75);
 comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
-compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是網頁小精靈</b><br>平常住在作品集首頁的角落，會陪你逛網站。<br><a href="#" id="comp-play">和我玩一下 ›</a></div>`;
+compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是網頁小精靈</b><br>平常住在作品集首頁的角落，會陪你逛網站。<br><a href="#" id="comp-play">和我玩一下 ›</a><button type="button" class="comp-sound" id="comp-sound"></button></div>`;
 const compObj=new CSS2DObject(compEl); compObj.position.set(0,8.4,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
 compEl.querySelector('#comp-play').addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); openEntry('companion',{eyebrow:'✦ 湖邊小島',color:'comp'});});
-const spriteTex=new THREE.TextureLoader().load(COMP.sprite); spriteTex.colorSpace=THREE.SRGBColorSpace;
-const compSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:spriteTex,transparent:true,alphaTest:.05}));
-compSprite.scale.set(2.1,5.25,1); compSprite.center.set(.5,0); compSprite.position.set(0,2.25,0); compSprite.userData.key='comp'; comp.add(compSprite); pickables.push(compSprite);
+// The companion is drawn as an animated image that follows the 3D scene: point at her to wave, tap her to dance.
+const COMP_H=5.25, COMP_FEET=2.25;
+const CLIP_DIR='assets/companion/';
+const CLIPS={ welcome:{src:'welcome-v23.webp',audio:'welcome-v23.mp3'}, dance:{src:'dance-v23.webp',audio:'dance-v23.mp3'}, yawn:{src:'yawn-v23.webp',audio:'yawn-v23.mp3'}, bye:{src:'bye-v23.webp',audio:'bye-v23.mp3'} };
+const CLIP_MS=6150;
+// frame geometry (px) of the source images: full 480×452 frames on the site, a tight crop in previews
+const GEO = ON_SITE ? {w:480,h:452,cx:239,feet:432,top:24} : {w:104,h:260,cx:52,feet:260,top:0};
+const STILL = ON_SITE ? CLIP_DIR+'idle-still-v23.webp' : COMP.sprite;
+const figAnchor=document.createElement('div'); figAnchor.className='comp-fig-anchor';
+figAnchor.innerHTML=`<button type="button" class="comp-fig" aria-label="網頁小精靈：指向她會揮手，點一下會跳舞"><img alt="" src="${STILL}" draggable="false"></button>`;
+const figObj=new CSS2DObject(figAnchor); figObj.position.set(0,COMP_FEET,0); comp.add(figObj);
+const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
+const clipBlobs={}; let playing=null, playTimer=0, curURL='', clickN=0, compAudio=null;
+let compSound=true; try{ compSound=localStorage.getItem('yk-island-comp-sound')!=='off'; }catch{}
+const soundBtn=compEl.querySelector('#comp-sound');
+const renderSound=()=>{ soundBtn.textContent=compSound?'🔊 聲音開':'🔇 聲音關'; soundBtn.setAttribute('aria-pressed',String(compSound)); };
+renderSound();
+soundBtn.addEventListener('click',e=>{ e.stopPropagation(); compSound=!compSound; try{localStorage.setItem('yk-island-comp-sound',compSound?'on':'off');}catch{} if(!compSound&&compAudio){compAudio.pause();} renderSound(); });
+function loadClip(name){ if(!ON_SITE) return Promise.resolve(null); return clipBlobs[name] ||= fetch(CLIP_DIR+CLIPS[name].src).then(r=>r.ok?r.blob():null).catch(()=>null); }
+function stopClip(){ clearTimeout(playTimer); playing=null; compAudio?.pause(); fig.classList.remove('playing'); figImg.src=STILL; if(curURL){ URL.revokeObjectURL(curURL); curURL=''; } }
+let clipToken=0;
+async function playClip(name,withSound){
+  if(reduced) return;
+  const my=++clipToken; clearTimeout(playTimer);
+  if(withSound && compSound){ try{ compAudio?.pause(); compAudio=new Audio(CLIP_DIR+CLIPS[name].audio); compAudio.volume=.8; }catch{} }
+  const blob=await loadClip(name); if(my!==clipToken) return;
+  if(!blob) { fig.animate?.([{transform:'translateY(0)'},{transform:'translateY(-14px)'},{transform:'translateY(0)'}],{duration:500,easing:'ease-out'}); return; }
+  // a fresh object URL makes the animated image start from its first frame every time
+  const u=URL.createObjectURL(blob); const pre=new Image(); pre.src=u; try{ await pre.decode(); }catch{}
+  if(my!==clipToken){ URL.revokeObjectURL(u); return; }
+  if(curURL) URL.revokeObjectURL(curURL); curURL=u; figImg.src=u; playing=name; fig.classList.add('playing');
+  clearTimeout(playTimer); playTimer=setTimeout(()=>{ if(my===clipToken) stopClip(); },CLIP_MS);
+  if(withSound && compSound && compAudio){ compAudio.currentTime=0; compAudio.play().catch(()=>{}); }
+}
+fig.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse' && !playing) playClip('welcome',false); });
+fig.addEventListener('click',e=>{ e.stopPropagation(); const order=['dance','yawn','bye','welcome']; playClip(order[clickN++%order.length],true); compBubble.classList.add('on'); if(state.focus!=='comp') focusComp(); });
+// keep the figure the same size as the scene around it
+const _ft=new THREE.Vector3(), _hd=new THREE.Vector3();
+function sizeFig(){
+  _ft.set(0,COMP_FEET,0); comp.localToWorld(_ft); _hd.set(0,COMP_FEET+COMP_H,0); comp.localToWorld(_hd);
+  _ft.project(camera); _hd.project(camera);
+  const px=Math.abs(_hd.y-_ft.y)/2*innerHeight; if(!isFinite(px)) return;
+  const k=px/(GEO.feet-GEO.top), H=GEO.h*k, Wd=GEO.w*k;
+  fig.style.width=Wd+'px'; fig.style.height=H+'px'; fig.style.left=(-GEO.cx*k)+'px'; fig.style.bottom=(-(GEO.h-GEO.feet)*k)+'px';
+}
 { const el=document.createElement('button'); el.type='button'; el.className='isl'; el.style.setProperty('--c','var(--c-comp)'); el.innerHTML='<b>✦</b>小精靈'; el.addEventListener('click',e=>{e.stopPropagation(); focusComp();}); const o=new CSS2DObject(el); o.position.set(0,-1.2,0); comp.add(o); }
 const compDir=comp.position.clone().normalize();
 
@@ -1007,7 +1056,7 @@ function focusComp(){
   state.focus='comp'; controls.autoRotate=false;
   const look=comp.position.clone().add(new THREE.Vector3(0,4,0));
   const pos=comp.position.clone().add(compDir.clone().multiplyScalar(mobile?30:24)).add(new THREE.Vector3(0,mobile?20:14,0));
-  flyTo(pos,look); updateOffset(); compBubble.classList.add('on'); $('#hint').hidden=true;
+  flyTo(pos,look); updateOffset(); compBubble.classList.add('on'); $('#hint').hidden=true; if(!playing) setTimeout(()=>playClip('welcome',false),700);
 }
 function unfocus(){
   compBubble.classList.remove('on');
@@ -1074,7 +1123,7 @@ function tick(){
   clouds.forEach(c=>{c.o.position.x+=c.s*dt; if(c.o.position.x>220)c.o.position.x=-220; c.m.opacity=.92-.55*n;});
   if(!reduced){
     spinners.forEach(s=>{s.o.rotation[s.axis]+=s.speed*dt; s.cabins&&s.cabins.forEach(cb=>cb.rotation.z=-s.o.rotation.z);});
-    lightHead.rotation.y+=dt*1.5; compSprite.position.y=2.25+(Math.sin(t*2)*.5+.5)*.45;
+    lightHead.rotation.y+=dt*1.5;
     boats.forEach(b=>{b.a+=b.s*dt; b.o.position.set(Math.cos(b.a)*b.r,Math.sin(t*1.2+b.r)*.12,Math.sin(b.a)*b.r); b.o.rotation.y=-b.a+(b.s>0?0:Math.PI); });
     walkers.forEach(w=>{
       const P=w.P, p=P.root.position;
@@ -1109,7 +1158,7 @@ function tick(){
   controls.update();
   // keep target near the lake
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>70){const s=70/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
-  renderer.render(scene,camera); labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
+  sizeFig(); renderer.render(scene,camera); labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
 }
 // first frame then reveal
