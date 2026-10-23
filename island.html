@@ -237,6 +237,21 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .comp-fig.playing{animation:none}
 .comp-sound{margin-left:10px;border:0;background:none;padding:0;font:inherit;font-size:12px;color:var(--muted);cursor:pointer}
 .comp-sound:hover{color:var(--ink)}
+.drive-ui{position:absolute;inset:0;pointer-events:none;z-index:6}
+.drive-help{position:absolute;left:50%;top:calc(88px + env(safe-area-inset-top,0px));transform:translateX(-50%);margin:0;font-size:12px;color:var(--muted);background:var(--scrim);padding:6px 12px;border-radius:999px;white-space:nowrap}
+.drive-prompt{pointer-events:auto;position:absolute;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:12px 18px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border-top:3px solid var(--c,var(--accent));max-width:calc(100% - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.drive-prompt kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-right:8px;color:var(--muted)}
+.drive-pad{position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.drive-pad>div{display:flex;gap:8px;pointer-events:auto}
+.drive-pad button{pointer-events:auto;min-width:64px;height:58px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:20px;box-shadow:var(--shadow);touch-action:none;user-select:none;-webkit-user-select:none}
+.drive-pad button[aria-pressed="true"]{background:var(--soft);transform:translateY(1px)}
+.drive-pad .gas{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-size:15px;font-weight:700}
+.drive-pad [data-k="brake"]{font-size:14px}
+.drive-pad .drive-exit{height:44px;font-size:13px;min-width:0;padding:0 16px}
+@media (hover:hover) and (pointer:fine){.drive-pad>div{display:none}}
+@media (max-width:760px){.driving .toolbar{display:none}.drive-help{display:none}.drive-prompt{bottom:calc(92px + env(safe-area-inset-bottom,0px))}}
+.driving .hint{display:none}
+.driving .index,.driving .index-toggle{visibility:hidden}
 .hunt{position:absolute;top:calc(92px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 32px));padding:16px 18px;display:grid;gap:10px;z-index:6;border-top:4px solid var(--accent)}
 .hunt h3{margin:0;font-size:18px;line-height:1.35}
 .hunt p{margin:0;font-size:13px;line-height:1.65;color:var(--muted)}
@@ -283,6 +298,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
     <button class="tool" id="t-bird" type="button"><svg viewBox="0 0 24 24"><path d="M12 3 21 8l-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>鳥瞰</button>
     <button class="tool" id="t-night" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>夜晚</button>
     <button class="tool" id="t-spin" aria-pressed="true" type="button"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>環繞</button>
+    <button class="tool" id="t-drive" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 16V12l2-5h10l2 5v4"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/><path d="M7 12h10"/></svg>開車</button>
     <button class="tool" id="t-hunt" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><circle cx="10.5" cy="9" r="1.8"/><path d="M7.6 13.4a3.2 3.2 0 0 1 5.8 0"/></svg>找我</button>
     <button class="tool" id="t-tour" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>導覽</button>
   </nav>
@@ -339,6 +355,16 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
     </article>
   </div>
   <div class="lightbox" id="lightbox" hidden><img alt="" id="lb-img"><p id="lb-cap"></p></div>
+
+  <div class="drive-ui" id="drive-ui" hidden>
+    <p class="drive-help" id="drive-help">↑↓←→／WASD 開車 · 靠近標記按 E 打開 · Esc 下車</p>
+    <button type="button" class="drive-prompt panel" id="drive-prompt" hidden></button>
+    <div class="drive-pad" aria-label="開車控制">
+      <div><button type="button" data-k="left" aria-label="左轉">←</button><button type="button" data-k="right" aria-label="右轉">→</button></div>
+      <button type="button" class="drive-exit" id="drive-exit">下車</button>
+      <div><button type="button" data-k="brake" aria-label="煞車／倒車">煞車</button><button type="button" data-k="gas" class="gas" aria-label="油門">油門</button></div>
+    </div>
+  </div>
 
   <div class="hint" id="hint">拖曳轉動 · 滾輪縮放 · 點島嶼走進去</div>
 
@@ -522,6 +548,7 @@ function renderBlocks(bl){
     else if(b.steps) html+=`<ol class="r-steps">${b.steps.map(x=>`<li><div><b>${esc(x.t)}</b>${x.d?`<span>${esc(x.d)}</span>`:''}</div></li>`).join('')}</ol>`;
     else if(b.cards) html+=`<div class="r-cards">${b.cards.map(x=>`<div><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`).join('')}</div>`;
     else if(b.status) html+=`<div class="r-status">${b.status.map(x=>`<div><i data-c="${x.raw}">${esc(x.code)}</i><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`).join('')}</div>`;
+    else if(b.arch) html+=`<div class="arch3d-host wide" data-arch="${b.arch}"></div>`;
     else if(b.video_embed) html+= ON_SITE ? `<div class="r-fig" style="aspect-ratio:16/9"><iframe src="${b.video_embed}" title="YouTube 影片" style="width:100%;height:100%;border:0;border-radius:12px" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` : `<p class="r-note">正式網站上，這裡會直接播放頻道影片。</p>`;
   }
   flush(); return html;
@@ -538,7 +565,9 @@ function openEntry(id,ctx){
   if(e.meta?.length) h+=`<div class="r-meta">${e.meta.map(m=>`<span>${esc(m.k)}<b>${esc(m.v)}</b></span>`).join('')}</div>`;
   if(e.app||e.link) h+=`<div class="r-actions">${e.app?`<button class="r-btn primary" type="button" id="r-run">▶ ${esc(e.appLabel||'在島上使用')}</button>`:''}${e.link?`<a class="r-btn" href="${e.link.h}" target="_blank" rel="noopener">${esc(e.link.t)} ↗</a>`:''}</div>`;
   h+=renderBlocks(e.blocks||[]);
-  rBody.innerHTML=h; rBody.scrollTop=0; rBody.hidden=false; rApp.hidden=true; rApp.innerHTML=''; $('#r-back').hidden=true;
+  archMod?.disposeAll();
+  rBody.innerHTML=h; rBody.scrollTop=0;
+  if(rBody.querySelector('.arch3d-host')) import('./assets/arch3d.js?v=20261023-1').then(m=>{ archMod=m; m.mountAll(rBody); }).catch(()=>{}); rBody.hidden=false; rApp.hidden=true; rApp.innerHTML=''; $('#r-back').hidden=true;
   const run=$('#r-run'); if(run) run.addEventListener('click',()=>runApp(e));
   const n=ctx.total||1, i=ctx.index??0;
   $('#r-count').textContent = n>1 ? `${String(i+1).padStart(2,'0')} / ${String(n).padStart(2,'0')}` : '';
@@ -565,7 +594,8 @@ function openItem(key,i){
   openEntry(it.id,{eyebrow:`${d.no} ${d.name} · ${it.g}`,color:key,index:i,total:d.items.length,key});
   if(typeof pulsePin==='function') pulsePin(key,i);
 }
-function closeReader(){ reader.hidden=true; reader.classList.remove('app'); document.body.classList.remove('reading'); updateOffset(); rApp.innerHTML=''; cur=null; if(lastFocus&&document.contains(lastFocus)) lastFocus.focus({preventScroll:true}); lastFocus=null; }
+let archMod=null;
+function closeReader(){ archMod?.disposeAll(); reader.hidden=true; reader.classList.remove('app'); document.body.classList.remove('reading'); updateOffset(); rApp.innerHTML=''; cur=null; if(lastFocus&&document.contains(lastFocus)) lastFocus.focus({preventScroll:true}); lastFocus=null; }
 $('#r-close').addEventListener('click',closeReader);
 $('#r-back').addEventListener('click',()=>{ if(cur) openEntry(cur.id,{...cur.ctx,autorun:false}); });
 $('#r-prev').addEventListener('click',()=>{ if(cur?.ctx.key) openItem(cur.ctx.key,cur.ctx.index-1); });
@@ -837,9 +867,9 @@ D.forEach((d,i)=>{
   // bridge from hub to island
   const dir=new THREE.Vector3(x,0,z).normalize(), len=RING-R-8.2+1.2, mid=dir.clone().multiplyScalar(8.2+len/2-.6);
   const br=new THREE.Group(); br.position.set(mid.x,0,mid.z); br.rotation.y=Math.atan2(dir.x,dir.z); scene.add(br);
-  box(2.6,.35,len,bridgeMat,0,1.65,0,br);
-  for(let k=-len/2+.6;k<len/2;k+=2.2){ for(const s of [-1,1]){ cyl(.08,.08,1.1,4,mat(WOOD),s*1.2,2,k,br);} }
-  for(const s of [-1,1]) box(.12,.12,len,mat(WOOD),s*1.2,3.05,0,br);
+  box(3.6,.35,len,bridgeMat,0,1.65,0,br);
+  for(let k=-len/2+.6;k<len/2;k+=2.2){ for(const s of [-1,1]){ cyl(.08,.08,1.1,4,mat(WOOD),s*1.7,2,k,br);} }
+  for(const s of [-1,1]) box(.12,.12,len,mat(WOOD),s*1.7,3.05,0,br);
   for(let k=-len/2;k<=len/2;k+=len/2) cyl(.35,.35,2,6,mat(ROCK),0,-.3,k,br);
   // bridge walker
   if(i%2===0){ const P=person(br); P.root.position.y=2; walkers.push({P,bridge:true,len,dirSign:1,speed:1.2+Math.random()*.4,t:Math.random()}); }
@@ -850,7 +880,7 @@ D.forEach((d,i)=>{
   el.addEventListener('click',e=>{e.stopPropagation(); focus(d.key);});
   const lo=new CSS2DObject(el); lo.position.set(0,17,0); g.add(lo);
   // item pins
-  const pins=new THREE.Group(); g.add(pins); const pinLabels=[];
+  const pins=new THREE.Group(); g.add(pins); const pinLabels=[], pinLocal=[];
   const n=d.items.length;
   d.items.forEach((it,j)=>{
     const ring=n>6 ? (j%2? R-2.2 : R-4.6) : R-2.6;
@@ -860,9 +890,9 @@ D.forEach((d,i)=>{
     mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),px,5.7,pz,pins);
     const a2=document.createElement('button'); a2.type='button'; a2.className='pin'; a2.addEventListener('click',e=>{e.stopPropagation(); openItem(d.key,j);});
     a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`; if(n>6) a2.classList.add('compact'); a2.title=it.t; a2.tabIndex=-1;
-    const po=new CSS2DObject(a2); po.position.set(px,7,pz); pins.add(po); pinLabels.push(a2);
+    const po=new CSS2DObject(a2); po.position.set(px,7,pz); pins.add(po); pinLabels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
   });
-  islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,label:el,lift:0};
+  islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,label:el,lift:0};
 });
 
 /* boats + clouds */
@@ -982,6 +1012,88 @@ function sizeFig(){
 const compDir=comp.position.clone().normalize();
 
 function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.animate?.([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:600,easing:'ease-out'}); }
+/* ---------- drive mode: drive between the islands, park at a pin to open it ---------- */
+const drive={on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0};
+const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
+{ const paint=new THREE.MeshStandardMaterial({color:0xf0b580,roughness:.45,metalness:.2,emissive:0x2a1608});
+  mk(new THREE.BoxGeometry(1.15,.48,2.2),paint,0,.42,0,dcar); mk(new THREE.BoxGeometry(1,.4,1.15),new THREE.MeshStandardMaterial({color:0x26324a,roughness:.25}),0,.86,.15,dcar);
+  for(const [x,z] of [[-.55,.72],[.55,.72],[-.55,-.72],[.55,-.72]]){ const w=mk(new THREE.CylinderGeometry(.22,.22,.16,12),mat(0x1a1a1e),x,.22,z,dcar); w.rotation.z=Math.PI/2; }
+  for(const x of [-.35,.35]){ mk(new THREE.BoxGeometry(.26,.12,.05),new THREE.MeshBasicMaterial({color:0xfff2cf}),x,.48,-1.11,dcar); mk(new THREE.BoxGeometry(.26,.12,.05),new THREE.MeshBasicMaterial({color:0xff4a4a}),x,.48,1.11,dcar); }
+  const hl=new THREE.SpotLight(0xfff0d0,0,22,.6,.5,1.2); hl.position.set(0,.6,-1); const tg=new THREE.Object3D(); tg.position.set(0,0,-8); dcar.add(hl,tg); hl.target=tg; dcar.userData.hl=hl; }
+const INR=R*Math.cos(Math.PI/6)-.7;
+function whereAt(x,z){
+  const r=Math.hypot(x,z);
+  if(r<=7.1 && r>=1.7) return 'hub';
+  for(const k in islands){ const o=islands[k]; const dx=x-o.pos.x, dz=z-o.pos.z, rr=Math.hypot(dx,dz);
+    // hex inradius check against the island's rotation
+    const a=Math.atan2(dz,dx)+o.g.rotation.y, seg=Math.PI/3, local=(((a+seg/2)%seg)+seg)%seg-seg/2, edge=INR/Math.cos(local);
+    if(rr<=edge && rr>=5.1) return k;
+    const along=x*o.dir.x+z*o.dir.z, across=Math.abs(-x*o.dir.z+z*o.dir.x);
+    if(along>6.6 && along<RING-INR+1 && across<=1.45) return 'bridge:'+k;
+  }
+  return null;
+}
+function startDrive(){
+  if(state.focus) unfocus(); if(hunt.on && innerWidth<=760) endHunt();
+  drive.on=true; drive.x=0; drive.z=4.2; drive.h=Math.PI; drive.v=0; drive.at='hub'; dcar.visible=true;
+  controls.enabled=false; controls.autoRotate=false; fly=null; document.body.classList.add('driving');
+  $('#drive-ui').hidden=false; $('#t-drive').setAttribute('aria-pressed','true'); $('#hint').hidden=true;
+  dcar.userData.hl.intensity=40; canvas.focus({preventScroll:true});
+}
+function stopDrive(){
+  drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0);
+  controls.enabled=true; document.body.classList.remove('driving'); $('#drive-ui').hidden=true; $('#t-drive').setAttribute('aria-pressed','false');
+  dcar.userData.hl.intensity=0; hideDetail(); Object.values(islands).forEach(o=>o.g.userData.pinsOn=false); state.focus=null; flyTo(HOME.pos,HOME.look); updateOffset();
+}
+$('#t-drive').addEventListener('click',()=>drive.on?stopDrive():startDrive());
+$('#drive-exit').addEventListener('click',stopDrive);
+$('#drive-prompt').addEventListener('click',()=>{ if(drive.near) openItem(drive.near.key,drive.near.i); });
+document.querySelectorAll('.drive-pad [data-k]').forEach(b=>{ const k=b.dataset.k;
+  b.addEventListener('pointerdown',e=>{e.preventDefault(); drive.input[k]=1; b.setAttribute('aria-pressed','true'); try{b.setPointerCapture(e.pointerId);}catch{}});
+  for(const ev of ['pointerup','pointercancel','lostpointercapture']) b.addEventListener(ev,()=>{drive.input[k]=0; b.setAttribute('aria-pressed','false');});
+  b.addEventListener('contextmenu',e=>e.preventDefault()); });
+if(/[?&]debug\b/.test(location.search)) window.__isl={drive,camera,controls,dcar,whereAt};
+const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
+addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
+  if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
+  else if((e.code==='KeyE'||e.code==='Enter') && drive.near && !e.repeat){ e.preventDefault(); openItem(drive.near.key,drive.near.i); }
+});
+addEventListener('keyup',e=>{ if(DKEYS[e.code]) drive.input[DKEYS[e.code]]=0; });
+const _pw=new THREE.Vector3();
+function driveStep(dt){
+  const inp=reader.hidden?drive.input:{left:0,right:0,gas:0,brake:0};
+  const steerIn=(inp.right?1:0)-(inp.left?1:0); drive.steer+=(steerIn-drive.steer)*Math.min(1,dt*10);
+  if(inp.gas) drive.v+=8*dt; else if(inp.brake) drive.v-=(drive.v>0?16:5)*dt; else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
+  drive.v=THREE.MathUtils.clamp(drive.v,-3.5,9.5);
+  drive.h-=drive.steer*THREE.MathUtils.clamp(Math.abs(drive.v)/3,0,1)*2.2*dt*Math.sign(drive.v||1);
+  const fx=-Math.sin(drive.h), fz=-Math.cos(drive.h), nx=drive.x+fx*drive.v*dt, nz=drive.z+fz*drive.v*dt;
+  // stay on land: slide along edges, bounce off when blocked
+  let w=whereAt(nx,nz);
+  if(w){ drive.x=nx; drive.z=nz; }
+  else if((w=whereAt(nx,drive.z))){ drive.x=nx; drive.v*=.92; }
+  else if((w=whereAt(drive.x,nz))){ drive.z=nz; drive.v*=.92; }
+  else { drive.v*=-.25; w=whereAt(drive.x,drive.z); }
+  // arriving on an island opens its card and shows its pins
+  const isl=w && !w.startsWith('bridge') && w!=='hub' ? w : (w==='hub'?'hub':drive.at);
+  if(isl!==drive.at){ drive.at=isl;
+    Object.values(islands).forEach(o=>o.g.userData.pinsOn=o.data.key===isl);
+    if(islands[isl]){ state.focus=isl; showDetail(islands[isl].data); say(D.find(x=>x.key===isl).say,2600); }
+    else { state.focus=null; hideDetail(); }
+    updateOffset();
+  }
+  const lift=islands[drive.at]?.lift||0;
+  dcar.position.set(drive.x,2+(w&&w.startsWith('bridge')?0:lift),drive.z); dcar.rotation.y=drive.h;
+  // nearest pin within reach
+  let best=null, bd=2.6;
+  if(islands[drive.at]){ const o=islands[drive.at]; o.pinLocal.forEach((pl,i)=>{ _pw.copy(pl); o.g.localToWorld(_pw); const d=Math.hypot(_pw.x-drive.x,_pw.z-drive.z); if(d<bd){bd=d; best={key:o.data.key,i};} }); }
+  if((best?.key!==drive.near?.key)||(best?.i!==drive.near?.i)){ drive.near=best; const pr=$('#drive-prompt');
+    if(best){ const it=D.find(x=>x.key===best.key).items[best.i]; pr.style.setProperty('--c',`var(--c-${best.key})`); pr.innerHTML=`<kbd>${matchMedia('(hover:hover)').matches?'E':'點一下'}</kbd>打開「${esc(it.t)}」`; pr.hidden=false; if(typeof pulsePin==='function') pulsePin(best.key,best.i); }
+    else pr.hidden=true; }
+  // chase camera
+  const back=new THREE.Vector3(drive.x-fx*9,2+lift+7.2,drive.z-fz*9), look=new THREE.Vector3(drive.x+fx*6,2.4,drive.z+fz*6);
+  const k=1-Math.exp(-dt*5); camera.position.lerp(back,k); controls.target.lerp(look,k); camera.lookAt(controls.target);
+}
+
 /* ---------- find-me game ---------- */
 const hunt={on:false,t0:0,found:false,hints:0};
 const huntEl=$('#hunt'), tHunt=$('#t-hunt');
@@ -1031,7 +1143,7 @@ function pick(){ray.setFromCamera(ptr,camera); ray.camera=camera; const h=ray.in
 canvas.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse')return; setPtr(e); const k=pick(); state.hover=k; canvas.style.cursor=k?'pointer':'grab'; });
 canvas.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];});
 canvas.addEventListener('pointerup',e=>{
-  if(!downAt) return; const moved=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]); downAt=null; if(moved>6) return;
+  if(!downAt || drive.on) { downAt=null; return; } const moved=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]); downAt=null; if(moved>6) return;
   setPtr(e); const k=pick(); if(k==='me') clickMe(); else if(k==='comp') focusComp(); else if(k) focus(k); else if(state.focus) unfocus();
 });
 canvas.addEventListener('pointerleave',()=>{state.hover=null;});
@@ -1064,7 +1176,7 @@ function unfocus(){
   hideDetail(); flyTo(HOME.pos,HOME.look); state.idle=0; updateOffset();
 }
 addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ if(!$('#lightbox').hidden) $('#lightbox').hidden=true; else if(!reader.hidden) closeReader(); else if(!$('#tour').hidden) endTour(); else if(hunt.on) endHunt(); else if(state.focus) unfocus(); return; }
+  if(e.key==='Escape'){ if(!$('#lightbox').hidden) $('#lightbox').hidden=true; else if(!reader.hidden) closeReader(); else if(!$('#tour').hidden) endTour(); else if(drive.on) stopDrive(); else if(hunt.on) endHunt(); else if(state.focus) unfocus(); return; }
   if(!reader.hidden && rApp.hidden && cur?.ctx.key && !e.target.closest('input,textarea')){ if(e.key==='ArrowRight'&&!$('#r-next').disabled) openItem(cur.ctx.key,cur.ctx.index+1); if(e.key==='ArrowLeft'&&!$('#r-prev').disabled) openItem(cur.ctx.key,cur.ctx.index-1); }
 });
 
@@ -1083,7 +1195,7 @@ setNight(dark); state.nightT=dark?1:0;
 const TOUR=[
   ['Hello, island / 01','每座島是我的一個面向','五座六角形小島圍著中間的燈塔廣場：我是誰、作品、工具房、實驗室和遊戲室。湖邊另一座小島住著網頁小精靈。'],
   ['Walk in / 02','點一座島，走進去看看','島上的每根標記都是一個作品或工具，點了會直接在島上展開，工具和遊戲也能在島上使用。拖曳可以轉動視角，滾輪或雙指可以縮放。'],
-  ['Shortcut / 03','不想逛，也能直接找','清單可以搜尋全部 '+total+' 個去處，右上角可以切回網頁版。我也藏在島上的人群裡，按上方的「找我」，看你幾秒能找到我。']
+  ['Shortcut / 03','不想逛，也能直接找','清單可以搜尋全部 '+total+' 個去處，右上角可以切回網頁版，也可以按「開車」開著車逛。我也藏在島上的人群裡，按上方的「找我」，看你幾秒能找到我。']
 ];
 let tourStep=0;
 function renderTour(){ const [e,t,p]=TOUR[tourStep]; $('#tour-eyebrow').textContent=e; $('#tour-title').textContent=t; $('#tour-text').textContent=p;
@@ -1104,7 +1216,7 @@ function updateOffset(){
   const w=innerWidth, h=innerHeight;
   if(w<=760){ camera.clearViewOffset(); camera.updateProjectionMatrix(); return; }
   const reading=!reader.hidden, rc=reader.querySelector('.reader-card');
-  const right=reading? (reader.classList.contains('app')? 0 : Math.min(720,innerWidth*.6)+16) : indexEl.offsetWidth+16, left=(detail.hidden||reading)?0:detail.offsetWidth+16;
+  const right=reading? (reader.classList.contains('app')? 0 : Math.min(720,innerWidth*.6)+16) : (typeof drive!=='undefined' && drive.on ? 0 : indexEl.offsetWidth+16), left=(detail.hidden||reading)?0:detail.offsetWidth+16;
   camera.setViewOffset(w,h,(right-left)/2,0,w,h); camera.updateProjectionMatrix();
 }
 addEventListener('resize',resize); resize();
@@ -1152,10 +1264,11 @@ function tick(){
   });
   if(hunt.on && !hunt.found) $('#hunt-time').textContent=fmt((performance.now()-hunt.t0)/1000);
   if(foundRing.material.opacity>0 && !hunt.found) foundRing.material.opacity=Math.max(0,foundRing.material.opacity-dt*.5);
+  if(drive.on) driveStep(dt);
   // camera
-  if(fly){ const k=1-Math.exp(-dt*3.2); camera.position.lerp(fly.pos,k); controls.target.lerp(fly.look,k); if(camera.position.distanceTo(fly.pos)<.15 && controls.target.distanceTo(fly.look)<.15) fly=null; }
+  if(drive.on){} else if(fly){ const k=1-Math.exp(-dt*3.2); camera.position.lerp(fly.pos,k); controls.target.lerp(fly.look,k); if(camera.position.distanceTo(fly.pos)<.15 && controls.target.distanceTo(fly.look)<.15) fly=null; }
   state.idle+=dt; controls.autoRotate = state.spin && !state.focus && !fly && state.idle>2 && $('#tour').hidden;
-  controls.update();
+  if(!drive.on) controls.update();
   // keep target near the lake
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>70){const s=70/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
   sizeFig(); renderer.render(scene,camera); labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;

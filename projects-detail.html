@@ -188,7 +188,9 @@
       background-image: none;
     }
   </style>
-<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script><script src="assets/social-listening-language.js?v=20261014"></script><script src="assets/kol-language.js?v=20261014-creators"></script><script src="assets/site-language.js?v=20260927-continue"></script><link rel="stylesheet" href="assets/social-listening-case.css?v=20261014"><link rel="stylesheet" href="assets/kol-case.css?v=20261014-creators"><script src="assets/kol-schedule.js?v=20261014-creators" defer></script></head>
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js"></script><link rel="stylesheet" href="assets/content-pages.css?v=20260921-v18"><link rel="stylesheet" href="assets/site-language.css?v=20260927-en"><script src="assets/site-english.js?v=20261002-brandnotes1"></script><script src="assets/social-listening-language.js?v=20261014"></script><script src="assets/kol-language.js?v=20261014-creators"></script><script src="assets/site-language.js?v=20260927-continue"></script><link rel="stylesheet" href="assets/social-listening-case.css?v=20261014"><link rel="stylesheet" href="assets/kol-case.css?v=20261014-creators"><script src="assets/kol-schedule.js?v=20261014-creators" defer></script><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">import { mountAll } from "./assets/arch3d.js?v=20261023-1"; const box = document.getElementById("case-study-container"); const run = () => mountAll(box || document); if (box) new MutationObserver(run).observe(box, { childList: true, subtree: true }); run();</script>
+</head>
 <body data-content-page="true" class="min-h-screen flex flex-col relative overflow-x-hidden bg-grid">
 
   <!-- NAVBAR -->
@@ -661,6 +663,7 @@
         "category": "SYSTEM_AUTOMATION",
         "heroImage": "assets/n8n-attendance-architecture.png",
         "diagramImage": "assets/n8n-attendance-workflow.png",
+        "arch3d": "n8n-attendance",
         "heroCaption": "既有架構圖包含補打卡入口；入口存在不代表申請與主管審核已完成。",
         "diagramCaption": "原流程圖的補打卡分支標示「尚未實作」；本次僅將基本打卡、查詢與錯誤通知列為已完成。",
         "statusCards": [
@@ -695,6 +698,7 @@
         category: "SYSTEM_AUTOMATION",
         heroImage: "assets/mirror-shop-architecture.png",
         diagramImage: "assets/mirror-shop-workflow.png",
+        arch3d: "mirror-shop",
         stats: [
           { label: "自動化模組", value: "4 個" },
           { label: "資料紀錄層", value: "n8n Data Table" },
@@ -1136,8 +1140,17 @@
              </div>
            </div>`;
 
-      const diagramMedia = data.diagramImage
+      const arch3dMedia = data.arch3d
         ? `<div class="space-y-3">
+             <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
+               <span class="w-1.5 h-4 bg-primary rounded-full"></span>
+               <span>互動 3D 架構圖</span>
+             </h2>
+             <div class="arch3d-host" data-arch="${data.arch3d}"></div>
+           </div>`
+        : '';
+      const diagramMedia = data.diagramImage
+        ? `${arch3dMedia}<div class="space-y-3">
              <h2 class="text-lg font-bold font-mono text-foreground flex items-center space-x-2">
                <span class="w-1.5 h-4 bg-primary rounded-full"></span>
                <span>系統流程圖</span>
