@@ -2,6 +2,7 @@
 // 開車階段由這支程式處理；煮麵與計分沿用 noodle-core.js 的 Session。
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import * as CANNON from 'cannon-es';
 
 const G = window.NoodleGame, game = new G.Session();
 const $ = id => document.getElementById(id);
@@ -177,12 +178,13 @@ const homeGroup = new THREE.Group(); scene.add(homeGroup);
 }
 
 /* street lamps + light pools */
+let LAMP;
 {
   const pts = [];
   for (let i = 0; i <= NB; i++) for (let j = 0; j < NB; j++) {
     for (let t = .25; t < 1; t += .5) {
-      const z = road(j) + RW / 2 + t * BS; pts.push([road(i) - RW / 2 - .6, z], [road(i) + RW / 2 + .6, z + BS / 4]);
-      const x = road(j) + RW / 2 + t * BS; pts.push([x, road(i) - RW / 2 - .6], [x + BS / 4, road(i) + RW / 2 + .6]);
+      const z = road(j) + RW / 2 + t * BS; pts.push([road(i) - RW / 2 - .2, z], [road(i) + RW / 2 + .2, z + BS / 4]);
+      const x = road(j) + RW / 2 + t * BS; pts.push([x, road(i) - RW / 2 - .2], [x + BS / 4, road(i) + RW / 2 + .2]);
     }
   }
   const pole = new THREE.InstancedMesh(new THREE.CylinderGeometry(.12, .16, 6.5, 6), new THREE.MeshStandardMaterial({ color: 0x5b6070 }), pts.length);
@@ -192,9 +194,10 @@ const homeGroup = new THREE.Group(); scene.add(homeGroup);
   pts.forEach(([x, z], k) => {
     m.compose(new THREE.Vector3(x, 3.6, z), q, one); pole.setMatrixAt(k, m);
     m.compose(new THREE.Vector3(x, 6.9, z), q, one); head.setMatrixAt(k, m);
-    const tx = x + (Math.abs(x % P) < RW ? 0 : 0); m.compose(new THREE.Vector3(x, .05, z), flat, one); pool.setMatrixAt(k, m);
+    m.compose(new THREE.Vector3(x, .05, z), flat, one); pool.setMatrixAt(k, m);
   });
   scene.add(pole, head, pool);
+  LAMP = { pts, pole, head, pool };
 }
 
 /* construction barriers on blocked segments */
@@ -207,9 +210,9 @@ function buildBarriers() {
     const [a, b] = e.split('|').map(s => s.split(',').map(Number));
     const mx = (road(a[0]) + road(b[0])) / 2, mz = (road(a[1]) + road(b[1])) / 2, vertical = a[0] === b[0];
     const g = new THREE.Group(); g.position.set(mx, 0, mz); if (!vertical) g.rotation.y = Math.PI / 2; barrierGroup.add(g);
-    const board = new THREE.Mesh(new THREE.BoxGeometry(RW - 1, 1.1, .3), new THREE.MeshBasicMaterial({ map: stripeTex, toneMapped: false })); board.position.y = 1.4; g.add(board);
-    for (let k = -1; k <= 1; k += 2) { const leg = new THREE.Mesh(new THREE.BoxGeometry(.25, 1.6, .25), new THREE.MeshStandardMaterial({ color: 0x777777 })); leg.position.set(k * (RW / 2 - 1.5), .8, 0); g.add(leg); }
-    for (let k = -3; k <= 3; k++) { const cone = new THREE.Mesh(new THREE.ConeGeometry(.45, 1.3, 10), new THREE.MeshBasicMaterial({ color: 0xff7a3d, toneMapped: false })); cone.position.set(k * 2.1, .65, 2.2); g.add(cone); }
+    const concrete = new THREE.MeshStandardMaterial({ color: 0x8a8a86, roughness: .95 });
+    for (let k = -1; k <= 1; k++) { const jb = new THREE.Mesh(new THREE.BoxGeometry(RW / 3 - .3, 1.1, .9), concrete); jb.position.set(k * RW / 3, .55, 0); g.add(jb); }
+    const board = new THREE.Mesh(new THREE.BoxGeometry(RW - 1, .7, .2), new THREE.MeshBasicMaterial({ map: stripeTex, toneMapped: false })); board.position.y = 1.55; g.add(board);
     const blink = new THREE.Mesh(new THREE.SphereGeometry(.3, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffb000, toneMapped: false })); blink.position.set(0, 2.3, 0); g.add(blink); g.userData.blink = blink;
     BARRIERS.push({ x: mx, z: mz, vertical });
   }
@@ -276,6 +279,154 @@ function trafficBlockedAt(t) {
   return false;
 }
 
+/* ================= physics: things you can knock over ================= */
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -24, 0) });
+world.broadphase = new CANNON.SAPBroadphase(world); world.allowSleep = true;
+world.defaultContactMaterial.friction = .5; world.defaultContactMaterial.restitution = .18;
+{ const g = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane() }); g.quaternion.setFromEuler(-Math.PI / 2, 0, 0); world.addBody(g); }
+for (const b of SOLIDS) world.addBody(new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Box(new CANNON.Vec3((b.x1 - b.x0) / 2 + .6, 20, (b.z1 - b.z0) / 2 + .6)), position: new CANNON.Vec3((b.x0 + b.x1) / 2, 20, (b.z0 + b.z1) / 2) }));
+const playerBody = new CANNON.Body({ type: CANNON.Body.KINEMATIC, shape: new CANNON.Box(new CANNON.Vec3(1.15, .9, 2.3)) }); world.addBody(playerBody);
+const barrierBodies = [];
+const PROPS = []; // { mesh, body, kind, hit }
+let knocked = 0, shake = 0, propToastCool = 0, physMs = 0;
+const KIND = {
+  cone:   { mass: 3,  slow: .985, name: ['三角錐', 'cone'] },
+  fence:  { mass: 22, slow: .93,  name: ['水馬', 'water barrier'] },
+  bin:    { mass: 12, slow: .95,  name: ['垃圾桶', 'bin'] },
+  news:   { mass: 26, slow: .9,   name: ['報紙箱', 'news box'] },
+  sign:   { mass: 7,  slow: .98,  name: ['立牌', 'sign'] },
+  scooter:{ mass: 95, slow: .72,  name: ['機車', 'scooter'] },
+  lamp:   { mass: 70, slow: .55,  name: ['路燈', 'street lamp'] }
+};
+const propMat = {
+  cone: new THREE.MeshStandardMaterial({ color: 0xff6a2c, emissive: 0x5a1c00, roughness: .6 }),
+  white: new THREE.MeshStandardMaterial({ color: 0xf2f0e8, emissive: 0x222222 }),
+  fence: new THREE.MeshStandardMaterial({ color: 0xff8a3d, emissive: 0x3a1600, roughness: .5 }),
+  bin: new THREE.MeshStandardMaterial({ color: 0x3f6b55, roughness: .7 }),
+  news: new THREE.MeshStandardMaterial({ color: 0x2f5fa8, roughness: .5 }),
+  pole: new THREE.MeshStandardMaterial({ color: 0x5b6070 }),
+  lampHead: new THREE.MeshBasicMaterial({ color: 0xffd9a0, toneMapped: false })
+};
+const signMat = new THREE.MeshStandardMaterial({ map: canvasTex(64, 96, (x, w, h) => { x.fillStyle = '#f7f1e3'; x.fillRect(0, 0, w, h); x.fillStyle = '#b53a2c'; x.font = 'bold 20px "Microsoft JhengHei",sans-serif'; x.textAlign = 'center'; ['營', '業', '中'].forEach((c, i) => x.fillText(c, w / 2, 28 + i * 26)); }), emissive: 0x333333 });
+function propMesh(kind) {
+  const g = new THREE.Group();
+  if (kind === 'cone') { const c = new THREE.Mesh(new THREE.ConeGeometry(.4, 1.15, 10), propMat.cone); g.add(c); const band = new THREE.Mesh(new THREE.CylinderGeometry(.22, .28, .18, 10), propMat.white); band.position.y = .05; g.add(band); const base = new THREE.Mesh(new THREE.BoxGeometry(.9, .08, .9), propMat.cone); base.position.y = -.56; g.add(base); }
+  else if (kind === 'fence') { const b = new THREE.Mesh(new THREE.BoxGeometry(1.8, .9, .5), propMat.fence); g.add(b); const s = new THREE.Mesh(new THREE.BoxGeometry(1.82, .16, .52), propMat.white); s.position.y = .15; g.add(s); }
+  else if (kind === 'bin') { g.add(new THREE.Mesh(new THREE.CylinderGeometry(.4, .36, 1.1, 12), propMat.bin)); const lid = new THREE.Mesh(new THREE.CylinderGeometry(.44, .44, .1, 12), propMat.white); lid.position.y = .58; g.add(lid); }
+  else if (kind === 'news') { g.add(new THREE.Mesh(new THREE.BoxGeometry(.7, 1.1, .6), propMat.news)); }
+  else if (kind === 'sign') { g.add(new THREE.Mesh(new THREE.BoxGeometry(.9, 1.2, .5), signMat)); }
+  else if (kind === 'scooter') { const col = [0xd94c4c, 0xf2f0e8, 0x3a75c4, 0x8dbf5a, 0x222326][Math.floor(Math.random() * 5)]; const b = new THREE.Mesh(new THREE.BoxGeometry(.64, 1.0, 1.9), new THREE.MeshStandardMaterial({ color: col, roughness: .45 })); g.add(b); const seat = new THREE.Mesh(new THREE.BoxGeometry(.5, .12, .8), tyre); seat.position.set(0, .56, .3); g.add(seat); const bar = new THREE.Mesh(new THREE.BoxGeometry(.9, .08, .08), propMat.pole); bar.position.set(0, .7, -.8); g.add(bar); const h = new THREE.Mesh(carGeo.lamp, headMat); h.position.set(0, .2, -.96); g.add(h); }
+  else if (kind === 'lamp') { const pole = new THREE.Mesh(new THREE.CylinderGeometry(.12, .16, 6.5, 6), propMat.pole); g.add(pole); const head = new THREE.Mesh(new THREE.SphereGeometry(.45, 8, 6), propMat.lampHead); head.position.y = 3.3; g.add(head); }
+  return g;
+}
+function propShape(kind) {
+  if (kind === 'cone') return [new CANNON.Cylinder(.1, .42, 1.15, 8)];
+  if (kind === 'fence') return [new CANNON.Box(new CANNON.Vec3(.9, .45, .25))];
+  if (kind === 'bin') return [new CANNON.Cylinder(.4, .36, 1.1, 10)];
+  if (kind === 'news') return [new CANNON.Box(new CANNON.Vec3(.35, .55, .3))];
+  if (kind === 'sign') return [new CANNON.Box(new CANNON.Vec3(.45, .6, .25))];
+  if (kind === 'scooter') return [new CANNON.Box(new CANNON.Vec3(.32, .5, .95))];
+  if (kind === 'lamp') return [new CANNON.Cylinder(.16, .2, 6.5, 8)];
+}
+const HALF_H = { cone: .58, fence: .45, bin: .55, news: .55, sign: .6, scooter: .5, lamp: 3.25 };
+function addProp(kind, x, z, rotY = 0, opts = {}) {
+  const body = new CANNON.Body({ mass: KIND[kind].mass, position: new CANNON.Vec3(x, HALF_H[kind] + .01, z), sleepSpeedLimit: .25, sleepTimeLimit: .6, linearDamping: .08, angularDamping: .2 });
+  propShape(kind).forEach(sh => body.addShape(sh)); body.quaternion.setFromEuler(0, rotY, 0);
+  body.userData = { prop: true, kind }; body.sleep();
+  const mesh = opts.instanced ? null : propMesh(kind); if (mesh) { mesh.position.copy(body.position); mesh.quaternion.copy(body.quaternion); scene.add(mesh); }
+  const p = { mesh, body, kind, hit: false, lampIndex: opts.lampIndex, inWorld: false };
+  body.userData.p = p; PROPS.push(p); return p;
+}
+function clearProps() {
+  for (const p of PROPS) { if (p.inWorld) world.removeBody(p.body); if (p.mesh) scene.remove(p.mesh); }
+  PROPS.length = 0; knocked = 0;
+  // put every street lamp back on its post
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), flat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0)), one = new THREE.Vector3(1, 1, 1);
+  LAMP.pts.forEach(([x, z], k) => { m.compose(new THREE.Vector3(x, 3.6, z), q, one); LAMP.pole.setMatrixAt(k, m); m.compose(new THREE.Vector3(x, 6.9, z), q, one); LAMP.head.setMatrixAt(k, m); m.compose(new THREE.Vector3(x, .05, z), flat, one); LAMP.pool.setMatrixAt(k, m); });
+  LAMP.pole.instanceMatrix.needsUpdate = LAMP.head.instanceMatrix.needsUpdate = LAMP.pool.instanceMatrix.needsUpdate = true;
+}
+const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+function detachLamp(p) {
+  // a lamp only gets its own mesh once it has been hit; until then it is drawn with the instanced street lamps
+  if (p.mesh || p.lampIndex == null) return;
+  const k = p.lampIndex; LAMP.pole.setMatrixAt(k, ZERO); LAMP.head.setMatrixAt(k, ZERO); LAMP.pool.setMatrixAt(k, ZERO);
+  LAMP.pole.instanceMatrix.needsUpdate = LAMP.head.instanceMatrix.needsUpdate = LAMP.pool.instanceMatrix.needsUpdate = true;
+  p.mesh = propMesh('lamp'); scene.add(p.mesh);
+}
+function buildProps() {
+  clearProps();
+  barrierBodies.forEach(b => world.removeBody(b)); barrierBodies.length = 0;
+  const R = Math.random;
+  // lamps along every street (heavy; they topple when you drive into them)
+  LAMP.pts.forEach(([x, z], k) => addProp('lamp', x, z, 0, { instanced: true, lampIndex: k }));
+  // roadworks: concrete blocks are fixed, the cones and water barriers in front of them fly
+  for (const b of BARRIERS) {
+    const body = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Box(b.vertical ? new CANNON.Vec3(RW / 2, .8, .45) : new CANNON.Vec3(.45, .8, RW / 2)), position: new CANNON.Vec3(b.x, .8, b.z) }); world.addBody(body); barrierBodies.push(body);
+    for (const side of [-1, 1]) for (let k = -3; k <= 3; k++) {
+      const off = side * (2.4 + (k % 2 ? .6 : 0)), along = k * 2.1;
+      if (b.vertical) addProp('cone', b.x + along, b.z + off); else addProp('cone', b.x + off, b.z + along);
+    }
+    for (const side of [-1, 1]) for (let k = -1; k <= 1; k += 2) { if (b.vertical) addProp('fence', b.x + k * 3.4, b.z + side * 4.4); else addProp('fence', b.x + side * 4.4, b.z + k * 3.4, Math.PI / 2); }
+  }
+  // street furniture: parked scooters at the kerb, bins, news boxes and shop signs
+  const curb = RW / 2 - .9;
+  for (let i = 0; i <= NB; i++) for (let j = 0; j < NB; j++) for (const vertical of [true, false]) {
+    if (R() > .55) continue;
+    const a = road(j) + RW / 2 + 4, span = BS - 8, side = R() < .5 ? -1 : 1, base = a + R() * (span - 12);
+    const at = (along, off) => vertical ? [road(i) + side * off, along] : [along, road(i) + side * off];
+    const pick = R();
+    if (pick < .5) { const n = 3 + Math.floor(R() * 5); for (let k = 0; k < n; k++) { const [x, z] = at(base + k * 1.5, curb); addProp('scooter', x, z, (vertical ? Math.PI / 2 : 0) + (R() - .5) * .3); } }
+    else if (pick < .7) { const [x, z] = at(base, curb + .3); addProp('bin', x, z); const [x2, z2] = at(base + 1.2, curb + .3); addProp('bin', x2, z2); }
+    else if (pick < .85) { const [x, z] = at(base, curb + .2); addProp('news', x, z, vertical ? Math.PI / 2 : 0); }
+    else { const [x, z] = at(base, curb + .1); addProp('sign', x, z, vertical ? Math.PI / 2 : 0); }
+  }
+}
+playerBody.addEventListener('collide', e => {
+  const p = e.body.userData?.p; if (!p || game.phase !== 'drive') return;
+  if (p.kind === 'lamp') detachLamp(p);
+  const v = Math.abs(e.contact.getImpactVelocityAlongNormal());
+  if (!p.hit && v > 1.2) {
+    p.hit = true; knocked++;
+    car.v *= KIND[p.kind].slow; shake = Math.min(1, shake + (KIND[p.kind].mass / 70) * .8 + .15);
+    if (propToastCool <= 0 && KIND[p.kind].mass >= 20) { toast(tr(`撞倒${KIND[p.kind].name[0]}了！`, `Knocked over a ${KIND[p.kind].name[1]}!`)); propToastCool = 1.4; }
+  }
+});
+// props hit by other props or traffic still get their own meshes (lamps)
+world.addEventListener('beginContact', e => { for (const b of [e.bodyA, e.bodyB]) { const p = b?.userData?.p; if (p && p.kind === 'lamp' && !p.mesh) detachLamp(p); } });
+const trafficBodies = new Map();
+// only things near the car are simulated, which keeps physics cheap on phones
+let activateTimer = 0;
+function activateNearby() {
+  for (const p of PROPS) {
+    const d = Math.hypot(p.body.position.x - car.x, p.body.position.z - car.z);
+    if (!p.inWorld && d < 30) { world.addBody(p.body); p.inWorld = true; }
+    else if (p.inWorld && d > 44 && p.body.sleepState === CANNON.Body.SLEEPING) { world.removeBody(p.body); p.inWorld = false; }
+  }
+}
+function syncTrafficBodies() {
+  for (const t of traffic) {
+    const near = Math.hypot(t.o.position.x - car.x, t.o.position.z - car.z) < 40;
+    let b = trafficBodies.get(t);
+    if (!near) { if (b) { world.removeBody(b); trafficBodies.delete(t); } continue; }
+    if (!b) { b = new CANNON.Body({ type: CANNON.Body.KINEMATIC, shape: new CANNON.Box(new CANNON.Vec3(t.r > 2 ? 1.1 : .35, .9, t.r > 2 ? 2.2 : .95)) }); world.addBody(b); trafficBodies.set(t, b); }
+    const vx = t.vertical ? 0 : t.dir * t.speed, vz = t.vertical ? t.dir * t.speed : 0;
+    b.position.set(t.o.position.x, .9, t.o.position.z); b.velocity.set(vx, 0, vz); b.quaternion.setFromEuler(0, t.o.rotation.y, 0);
+  }
+}
+function resetTrafficBodies() { trafficBodies.forEach(b => world.removeBody(b)); trafficBodies.clear(); }
+function stepPhysics(dt) {
+  const fx = -Math.sin(car.h), fz = -Math.cos(car.h);
+  playerBody.position.set(car.x, .9, car.z); playerBody.velocity.set(fx * car.v, 0, fz * car.v); playerBody.quaternion.setFromEuler(0, car.h, 0);
+  syncTrafficBodies();
+  activateTimer -= dt; if (activateTimer <= 0) { activateNearby(); activateTimer = .15; }
+  const t0 = performance.now(); world.step(1 / 60, dt, 4); physMs = physMs * .9 + (performance.now() - t0) * .1;
+  for (const p of PROPS) {
+    if (!p.mesh || p.body.sleepState === CANNON.Body.SLEEPING) continue;
+    p.mesh.position.copy(p.body.position); p.mesh.quaternion.copy(p.body.quaternion);
+  }
+  propToastCool -= dt; shake = Math.max(0, shake - dt * 2.4);
+}
+
 /* route guide chevrons */
 const CHEV_N = 40;
 const chevGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([-1.1, 0, .5, 0, 0, -.9, 1.1, 0, .5, 1.1, 0, .5, 0, 0, -.9, 0, 0, -.2, -1.1, 0, .5, 0, 0, -.2, 0, 0, -.9], 3));
@@ -290,7 +441,7 @@ let camMode = 'chase', startRemain = 1, remain = 1, frame = 0, last = 0, hitFlas
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
 
 function resetDrive() {
-  pickBlocked(); buildBarriers(); spawnTraffic();
+  pickBlocked(); buildBarriers(); resetTrafficBodies(); spawnTraffic(); buildProps();
   car.x = road(START.node[0]) + LANE; car.z = road(START.node[1]) - 2; car.h = START.heading; car.v = 0; car.steer = 0;
   remain = startRemain = remaining(); updateRoute(true); snapCamera();
 }
@@ -400,6 +551,7 @@ function render3d(dt, t) {
   you.visible = camMode === 'aerial' || game.phase !== 'drive';
   placeCamera(Math.min(1, dt * (camMode === 'chase' ? 6 : 3)));
   camera.position.copy(camPos); camera.lookAt(camLook);
+  if (shake > 0 && !reduced) { camera.position.x += (Math.random() - .5) * shake * .9; camera.position.y += (Math.random() - .5) * shake * .6; }
   homeGroup.userData.ring.scale.setScalar(1 + .12 * Math.sin(t * 3));
   barrierGroup.children.forEach((g, i) => { g.userData.blink.visible = Math.floor(t * 2.5 + i) % 2 === 0; });
   chevrons.material.opacity = .55 + .35 * Math.sin(t * 5);
@@ -483,7 +635,7 @@ function render() {
     let title, copy, label, kicker;
     if (game.paused) { kicker = 'TAKE A LITTLE BREAK'; title = tr('先停一下。', 'Take a breath.'); copy = tr('時間和進度都停在這裡，準備好再繼續。', 'Your time and progress are paused. Continue when you are ready.'); label = tr('繼續這趟旅程 →', 'Continue →'); }
     else if (game.phase === 'ready') { kicker = 'THE LAST BOWL OF THE NIGHT'; title = tr('夜路的盡頭，\n有一碗熱湯。', 'A late-night drive.\nA warm bowl awaits.'); copy = tr(`凌晨 2:50，距離家裡還有 ${(startRemain * M_PER_UNIT / 1000).toFixed(1)} 公里。\n照著橘色箭頭開回家，3 點前到家，親手煮一碗牛肉麵。`, `It's 2:50 AM and home is ${(startRemain * M_PER_UNIT / 1000).toFixed(1)} km away.\nFollow the orange arrows, get home before 3 AM and cook a bowl of beef noodles.`); label = tr('開車回家 →', 'Drive home →'); }
-    else if (game.phase === 'arrived') { kicker = 'HOME SWEET HOME'; title = tr('到家了，準備開火。', 'Home in time. Let\'s cook.'); copy = tr(`你在 ${G.clock(game.arrival)} 回到家，路上碰撞 ${game.hits} 次。\n走進廚房，為自己煮一碗熱騰騰的牛肉麵。`, `You got home at ${G.clock(game.arrival)}, with ${game.hits} bumps.\nHead into the kitchen and cook a warm bowl of beef noodles.`); label = tr('進廚房煮麵 →', 'Into the kitchen →'); }
+    else if (game.phase === 'arrived') { kicker = 'HOME SWEET HOME'; title = tr('到家了，準備開火。', 'Home in time. Let\'s cook.'); copy = tr(`你在 ${G.clock(game.arrival)} 回到家，路上碰撞 ${game.hits} 次${knocked ? `，沿路撞倒 ${knocked} 樣東西` : ''}。\n走進廚房，為自己煮一碗熱騰騰的牛肉麵。`, `You got home at ${G.clock(game.arrival)}, with ${game.hits} bumps${knocked ? ` and ${knocked} things knocked over` : ''}.\nHead into the kitchen and cook a warm bowl of beef noodles.`); label = tr('進廚房煮麵 →', 'Into the kitchen →'); }
     else if (game.phase === 'late') { kicker = 'THE CITY HAS FALLEN ASLEEP'; title = tr('差一點，沒趕上三點。', 'A little too late.'); copy = tr('已經凌晨 3 點，還沒回到家。\n再試一次：照著橘色箭頭，避開施工路段和車輛。', 'It\'s 3 AM and you are not home yet.\nTry again: follow the orange arrows and avoid roadworks and traffic.'); label = tr('再開一趟 →', 'Try another drive →'); }
     else { const r = game.result; kicker = 'YOUR MIDNIGHT SPECIAL'; title = r.stars === 3 ? tr('這碗，值得這趟夜路。', 'Worth the midnight drive.') : tr('熱騰騰的宵夜，上桌。', 'Your midnight meal is served.'); copy = tr(`準時到家，完成 ${r.stars} 星牛肉麵。\n${r.stars === 3 ? '火候與湯量都剛剛好。' : '下次抓準綠色區域，挑戰更好口感。'}`, `Home on time, with a ${r.stars}-star bowl.\n${r.stars === 3 ? 'Perfect noodles. Just enough broth.' : 'Aim for the green zones for a tastier bowl.'}`); label = tr('再煮一碗 ↻', 'One more bowl ↻'); put('overlay-result', `${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}  ·  ${r.score} ${tr('分', 'PTS')}`); }
     put('overlay-title', title); $('overlay-title').style.whiteSpace = 'pre-line'; put('overlay-copy', copy); $('overlay-copy').style.whiteSpace = 'pre-line'; put('overlay-kicker', kicker); put('night-primary', label);
@@ -506,11 +658,10 @@ function checkTransition() {
 }
 function loop(now) {
   const raw = last ? (now - last) / 1000 : 0, dt = Math.min(raw, .12); last = now;
-  if (raw > .6 && game.phase === 'drive') { pause(); return; }
   const t = now / 1000;
   if (!game.paused) {
     // small fixed steps keep steering and collisions stable on slow devices
-    if (game.phase === 'drive') { let left = dt; while (left > 1e-6 && game.phase === 'drive') { const st = Math.min(left, 1 / 60); stepDrive(st); left -= st; } }
+    if (game.phase === 'drive') { let left = dt; while (left > 1e-6 && game.phase === 'drive') { const st = Math.min(left, 1 / 60); stepDrive(st); left -= st; } stepPhysics(dt); }
     else if (game.phase === 'cook') { game.tick(dt); $('cook-needle').style.left = `${game.meter}%`; }
   }
   checkTransition();
@@ -576,5 +727,5 @@ new ResizeObserver(resize).observe(sceneBox); resize();
 // idle preview: the city is visible behind the start card, slowly orbiting
 resetDrive(); camMode = 'chase';
 render(); startLoop();
-if (/[?&]debug\b/.test(location.search)) window.__noodle = { car, game, homePos };
+if (/[?&]debug\b/.test(location.search)) window.__noodle = { car, game, homePos, world, PROPS, get physMs() { return physMs; }, get knocked() { return knocked; } };
 if (!reduced) { const idle = () => { if (game.phase === 'ready') { car.h += .0025; } requestAnimationFrame(idle); }; idle(); }
