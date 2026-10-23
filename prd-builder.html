@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD 產生器｜郭奕圻的工具房</title>
+<meta name="description" content="照欄位填寫產品需求，自動排成完整 PRD，附完整度檢查、流程圖與 Markdown／PDF 匯出。">
+<link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80"><script src="assets/site-shell.js?v=categories-1"></script>
+<link rel="stylesheet" href="assets/prd-builder.css?v=20261023-1">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script defer src="assets/prd-builder.js?v=20261023-1"></script>
+</head>
+<body class="yk-tool-page prd-page">
+<a class="yk-skip" href="#prd-form">跳到 PRD 填寫區</a>
+<header class="yk-site-nav"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PERSONAL UNIVERSE</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="tools.html">↖ 我的工具房</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></header>
+<main class="prd-main">
+  <div class="yk-tool-heading prd-heading">
+    <div>
+      <p class="yk-tool-kicker"><span></span> TOOL ROOM / 10 — PRODUCT REQUIREMENTS</p>
+      <h1>PRD 產生器</h1>
+      <p class="yk-tool-description">照欄位填寫，自動排成一份完整的 PRD。邊寫邊檢查缺漏，寫完可以複製 Markdown、下載或印成 PDF。</p>
+    </div>
+    <span class="yk-orbit" aria-hidden="true"><i></i><b>10</b></span>
+  </div>
+
+  <div class="prd-bar" role="toolbar" aria-label="文件操作">
+    <label class="prd-select"><span>範本</span>
+      <select id="tpl">
+        <option value="">選擇範本…</option>
+        <option value="blank">空白文件</option>
+        <option value="feature">新功能上線</option>
+        <option value="integration">系統串接</option>
+        <option value="website">官網改版與移轉</option>
+      </select>
+    </label>
+    <span class="prd-saved" id="saved" aria-live="polite">已自動存在這個瀏覽器</span>
+    <div class="prd-bar-actions">
+      <button type="button" class="prd-btn" id="btn-import">匯入 JSON</button>
+      <button type="button" class="prd-btn" id="btn-json">匯出 JSON</button>
+      <button type="button" class="prd-btn" id="btn-md-dl">下載 .md</button>
+      <button type="button" class="prd-btn" id="btn-print">列印／存成 PDF</button>
+      <button type="button" class="prd-btn primary" id="btn-copy">複製 Markdown</button>
+    </div>
+    <input type="file" id="file" accept="application/json,.json" hidden>
+  </div>
+
+  <div class="prd-confirm" id="confirm" hidden role="alertdialog" aria-labelledby="confirm-text">
+    <p id="confirm-text">套用範本會取代目前的內容。要繼續嗎？</p>
+    <div><button type="button" class="prd-btn" id="confirm-no">取消</button><button type="button" class="prd-btn primary" id="confirm-yes">套用範本</button></div>
+  </div>
+
+  <div class="prd-tabs" role="tablist" aria-label="檢視">
+    <button type="button" role="tab" id="tab-edit" aria-selected="true">填寫</button>
+    <button type="button" role="tab" id="tab-view" aria-selected="false">預覽</button>
+  </div>
+
+  <div class="prd-layout" id="layout" data-view="edit">
+    <aside class="prd-check" aria-label="完整度檢查">
+      <div class="prd-score"><b id="score">0%</b><span>完整度</span><i><em id="score-bar"></em></i></div>
+      <ol class="prd-toc" id="toc"></ol>
+      <div class="prd-issues"><h2>待補強</h2><ul id="issues"></ul></div>
+    </aside>
+
+    <form class="prd-form" id="prd-form" autocomplete="off" novalidate></form>
+
+    <section class="prd-preview" aria-label="PRD 預覽">
+      <div class="prd-paper" id="paper"></div>
+    </section>
+  </div>
+</main>
+<div class="prd-toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
