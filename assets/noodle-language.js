@@ -1,4 +1,9 @@
 Object.assign(window.YKEnglish||(window.YKEnglish={}),{
+  '在凌晨的 3D 城市裡開車回家，避開車流和施工路段，3 點前到家再親手煮一碗牛肉麵。支援電腦與手機的小遊戲。':'Drive home through a 3D city at night, avoid traffic and roadworks, get home before 3 AM and cook a bowl of beef noodles. Works on desktop and mobile.',
+  '照著路上的橘色箭頭和左上角地圖開回家。施工路段過不去，撞到車輛或路障會減速，並損失 4 秒倒數。':'Follow the orange arrows and the map in the corner. Roadworks block the way; hitting traffic or barriers slows you down and costs 4 seconds.',
+  '向左轉':'Steer left','向右轉':'Steer right','煞車／倒車':'Brake / reverse','油門':'Accelerate','煞車':'Brake','秒':'s',
+  '3D 開車場景：方向鍵或 WASD 開車，C 切換空拍，P 暫停。':'3D driving scene: arrow keys or WASD to drive, C for aerial view, P to pause.',
+  '方向鍵或 WASD 開車 · C 空拍 · P 暫停':'Arrow keys or WASD to drive · C aerial · P pause',
   '凌晨牛肉麵':'Midnight Noodles',
   '凌晨牛肉麵｜我的遊戲室 · YI-CHI KUO':'Midnight Noodles | Game Room · YI-CHI KUO',
   '在凌晨 3 點前開車回到家，閃過車輛，再親手煮一碗牛肉麵。支援電腦與手機的小遊戲。':'Drive home before 3 AM, dodge traffic and cook a bowl of beef noodles. A little game for desktop and mobile.',
