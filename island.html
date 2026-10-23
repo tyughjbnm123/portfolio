@@ -115,7 +115,8 @@ button{cursor:pointer}
 .pin.compact span{display:none}
 .pin.compact:hover span,.pin.compact:focus-visible span{display:inline}
 .hub-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink);background:var(--scrim);padding:4px 8px;border-radius:6px;text-align:center;line-height:1.4}
-.no-labels .isl,.no-labels .pin,.no-labels .hub-label{visibility:hidden}
+.grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--c);padding:3px 9px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.18);opacity:0;transition:opacity .25s;pointer-events:none}
+.no-labels .isl,.no-labels .pin,.no-labels .hub-label,.no-labels .grp{visibility:hidden}
 
 /* reader: content opens on the island, never leaves it */
 .reader{position:absolute;inset:0;z-index:9;display:grid;place-items:center;padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px));padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));background:color-mix(in srgb,var(--bg) 35%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
@@ -419,19 +420,19 @@ const D = [
     {g:'品牌與活動', t:'EVOASIS 媒體活動', s:'兩天一夜媒體行程', id:'oasis-media'},
     {g:'創業', t:'S23U 手機租賃服務', s:'從零建立，10 個月回本', id:'s23u-rental'}]},
   {key:'tools', no:'03', en:'TOOLS', name:'我的工具房', sub:'讓重複工作，簡單一點', page:'tools.html',
-   lede:'自己做給自己和團隊用的小工具：分鏡、訊息、追蹤連結、抽獎、PRD 與 AI 指令整理。',
+   lede:'自己做給自己和團隊用的小工具，分成影像與影片、音樂與聲音、行銷與活動、工作與簡報四區。',
    say:'工具房裡都是我自己做的小工具。',
    items:[
-    {g:'影片創作', t:'廣告分鏡工作台', s:'畫面、台詞與秒數', id:'tool-storyboard'},
-    {g:'影片創作', t:'短影片動作卡片庫', s:'48 張動作卡', id:'tool-video'},
-    {g:'影片創作', t:'表情控制器', s:'把表情說得更具體', id:'tool-facs'},
+    {g:'影像與影片', t:'廣告分鏡工作台', s:'畫面、台詞與秒數', id:'tool-storyboard'},
+    {g:'影像與影片', t:'短影片動作卡片庫', s:'48 張動作卡', id:'tool-video'},
+    {g:'影像與影片', t:'表情控制器', s:'把表情說得更具體', id:'tool-facs'},
+    {g:'音樂與聲音', t:'旋律創作工具', s:'把腦中的旋律留下來', id:'tool-music'},
     {g:'行銷與活動', t:'LINE 訊息編排器', s:'預覽並匯出 Flex Message', id:'tool-line'},
     {g:'行銷與活動', t:'UTM 連結產生器', s:'活動追蹤連結', id:'tool-utm'},
     {g:'行銷與活動', t:'抽獎機', s:'名單匯入、動畫揭曉', id:'tool-raffle'},
-    {g:'工作與溝通', t:'AI 指令庫', s:'指令與圖片效果收藏', id:'tool-prompt'},
-    {g:'工作與溝通', t:'簡報圖解助手', s:'把想說的變成圖', id:'tool-slides'},
-    {g:'工作與溝通', t:'PRD 產生器', s:'需求寫清楚，自動排成 PRD', id:'tool-prd'},
-    {g:'音樂', t:'旋律創作工具', s:'把腦中的旋律留下來', id:'tool-music'}]},
+    {g:'工作與簡報', t:'AI 指令庫', s:'指令與圖片效果收藏', id:'tool-prompt'},
+    {g:'工作與簡報', t:'簡報圖解助手', s:'把想說的變成圖', id:'tool-slides'},
+    {g:'工作與簡報', t:'PRD 產生器', s:'需求寫清楚，自動排成 PRD', id:'tool-prd'}]},
   {key:'lab', no:'04', en:'LAB', name:'我正在探索', sub:'AI 視覺、影音與創意實驗', page:'index.html#lab',
    lede:'還在實驗中的方向：AI 影像、AR 濾鏡、遊戲模組、自動化腳本與攝影。',
    say:'最近在實驗 AI 影像和 AR。',
@@ -880,19 +881,35 @@ D.forEach((d,i)=>{
   el.addEventListener('click',e=>{e.stopPropagation(); focus(d.key);});
   const lo=new CSS2DObject(el); lo.position.set(0,17,0); g.add(lo);
   // item pins
-  const pins=new THREE.Group(); g.add(pins); const pinLabels=[], pinLocal=[];
+  const pins=new THREE.Group(); g.add(pins); const pinLabels=[], pinLocal=[], groupLabels=[];
   const n=d.items.length;
+  // group items into zones around the island: each category gets an arc proportional to its size
+  const groups=[...new Set(d.items.map(i=>i.g))], GAP=groups.length>1?.42:0;
+  const span=Math.PI*2-GAP*groups.length, per=span/n;
+  const pinAng=[]; let cursor=.35;
+  groups.forEach(gname=>{
+    const idx=d.items.map((it,j)=>it.g===gname?j:-1).filter(j=>j>=0);
+    const start=cursor; idx.forEach((j,k)=>{ pinAng[j]=start+(k+.5)*per; });
+    cursor+=idx.length*per;
+    if(groups.length>1){
+      const mid=(start+cursor)/2, gx=Math.cos(mid)*(R-.7), gz=Math.sin(mid)*(R-.7);
+      cyl(.05,.05,1.6,4,mat(DARK),gx,2,gz,pins);
+      const sign=document.createElement('span'); sign.className='grp'; sign.style.setProperty('--c',`var(--c-${d.key})`); sign.textContent=gname;
+      const so=new CSS2DObject(sign); so.position.set(gx,4.1,gz); pins.add(so); groupLabels.push(sign);
+    }
+    cursor+=GAP;
+  });
   d.items.forEach((it,j)=>{
-    const ring=n>6 ? (j%2? R-2.2 : R-4.6) : R-2.6;
-    const a=(j/n)*Math.PI*2 + .35;
+    const ring=R-2.7;
+    const a=pinAng[j];
     const px=Math.cos(a)*ring, pz=Math.sin(a)*ring;
     cyl(.06,.06,3.4,4,mat(DARK),px,2,pz,pins);
     mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),px,5.7,pz,pins);
     const a2=document.createElement('button'); a2.type='button'; a2.className='pin'; a2.addEventListener('click',e=>{e.stopPropagation(); openItem(d.key,j);});
-    a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`; if(n>6) a2.classList.add('compact'); a2.title=it.t; a2.tabIndex=-1;
+    a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`; if(n>7) a2.classList.add('compact'); a2.title=it.t; a2.tabIndex=-1;
     const po=new CSS2DObject(a2); po.position.set(px,7,pz); pins.add(po); pinLabels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
   });
-  islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,label:el,lift:0};
+  islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,groupLabels,label:el,lift:0};
 });
 
 /* boats + clouds */
@@ -1259,7 +1276,7 @@ function tick(){
   // hover lift + pins
   Object.values(islands).forEach(o=>{
     const want=(state.hover===o.data.key||state.focus===o.data.key)?.7:0; o.lift+=(want-o.lift)*Math.min(1,dt*8); o.g.position.y=o.lift;
-    const on=!!o.g.userData.pinsOn; if(o._on!==on){o._on=on; o.pinLabels.forEach(a=>{a.style.opacity=on?1:0; a.style.transform=on?'none':'translateY(4px)'; a.style.pointerEvents=on?'auto':'none';});}
+    const on=!!o.g.userData.pinsOn; if(o._on!==on){o._on=on; o.pinLabels.forEach(a=>{a.style.opacity=on?1:0; a.style.transform=on?'none':'translateY(4px)'; a.style.pointerEvents=on?'auto':'none';}); o.groupLabels.forEach(a=>{a.style.opacity=on?1:0;});}
     o.label.style.opacity = state.focus && state.focus!==o.data.key ? .45 : 1;
   });
   if(hunt.on && !hunt.found) $('#hunt-time').textContent=fmt((performance.now()-hunt.t0)/1000);
