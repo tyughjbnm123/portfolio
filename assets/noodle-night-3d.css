@@ -1,0 +1,46 @@
+/* 凌晨牛肉麵 3D：開車場景的版面，其餘沿用 noodle-night.css */
+.night-scene.night-scene-3d{height:clamp(340px,64dvh,620px);aspect-ratio:auto;background:#0c1426}
+.night-scene-3d #night-3d{position:absolute;inset:0;width:100%;height:100%;left:0;transform:none;aspect-ratio:auto;display:block}
+.night-scene-3d #night-3d[hidden],.night-scene-3d canvas[hidden]{display:none}
+.night-scene-3d.hit::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 4px #ff6b4a,inset 0 0 80px #ff6b4a66;pointer-events:none;z-index:3}
+
+.night-map{position:absolute;top:14px;left:14px;width:clamp(96px,24%,170px);height:auto;aspect-ratio:1;z-index:2;pointer-events:none;filter:drop-shadow(0 6px 14px #0008)}
+.night-scene-3d canvas.night-map{transform:none;left:14px;right:auto;top:14px;width:clamp(96px,24%,170px);height:auto;aspect-ratio:1}
+.night-hud{position:absolute;right:14px;bottom:14px;z-index:2;display:flex;gap:8px;pointer-events:none}
+.night-hud span{display:grid;justify-items:center;min-width:64px;padding:8px 10px;border-radius:12px;background:#0d1426d9;border:1px solid #3c4762;color:#fff1df}
+.night-hud b{font:700 22px/1.1 ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.night-hud small{font-size:10px;color:#b7bdcf;letter-spacing:.06em}
+.night-toast{position:absolute;left:50%;top:16px;transform:translate(-50%,-8px);z-index:4;padding:8px 16px;border-radius:999px;background:#20293cee;color:#ffe3c8;font-size:13px;font-weight:600;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;max-width:calc(100% - 40px);overflow:hidden;text-overflow:ellipsis}
+.night-toast.on{opacity:1;transform:translate(-50%,0)}
+.night-toast.bad{background:#7a3330ee}
+.night-nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#d5d9e6;font-size:14px;z-index:5;margin:0}
+
+.night-dash-actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.night-dashboard .night-dash-actions button{margin-left:0}
+
+.night-controls.night-controls-3d{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
+.night-steer,.night-pedals{display:flex;gap:8px}
+.night-controls-3d button{min-width:72px;font-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}
+.night-controls-3d #night-brake{font-size:15px;font-weight:650}
+.night-controls-3d #night-boost{font-size:16px;min-width:96px;background:#4b5d3f;border-color:#8fae78}
+.night-controls-3d button[aria-pressed="true"]{background:#52617c;transform:translateY(1px)}
+.night-controls-3d #night-boost[aria-pressed="true"]{background:#6d8a59}
+
+/* fullscreen: the game card fills the screen */
+.night-game.is-full{display:flex;flex-direction:column;border-radius:0;width:100vw;height:100vh;height:100dvh}
+.night-game.is-full .night-scene-3d{flex:1;height:auto}
+.night-game:fullscreen{display:flex;flex-direction:column;border-radius:0}
+.night-game:fullscreen .night-scene-3d{flex:1;height:auto}
+
+@media(max-width:650px){
+  .night-scene.night-scene-3d{height:clamp(320px,58dvh,520px);aspect-ratio:auto}
+  .night-scene-3d #night-canvas{width:100%;height:auto;left:0;transform:none;top:50%;translate:0 -50%}
+  .night-controls.night-controls-3d{grid-template-columns:auto auto;justify-content:space-between}
+  .night-controls-3d #night-road-hint{display:none!important}
+  .night-controls-3d button{min-width:64px;min-height:56px}
+  .night-hud span{min-width:54px;padding:6px 8px}.night-hud b{font-size:18px}
+  .night-dashboard{flex-wrap:wrap;gap:14px 22px}
+  .night-dash-actions{width:100%;justify-content:flex-start}
+}
+.night-controls-3d>*{grid-row:1}.night-controls-3d #night-road-hint{order:0;flex-basis:auto;width:auto;grid-column:auto;min-width:0}
+.night-dashboard>.night-dash-actions{flex-direction:row;align-items:center}
