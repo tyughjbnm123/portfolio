@@ -109,13 +109,14 @@ button{cursor:pointer}
 .isl{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid var(--line);background:var(--surface);box-shadow:0 6px 16px rgba(36,49,33,.16);font-size:13px;font-weight:600;white-space:nowrap;transition:transform .2s}
 .isl b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font-family:var(--mono);font-size:11px}
 .isl:hover{transform:translateY(-2px)}
-.pin{pointer-events:auto;display:flex;align-items:center;gap:5px;padding:3px 9px 3px 3px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11px;white-space:nowrap;text-decoration:none;box-shadow:0 4px 10px rgba(36,49,33,.14);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
+.pin{pointer-events:none;display:flex;align-items:center;gap:5px;padding:3px 9px 3px 3px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11px;white-space:nowrap;text-decoration:none;box-shadow:0 4px 10px rgba(36,49,33,.14);opacity:0}
 .pin b{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--c);color:#fff;font-family:var(--mono);font-size:10px}
 .pin:hover{border-color:var(--c)}
 .pin.compact span{display:none}
 .pin.compact:hover span,.pin.compact:focus-visible span{display:inline}
 .hub-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink);background:var(--scrim);padding:4px 8px;border-radius:6px;text-align:center;line-height:1.4}
-.grp{font-size:11px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--c);padding:3px 9px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.18);opacity:0;transition:opacity .25s;pointer-events:none}
+.grp{font-size:12px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--c);padding:4px 10px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.18);opacity:0;pointer-events:none}
+.zone-hint{margin:6px 0 0;font-size:12px;color:var(--c);font-weight:600}
 .no-labels .isl,.no-labels .pin,.no-labels .hub-label,.no-labels .grp{visibility:hidden}
 
 /* reader: content opens on the island, never leaves it */
@@ -324,6 +325,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
       <div class="eyebrow" id="d-eyebrow"></div>
       <h2 id="d-title"></h2>
       <p class="lede" id="d-lede"></p>
+      <p class="zone-hint" id="d-zone-hint"></p>
       <button class="close" id="d-close" type="button" aria-label="關閉，回到全景">×</button>
     </div>
     <div class="detail-body" id="d-items"></div>
@@ -513,6 +515,7 @@ function showDetail(d){
   $('#d-eyebrow').textContent=`Island ${d.no} · ${d.en}`;
   $('#d-title').textContent=d.name;
   $('#d-lede').textContent=d.lede;
+  $('#d-zone-hint').textContent = matchMedia('(hover:hover)').matches ? '滑鼠移到島上的各區，那一區的標記和名稱就會跳出來。' : '點島上的各區，那一區的標記和名稱就會跳出來。';
   $('#d-items').innerHTML=groupsOf(d).map(gr=>`<div class="g-head">${gr.g}</div>`+gr.items.map(it=>`<button class="item" type="button" data-i="${it.i}"><b>${String(it.i+1).padStart(2,'0')}</b><span>${it.t}<small>${it.s}</small></span><i>›</i></button>`).join('')).join('');
   $('#d-enter').onclick=e=>{e.preventDefault(); openItem(d.key,0);};
   detail.hidden=false;
@@ -524,6 +527,8 @@ function hideDetail(){
 }
 $('#d-close').addEventListener('click',()=>unfocus());
 $('#d-items').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) openItem(state.focus,+b.dataset.i);});
+$('#d-items').addEventListener('pointerover',e=>{const b=e.target.closest('[data-i]'); if(b&&islands[state.focus]) zoneState.hover={key:state.focus,zi:islands[state.focus].zoneOf[+b.dataset.i]};});
+$('#d-items').addEventListener('pointerleave',()=>{ zoneState.hover=null; });
 $('#d-next').addEventListener('click',()=>{const i=D.findIndex(d=>d.key===state.focus); focus(D[(i+1)%D.length].key);});
 
 /* ---------- reader ---------- */
@@ -592,6 +597,7 @@ function openItem(key,i){
   const d=D.find(x=>x.key===key); if(!d) return;
   if(state.focus!==key) focus(key);
   const it=d.items[i]; if(!it) return;
+  zoneState.sticky={key,zi:islands[key].zoneOf[i]};
   openEntry(it.id,{eyebrow:`${d.no} ${d.name} · ${it.g}`,color:key,index:i,total:d.items.length,key});
   if(typeof pulsePin==='function') pulsePin(key,i);
 }
@@ -914,37 +920,40 @@ D.forEach((d,i)=>{
   el.addEventListener('click',e=>{e.stopPropagation(); focus(d.key);});
   const lo=new CSS2DObject(el); lo.position.set(0,20,0); g.add(lo);
   // item pins
-  const pins=new THREE.Group(); g.add(pins); const pinLabels=[], pinLocal=[], groupLabels=[], landmarks=[];
+  const pins=new THREE.Group(); g.add(pins); const pinLabels=[], pinLocal=[], groupLabels=[], landmarks=[], zones=[], zoneOf=[];
   const n=d.items.length;
   // group items into zones around the island: each category gets an arc proportional to its size
   const groups=[...new Set(d.items.map(i=>i.g))], GAP=groups.length>1?.42:0;
   const span=Math.PI*2-GAP*groups.length, per=span/n;
   // the island's own building sits in the middle; zones ring around it
   const pinAng=[]; let cursor=.35;
-  groups.forEach(gname=>{
+  groups.forEach((gname,zi)=>{
     const idx=d.items.map((it,j)=>it.g===gname?j:-1).filter(j=>j>=0);
-    const start=cursor; idx.forEach((j,k)=>{ pinAng[j]=start+(k+.5)*per; });
+    const start=cursor; idx.forEach((j,k)=>{ pinAng[j]=start+(k+.5)*per; zoneOf[j]=zi; });
     cursor+=idx.length*per;
-    {
-      const mid=(start+cursor)/2, lr=R*.62, gx=Math.cos(mid)*lr, gz=Math.sin(mid)*lr;
-      // the landmark faces outward, toward its pins
-      landmark(g,gname,C3[d.key],gx,gz,Math.PI/2-mid); landmarks.push(new THREE.Vector3(gx,0,gz));
-      const sign=document.createElement('span'); sign.className='grp'; sign.style.setProperty('--c',`var(--c-${d.key})`); sign.textContent=gname;
-      const so=new CSS2DObject(sign); so.position.set(gx,9.4,gz); pins.add(so); groupLabels.push(sign);
-    }
+    const zg=new THREE.Group(); zg.visible=false; zg.position.y=-5; pins.add(zg);
+    const zone={name:gname,start:start-GAP/2,end:cursor+GAP/2,group:zg,labels:[],t:0};
+    const mid=(start+cursor)/2, lr=R*.62, gx=Math.cos(mid)*lr, gz=Math.sin(mid)*lr;
+    // the landmark faces outward, toward its pins; pointing at it reveals the zone
+    const L=landmark(g,gname,C3[d.key],gx,gz,Math.PI/2-mid); landmarks.push(new THREE.Vector3(gx,0,gz));
+    L.traverse(m=>{ if(m.isMesh){ m.userData.key=d.key; m.userData.zone=zi; pickables.push(m); } });
+    const sign=document.createElement('span'); sign.className='grp'; sign.style.setProperty('--c',`var(--c-${d.key})`); sign.textContent=gname;
+    const so=new CSS2DObject(sign); so.position.set(gx,9.4,gz); zg.add(so); groupLabels.push(sign); zone.labels.push(sign);
+    zones.push(zone);
     cursor+=GAP;
   });
   d.items.forEach((it,j)=>{
     const ring=R-3;
     const a=pinAng[j];
     const px=Math.cos(a)*ring, pz=Math.sin(a)*ring;
-    cyl(.06,.06,3.4,4,mat(DARK),px,2,pz,pins);
-    mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),px,5.7,pz,pins);
+    const zg=zones[zoneOf[j]].group;
+    cyl(.06,.06,3.4,4,mat(DARK),px,2,pz,zg);
+    mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),px,5.7,pz,zg);
     const a2=document.createElement('button'); a2.type='button'; a2.className='pin'; a2.addEventListener('click',e=>{e.stopPropagation(); openItem(d.key,j);});
-    a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`; if(n>7) a2.classList.add('compact'); a2.title=it.t; a2.tabIndex=-1;
-    const po=new CSS2DObject(a2); po.position.set(px,7,pz); pins.add(po); pinLabels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
+    a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`;  a2.title=it.t; a2.tabIndex=-1;
+    const po=new CSS2DObject(a2); po.position.set(px,7,pz); zg.add(po); pinLabels.push(a2); zones[zoneOf[j]].labels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
   });
-  islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,groupLabels,landmarks,label:el,lift:0};
+  islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,groupLabels,landmarks,zones,zoneOf,label:el,lift:0};
 });
 
 /* boats + clouds */
@@ -1104,7 +1113,7 @@ document.querySelectorAll('.drive-pad [data-k]').forEach(b=>{ const k=b.dataset.
   b.addEventListener('pointerdown',e=>{e.preventDefault(); drive.input[k]=1; b.setAttribute('aria-pressed','true'); try{b.setPointerCapture(e.pointerId);}catch{}});
   for(const ev of ['pointerup','pointercancel','lostpointercapture']) b.addEventListener(ev,()=>{drive.input[k]=0; b.setAttribute('aria-pressed','false');});
   b.addEventListener('contextmenu',e=>e.preventDefault()); });
-if(/[?&]debug\b/.test(location.search)) window.__isl={drive,camera,controls,dcar,whereAt};
+if(/[?&]debug\b/.test(location.search)) window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE};
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
@@ -1133,6 +1142,7 @@ function driveStep(dt){
     else { state.focus=null; hideDetail(); }
     updateOffset();
   }
+  if(islands[drive.at]){ const z=zoneAt(drive.at,new THREE.Vector3(drive.x,2,drive.z)); if(z && !sameZone(z,zoneState.sticky)) zoneState.sticky=z; }
   const lift=islands[drive.at]?.lift||0;
   dcar.position.set(drive.x,2+(w&&w.startsWith('bridge')?0:lift),drive.z); dcar.rotation.y=drive.h;
   // nearest pin within reach
@@ -1189,21 +1199,36 @@ tHunt.addEventListener('click',()=>hunt.on?endHunt():startHunt());
 
 /* ---------- interaction ---------- */
 const ray=new THREE.Raycaster(), ptr=new THREE.Vector2();
+// which category zone is showing: the one under the mouse, or the one last tapped / opened
+const zoneState={hover:null,sticky:null}; if(window.__isl) window.__isl.zoneState=zoneState;
+function zoneAt(key,point){
+  const o=islands[key]; if(!o) return null;
+  const lp=o.g.worldToLocal(point.clone()); if(Math.hypot(lp.x,lp.z)<5.2) return null;
+  let a=Math.atan2(lp.z,lp.x); const base=o.zones[0].start; while(a<base) a+=Math.PI*2; while(a>=base+Math.PI*2) a-=Math.PI*2;
+  const zi=o.zones.findIndex(z=>a>=z.start&&a<z.end); return zi<0?null:{key,zi};
+}
+function zoneFromHit(h){ if(!h) return null; const k=h.object.userData.key; if(!islands[k]) return null; if(h.object.userData.zone!=null) return {key:k,zi:h.object.userData.zone}; return zoneAt(k,h.point); }
+const sameZone=(a,b)=>a&&b&&a.key===b.key&&a.zi===b.zi;
 let fly=null, downAt=null;
 function setPtr(e){const r=canvas.getBoundingClientRect(); ptr.set((e.clientX-r.left)/r.width*2-1, -(e.clientY-r.top)/r.height*2+1);}
-function pick(){ray.setFromCamera(ptr,camera); ray.camera=camera; const h=ray.intersectObjects(pickables,false)[0]; return h? h.object.userData.key : null;}
-canvas.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse')return; setPtr(e); const k=pick(); state.hover=k; canvas.style.cursor=k?'pointer':'grab'; });
+function pickHit(){ray.setFromCamera(ptr,camera); ray.camera=camera; return ray.intersectObjects(pickables,false)[0]||null;}
+function pick(){ const h=pickHit(); return h? h.object.userData.key : null;}
+canvas.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse')return; setPtr(e); const h=pickHit(), k=h?h.object.userData.key:null; state.hover=k; canvas.style.cursor=k?'pointer':'grab';
+  const z=zoneFromHit(h); zoneState.hover = z && z.key===state.focus ? z : null; });
+canvas.addEventListener('pointerleave',()=>{ zoneState.hover=null; });
 canvas.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];});
 canvas.addEventListener('pointerup',e=>{
   if(!downAt || drive.on) { downAt=null; return; } const moved=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]); downAt=null; if(moved>6) return;
-  setPtr(e); const k=pick(); if(k==='me') clickMe(); else if(k==='comp') focusComp(); else if(k) focus(k); else if(state.focus) unfocus();
+  setPtr(e); const h=pickHit(), k=h?h.object.userData.key:null;
+  if(k&&k===state.focus&&islands[k]){ const z=zoneFromHit(h); if(z){ zoneState.sticky=sameZone(z,zoneState.sticky)?null:z; return; } }
+  if(k==='me') clickMe(); else if(k==='comp') focusComp(); else if(k) focus(k); else if(state.focus) unfocus();
 });
 canvas.addEventListener('pointerleave',()=>{state.hover=null;});
 controls.addEventListener('start',()=>{fly=null; state.idle=0;});
 
 function flyTo(pos,look){ if(reduced){camera.position.copy(pos); controls.target.copy(look); fly=null; return;} fly={pos:pos.clone(),look:look.clone()}; }
 function focus(key){
-  const isl=islands[key]; if(!isl) return; if(hunt.on && innerWidth<=760) endHunt();
+  const isl=islands[key]; if(!isl) return; if(state.focus!==key){ zoneState.sticky=null; zoneState.hover=null; } if(hunt.on && innerWidth<=760) endHunt();
   state.focus=key; controls.autoRotate=false;
   const look=isl.pos.clone().add(new THREE.Vector3(0,3,0));
   const back=isl.dir.clone().multiplyScalar(mobile?66:54);
@@ -1316,7 +1341,15 @@ function tick(){
   // hover lift + pins
   Object.values(islands).forEach(o=>{
     const want=(state.hover===o.data.key||state.focus===o.data.key)?.7:0; o.lift+=(want-o.lift)*Math.min(1,dt*8); o.g.position.y=o.lift;
-    const on=!!o.g.userData.pinsOn; if(o._on!==on){o._on=on; o.pinLabels.forEach(a=>{a.style.opacity=on?1:0; a.style.transform=on?'none':'translateY(4px)'; a.style.pointerEvents=on?'auto':'none';}); o.groupLabels.forEach(a=>{a.style.opacity=on?1:0;});}
+    const on=!!o.g.userData.pinsOn, act=zoneState.hover||zoneState.sticky;
+    o.zones.forEach((z,zi)=>{
+      const want=on && act && act.key===o.data.key && act.zi===zi ? 1 : 0;
+      if(Math.abs(z.t-want)<.001 && z._done===want) return;
+      z.t+=(want-z.t)*Math.min(1,dt*(want?9:12)); if(Math.abs(z.t-want)<.002) z.t=want; z._done=z.t===want?want:null;
+      const e=1-Math.pow(1-z.t,3);
+      z.group.position.y=-5*(1-e); z.group.visible=z.t>.01;
+      z.labels.forEach(a=>{ a.style.opacity=e; a.style.transform=`translateY(${(1-e)*6}px)`; a.style.pointerEvents=z.t>.6?'auto':'none'; });
+    });
     o.label.style.opacity = state.focus && state.focus!==o.data.key ? .45 : 1;
   });
   if(hunt.on && !hunt.found) $('#hunt-time').textContent=fmt((performance.now()-hunt.t0)/1000);
