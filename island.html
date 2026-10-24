@@ -116,7 +116,6 @@ button{cursor:pointer}
 .pin.compact:hover span,.pin.compact:focus-visible span{display:inline}
 .hub-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink);background:var(--scrim);padding:4px 8px;border-radius:6px;text-align:center;line-height:1.4}
 .grp{font-size:12px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--c);padding:4px 10px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.18);opacity:0;pointer-events:none}
-.zone-hint{margin:6px 0 0;font-size:12px;color:var(--c);font-weight:600}
 .no-labels .isl,.no-labels .pin,.no-labels .hub-label,.no-labels .grp{visibility:hidden}
 
 /* reader: content opens on the island, never leaves it */
@@ -264,6 +263,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .sprite img{display:block;width:100%;height:auto}
 @keyframes float{50%{transform:translateY(-8px)}}
 .comp-bubble{position:absolute;bottom:0;left:-110px;width:220px}
+.comp-tip{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted)}
 .comp-fig-anchor{width:0;height:0;position:relative}
 .comp-fig{position:absolute;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));animation:float 3.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
 .comp-fig img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
@@ -344,12 +344,12 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
       </button>
       <div class="music-menu panel" id="music-menu" hidden role="dialog" aria-label="背景音樂">
         <div class="mm-head">
-          <div class="mm-now"><div class="eyebrow">Background music</div><b id="mm-now">音樂關閉中</b><small id="mm-clock"></small></div>
+          <div class="mm-now"><div class="eyebrow">Background music</div><b id="mm-now">音樂關閉中</b></div>
           <button type="button" class="mm-icon" id="mm-next" aria-label="下一首" title="下一首">⏭</button>
           <button type="button" class="mm-play" id="mm-play" aria-label="播放">▶</button>
         </div>
         <div class="mm-seg" role="radiogroup" aria-label="歌單">
-          <label><input type="radio" name="mm-mode" value="auto" checked><span>跟著台灣時間</span></label>
+          <label><input type="radio" name="mm-mode" value="auto" checked><span>自動</span></label>
           <label><input type="radio" name="mm-mode" value="day"><span>白天歌單</span></label>
           <label><input type="radio" name="mm-mode" value="night"><span>夜晚歌單</span></label>
         </div>
@@ -376,7 +376,6 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
       <div class="eyebrow" id="d-eyebrow"></div>
       <h2 id="d-title"></h2>
       <p class="lede" id="d-lede"></p>
-      <p class="zone-hint" id="d-zone-hint"></p>
       <button class="close" id="d-close" type="button" aria-label="關閉，回到全景">×</button>
     </div>
     <div class="detail-body" id="d-items"></div>
@@ -566,7 +565,6 @@ function showDetail(d){
   $('#d-eyebrow').textContent=`Island ${d.no} · ${d.en}`;
   $('#d-title').textContent=d.name;
   $('#d-lede').textContent=d.lede;
-  $('#d-zone-hint').textContent = matchMedia('(hover:hover)').matches ? '滑鼠移到島上的各區，那一區的標記和名稱就會跳出來。' : '點島上的各區，那一區的標記和名稱就會跳出來。';
   $('#d-items').innerHTML=groupsOf(d).map(gr=>`<div class="g-head">${gr.g}</div>`+gr.items.map(it=>`<button class="item" type="button" data-i="${it.i}"><b>${String(it.i+1).padStart(2,'0')}</b><span>${it.t}<small>${it.s}</small></span><i>›</i></button>`).join('')).join('');
   $('#d-enter').onclick=e=>{e.preventDefault(); openItem(d.key,0);};
   detail.hidden=false;
@@ -1071,7 +1069,7 @@ cyl(1.1,1.25,.25,12,mat(0xf1e6f0),0,2,0,comp);
 tree(comp,-2.6,-1.6,.75);
 comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
-compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是網頁小精靈</b><br>平常住在作品集首頁的角落，會陪你逛網站。<br><a href="#" id="comp-play">和我玩一下 ›</a><button type="button" class="comp-sound" id="comp-sound"></button></div>`;
+compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是網頁小精靈</b><br>平常住在作品集首頁的角落，會陪你逛網站。<span class="comp-tip">${matchMedia('(hover:hover)').matches?'小祕密：點開一座島，再把滑鼠移到島上的各區，那一區的名稱就會跳出來。':'小祕密：點開一座島，再點島上的各區，那一區的名稱就會跳出來。'}</span><a href="#" id="comp-play">和我玩一下 ›</a><button type="button" class="comp-sound" id="comp-sound"></button></div>`;
 const compObj=new CSS2DObject(compEl); compObj.position.set(0,8.4,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
 compEl.querySelector('#comp-play').addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); openEntry('companion',{eyebrow:'✦ 湖邊小島',color:'comp'});});
@@ -1333,7 +1331,7 @@ const MUSIC=(()=>{
     night:[{id:'n1',t:'Late Night Drive',src:'assets/audio/night-late-drive-1.mp3',len:219},{id:'n2',t:'Late Night Drive（Ⅱ）',src:'assets/audio/night-late-drive-2.mp3',len:223}]};
   let pref={on:false,mode:'auto',vol:.55}; try{ const p=JSON.parse(localStorage.getItem('yk-island-music')||'{}'); if(['auto','day','night'].includes(p.mode)) pref.mode=p.mode; if(typeof p.on==='boolean') pref.on=p.on; if(p.vol>=0&&p.vol<=1) pref.vol=p.vol; }catch{}
   const save=()=>{ try{ localStorage.setItem('yk-island-music',JSON.stringify(pref)); }catch{} };
-  const root=$('#music'), btn=$('#music-btn'), menu=$('#music-menu'), play=$('#mm-play'), next=$('#mm-next'), now=$('#mm-now'), clock=$('#mm-clock'), list=$('#mm-list'), vol=$('#mm-vol');
+  const root=$('#music'), btn=$('#music-btn'), menu=$('#music-menu'), play=$('#mm-play'), next=$('#mm-next'), now=$('#mm-now'), list=$('#mm-list'), vol=$('#mm-vol');
   const idx={day:0,night:0}; let ctx=null, master=null, duck=1, cur=null; const T={};
   const mmss=n=>`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;
   function init(){
@@ -1349,10 +1347,9 @@ const MUSIC=(()=>{
   const track=()=>LISTS[period()][idx[period()]];
   function setMaster(){ if(master) master.gain.setTargetAtTime(pref.vol*duck,ctx.currentTime,.25); }
   function paint(){
-    const p=period(), tr=track(), ti=TPE.info();
+    const p=period(), tr=track();
     root.classList.toggle('playing',pref.on); play.textContent=pref.on?'❚❚':'▶'; play.setAttribute('aria-label',pref.on?'暫停':'播放');
     now.textContent=pref.on?tr.t:'音樂關閉中';
-    clock.textContent=`台灣時間 ${ti.clock}・${ti.night?`夜晚，${ti.rise} 天亮`:`白天，${ti.set} 天黑`}`;
     menu.querySelectorAll('input[name=mm-mode]').forEach(r=>r.checked=r.value===pref.mode);
     list.innerHTML=LISTS[p].map((x,i)=>`<li><button type="button" data-tr="${i}" aria-current="${i===idx[p]}"><i>${pref.on&&i===idx[p]?'♪':i+1}</i>${esc(x.t)}<small>${mmss(x.len)}</small></button></li>`).join('');
   }
