@@ -136,6 +136,29 @@ button{cursor:pointer}
 .r-hero img{width:100%;max-height:420px;object-fit:contain;background:var(--soft);border-radius:14px;cursor:zoom-in;display:block}
 .r-hero figcaption,.r-fig figcaption{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
 .r-fig figcaption a{color:var(--c, inherit);font-weight:600;text-underline-offset:3px}
+.r-show{margin:18px 0 0;max-width:none}
+.r-show.side{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:6px 22px;align-items:start}
+.r-stage{position:relative;border-radius:14px;overflow:hidden;background:var(--soft);display:grid;place-items:center}
+.r-stage img,.r-stage video{display:block;width:100%;max-height:440px;object-fit:contain;transition:opacity .22s}
+.r-stage img{cursor:zoom-in}
+.r-stage.swap img,.r-stage.swap video{opacity:0}
+.r-show.side .r-stage video,.r-show.side .r-stage img{max-height:520px}
+.r-show-info{margin-top:12px;min-height:5.5em}
+.r-show.side .r-show-info{margin-top:0}
+.r-show-info small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--c)}
+.r-show-info b{display:block;font-size:17px;margin:4px 0 2px}
+.reader-body .r-show-info p{margin:4px 0;font-size:14px;line-height:1.8;color:var(--muted)}
+.r-thumbs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px;margin-top:10px;scrollbar-width:thin}
+.r-show.side .r-thumbs{grid-column:2;grid-row:1;margin:0 0 6px;flex-wrap:wrap;overflow:visible}
+.r-thumbs button{flex:none;width:86px;padding:0;border:2px solid transparent;border-radius:10px;background:var(--soft);overflow:hidden;cursor:pointer;text-align:left;opacity:.72;transition:opacity .15s,border-color .15s}
+.r-thumbs button:hover{opacity:1}
+.r-thumbs button[aria-selected="true"]{border-color:var(--c);opacity:1}
+.r-thumbs img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.r-show.side .r-thumbs img{aspect-ratio:3/4}
+.r-thumbs span{display:block;padding:4px 6px 5px;font-size:11px;line-height:1.35;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-show.side .r-stage{grid-row:1/3}
+.r-show.side .r-show-info{grid-column:2;grid-row:2}
+@media(max-width:640px){.r-show.side{display:block}.r-show.side .r-thumbs{flex-wrap:nowrap;overflow-x:auto;margin-top:10px}.r-show.side .r-show-info{margin-top:12px}.r-show.side .r-stage video,.r-show.side .r-stage img{max-height:420px}}
 .r-lede{font-size:16px;line-height:1.8;margin:18px 0 0;white-space:pre-line}
 .r-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:18px;max-width:none}
 .r-chip{padding:12px 14px;border-radius:12px;background:var(--soft)}
@@ -539,6 +562,28 @@ const media = p => !p ? '' : ON_SITE ? p : 'media/'+p.replace(/^assets\//,'').re
 const esc = t => String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const reader=$('#reader'), rBody=$('#r-body'), rApp=$('#r-app');
 let cur=null, lastFocus=null;
+// a switchable showcase: pick a thumbnail and the big picture (or demo video) swaps
+function showStage(it){ return it.video
+  ? `<video src="${media(it.video)}" poster="${media(it.src)}" controls playsinline muted preload="none" aria-label="${esc(it.t)} Demo"></video>`
+  : `<img src="${media(it.src)}" alt="${esc(it.cap||it.t)}" data-zoom>`; }
+function showInfo(it){ return `${it.tag?`<small>${esc(it.tag)}</small>`:''}<b>${esc(it.t)}</b>${(it.d||[]).map(x=>`<p>${esc(x)}</p>`).join('')}`; }
+function renderShow(sh){
+  const items=sh.items, side=sh.layout==='side';
+  return `<section class="r-show${side?' side':''}" data-show="${esc(JSON.stringify(items))}">
+    <div class="r-stage">${showStage(items[0])}</div>
+    <div class="r-thumbs" role="tablist" aria-label="${esc(sh.label||'切換作品')}">${items.map((it,i)=>`<button type="button" role="tab" aria-selected="${i===0}" tabindex="${i===0?0:-1}" data-show-i="${i}"><img src="${media(it.src)}" alt="" loading="lazy"><span>${esc(it.t)}</span></button>`).join('')}</div>
+    <div class="r-show-info" aria-live="polite">${showInfo(items[0])}</div>
+  </section>`;
+}
+function pickShow(sec,i){
+  const items=JSON.parse(sec.dataset.show); i=(i+items.length)%items.length; const it=items[i];
+  const tabs=[...sec.querySelectorAll('[data-show-i]')]; if(tabs[i].getAttribute('aria-selected')==='true') return tabs[i];
+  tabs.forEach((b,j)=>{ b.setAttribute('aria-selected',j===i); b.tabIndex=j===i?0:-1; });
+  const st=sec.querySelector('.r-stage'); st.querySelector('video')?.pause(); st.classList.add('swap');
+  setTimeout(()=>{ st.innerHTML=showStage(it); requestAnimationFrame(()=>st.classList.remove('swap')); },reduced?0:180);
+  sec.querySelector('.r-show-info').innerHTML=showInfo(it);
+  tabs[i].scrollIntoView({block:'nearest',inline:'nearest'}); return tabs[i];
+}
 function renderBlocks(bl){
   // runs of two or more images read better as a gallery
   const merged=[]; for(const b of bl){ const last=merged[merged.length-1]; if(b.img && last && (last.img||last._run)){ if(last.img){ merged[merged.length-1]={gallery:[{src:last.img,cap:last.cap}],_run:1}; } merged[merged.length-1].gallery.push({src:b.img,cap:b.cap}); } else merged.push(b); }
@@ -556,6 +601,7 @@ function renderBlocks(bl){
     else if(b.cards) html+=`<div class="r-cards">${b.cards.map(x=>`<div><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`).join('')}</div>`;
     else if(b.status) html+=`<div class="r-status">${b.status.map(x=>`<div><i data-c="${x.raw}">${esc(x.code)}</i><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`).join('')}</div>`;
     else if(b.arch) html+=`<div class="arch3d-host wide" data-arch="${b.arch}"></div>`;
+    else if(b.show) html+=renderShow(b.show);
     else if(b.video_embed) html+= ON_SITE ? `<div class="r-fig" style="aspect-ratio:16/9"><iframe src="${b.video_embed}" title="YouTube 影片" style="width:100%;height:100%;border:0;border-radius:12px" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` : `<p class="r-note">正式網站上，這裡會直接播放頻道影片。</p>`;
   }
   flush(); return html;
@@ -566,7 +612,8 @@ function openEntry(id,ctx){
   reader.querySelector('.reader-card').style.setProperty('--c',`var(--c-${ctx.color})`);
   $('#r-eyebrow').textContent=ctx.eyebrow; $('#r-title').textContent=e.title;
   let h='';
-  if(e.hero) h+=`<figure class="r-hero"><img src="${media(e.hero)}" alt="${esc(e.heroCap||e.title)}" data-zoom>${e.heroCap?`<figcaption>${esc(e.heroCap)}</figcaption>`:''}</figure>`;
+  if(e.show) h+=renderShow(e.show);
+  else if(e.hero) h+=`<figure class="r-hero"><img src="${media(e.hero)}" alt="${esc(e.heroCap||e.title)}" data-zoom>${e.heroCap?`<figcaption>${esc(e.heroCap)}</figcaption>`:''}</figure>`;
   (e.lede||[]).forEach(l=>h+=`<p class="r-lede">${esc(l)}</p>`);
   if(e.chips?.length) h+=`<div class="r-chips">${e.chips.map(c=>`<div class="r-chip"><small>${esc(c.k)}</small><b>${esc(c.v)}</b></div>`).join('')}</div>`;
   if(e.meta?.length) h+=`<div class="r-meta">${e.meta.map(m=>`<span>${esc(m.k)}<b>${esc(m.v)}</b></span>`).join('')}</div>`;
@@ -613,6 +660,10 @@ reader.addEventListener('click',e=>{ if(e.target===reader && innerWidth<=760) cl
   const src=z.dataset.zoomSrc||z.getAttribute('src'), cap=z.dataset.cap||z.getAttribute('alt')||'';
   $('#lb-img').src=src; $('#lb-img').alt=cap; $('#lb-cap').textContent=cap; $('#lightbox').hidden=false; });
 $('#lightbox').addEventListener('click',()=>{$('#lightbox').hidden=true;});
+rBody.addEventListener('click',e=>{ const b=e.target.closest('[data-show-i]'); if(b) pickShow(b.closest('.r-show'),+b.dataset.showI); });
+rBody.addEventListener('keydown',e=>{ const b=e.target.closest('[data-show-i]'); if(!b) return;
+  const d={ArrowRight:1,ArrowDown:1,ArrowLeft:-1,ArrowUp:-1}[e.key]; if(!d) return; e.preventDefault();
+  pickShow(b.closest('.r-show'),+b.dataset.showI+d).focus(); });
 
 /* ---------- 3D scene ---------- */
 const state={focus:null, hover:null, night:false, nightT:0, labels:true, spin:true, idle:0};
@@ -1255,7 +1306,7 @@ function unfocus(){
 }
 addEventListener('keydown',e=>{
   if(e.key==='Escape'){ if(!$('#lightbox').hidden) $('#lightbox').hidden=true; else if(!reader.hidden) closeReader(); else if(!$('#tour').hidden) endTour(); else if(drive.on) stopDrive(); else if(hunt.on) endHunt(); else if(state.focus) unfocus(); return; }
-  if(!reader.hidden && rApp.hidden && cur?.ctx.key && !e.target.closest('input,textarea')){ if(e.key==='ArrowRight'&&!$('#r-next').disabled) openItem(cur.ctx.key,cur.ctx.index+1); if(e.key==='ArrowLeft'&&!$('#r-prev').disabled) openItem(cur.ctx.key,cur.ctx.index-1); }
+  if(!reader.hidden && rApp.hidden && cur?.ctx.key && !e.defaultPrevented && !e.target.closest('input,textarea,video,.r-thumbs')){ if(e.key==='ArrowRight'&&!$('#r-next').disabled) openItem(cur.ctx.key,cur.ctx.index+1); if(e.key==='ArrowLeft'&&!$('#r-prev').disabled) openItem(cur.ctx.key,cur.ctx.index-1); }
 });
 
 /* toolbar */
