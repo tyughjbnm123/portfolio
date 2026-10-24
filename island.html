@@ -212,6 +212,37 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .fallback{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:320px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
 
 .index-toggle{display:none}
+.music{position:relative}
+.music-btn{width:48px;height:48px;display:grid;place-items:center;padding:0;cursor:pointer;color:var(--ink);font-size:18px}
+.music-btn .eq{display:none;align-items:flex-end;gap:2px;height:16px}
+.music-btn .eq i{width:3px;height:100%;border-radius:2px;background:var(--accent);transform-origin:bottom;animation:eq 1s ease-in-out infinite}
+.music-btn .eq i:nth-child(2){animation-delay:-.35s}.music-btn .eq i:nth-child(3){animation-delay:-.7s}
+.music.playing .eq{display:flex}.music.playing .music-note{display:none}
+@keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.music-menu{position:absolute;top:calc(100% + 8px);right:0;width:260px;padding:14px;z-index:7}
+.mm-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.mm-now{flex:1;min-width:0}
+.mm-now b{display:block;font-size:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mm-now small{display:block;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mm-play{width:40px;height:40px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:14px;cursor:pointer;flex:none}
+.mm-icon{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:13px;cursor:pointer;flex:none}
+.mm-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:3px;border-radius:10px;background:var(--soft)}
+.mm-seg label{position:relative;cursor:pointer}
+.mm-seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.mm-seg span{display:block;padding:7px 2px;border-radius:8px;text-align:center;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.mm-seg input:checked+span{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mm-seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+.mm-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:2px}
+.mm-list button{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border:0;border-radius:10px;background:transparent;color:var(--ink);font-size:13px;text-align:left;cursor:pointer}
+.mm-list button:hover{background:var(--soft)}
+.mm-list button i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted);width:16px}
+.mm-list button small{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mm-list button[aria-current="true"]{background:var(--soft);font-weight:600}
+.mm-list button[aria-current="true"] i{color:var(--accent)}
+.mm-vol{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--muted)}
+.mm-vol input{flex:1;accent-color:var(--accent)}
+@media (max-width:460px){.brand{padding:7px;position:absolute}.brand a{position:absolute;inset:0;border-radius:inherit}.brand b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}}
+@media (max-width:760px){.music-btn{width:44px;height:44px}.music-menu{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));left:max(12px,env(safe-area-inset-left,0px));width:auto;max-width:360px;margin-left:auto}}
 .top-right{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:8px;z-index:6}
 .switch{display:flex;padding:4px;gap:2px;font-size:13px}
 .switch>*{display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:12px;text-decoration:none;white-space:nowrap}
@@ -307,6 +338,25 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
   </nav>
 
   <div class="top-right">
+    <div class="music" id="music">
+      <button class="music-btn panel" id="music-btn" type="button" aria-expanded="false" aria-controls="music-menu" aria-label="背景音樂" title="背景音樂">
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span class="music-note" aria-hidden="true">♪</span>
+      </button>
+      <div class="music-menu panel" id="music-menu" hidden role="dialog" aria-label="背景音樂">
+        <div class="mm-head">
+          <div class="mm-now"><div class="eyebrow">Background music</div><b id="mm-now">音樂關閉中</b><small id="mm-clock"></small></div>
+          <button type="button" class="mm-icon" id="mm-next" aria-label="下一首" title="下一首">⏭</button>
+          <button type="button" class="mm-play" id="mm-play" aria-label="播放">▶</button>
+        </div>
+        <div class="mm-seg" role="radiogroup" aria-label="歌單">
+          <label><input type="radio" name="mm-mode" value="auto" checked><span>跟著台灣時間</span></label>
+          <label><input type="radio" name="mm-mode" value="day"><span>白天歌單</span></label>
+          <label><input type="radio" name="mm-mode" value="night"><span>夜晚歌單</span></label>
+        </div>
+        <ol class="mm-list" id="mm-list" aria-label="目前歌單"></ol>
+        <label class="mm-vol"><span>音量</span><input type="range" id="mm-vol" min="0" max="100" value="55" aria-label="音量"></label>
+      </div>
+    </div>
     <nav class="switch panel" aria-label="切換版本"><span aria-current="page">島嶼版</span><a href="#" data-base="index.html?view=web">⇄ 網頁版</a></nav>
     <button class="index-toggle panel" id="index-toggle" type="button" aria-controls="index" aria-expanded="false">☰ 清單</button>
   </div>
@@ -1258,16 +1308,98 @@ addEventListener('keydown',e=>{
   if(!reader.hidden && rApp.hidden && cur?.ctx.key && !e.target.closest('input,textarea')){ if(e.key==='ArrowRight'&&!$('#r-next').disabled) openItem(cur.ctx.key,cur.ctx.index+1); if(e.key==='ArrowLeft'&&!$('#r-prev').disabled) openItem(cur.ctx.key,cur.ctx.index-1); }
 });
 
+/* Taiwan time: the island's day and night follow sunrise / sunset in Taipei */
+const TPE=(()=>{
+  const fmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',hourCycle:'h23'});
+  const now=()=>{ const o={}; fmt.formatToParts(new Date()).forEach(x=>o[x.type]=+x.value); return o; };
+  // NOAA-style approximation for Taipei (25.03N, 121.56E, UTC+8); good to a few minutes
+  function sun(o){
+    const N=Math.round((Date.UTC(o.year,o.month-1,o.day)-Date.UTC(o.year,0,0))/864e5), r=Math.PI/180;
+    const dec=-23.44*Math.cos(r*360/365*(N+10)), B=r*360/365*(N-81);
+    const eot=9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B);
+    const noon=720-4*121.56-eot+480, lat=25.03*r;
+    const H=Math.acos((Math.sin(-0.833*r)-Math.sin(lat)*Math.sin(dec*r))/(Math.cos(lat)*Math.cos(dec*r)))/r;
+    return {rise:noon-4*H, set:noon+4*H};
+  }
+  const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(Math.round(m%60)).padStart(2,'0')}`;
+  function info(){ const o=now(), m=o.hour*60+o.minute, s=sun(o); return {night:m<s.rise||m>=s.set, clock:hm(m), rise:hm(s.rise), set:hm(s.set)}; }
+  return {info};
+})();
+
+/* background music: a day playlist and a night playlist, crossfaded through Web Audio so volume works on iOS too */
+const MUSIC=(()=>{
+  const LISTS={
+    day:[{id:'d1',t:'Curiosity',src:'assets/audio/day-curiosity-1.mp3',len:213},{id:'d2',t:'Curiosity（Ⅱ）',src:'assets/audio/day-curiosity-2.mp3',len:212}],
+    night:[{id:'n1',t:'Late Night Drive',src:'assets/audio/night-late-drive-1.mp3',len:219},{id:'n2',t:'Late Night Drive（Ⅱ）',src:'assets/audio/night-late-drive-2.mp3',len:223}]};
+  let pref={on:false,mode:'auto',vol:.55}; try{ const p=JSON.parse(localStorage.getItem('yk-island-music')||'{}'); if(['auto','day','night'].includes(p.mode)) pref.mode=p.mode; if(typeof p.on==='boolean') pref.on=p.on; if(p.vol>=0&&p.vol<=1) pref.vol=p.vol; }catch{}
+  const save=()=>{ try{ localStorage.setItem('yk-island-music',JSON.stringify(pref)); }catch{} };
+  const root=$('#music'), btn=$('#music-btn'), menu=$('#music-menu'), play=$('#mm-play'), next=$('#mm-next'), now=$('#mm-now'), clock=$('#mm-clock'), list=$('#mm-list'), vol=$('#mm-vol');
+  const idx={day:0,night:0}; let ctx=null, master=null, duck=1, cur=null; const T={};
+  const mmss=n=>`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;
+  function init(){
+    if(ctx) return true;
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false;
+    ctx=new AC(); master=ctx.createGain(); master.connect(ctx.destination);
+    for(const k in LISTS) LISTS[k].forEach(tr=>{ const a=new Audio(); a.src=tr.src; a.preload='none';
+      const g=ctx.createGain(); g.gain.value=0; ctx.createMediaElementSource(a).connect(g); g.connect(master);
+      a.addEventListener('ended',()=>{ if(cur===tr.id){ idx[k]=(idx[k]+1)%LISTS[k].length; cur=null; sync(); } }); T[tr.id]={a,g}; });
+    return true;
+  }
+  const period=()=>pref.mode==='auto'?(state.night?'night':'day'):pref.mode;
+  const track=()=>LISTS[period()][idx[period()]];
+  function setMaster(){ if(master) master.gain.setTargetAtTime(pref.vol*duck,ctx.currentTime,.25); }
+  function paint(){
+    const p=period(), tr=track(), ti=TPE.info();
+    root.classList.toggle('playing',pref.on); play.textContent=pref.on?'❚❚':'▶'; play.setAttribute('aria-label',pref.on?'暫停':'播放');
+    now.textContent=pref.on?tr.t:'音樂關閉中';
+    clock.textContent=`台灣時間 ${ti.clock}・${ti.night?`夜晚，${ti.rise} 天亮`:`白天，${ti.set} 天黑`}`;
+    menu.querySelectorAll('input[name=mm-mode]').forEach(r=>r.checked=r.value===pref.mode);
+    list.innerHTML=LISTS[p].map((x,i)=>`<li><button type="button" data-tr="${i}" aria-current="${i===idx[p]}"><i>${pref.on&&i===idx[p]?'♪':i+1}</i>${esc(x.t)}<small>${mmss(x.len)}</small></button></li>`).join('');
+  }
+  function sync(){
+    paint(); if(!ctx) return;
+    const on=pref.on && !document.hidden; if(on && ctx.state==='suspended') ctx.resume();
+    const want=on?track().id:null, t0=ctx.currentTime; setMaster();
+    for(const id in T){ const {a,g}=T[id], target=id===want?1:0;
+      g.gain.cancelScheduledValues(t0); g.gain.setValueAtTime(g.gain.value,t0); g.gain.linearRampToValueAtTime(target,t0+(target?2.4:.8));
+      clearTimeout(a._stop);
+      if(target){ if(cur!==id && a.ended) a.currentTime=0; if(a.paused) a.play().catch(()=>{}); }
+      else if(!a.paused){ a._stop=setTimeout(()=>a.pause(),2800); } }
+    cur=want;
+  }
+  function toggle(v){ pref.on=v??!pref.on; if(pref.on && !init()) pref.on=false; save(); sync(); }
+  btn.addEventListener('click',e=>{ e.stopPropagation(); const open=menu.hidden; menu.hidden=!open; btn.setAttribute('aria-expanded',open); paint();
+    if(open && !ctx){ if(pref.on){ if(init()) sync(); } else toggle(true); } });   // first click: open the menu and start playing
+  play.addEventListener('click',()=>toggle());
+  next.addEventListener('click',()=>{ const p=period(); idx[p]=(idx[p]+1)%LISTS[p].length; if(T[track().id]) T[track().id].a.currentTime=0; if(!pref.on) toggle(true); else sync(); });
+  list.addEventListener('click',e=>{ const b=e.target.closest('[data-tr]'); if(!b) return; const p=period(), i=+b.dataset.tr;
+    if(i!==idx[p]){ idx[p]=i; if(T[track().id]) T[track().id].a.currentTime=0; } if(!pref.on) toggle(true); else sync(); });
+  menu.addEventListener('change',e=>{ if(e.target.name!=='mm-mode') return; pref.mode=e.target.value; save(); if(!pref.on) toggle(true); else sync(); });
+  vol.value=Math.round(pref.vol*100); vol.addEventListener('input',()=>{ pref.vol=vol.value/100; save(); setMaster(); });
+  document.addEventListener('pointerdown',e=>{ if(!menu.hidden && !root.contains(e.target)){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !menu.hidden){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); btn.focus(); e.stopImmediatePropagation(); } },true);
+  document.addEventListener('visibilitychange',sync);
+  // tools opened on the island may have their own sound: turn the music down while one runs
+  new MutationObserver(()=>{ duck=reader.classList.contains('app')&&!reader.hidden?.2:1; setMaster(); }).observe(reader,{attributes:true,attributeFilter:['class','hidden']});
+  // browsers block sound until the visitor interacts, so a saved "on" resumes on the first tap or key
+  if(pref.on){ const go=e=>{ if(root.contains(e.target)) return; removeEventListener('pointerdown',go,true); removeEventListener('keydown',go,true); if(pref.on&&init()) sync(); };
+    addEventListener('pointerdown',go,true); addEventListener('keydown',go,true); }
+  return {sync, _t:T, get ctx(){return ctx;}, get cur(){return cur;}};
+})();
+if(window.__isl) window.__isl.music=MUSIC;
+
 /* toolbar */
 const tLabels=$('#t-labels'), tNight=$('#t-night'), tSpin=$('#t-spin');
 tLabels.addEventListener('click',()=>{state.labels=!state.labels; tLabels.setAttribute('aria-pressed',state.labels); document.body.classList.toggle('no-labels',!state.labels);});
 $('#t-bird').addEventListener('click',()=>{ if(state.focus) unfocus(); else flyTo(new THREE.Vector3(0,250,50),new THREE.Vector3(0,0,0)); });
-function setNight(v){state.night=v; tNight.setAttribute('aria-pressed',v); tNight.lastChild.textContent=v?'白天':'夜晚';}
+function setNight(v){state.night=v; tNight.setAttribute('aria-pressed',v); tNight.lastChild.textContent=v?'白天':'夜晚'; MUSIC.sync();}
 tNight.addEventListener('click',()=>setNight(!state.night));
 tSpin.addEventListener('click',()=>{state.spin=!state.spin; tSpin.setAttribute('aria-pressed',state.spin); if(!state.spin) controls.autoRotate=false;});
 if(reduced){state.spin=false; tSpin.setAttribute('aria-pressed','false');}
-const dark=document.documentElement.dataset.theme==='dark' || (document.documentElement.dataset.theme!=='light' && matchMedia('(prefers-color-scheme: dark)').matches);
-setNight(dark); state.nightT=dark?1:0;
+// day and night follow Taiwan's clock; the 夜晚 button still overrides it until the next sunrise or sunset
+let tpeNight=TPE.info().night;
+setNight(tpeNight); state.nightT=tpeNight?1:0;
+setInterval(()=>{ const n=TPE.info().night; if(n!==tpeNight){ tpeNight=n; setNight(n); } else if(!$('#music-menu').hidden) MUSIC.sync(); },30000);
 
 /* tour */
 const TOUR=[
