@@ -692,7 +692,7 @@ const NIGHT={sky:new THREE.Color(0x1a2433), hemiSky:new THREE.Color(0x5d6f96), h
 scene.background=DAY.sky.clone();
 scene.fog=new THREE.Fog(scene.background, 240, 520);
 const camera=new THREE.PerspectiveCamera(38,1,0.5,900);
-const HOME={pos:new THREE.Vector3(0,126,172), look:new THREE.Vector3(0,0,8)};
+const HOME={pos:new THREE.Vector3(0,134,183), look:new THREE.Vector3(0,0,8)};
 camera.position.copy(HOME.pos);
 const labelRenderer=new CSS2DRenderer({element:$('#labels')});
 const controls=new OrbitControls(camera,canvas);
@@ -764,16 +764,35 @@ function terrainH(x,z){
 }
 
 /* islands */
-const R=17, RING=47;
+const R=21, RING=47;
+// ring road on every island, measured as distance from the centre to the hex side (inradius)
+const ROAD_IN=14.3, ROAD_OUT=16.9, ROAD_MID=(ROAD_IN+ROAD_OUT)/2, PIN_D=17.55, LM_R=10.6;
+const SEG6=Math.PI/3, hexLocal=a=>(((a+SEG6/2)%SEG6)+SEG6)%SEG6-SEG6/2;   // angle from the nearest side's normal
+const C30=Math.cos(Math.PI/6);
+const roadMat=new THREE.MeshStandardMaterial({color:0x60656c,roughness:.92});
+const roadLineMat=new THREE.MeshStandardMaterial({color:0xf4efe2,roughness:.6,emissive:0x2a2a20});
+const dashGeo=new THREE.BoxGeometry(.95,.03,.16);
+function hexRing(inD,outD,m,y,parent){ const r=new THREE.Mesh(new THREE.RingGeometry(inD/C30,outD/C30,6,1),m); r.rotation.x=-Math.PI/2; r.rotation.z=Math.PI/2; r.position.y=y; r.receiveShadow=true; parent.add(r); return r; }
+function islandRoad(g){
+  hexRing(ROAD_IN,ROAD_OUT,roadMat,2.012,g);
+  hexRing(ROAD_IN-.16,ROAD_IN,roadLineMat,2.016,g); hexRing(ROAD_OUT,ROAD_OUT+.16,roadLineMat,2.016,g);
+  const half=ROAD_MID*Math.tan(Math.PI/6)-.9, pts=[];
+  for(let k=0;k<6;k++){ const a=k*SEG6, nx=Math.cos(a), nz=Math.sin(a), tx=-Math.sin(a), tz=Math.cos(a);
+    for(let t=-half;t<=half+.01;t+=1.75) pts.push([nx*ROAD_MID+tx*t, nz*ROAD_MID+tz*t, -(a+Math.PI/2)]); }
+  const im=new THREE.InstancedMesh(dashGeo,roadLineMat,pts.length), o=new THREE.Object3D();
+  pts.forEach(([x,z,ry],i)=>{ o.position.set(x,2.03,z); o.rotation.set(0,ry,0); o.updateMatrix(); im.setMatrixAt(i,o.matrix); });
+  im.receiveShadow=true; g.add(im);
+}
 const islands={}, pickables=[], spinners=[], walkers=[], lampLights=[];
 function hexIsland(key,color){
   const g=new THREE.Group();
   cyl(R+1.4,R+2.4,5,6,mat(ROCK),0,-4.6,0,g);
   cyl(R+.9,R+1.4,1.6,6,mat(SAND),0,0,0,g);
   const top=cyl(R,R+.2,.5,6,mat(GRASS),0,1.5,0,g);
-  cyl(R*.42,R*.42,.08,6,mat(CREAM),0,2,0,g).rotation.y=Math.PI/6;
+  cyl(7.4,7.4,.08,6,mat(CREAM),0,2,0,g).rotation.y=Math.PI/6;
+  islandRoad(g);
   // district flags on alternating corners
-  for(let i=0;i<3;i++){const a=i*Math.PI*2/3+Math.PI/6; const x=Math.cos(a)*(R-.8), z=Math.sin(a)*(R-.8); cyl(.06,.06,4,4,mat(DARK),x,2,z,g); box(1.3,.8,.06,mat(color),x+.65,5.1,z,g);}
+  for(let i=0;i<3;i++){const a=i*Math.PI*2/3+Math.PI/6; const x=Math.cos(a)*(R-.45), z=Math.sin(a)*(R-.45); cyl(.06,.06,4,4,mat(DARK),x,2,z,g); box(1.3,.8,.06,mat(color),x+.65,5.1,z,g);}
   const foam=new THREE.Mesh(new THREE.RingGeometry(R+1.6,R+2.6,6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35,depthWrite:false}));
   foam.rotation.x=-Math.PI/2; foam.rotation.z=Math.PI/2; foam.position.y=.06; g.add(foam); g.userData.foam=foam;
   return g;
@@ -812,7 +831,7 @@ function animPerson(P,moving,dt,speed=1){
     P.legs[0].rotation.x=s*.65; P.legs[1].rotation.x=-s*.65; P.arms[0].rotation.x=-s*.55; P.arms[1].rotation.x=s*.55; P.body.position.y=Math.abs(Math.cos(P.phase))*.07; P.head.rotation.z=s*.04; }
   else { const k=Math.min(1,dt*8); P.legs.forEach(l=>l.rotation.x*=1-k); P.arms.forEach(a=>a.rotation.x*=1-k); P.body.position.y*=1-k; P.head.rotation.z*=1-k; P.phase+=dt; P.body.position.y=Math.sin(P.phase*1.6)*.015+.0; }
 }
-function roamers(g,n,minR=7,maxR=R-2.4){
+function roamers(g,n,minR=7,maxR=13){
   n = mobile? Math.max(1,n-1) : n;
   for(let i=0;i<n;i++){
     const a=Math.random()*6.28, r=minR+Math.random()*(maxR-minR);
@@ -996,7 +1015,7 @@ D.forEach((d,i)=>{
     cursor+=idx.length*per;
     const zg=new THREE.Group(); zg.visible=false; zg.position.y=-5; pins.add(zg);
     const zone={name:gname,start:start-GAP/2,end:cursor+GAP/2,group:zg,labels:[],t:0};
-    const mid=(start+cursor)/2, lr=R*.62, gx=Math.cos(mid)*lr, gz=Math.sin(mid)*lr;
+    const mid=(start+cursor)/2, lr=LM_R, gx=Math.cos(mid)*lr, gz=Math.sin(mid)*lr;
     // the landmark faces outward, toward its pins; pointing at it reveals the zone
     const L=landmark(g,gname,C3[d.key],gx,gz,Math.PI/2-mid); landmarks.push(new THREE.Vector3(gx,0,gz));
     L.traverse(m=>{ if(m.isMesh){ m.userData.key=d.key; m.userData.zone=zi; pickables.push(m); } });
@@ -1006,7 +1025,7 @@ D.forEach((d,i)=>{
     cursor+=GAP;
   });
   d.items.forEach((it,j)=>{
-    const ring=R-3;
+    const ring=PIN_D/Math.cos(hexLocal(pinAng[j]));   // pins stand along the outer kerb of the ring road
     const a=pinAng[j];
     const px=Math.cos(a)*ring, pz=Math.sin(a)*ring;
     const zg=zones[zoneOf[j]].group;
@@ -1068,7 +1087,7 @@ function planVisit(k){
   const base=Math.atan2(-d.z,-d.x), stroll=[];
   const turns=[.9,1.9,2.9,-2.6,-1.6,-.8].slice(0,3+Math.floor(Math.random()*3));
   const sgn=Math.random()<.5?1:-1;
-  for(const t of turns){ const a=base+t*sgn; stroll.push(Object.assign(v3(isl.pos.x+Math.cos(a)*(R-4.2),isl.pos.z+Math.sin(a)*(R-4.2)),{pause:Math.random()<.5?1.6:0})); }
+  for(const t of turns){ const a=base+t*sgn; stroll.push(Object.assign(v3(isl.pos.x+Math.cos(a)*12.5,isl.pos.z+Math.sin(a)*12.5),{pause:Math.random()<.5?1.6:0})); }
   const back=[...stroll].reverse().slice(1).map(p=>v3(p.x,p.z));
   return [...out,...stroll,...back,v3(d.x*(RING-R+2.4),d.z*(RING-R+2.4)),v3(d.x*(RING-R+.6),d.z*(RING-R+.6)),v3(d.x*7.6,d.z*7.6),v3(d.x*4.6,d.z*4.6)];
 }
@@ -1219,6 +1238,7 @@ function driveStep(dt){
   }
   else if(inp.gas) drive.v+=8*dt; else if(inp.brake) drive.v-=(drive.v>0?16:5)*dt; else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
   drive.v=THREE.MathUtils.clamp(drive.v,-3.5,9.5);
+  if(drive.offroad && drive.v>5.2) drive.v=Math.max(5.2,drive.v-14*dt);   // grass is slower than the road
   drive.h-=drive.steer*THREE.MathUtils.clamp(Math.abs(drive.v)/3,0,1)*2.2*dt*Math.sign(drive.v||1);
   const fx=-Math.sin(drive.h), fz=-Math.cos(drive.h), nx=drive.x+fx*drive.v*dt, nz=drive.z+fz*drive.v*dt;
   // stay on land: slide along edges, bounce off when blocked
@@ -1235,6 +1255,9 @@ function driveStep(dt){
     else { state.focus=null; hideDetail(); }
     updateOffset();
   }
+  drive.offroad=false;
+  if(islands[drive.at] && w===drive.at){ const o=islands[drive.at], dx=drive.x-o.pos.x, dz=drive.z-o.pos.z, a=Math.atan2(dz,dx)+o.g.rotation.y;
+    const hd=Math.hypot(dx,dz)*Math.cos(hexLocal(a)); drive.offroad = hd<ROAD_IN-.3 || hd>ROAD_OUT+.3; }
   if(islands[drive.at]){ const z=zoneAt(drive.at,new THREE.Vector3(drive.x,2,drive.z)); if(z && !sameZone(z,zoneState.sticky)) zoneState.sticky=z; }
   const lift=islands[drive.at]?.lift||0;
   dcar.position.set(drive.x,2+(w&&w.startsWith('bridge')?0:lift),drive.z); dcar.rotation.y=drive.h;
@@ -1326,9 +1349,9 @@ function focus(key){
   const isl=islands[key]; if(!isl) return; if(state.focus!==key){ zoneState.sticky=null; zoneState.hover=null; } if(hunt.on && innerWidth<=760) endHunt();
   state.focus=key; controls.autoRotate=false;
   const look=isl.pos.clone().add(new THREE.Vector3(0,3,0));
-  const back=isl.dir.clone().multiplyScalar(mobile?66:54);
-  const side=new THREE.Vector3(-isl.dir.z,0,isl.dir.x).multiplyScalar(mobile?0:-12);
-  const pos=isl.pos.clone().add(back).add(side).add(new THREE.Vector3(0,mobile?62:46,0));
+  const back=isl.dir.clone().multiplyScalar(mobile?76:62);
+  const side=new THREE.Vector3(-isl.dir.z,0,isl.dir.x).multiplyScalar(mobile?0:-14);
+  const pos=isl.pos.clone().add(back).add(side).add(new THREE.Vector3(0,mobile?71:53,0));
   if(mobile) look.y-=6;
   flyTo(pos,look);
   Object.values(islands).forEach(o=>o.pinLabels.forEach(a=>a.tabIndex=o.data.key===key?0:-1));
