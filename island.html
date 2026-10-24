@@ -283,6 +283,16 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .drive-pad [data-k="brake"]{font-size:14px}
 .drive-pad .drive-exit{height:44px;font-size:13px;min-width:0;padding:0 16px}
 @media (hover:hover) and (pointer:fine){.drive-pad>div{display:none}}
+/* touch: floating joystick on the left half, look-around on the right half (like mobile shooters) */
+.joy-zone{display:none;position:absolute;inset:0;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none}
+@media (pointer:coarse){.joy-zone{display:block}.drive-pad>div{display:none!important}.drive-pad{justify-content:center}}
+.drive-prompt,.drive-pad{z-index:2}
+.joy{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:color-mix(in srgb,var(--surface) 30%,transparent);border:2px solid color-mix(in srgb,var(--surface) 75%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:.55;transition:opacity .2s;left:22%;top:72%;pointer-events:none}
+.joy.on{opacity:1;transition:none}
+.joy i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:var(--surface);box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.joy-help{position:absolute;left:0;right:0;top:calc(84px + env(safe-area-inset-top,0px));display:flex;justify-content:space-around;margin:0;font-size:12px;pointer-events:none;transition:opacity .4s}
+.joy-help span{background:var(--scrim);padding:6px 12px;border-radius:999px;color:var(--ink)}
+.joy-help.off{opacity:0}
 @media (max-width:760px){.driving .toolbar{display:none}.drive-help{display:none}.drive-prompt{bottom:calc(92px + env(safe-area-inset-bottom,0px))}}
 .driving .hint{display:none}
 .driving .index,.driving .index-toggle{visibility:hidden}
@@ -413,6 +423,10 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
   <div class="drive-ui" id="drive-ui" hidden>
     <p class="drive-help" id="drive-help">↑↓←→／WASD 開車 · 靠近標記按 E 打開 · Esc 下車</p>
     <button type="button" class="drive-prompt panel" id="drive-prompt" hidden></button>
+    <div class="joy-zone" id="joy-zone" aria-hidden="true">
+      <div class="joy" id="joy"><i id="joy-knob"></i></div>
+      <p class="joy-help" id="joy-help"><span>左邊拖曳：開車</span><span>右邊滑動：看四周</span></p>
+    </div>
     <div class="drive-pad" aria-label="開車控制">
       <div><button type="button" data-k="left" aria-label="左轉">←</button><button type="button" data-k="right" aria-label="右轉">→</button></div>
       <button type="button" class="drive-exit" id="drive-exit">下車</button>
@@ -1125,7 +1139,7 @@ const compDir=comp.position.clone().normalize();
 
 function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.animate?.([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:600,easing:'ease-out'}); }
 /* ---------- drive mode: drive between the islands, park at a pin to open it ---------- */
-const drive={on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0};
+const drive={on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0,joy:{on:false,x:0,y:0},look:0,looking:false};
 const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
 { const paint=new THREE.MeshStandardMaterial({color:0xf0b580,roughness:.45,metalness:.2,emissive:0x2a1608});
   mk(new THREE.BoxGeometry(1.15,.48,2.2),paint,0,.42,0,dcar); mk(new THREE.BoxGeometry(1,.4,1.15),new THREE.MeshStandardMaterial({color:0x26324a,roughness:.25}),0,.86,.15,dcar);
@@ -1149,11 +1163,11 @@ function startDrive(){
   if(state.focus) unfocus(); if(hunt.on && innerWidth<=760) endHunt();
   drive.on=true; drive.x=0; drive.z=4.2; drive.h=Math.PI; drive.v=0; drive.at='hub'; dcar.visible=true;
   controls.enabled=false; controls.autoRotate=false; fly=null; document.body.classList.add('driving');
-  $('#drive-ui').hidden=false; $('#t-drive').setAttribute('aria-pressed','true'); $('#hint').hidden=true;
+  $('#drive-ui').hidden=false; $('#t-drive').setAttribute('aria-pressed','true'); $('#hint').hidden=true; joyReset(); drive.look=0; $('#joy-help').classList.remove('off');
   dcar.userData.hl.intensity=40; canvas.focus({preventScroll:true});
 }
 function stopDrive(){
-  drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0);
+  drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0); joyReset(); drive.look=0;
   controls.enabled=true; document.body.classList.remove('driving'); $('#drive-ui').hidden=true; $('#t-drive').setAttribute('aria-pressed','false');
   dcar.userData.hl.intensity=0; hideDetail(); Object.values(islands).forEach(o=>o.g.userData.pinsOn=false); state.focus=null; flyTo(HOME.pos,HOME.look); updateOffset();
 }
@@ -1164,6 +1178,31 @@ document.querySelectorAll('.drive-pad [data-k]').forEach(b=>{ const k=b.dataset.
   b.addEventListener('pointerdown',e=>{e.preventDefault(); drive.input[k]=1; b.setAttribute('aria-pressed','true'); try{b.setPointerCapture(e.pointerId);}catch{}});
   for(const ev of ['pointerup','pointercancel','lostpointercapture']) b.addEventListener(ev,()=>{drive.input[k]=0; b.setAttribute('aria-pressed','false');});
   b.addEventListener('contextmenu',e=>e.preventDefault()); });
+// floating joystick (left half) and look-around drag (right half)
+const joyZone=$('#joy-zone'), joyEl=$('#joy'), joyKnob=$('#joy-knob'), JOY_R=46;
+let joyId=null, joyO=null, lookId=null, lookX=0;
+function joyReset(){ joyId=null; lookId=null; drive.joy.on=false; drive.joy.x=drive.joy.y=0; drive.looking=false; joyEl.classList.remove('on'); joyKnob.style.transform=''; joyEl.style.left=''; joyEl.style.top=''; }
+joyZone.addEventListener('pointerdown',e=>{
+  if(!drive.on) return; e.preventDefault(); const r=joyZone.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  $('#joy-help').classList.add('off');
+  if(x<r.width*.5 && joyId===null){ joyId=e.pointerId; joyO={x,y}; joyEl.style.left=x+'px'; joyEl.style.top=y+'px'; joyEl.classList.add('on'); drive.joy.on=true; }
+  else if(lookId===null){ lookId=e.pointerId; lookX=e.clientX; drive.looking=true; }
+  else return;
+  try{ joyZone.setPointerCapture(e.pointerId); }catch{}
+});
+joyZone.addEventListener('pointermove',e=>{
+  if(e.pointerId===joyId){ const r=joyZone.getBoundingClientRect(); let dx=e.clientX-r.left-joyO.x, dy=e.clientY-r.top-joyO.y; const d=Math.hypot(dx,dy);
+    if(d>JOY_R){ dx*=JOY_R/d; dy*=JOY_R/d; }
+    joyKnob.style.transform=`translate(${dx}px,${dy}px)`;
+    const dead=v=>Math.abs(v)<.12?0:(v-Math.sign(v)*.12)/.88;
+    drive.joy.x=dead(dx/JOY_R); drive.joy.y=dead(-dy/JOY_R); }
+  else if(e.pointerId===lookId){ drive.look=THREE.MathUtils.clamp(drive.look-(e.clientX-lookX)*.008,-Math.PI*.95,Math.PI*.95); lookX=e.clientX; }
+});
+for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addEventListener(ev,e=>{
+  if(e.pointerId===joyId){ joyId=null; drive.joy.on=false; drive.joy.x=drive.joy.y=0; joyEl.classList.remove('on'); joyKnob.style.transform=''; }
+  if(e.pointerId===lookId){ lookId=null; drive.looking=false; }
+});
+joyZone.addEventListener('contextmenu',e=>e.preventDefault());
 if(/[?&]debug\b/.test(location.search)) window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE};
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
@@ -1173,9 +1212,14 @@ addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('
 addEventListener('keyup',e=>{ if(DKEYS[e.code]) drive.input[DKEYS[e.code]]=0; });
 const _pw=new THREE.Vector3();
 function driveStep(dt){
-  const inp=reader.hidden?drive.input:{left:0,right:0,gas:0,brake:0};
-  const steerIn=(inp.right?1:0)-(inp.left?1:0); drive.steer+=(steerIn-drive.steer)*Math.min(1,dt*10);
-  if(inp.gas) drive.v+=8*dt; else if(inp.brake) drive.v-=(drive.v>0?16:5)*dt; else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
+  const inp=reader.hidden?drive.input:{left:0,right:0,gas:0,brake:0}, J=reader.hidden&&drive.joy.on?drive.joy:null;
+  const steerIn=J?J.x:(inp.right?1:0)-(inp.left?1:0); drive.steer+=(steerIn-drive.steer)*Math.min(1,dt*10);
+  if(J){ // analog: push further for more speed, pull back to brake then reverse
+    if(J.y>0){ const top=9.5*Math.min(1,J.y*1.1); drive.v+= drive.v<top ? 8*dt : -Math.min(drive.v-top,4*dt); }
+    else if(J.y<0) drive.v-=(drive.v>0?16:5)*dt*Math.min(1,-J.y*1.25);
+    else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
+  }
+  else if(inp.gas) drive.v+=8*dt; else if(inp.brake) drive.v-=(drive.v>0?16:5)*dt; else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
   drive.v=THREE.MathUtils.clamp(drive.v,-3.5,9.5);
   drive.h-=drive.steer*THREE.MathUtils.clamp(Math.abs(drive.v)/3,0,1)*2.2*dt*Math.sign(drive.v||1);
   const fx=-Math.sin(drive.h), fz=-Math.cos(drive.h), nx=drive.x+fx*drive.v*dt, nz=drive.z+fz*drive.v*dt;
@@ -1203,7 +1247,9 @@ function driveStep(dt){
     if(best){ const it=D.find(x=>x.key===best.key).items[best.i]; pr.style.setProperty('--c',`var(--c-${best.key})`); pr.innerHTML=`<kbd>${matchMedia('(hover:hover)').matches?'E':'點一下'}</kbd>打開「${esc(it.t)}」`; pr.hidden=false; if(typeof pulsePin==='function') pulsePin(best.key,best.i); }
     else pr.hidden=true; }
   // chase camera
-  const back=new THREE.Vector3(drive.x-fx*9,2+lift+7.2,drive.z-fz*9), look=new THREE.Vector3(drive.x+fx*6,2.4,drive.z+fz*6);
+  if(!drive.looking) drive.look*=Math.exp(-dt*1.6);          // free look eases back behind the car
+  const ch=drive.h+drive.look, cx=-Math.sin(ch), cz=-Math.cos(ch);
+  const back=new THREE.Vector3(drive.x-cx*9,2+lift+7.2,drive.z-cz*9), look=new THREE.Vector3(drive.x+cx*6,2.4,drive.z+cz*6);
   const k=1-Math.exp(-dt*5); camera.position.lerp(back,k); controls.target.lerp(look,k); camera.lookAt(controls.target);
 }
 
