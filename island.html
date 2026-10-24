@@ -449,7 +449,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 </div>
 
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
 </script>
 <script type="module">
 import * as THREE from 'three';
@@ -692,7 +692,7 @@ const NIGHT={sky:new THREE.Color(0x1a2433), hemiSky:new THREE.Color(0x5d6f96), h
 scene.background=DAY.sky.clone();
 scene.fog=new THREE.Fog(scene.background, 240, 520);
 const camera=new THREE.PerspectiveCamera(38,1,0.5,900);
-const HOME={pos:new THREE.Vector3(0,126,172), look:new THREE.Vector3(0,0,8)};
+const HOME={pos:new THREE.Vector3(0,134,183), look:new THREE.Vector3(0,0,8)};
 camera.position.copy(HOME.pos);
 const labelRenderer=new CSS2DRenderer({element:$('#labels')});
 const controls=new OrbitControls(camera,canvas);
@@ -764,16 +764,35 @@ function terrainH(x,z){
 }
 
 /* islands */
-const R=17, RING=47;
-const islands={}, pickables=[], spinners=[], walkers=[], lampLights=[];
+const R=21, RING=47;
+// ring road on every island, measured as distance from the centre to the hex side (inradius)
+const ROAD_IN=14.3, ROAD_OUT=16.9, ROAD_MID=(ROAD_IN+ROAD_OUT)/2, PIN_D=17.55, LM_R=10.6;
+const SEG6=Math.PI/3, hexLocal=a=>(((a+SEG6/2)%SEG6)+SEG6)%SEG6-SEG6/2;   // angle from the nearest side's normal
+const C30=Math.cos(Math.PI/6);
+const roadMat=new THREE.MeshStandardMaterial({color:0x60656c,roughness:.92});
+const roadLineMat=new THREE.MeshStandardMaterial({color:0xf4efe2,roughness:.6,emissive:0x2a2a20});
+const dashGeo=new THREE.BoxGeometry(.95,.03,.16);
+function hexRing(inD,outD,m,y,parent){ const r=new THREE.Mesh(new THREE.RingGeometry(inD/C30,outD/C30,6,1),m); r.rotation.x=-Math.PI/2; r.rotation.z=Math.PI/2; r.position.y=y; r.receiveShadow=true; parent.add(r); return r; }
+function islandRoad(g){
+  hexRing(ROAD_IN,ROAD_OUT,roadMat,2.012,g);
+  hexRing(ROAD_IN-.16,ROAD_IN,roadLineMat,2.016,g); hexRing(ROAD_OUT,ROAD_OUT+.16,roadLineMat,2.016,g);
+  const half=ROAD_MID*Math.tan(Math.PI/6)-.9, pts=[];
+  for(let k=0;k<6;k++){ const a=k*SEG6, nx=Math.cos(a), nz=Math.sin(a), tx=-Math.sin(a), tz=Math.cos(a);
+    for(let t=-half;t<=half+.01;t+=1.75) pts.push([nx*ROAD_MID+tx*t, nz*ROAD_MID+tz*t, -(a+Math.PI/2)]); }
+  const im=new THREE.InstancedMesh(dashGeo,roadLineMat,pts.length), o=new THREE.Object3D();
+  pts.forEach(([x,z,ry],i)=>{ o.position.set(x,2.03,z); o.rotation.set(0,ry,0); o.updateMatrix(); im.setMatrixAt(i,o.matrix); });
+  im.receiveShadow=true; g.add(im);
+}
+const islands={}, pickables=[], spinners=[], walkers=[], lampLights=[], pinSprings=[];
 function hexIsland(key,color){
   const g=new THREE.Group();
   cyl(R+1.4,R+2.4,5,6,mat(ROCK),0,-4.6,0,g);
   cyl(R+.9,R+1.4,1.6,6,mat(SAND),0,0,0,g);
   const top=cyl(R,R+.2,.5,6,mat(GRASS),0,1.5,0,g);
-  cyl(R*.42,R*.42,.08,6,mat(CREAM),0,2,0,g).rotation.y=Math.PI/6;
+  cyl(7.4,7.4,.08,6,mat(CREAM),0,2,0,g).rotation.y=Math.PI/6;
+  islandRoad(g);
   // district flags on alternating corners
-  for(let i=0;i<3;i++){const a=i*Math.PI*2/3+Math.PI/6; const x=Math.cos(a)*(R-.8), z=Math.sin(a)*(R-.8); cyl(.06,.06,4,4,mat(DARK),x,2,z,g); box(1.3,.8,.06,mat(color),x+.65,5.1,z,g);}
+  for(let i=0;i<3;i++){const a=i*Math.PI*2/3+Math.PI/6; const x=Math.cos(a)*(R-.45), z=Math.sin(a)*(R-.45); cyl(.06,.06,4,4,mat(DARK),x,2,z,g); box(1.3,.8,.06,mat(color),x+.65,5.1,z,g);}
   const foam=new THREE.Mesh(new THREE.RingGeometry(R+1.6,R+2.6,6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35,depthWrite:false}));
   foam.rotation.x=-Math.PI/2; foam.rotation.z=Math.PI/2; foam.position.y=.06; g.add(foam); g.userData.foam=foam;
   return g;
@@ -812,7 +831,7 @@ function animPerson(P,moving,dt,speed=1){
     P.legs[0].rotation.x=s*.65; P.legs[1].rotation.x=-s*.65; P.arms[0].rotation.x=-s*.55; P.arms[1].rotation.x=s*.55; P.body.position.y=Math.abs(Math.cos(P.phase))*.07; P.head.rotation.z=s*.04; }
   else { const k=Math.min(1,dt*8); P.legs.forEach(l=>l.rotation.x*=1-k); P.arms.forEach(a=>a.rotation.x*=1-k); P.body.position.y*=1-k; P.head.rotation.z*=1-k; P.phase+=dt; P.body.position.y=Math.sin(P.phase*1.6)*.015+.0; }
 }
-function roamers(g,n,minR=7,maxR=R-2.4){
+function roamers(g,n,minR=7,maxR=13){
   n = mobile? Math.max(1,n-1) : n;
   for(let i=0;i<n;i++){
     const a=Math.random()*6.28, r=minR+Math.random()*(maxR-minR);
@@ -996,7 +1015,7 @@ D.forEach((d,i)=>{
     cursor+=idx.length*per;
     const zg=new THREE.Group(); zg.visible=false; zg.position.y=-5; pins.add(zg);
     const zone={name:gname,start:start-GAP/2,end:cursor+GAP/2,group:zg,labels:[],t:0};
-    const mid=(start+cursor)/2, lr=R*.62, gx=Math.cos(mid)*lr, gz=Math.sin(mid)*lr;
+    const mid=(start+cursor)/2, lr=LM_R, gx=Math.cos(mid)*lr, gz=Math.sin(mid)*lr;
     // the landmark faces outward, toward its pins; pointing at it reveals the zone
     const L=landmark(g,gname,C3[d.key],gx,gz,Math.PI/2-mid); landmarks.push(new THREE.Vector3(gx,0,gz));
     L.traverse(m=>{ if(m.isMesh){ m.userData.key=d.key; m.userData.zone=zi; pickables.push(m); } });
@@ -1006,12 +1025,14 @@ D.forEach((d,i)=>{
     cursor+=GAP;
   });
   d.items.forEach((it,j)=>{
-    const ring=R-3;
+    const ring=PIN_D/Math.cos(hexLocal(pinAng[j]));   // pins stand along the outer kerb of the ring road
     const a=pinAng[j];
     const px=Math.cos(a)*ring, pz=Math.sin(a)*ring;
     const zg=zones[zoneOf[j]].group;
-    cyl(.06,.06,3.4,4,mat(DARK),px,2,pz,zg);
-    mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),px,5.7,pz,zg);
+    const pv=new THREE.Group(); pv.position.set(px,2,pz); zg.add(pv);
+    cyl(.06,.06,3.4,4,mat(DARK),0,0,0,pv);
+    mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),0,3.7,0,pv);
+    pinSprings.push({pv,key:d.key,x:px,z:pz,tx:0,tz:0,vx:0,vz:0});
     const a2=document.createElement('button'); a2.type='button'; a2.className='pin'; a2.addEventListener('click',e=>{e.stopPropagation(); openItem(d.key,j);});
     a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`;  a2.title=it.t; a2.tabIndex=-1;
     const po=new CSS2DObject(a2); po.position.set(px,7,pz); zg.add(po); pinLabels.push(a2); zones[zoneOf[j]].labels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
@@ -1068,7 +1089,7 @@ function planVisit(k){
   const base=Math.atan2(-d.z,-d.x), stroll=[];
   const turns=[.9,1.9,2.9,-2.6,-1.6,-.8].slice(0,3+Math.floor(Math.random()*3));
   const sgn=Math.random()<.5?1:-1;
-  for(const t of turns){ const a=base+t*sgn; stroll.push(Object.assign(v3(isl.pos.x+Math.cos(a)*(R-4.2),isl.pos.z+Math.sin(a)*(R-4.2)),{pause:Math.random()<.5?1.6:0})); }
+  for(const t of turns){ const a=base+t*sgn; stroll.push(Object.assign(v3(isl.pos.x+Math.cos(a)*12.5,isl.pos.z+Math.sin(a)*12.5),{pause:Math.random()<.5?1.6:0})); }
   const back=[...stroll].reverse().slice(1).map(p=>v3(p.x,p.z));
   return [...out,...stroll,...back,v3(d.x*(RING-R+2.4),d.z*(RING-R+2.4)),v3(d.x*(RING-R+.6),d.z*(RING-R+.6)),v3(d.x*7.6,d.z*7.6),v3(d.x*4.6,d.z*4.6)];
 }
@@ -1137,7 +1158,7 @@ const compDir=comp.position.clone().normalize();
 
 function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.animate?.([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:600,easing:'ease-out'}); }
 /* ---------- drive mode: drive between the islands, park at a pin to open it ---------- */
-const drive={on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0,joy:{on:false,x:0,y:0},look:0,looking:false};
+const drive={shake:0,knocked:0,on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0,joy:{on:false,x:0,y:0},look:0,looking:false};
 const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
 { const paint=new THREE.MeshStandardMaterial({color:0xf0b580,roughness:.45,metalness:.2,emissive:0x2a1608});
   mk(new THREE.BoxGeometry(1.15,.48,2.2),paint,0,.42,0,dcar); mk(new THREE.BoxGeometry(1,.4,1.15),new THREE.MeshStandardMaterial({color:0x26324a,roughness:.25}),0,.86,.15,dcar);
@@ -1163,9 +1184,10 @@ function startDrive(){
   controls.enabled=false; controls.autoRotate=false; fly=null; document.body.classList.add('driving');
   $('#drive-ui').hidden=false; $('#t-drive').setAttribute('aria-pressed','true'); $('#hint').hidden=true; joyReset(); drive.look=0; $('#joy-help').classList.remove('off');
   dcar.userData.hl.intensity=40; canvas.focus({preventScroll:true});
+  loadPhysics().then(()=>{ if(drive.on) resetProps(); });
 }
 function stopDrive(){
-  drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0); joyReset(); drive.look=0;
+  drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0); joyReset(); drive.look=0; resetProps(); drive.shake=0;
   controls.enabled=true; document.body.classList.remove('driving'); $('#drive-ui').hidden=true; $('#t-drive').setAttribute('aria-pressed','false');
   dcar.userData.hl.intensity=0; hideDetail(); Object.values(islands).forEach(o=>o.g.userData.pinsOn=false); state.focus=null; flyTo(HOME.pos,HOME.look); updateOffset();
 }
@@ -1219,6 +1241,7 @@ function driveStep(dt){
   }
   else if(inp.gas) drive.v+=8*dt; else if(inp.brake) drive.v-=(drive.v>0?16:5)*dt; else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
   drive.v=THREE.MathUtils.clamp(drive.v,-3.5,9.5);
+  if(drive.offroad && drive.v>5.2) drive.v=Math.max(5.2,drive.v-14*dt);   // grass is slower than the road
   drive.h-=drive.steer*THREE.MathUtils.clamp(Math.abs(drive.v)/3,0,1)*2.2*dt*Math.sign(drive.v||1);
   const fx=-Math.sin(drive.h), fz=-Math.cos(drive.h), nx=drive.x+fx*drive.v*dt, nz=drive.z+fz*drive.v*dt;
   // stay on land: slide along edges, bounce off when blocked
@@ -1226,7 +1249,7 @@ function driveStep(dt){
   if(w){ drive.x=nx; drive.z=nz; }
   else if((w=whereAt(nx,drive.z))){ drive.x=nx; drive.v*=.92; }
   else if((w=whereAt(drive.x,nz))){ drive.z=nz; drive.v*=.92; }
-  else { drive.v*=-.25; w=whereAt(drive.x,drive.z); }
+  else { if(Math.abs(drive.v)>2.5) drive.shake=Math.min(1,drive.shake+Math.abs(drive.v)*.07); drive.v*=-.25; w=whereAt(drive.x,drive.z); }
   // arriving on an island opens its card and shows its pins
   const isl=w && !w.startsWith('bridge') && w!=='hub' ? w : (w==='hub'?'hub':drive.at);
   if(isl!==drive.at){ drive.at=isl;
@@ -1235,6 +1258,9 @@ function driveStep(dt){
     else { state.focus=null; hideDetail(); }
     updateOffset();
   }
+  drive.offroad=false;
+  if(islands[drive.at] && w===drive.at){ const o=islands[drive.at], dx=drive.x-o.pos.x, dz=drive.z-o.pos.z, a=Math.atan2(dz,dx)+o.g.rotation.y;
+    const hd=Math.hypot(dx,dz)*Math.cos(hexLocal(a)); drive.offroad = hd<ROAD_IN-.3 || hd>ROAD_OUT+.3; }
   if(islands[drive.at]){ const z=zoneAt(drive.at,new THREE.Vector3(drive.x,2,drive.z)); if(z && !sameZone(z,zoneState.sticky)) zoneState.sticky=z; }
   const lift=islands[drive.at]?.lift||0;
   dcar.position.set(drive.x,2+(w&&w.startsWith('bridge')?0:lift),drive.z); dcar.rotation.y=drive.h;
@@ -1249,6 +1275,98 @@ function driveStep(dt){
   const ch=drive.h+drive.look, cx=-Math.sin(ch), cz=-Math.cos(ch);
   const back=new THREE.Vector3(drive.x-cx*9,2+lift+7.2,drive.z-cz*9), look=new THREE.Vector3(drive.x+cx*6,2.4,drive.z+cz*6);
   const k=1-Math.exp(-dt*5); camera.position.lerp(back,k); controls.target.lerp(look,k); camera.lookAt(controls.target);
+  if(drive.shake>0){ const a=drive.shake*.35; camera.position.x+=(Math.random()-.5)*a; camera.position.y+=(Math.random()-.5)*a; drive.shake=Math.max(0,drive.shake-dt*2.6); }
+}
+
+/* ---------- drive physics: cones and crates to knock over, springy pins, people who hop aside ---------- */
+const PROPS=[];   // {mesh, kind, home:{p,q}, body, gone}
+{ const coneMat=new THREE.MeshStandardMaterial({color:0xff7a3d,roughness:.55}), stripe=new THREE.MeshStandardMaterial({color:0xfaf6ec,roughness:.5});
+  const crateMat=new THREE.MeshStandardMaterial({color:0xc79a64,roughness:.8,flatShading:true}), crateEdge=new THREE.MeshStandardMaterial({color:0x8f6a40,roughness:.8});
+  const coneGeo=new THREE.ConeGeometry(.3,.72,12), coneBase=new THREE.BoxGeometry(.6,.07,.6), coneBand=new THREE.CylinderGeometry(.17,.21,.12,12);
+  const crateGeo=new THREE.BoxGeometry(.9,.9,.9), crateBar=new THREE.BoxGeometry(.94,.14,.94);
+  function makeCone(){ const g=new THREE.Group(); const c=mk(coneGeo,coneMat,0,.04,0,g); mk(coneBase,coneMat,0,-.36+.035,0,g); mk(coneBand,stripe,0,.02,0,g); g.userData.c=c; return g; }
+  function makeCrate(){ const g=new THREE.Group(); mk(crateGeo,crateMat,0,0,0,g); mk(crateBar,crateEdge,0,.32,0,g); mk(crateBar,crateEdge,0,-.32,0,g); return g; }
+  const V=new THREE.Vector3();
+  function place(o,lx,lz,y,kind,ry=0){ V.set(lx,y,lz); o.g.localToWorld(V); V.y-=o.g.position.y;
+    const mesh=kind==='cone'?makeCone():makeCrate(); mesh.position.copy(V); mesh.rotation.y=ry+o.g.rotation.y; scene.add(mesh);
+    PROPS.push({mesh,kind,home:{p:mesh.position.clone(),q:mesh.quaternion.clone()},body:null,gone:0}); }
+  const onEdge=(k,t,lat)=>{ const a=k*SEG6, d=ROAD_MID+lat; return [Math.cos(a)*d-Math.sin(a)*t, Math.sin(a)*d+Math.cos(a)*t, -(a+Math.PI/2)]; };
+  for(const key in islands){ const o=islands[key];
+    // a slalom on one side of the ring road
+    [-6,-3,0,3,6].forEach((t,i)=>{ const [x,z]=onEdge(2,t,i%2?.75:-.75); place(o,x,z,2.36,'cone'); });
+    // road works on the opposite side: a row of cones in front of stacked crates
+    [-4.6,-3.4,-2.2].forEach(t=>{ const [x,z]=onEdge(5,t,.7); place(o,x,z,2.36,'cone'); });
+    { const [x1,z1,ry]=onEdge(5,0,.45), [x2,z2]=onEdge(5,.95,.45), [x3,z3]=onEdge(5,.48,.45);
+      place(o,x1,z1,2.45,'crate',ry); place(o,x2,z2,2.45,'crate',ry); place(o,x3,z3,3.36,'crate',ry); }
+  }
+}
+// props follow the island under them when it lifts on hover
+function propLift(x,z){ for(const k in islands){ const o=islands[k]; if(Math.hypot(x-o.pos.x,z-o.pos.z)<R+.5) return o.lift; } return 0; }
+let PHYS=null, physLoading=null;
+function loadPhysics(){
+  return physLoading ||= import('cannon-es').then(CANNON=>{
+    const world=new CANNON.World({gravity:new CANNON.Vec3(0,-22,0)});
+    world.broadphase=new CANNON.SAPBroadphase(world); world.allowSleep=true;
+    world.defaultContactMaterial.friction=.45; world.defaultContactMaterial.restitution=.2;
+    const stat=(shape,x,y,z,ry=0)=>{ const b=new CANNON.Body({type:CANNON.Body.STATIC,shape,position:new CANNON.Vec3(x,y,z)}); b.quaternion.setFromEuler(0,ry,0); world.addBody(b); return b; };
+    for(const k in islands){ const o=islands[k], ry=o.g.rotation.y;
+      stat(new CANNON.Cylinder(R,R,2,6),o.pos.x,1,o.pos.z,ry);                       // island top (hex)
+      stat(new CANNON.Cylinder(6.3,6.3,12,12),o.pos.x,8,o.pos.z);                     // the main building
+      o.landmarks.forEach(L=>{ const w=o.g.localToWorld(L.clone()); stat(new CANNON.Cylinder(3,3,10,10),w.x,7,w.z); });
+      // bridge deck
+      const len=RING-R-8.2+1.2, mid=o.dir.clone().multiplyScalar(8.2+len/2-.6);
+      stat(new CANNON.Box(new CANNON.Vec3(1.8,.25,len/2)),mid.x,1.75,mid.z,Math.atan2(o.dir.x,o.dir.z));
+    }
+    stat(new CANNON.Cylinder(7.3,7.3,2,16),0,1,0);                                      // hub
+    const carBody=new CANNON.Body({type:CANNON.Body.KINEMATIC,shape:new CANNON.Box(new CANNON.Vec3(.62,.45,1.18))}); world.addBody(carBody);
+    const KIND={cone:{mass:1.6,slow:.985,shape:()=>new CANNON.Cylinder(.08,.32,.76,8)},crate:{mass:5,slow:.93,shape:()=>new CANNON.Box(new CANNON.Vec3(.45,.45,.45))}};
+    PROPS.forEach(p=>{ const K=KIND[p.kind]; p.body=new CANNON.Body({mass:K.mass,shape:K.shape(),linearDamping:.12,angularDamping:.18,sleepSpeedLimit:.25,sleepTimeLimit:.6});
+      p.body.userData={p}; p.slow=K.slow; world.addBody(p.body); });
+    world.addEventListener('beginContact',e=>{ const other=e.bodyA===carBody?e.bodyB:e.bodyB===carBody?e.bodyA:null; const p=other?.userData?.p; if(!p) return;
+      const now=performance.now(); if(now-(p.hitAt||0)<500) return; p.hitAt=now;
+      if(Math.abs(drive.v)>1.5){ drive.v*=p.slow; drive.shake=Math.min(1,drive.shake+(p.kind==='crate'?.35:.12)); if(!p.hit){ p.hit=true; drive.knocked++; } } });
+    PHYS={CANNON,world,carBody}; resetProps(); if(window.__isl) window.__isl.props=PROPS; return PHYS;
+  }).catch(()=>null);
+}
+function resetProps(){
+  PROPS.forEach(p=>{ p.mesh.position.copy(p.home.p); p.mesh.quaternion.copy(p.home.q); p.gone=0; p.hit=false; p.mesh.visible=true;
+    if(p.body){ p.body.position.set(p.home.p.x,p.home.p.y,p.home.p.z); p.body.quaternion.set(p.home.q.x,p.home.q.y,p.home.q.z,p.home.q.w);
+      p.body.velocity.set(0,0,0); p.body.angularVelocity.set(0,0,0); p.body.sleep(); } });
+  drive.knocked=0;
+}
+const _cw=new THREE.Vector3();
+function physStep(dt){
+  // springy pins: a pin you clip wobbles and settles back
+  const o=islands[drive.at];
+  if(o){ _cw.set(drive.x,2,drive.z); o.g.worldToLocal(_cw); _cw.y=0; }
+  for(const s of pinSprings){
+    if(o && s.key===drive.at){ const dx=s.x-_cw.x, dz=s.z-_cw.z, d=Math.hypot(dx,dz);
+      if(d<1.35 && Math.abs(drive.v)>.8 && !s.cool){ const f=Math.min(5,Math.abs(drive.v))*.9; s.vx+=dx/d*f; s.vz+=dz/d*f; s.cool=.5; drive.shake=Math.min(1,drive.shake+.08); } }
+    if(s.cool) s.cool=Math.max(0,s.cool-dt);
+    if(!s.vx && !s.vz && !s.tx && !s.tz) continue;
+    s.vx+=(-70*s.tx-5.5*s.vx)*dt; s.vz+=(-70*s.tz-5.5*s.vz)*dt; s.tx=THREE.MathUtils.clamp(s.tx+s.vx*dt,-.9,.9); s.tz=THREE.MathUtils.clamp(s.tz+s.vz*dt,-.9,.9);
+    if(Math.abs(s.tx)+Math.abs(s.tz)+Math.abs(s.vx)+Math.abs(s.vz)<.002){ s.tx=s.tz=s.vx=s.vz=0; }
+    s.pv.rotation.set(s.tz,0,-s.tx);
+  }
+  if(!PHYS) return;
+  const {world,carBody}=PHYS, fx=-Math.sin(drive.h), fz=-Math.cos(drive.h);
+  carBody.position.set(drive.x,2.47,drive.z); carBody.velocity.set(fx*drive.v,0,fz*drive.v); carBody.quaternion.setFromEuler(0,drive.h,0);
+  world.step(1/60,Math.min(dt,.1),3);
+  for(const p of PROPS){ const b=p.body;
+    if(b.position.y<-1){ p.gone+=dt; if(p.gone>5){ p.gone=0; b.position.set(p.home.p.x,p.home.p.y,p.home.p.z); b.quaternion.set(p.home.q.x,p.home.q.y,p.home.q.z,p.home.q.w); b.velocity.set(0,0,0); b.angularVelocity.set(0,0,0); b.sleep(); } }
+    p.mesh.position.set(b.position.x,b.position.y,b.position.z); p.mesh.quaternion.set(b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w);
+  }
+}
+function propsFollowLift(){ for(const p of PROPS) p.mesh.position.y=p.home.p.y+propLift(p.home.p.x,p.home.p.z); }
+// people hop out of the car's way
+const _wl=new THREE.Vector3();
+function dodge(w,P,p,dt){
+  if(!drive.on || Math.abs(drive.v)<.6){ w.dx=(w.dx||0)*Math.max(0,1-dt*1.5); }
+  else { _wl.set(drive.x,2,drive.z); P.root.parent.worldToLocal(_wl); const dx=p.x-_wl.x, dz=p.z-_wl.z, d=Math.hypot(dx,dz)||.01;
+    if(d<2.8){ const k=(2.8-d)*5*dt;
+      if(w.bridge) w.dx=THREE.MathUtils.clamp((w.dx||0)+Math.sign(dx||1)*k*2,-1.85,1.85); else { p.x+=dx/d*k; p.z+=dz/d*k; }
+      if(!(w.hop>0) && d<2) w.hop=.42; w.wait=Math.max(w.wait||0,.6); } }
+  if(w.hop>0){ w.hop=Math.max(0,w.hop-dt); P.body.position.y=Math.sin((1-w.hop/.42)*Math.PI)*.55; }
 }
 
 /* ---------- find-me game ---------- */
@@ -1326,9 +1444,9 @@ function focus(key){
   const isl=islands[key]; if(!isl) return; if(state.focus!==key){ zoneState.sticky=null; zoneState.hover=null; } if(hunt.on && innerWidth<=760) endHunt();
   state.focus=key; controls.autoRotate=false;
   const look=isl.pos.clone().add(new THREE.Vector3(0,3,0));
-  const back=isl.dir.clone().multiplyScalar(mobile?66:54);
-  const side=new THREE.Vector3(-isl.dir.z,0,isl.dir.x).multiplyScalar(mobile?0:-12);
-  const pos=isl.pos.clone().add(back).add(side).add(new THREE.Vector3(0,mobile?62:46,0));
+  const back=isl.dir.clone().multiplyScalar(mobile?76:62);
+  const side=new THREE.Vector3(-isl.dir.z,0,isl.dir.x).multiplyScalar(mobile?0:-14);
+  const pos=isl.pos.clone().add(back).add(side).add(new THREE.Vector3(0,mobile?71:53,0));
   if(mobile) look.y-=6;
   flyTo(pos,look);
   Object.values(islands).forEach(o=>o.pinLabels.forEach(a=>a.tabIndex=o.data.key===key?0:-1));
@@ -1497,7 +1615,8 @@ function tick(){
     boats.forEach(b=>{b.a+=b.s*dt; b.o.position.set(Math.cos(b.a)*b.r,Math.sin(t*1.2+b.r)*.12,Math.sin(b.a)*b.r); b.o.rotation.y=-b.a+(b.s>0?0:Math.PI); });
     walkers.forEach(w=>{
       const P=w.P, p=P.root.position;
-      if(w.bridge){ w.t+=w.dirSign*w.speed*dt/w.len; if(w.t>1||w.t<0){w.dirSign*=-1; w.t=THREE.MathUtils.clamp(w.t,0,1);} p.z=(w.t-.5)*w.len*.9; p.x=.55*w.dirSign; P.root.rotation.y=w.dirSign>0?0:Math.PI; animPerson(P,true,dt,w.speed*.8); return; }
+      dodge(w,P,p,dt); if(w.hop>0 && !w.bridge){ return; }
+      if(w.bridge){ if(!(w.hop>0)) w.t+=w.dirSign*w.speed*dt/w.len; if(w.t>1||w.t<0){w.dirSign*=-1; w.t=THREE.MathUtils.clamp(w.t,0,1);} p.z=(w.t-.5)*w.len*.9; p.x=THREE.MathUtils.clamp(.55*w.dirSign+(w.dx||0),-1.4,1.4); if(w.hop>0) return; P.root.rotation.y=w.dirSign>0?0:Math.PI; animPerson(P,true,dt,w.speed*.8); return; }
       if(w.wait>0){w.wait-=dt; animPerson(P,false,dt); return;}
       if(!w.has){const a=Math.random()*6.28, r=w.minR+Math.random()*(w.maxR-w.minR); w.tgt.set(Math.cos(a)*r,2,Math.sin(a)*r); w.has=true;}
       const dx=w.tgt.x-p.x, dz=w.tgt.z-p.z, d=Math.hypot(dx,dz);
@@ -1506,6 +1625,8 @@ function tick(){
     });
     // me
     { const p=ME.root.position;
+      if(drive.on && Math.abs(drive.v)>.6){ const dx=p.x-drive.x, dz=p.z-drive.z, d=Math.hypot(dx,dz)||.01; if(d<2.8){ const k=(2.8-d)*5*dt, nx=p.x+dx/d*k, nz=p.z+dz/d*k; if(whereAt(nx,nz)){ p.x=nx; p.z=nz; } if(!(me.hop>0)&&d<2) me.hop=.42; me.wait=Math.max(me.wait,.5); } }
+      if(me.hop>0){ me.hop=Math.max(0,me.hop-dt); ME.body.position.y=Math.sin((1-me.hop/.42)*Math.PI)*.55; }
       if(me.wait>0){ me.wait-=dt; animPerson(ME,false,dt); }
       else { if(!me.path.length) nextLeg(); const tg=me.path[0]; const dx=tg.x-p.x, dz=tg.z-p.z, d=Math.hypot(dx,dz);
         if(d<.15){ me.path.shift(); if(tg.say && !hunt.on){ if(Math.random()<.5) say(D.find(x=>x.key===tg.say).say); me.wait=1.2; } if(tg.pause) me.wait=tg.pause; if(!me.path.length) me.wait=1.5; }
@@ -1516,7 +1637,7 @@ function tick(){
   }
   // hover lift + pins
   Object.values(islands).forEach(o=>{
-    const want=(state.hover===o.data.key||state.focus===o.data.key)?.7:0; o.lift+=(want-o.lift)*Math.min(1,dt*8); o.g.position.y=o.lift;
+    const want=drive.on?0:(state.hover===o.data.key||state.focus===o.data.key)?.7:0; o.lift+=(want-o.lift)*Math.min(1,dt*8); o.g.position.y=o.lift;
     const on=!!o.g.userData.pinsOn, act=zoneState.hover||zoneState.sticky;
     o.zones.forEach((z,zi)=>{
       const want=on && act && act.key===o.data.key && act.zi===zi ? 1 : 0;
@@ -1530,7 +1651,7 @@ function tick(){
   });
   if(hunt.on && !hunt.found) $('#hunt-time').textContent=fmt((performance.now()-hunt.t0)/1000);
   if(foundRing.material.opacity>0 && !hunt.found) foundRing.material.opacity=Math.max(0,foundRing.material.opacity-dt*.5);
-  if(drive.on) driveStep(dt);
+  if(drive.on){ driveStep(dt); physStep(dt); } else propsFollowLift();
   // camera
   if(drive.on){} else if(fly){ const k=1-Math.exp(-dt*3.2); camera.position.lerp(fly.pos,k); controls.target.lerp(fly.look,k); if(camera.position.distanceTo(fly.pos)<.15 && controls.target.distanceTo(fly.look)<.15) fly=null; }
   state.idle+=dt; controls.autoRotate = state.spin && !state.focus && !fly && state.idle>2 && $('#tour').hidden;
