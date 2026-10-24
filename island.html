@@ -135,6 +135,7 @@ button{cursor:pointer}
 .r-hero{margin:18px 0 0;max-width:none}
 .r-hero img{width:100%;max-height:420px;object-fit:contain;background:var(--soft);border-radius:14px;cursor:zoom-in;display:block}
 .r-hero figcaption,.r-fig figcaption{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+.r-fig figcaption a{color:var(--c, inherit);font-weight:600;text-underline-offset:3px}
 .r-lede{font-size:16px;line-height:1.8;margin:18px 0 0;white-space:pre-line}
 .r-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:18px;max-width:none}
 .r-chip{padding:12px 14px;border-radius:12px;background:var(--soft)}
@@ -549,7 +550,7 @@ function renderBlocks(bl){
     flush();
     if(b.h) html+=`<h3>${esc(b.h)}</h3>`;
     else if(b.p) html+=`<p>${esc(b.p)}</p>`;
-    else if(b.img) html+=`<figure class="r-fig"><img src="${media(b.img)}" alt="${esc(b.cap)}" loading="lazy" data-zoom>${b.cap?`<figcaption>${esc(b.cap)}</figcaption>`:''}</figure>`;
+    else if(b.img) html+=`<figure class="r-fig"><img src="${media(b.img)}" alt="${esc(b.cap)}" loading="lazy" data-zoom>${b.cap||b.link?`<figcaption>${esc(b.cap||'')}${b.link?` <a href="${esc(b.link)}" target="_blank" rel="noopener noreferrer">${esc(b.linkText||'查看更多')} ↗</a>`:''}</figcaption>`:''}</figure>`;
     else if(b.gallery) html+=`<div class="r-gallery">${b.gallery.map(g=>`<button type="button" data-zoom-src="${media(g.src)}" data-cap="${esc(g.cap)}"><img src="${media(g.src)}" alt="${esc(g.cap)}" loading="lazy"><span>${esc(g.cap)}</span></button>`).join('')}</div>`;
     else if(b.steps) html+=`<ol class="r-steps">${b.steps.map(x=>`<li><div><b>${esc(x.t)}</b>${x.d?`<span>${esc(x.d)}</span>`:''}</div></li>`).join('')}</ol>`;
     else if(b.cards) html+=`<div class="r-cards">${b.cards.map(x=>`<div><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`).join('')}</div>`;
