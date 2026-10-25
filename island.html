@@ -739,7 +739,7 @@ scene.add(sun); scene.add(skyDome);
 /* neon: everything that only glows at night fades with the night amount */
 const NEON=[], NEON_OBJ=[];
 const NEONC={about:0xff8a5c,work:0x4da3ff,tools:0xffd23f,lab:0x2fffd8,games:0xff4f8b,comp:0xe36bff, cyan:0x18e6ff, magenta:0xff3df0};
-function neonMat(hex,o=1,extra={}){ const {boost:_b,...ex}=extra; const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...ex}); m.userData.o=o; m.userData.boost=extra.boost??1.6; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
+function neonMat(hex,o=1,extra={}){ const {boost:_b,...ex}=extra; const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...ex}); m.userData.o=o; m.userData.boost=extra.boost??2; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
 function neonObj(o){ o.visible=false; NEON_OBJ.push(o); return o; }
 /* materials */
 const mats={};
@@ -815,8 +815,8 @@ const dashGeo=new THREE.BoxGeometry(.95,.03,.16);
 function hexRing(inD,outD,m,y,parent){ const r=new THREE.Mesh(new THREE.RingGeometry(inD/C30,outD/C30,6,1),m); r.rotation.x=-Math.PI/2; r.rotation.z=Math.PI/2; r.position.y=y; r.receiveShadow=true; parent.add(r); return r; }
 function islandNeon(g,key){
   const c=NEONC[key]??NEONC.cyan, top=R*C30;
-  neonObj(hexRing(top-.3,top-.1,neonMat(c,.9,{boost:1.15}),2.03,g));          // rim of the grass
-  neonObj(hexRing((R+.98)*C30,(R+1.14)*C30,neonMat(c,.7,{boost:1.1}),1.63,g)); // waterline glow
+  neonObj(hexRing(top-.3,top-.1,neonMat(c,.9,{boost:1.9}),2.03,g));          // rim of the grass
+  neonObj(hexRing((R+.98)*C30,(R+1.14)*C30,neonMat(c,.7,{boost:1.6}),1.63,g)); // waterline glow
 }
 function islandRoad(g){
   hexRing(ROAD_IN,ROAD_OUT,roadMat,2.012,g);
@@ -1047,7 +1047,7 @@ function neonSign(g,key,pinAng){
   mk(new THREE.CylinderGeometry(.16,.22,15,8),metal,0,7.5,0,T);
   const [zh,en]=SIGN_TXT[key], vc=NEONC[key], hc=NEONC.cyan;
   const vt=signTex(zh,true,vc), ht=signTex(en,false,hc);
-  const vm=neonMat(0xffffff,1,{map:vt,boost:1.35}), hm=neonMat(0xffffff,1,{map:ht,boost:1.35});
+  const vm=neonMat(0xffffff,1,{map:vt,boost:1.55}), hm=neonMat(0xffffff,1,{map:ht,boost:1.55});
   const face=Math.atan2(-Math.cos(a), -Math.sin(a));   // look back toward the island centre / hub side
   for(const side of [0,Math.PI]){
     const v=new THREE.Mesh(new THREE.PlaneGeometry(2.3,6.3),vm); v.position.set(0,7.6,0); v.rotation.y=face+side; v.translateZ(.3); T.add(v);
@@ -1101,7 +1101,7 @@ D.forEach((d,i)=>{
   box(3.6,.35,len,bridgeMat,0,1.65,0,br);
   for(let k=-len/2+.6;k<len/2;k+=2.2){ for(const s of [-1,1]){ cyl(.08,.08,1.1,4,mat(WOOD),s*1.7,2,k,br);} }
   for(const s of [-1,1]) box(.12,.12,len,mat(WOOD),s*1.7,3.05,0,br);
-  { const nm=neonMat(NEONC.cyan,.8,{boost:1.2}); for(const s of [-1,1]){ const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,len),nm); st.position.set(s*1.7,3.24,0); br.add(neonObj(st)); const lo=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,len),neonMat(NEONC.magenta,.7)); lo.position.set(s*1.82,1.66,0); br.add(neonObj(lo)); } }
+  { const nm=neonMat(NEONC.cyan,.8,{boost:1.8}); for(const s of [-1,1]){ const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,len),nm); st.position.set(s*1.7,3.24,0); br.add(neonObj(st)); const lo=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,len),neonMat(NEONC.magenta,.7)); lo.position.set(s*1.82,1.66,0); br.add(neonObj(lo)); } }
   for(let k=-len/2;k<=len/2;k+=len/2) cyl(.35,.35,2,6,mat(ROCK),0,-.3,k,br);
   // bridge walker
   if(i%2===0){ const P=person(br); P.root.position.y=2; walkers.push({P,bridge:true,len,dirSign:1,speed:1.2+Math.random()*.4,t:Math.random()}); }
@@ -1730,9 +1730,10 @@ function growCity(n){
 let bloom=null, bloomLoading=null;
 function loadBloom(){
   return bloomLoading ||= Promise.all(['EffectComposer','RenderPass','UnrealBloomPass','OutputPass'].map(n=>import(`three/addons/postprocessing/${n}.js`))).then(([E,Rp,U,O])=>{
-    const composer=new E.EffectComposer(renderer); composer.setPixelRatio(mobile?1:renderer.getPixelRatio()); composer.setSize(innerWidth,innerHeight);
+    const pr=mobile?1:renderer.getPixelRatio(), rt=new THREE.WebGLRenderTarget(innerWidth*pr,innerHeight*pr,{type:THREE.HalfFloatType,samples:mobile?2:4});
+    const composer=new E.EffectComposer(renderer,rt); composer.setPixelRatio(pr); composer.setSize(innerWidth,innerHeight);
     composer.addPass(new Rp.RenderPass(scene,camera));
-    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.45,.35,.9); composer.addPass(pass);
+    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.4,.28,1.02); composer.addPass(pass);
     composer.addPass(new O.OutputPass()); bloom={composer,pass};
   }).catch(()=>{});
 }
@@ -1833,7 +1834,7 @@ function tick(){
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
   sizeFig();
   if(state.nightT>.015){ if(!bloom) loadBloom(); }
-  if(bloom && state.nightT>.015 && reader.hidden){ bloom.pass.strength=.45*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
+  if(bloom && state.nightT>.015 && reader.hidden){ bloom.pass.strength=.4*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
   labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
 }
