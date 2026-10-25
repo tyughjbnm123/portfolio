@@ -58,6 +58,8 @@ button{cursor:pointer}
 .tool[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 /* index */
+.credit{margin:0;padding:8px 18px 10px;font-size:10px;color:var(--muted);border-top:1px solid var(--line);flex:none}
+.credit a{color:inherit}
 .index{position:absolute;top:calc(80px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:340px;display:flex;flex-direction:column;z-index:4;overflow:hidden}
 .index-head{padding:20px 20px 14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
 .index-head h1{margin:0;font-size:21px;line-height:1.35;text-wrap:balance;font-weight:700}
@@ -384,6 +386,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="搜尋作品、工具、關鍵字…" autocomplete="off"></label>
     </div>
     <div class="index-list" id="index-list"></div>
+    <p class="credit">夜城建築：<a href="https://papptimus.itch.io/cyber-city" target="_blank" rel="noopener">Cyber City</a> by papptimus · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>（已修改）</p>
   </aside>
 
   <section class="detail panel" id="detail" hidden aria-live="polite">
@@ -724,7 +727,7 @@ scene.add(sun); scene.add(skyDome);
 /* neon: everything that only glows at night fades with the night amount */
 const NEON=[], NEON_OBJ=[];
 const NEONC={about:0xff8a5c,work:0x4da3ff,tools:0xffd23f,lab:0x2fffd8,games:0xff4f8b,comp:0xe36bff, cyan:0x18e6ff, magenta:0xff3df0};
-function neonMat(hex,o=1,extra={}){ const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...extra}); m.userData.o=o; m.userData.boost=extra.boost??1.6; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
+function neonMat(hex,o=1,extra={}){ const {boost:_b,...ex}=extra; const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...ex}); m.userData.o=o; m.userData.boost=extra.boost??1.6; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
 function neonObj(o){ o.visible=false; NEON_OBJ.push(o); return o; }
 /* materials */
 const mats={};
@@ -1051,49 +1054,32 @@ function windowTex(seed,cols=6,rows=14,lit=.42){
   for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){ if(rnd()>lit) continue; x.globalAlpha=.55+rnd()*.45; x.fillStyle=pal[Math.floor(rnd()*pal.length)]; x.fillRect(i*16+3,j*16+4,10,8); }
   const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.NearestFilter; return t;
 }
-const WTEX=[1,7,13,29,41].map(sd=>windowTex(sd*977));
 const towerGeo=new THREE.BoxGeometry(1,1,1); towerGeo.translate(0,.5,0);
-const capMat=new THREE.MeshStandardMaterial({color:0x0d0d18,roughness:.7,metalness:.4});
-const TOWER_WORDS={about:['PM','UX','HI'],work:['CRM','n8n','SEO'],tools:['PRD','UTM','GIF'],lab:['AI','AR','3D'],games:['1UP','WIN','GO']};
-function towerMat(tex,w,h){ const t=tex.clone(); t.needsUpdate=true; t.repeat.set(Math.max(1,Math.round(w/.62))/6,Math.max(1,Math.round(h/.8))/14);
-  const m=new THREE.MeshStandardMaterial({color:0x10111f,roughness:.55,metalness:.35,emissive:0xffffff,emissiveMap:t,emissiveIntensity:0}); TOWER_MATS.push(m); return m; }
+// Each island gets a composed skyline in the gaps between its landmarks: one hero tower on the side
+// facing away from the bridge, supporting midrises next to it, low blocks elsewhere.
 function nightTowers(g,key,landmarks){
-  const rnd=Math.random, angs=landmarks.map(L=>Math.atan2(L.z,L.x)).sort((a,b)=>a-b), spots=[];
+  const angs=landmarks.map(L=>Math.atan2(L.z,L.x)).sort((a,b)=>a-b), spots=[];
   angs.forEach((a,i)=>{ let b=angs[(i+1)%angs.length]; if(b<=a) b+=Math.PI*2; const gapArc=(b-a)*LM_R-6.6;
     if(angs.length===1){ spots.push(a+Math.PI*.66,a+Math.PI,a+Math.PI*1.33); return; }
     if(gapArc>9) spots.push(a+(b-a)/3,a+2*(b-a)/3); else if(gapArc>2.6) spots.push((a+b)/2); });
-  const T=new THREE.Group(); g.add(neonObj(T)); const blockers=[];
-  spots.forEach((a,i)=>{
-    const w=2.4+rnd()*1.2, d=2.4+rnd()*1.2, h=13+rnd()*17, r=LM_R+(rnd()-.5)*1.2, x=Math.cos(a)*r, z=Math.sin(a)*r;
-    const tw=new THREE.Group(); tw.position.set(x,2,z); tw.rotation.y=-a; T.add(tw);
-    const body=new THREE.Mesh(towerGeo,towerMat(WTEX[(i+key.length)%WTEX.length],w,h)); body.scale.set(w,h,d); body.castShadow=true; tw.add(body);
-    const cap=new THREE.Mesh(towerGeo,capMat); cap.scale.set(w+.12,.25,d+.12); cap.position.y=h; tw.add(cap);
-    let top=h+.25;
-    if(rnd()<.55){ const w2=w*.62, h2=3+rnd()*6; const up=new THREE.Mesh(towerGeo,towerMat(WTEX[(i+2)%WTEX.length],w2,h2)); up.scale.set(w2,h2,d*.62); up.position.y=top; tw.add(up);
-      const c2=new THREE.Mesh(towerGeo,capMat); c2.scale.set(w2+.1,.2,d*.62+.1); c2.position.y=top+h2; tw.add(c2); top+=h2+.2; }
-    // antenna with a slow red beacon
-    const ant=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,2.6,5),capMat); ant.position.y=top+1.3; tw.add(ant);
-    const tip=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),neonMat(0xff2a3d,1,{boost:1.4})); tip.position.y=top+2.65; tw.add(tip); BEACONS.push(tip);
-    // neon edge strips on two corners
-    if(rnd()<.7){ const sm=neonMat(rnd()<.5?NEONC.cyan:NEONC.magenta,.85,{boost:1.1});
-      for(const sx of [-1,1]){ const st=new THREE.Mesh(towerGeo,sm); st.scale.set(.07,h*.92,.07); st.position.set(sx*w/2,h*.04,d/2); tw.add(st); } }
-    // a vertical sign hanging off one side, Hong Kong style
-    if(rnd()<.6){ const words=TOWER_WORDS[key]||['NEON'], word=words[i%words.length];
-      const sm=neonMat(0xffffff,1,{map:signTex(word,true,rnd()<.5?NEONC.magenta:NEONC.cyan),boost:1.15});
-      for(const side of [0,Math.PI]){ const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.1,3.1),sm); pl.position.set(w/2+.62,h*.62,0); pl.rotation.y=Math.PI/2+side; tw.add(pl); } }
-    blockers.push({x,z,r:Math.max(w,d)*.72+.6});
-  });
-  TOWERS.push({T,blockers});
+  const far=a=>Math.abs(Math.atan2(Math.sin(a-Math.PI/2),Math.cos(a-Math.PI/2)));   // 0 = the far side
+  const order=spots.map((a,i)=>({a,i})).sort((p,q)=>far(p.a)-far(q.a));
+  const SH=[{kind:'tower',w:3.2,levels:6,beacon:true},{kind:'midrise',w:3,levels:4},{kind:'midrise',w:2.8,levels:3},{kind:'terrace',w:2.1},{kind:'corner',w:2.5},{kind:'terrace',w:2}];
+  const T=new THREE.Group(); T.position.y=2; g.add(neonObj(T)); const items=[], blockers=[];
+  order.forEach(({a},rank)=>{ const sh=SH[Math.min(rank,SH.length-1)], x=Math.cos(a)*LM_R, z=Math.sin(a)*LM_R;
+    items.push({...sh,x,z,rot:-a});
+    const half=sh.kind==='terrace'?sh.w:sh.w/2; blockers.push({x,z,r:half*1.15+.6}); });
+  TOWERS.push({T,key,items});
   return blockers;
 }
-const BEACONS=[];
 /* place islands + bridges */
 const bridgeMat=mat(0xc9a77c); const islandsTmp=[];
 D.forEach((d,i)=>{
   const ang=-Math.PI/2 - i*Math.PI*2/D.length + Math.PI; // 01 at front-left, clockwise
   const x=Math.cos(ang)*RING, z=Math.sin(ang)*RING;
   const g=hexIsland(d.key,C3[d.key]); g.position.set(x,0,z); g.rotation.y=-ang+Math.PI/2; scene.add(g);
-  BUILD[d.key](g,C3[d.key]);
+  if(d.key==='work'){ const day=new THREE.Group(); g.add(day); g.userData.dayBuild=day; BUILD.work(day,C3.work); }
+  else BUILD[d.key](g,C3[d.key]);
   g.traverse(o=>{if(o.isMesh){o.userData.key=d.key; pickables.push(o);}});
   const pl=new THREE.PointLight(0xffd27a,0,40,1.8); pl.position.set(0,9,0); g.add(pl); lampLights.push(pl);
   // bridge from hub to island
@@ -1703,9 +1689,21 @@ $('#t-tour').addEventListener('click',startTour);
   SKYLINE={im,base,last:-1}; scene.add(neonObj(im));
 }
 const _m4=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(), _p=new THREE.Vector3();
+let CITY=null, cityLoading=null;
+function loadCity(){
+  return cityLoading ||= import('./assets/island-city/night-city.js?v=20261025-1').then(m=>m.createNightCity({
+    renderer, plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
+    pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
+      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);
+      if(SKYLINE){ const t=c.skylineTex; t.repeat.set(3,8); SKYLINE.im.material.emissiveMap=t; SKYLINE.im.material.needsUpdate=true; }
+      tick._n=-1;                                // re-apply the current night amount
+    }).catch(e=>console.warn('night city unavailable',e));
+}
 function growCity(n){
   const e=n<=0?0:1-Math.pow(1-n,3);
+  if(n>.015 && !CITY) loadCity();
   TOWERS.forEach(t=>{ t.T.scale.y=Math.max(.001,e); });
+  if(CITY){ CITY.update(n); CITY.block.scale.y=Math.max(.001,e); const day=islands.work.g.userData.dayBuild; day.scale.y=Math.max(.001,1-e); day.visible=e<.995; }
   TOWER_MATS.forEach(m=>m.emissiveIntensity=n*1.05);
   LAND.forEach(m=>m.color.setScalar(1-.78*n));
   if(SKYLINE && Math.abs(SKYLINE.last-e)>.002){ SKYLINE.last=e; const {im,base}=SKYLINE;
@@ -1753,7 +1751,7 @@ function tick(){
   roadMat.color.copy(ROAD_DAY).lerp(ROAD_NIGHT,n); roadMat.roughness=.92-.5*n; roadMat.metalness=.3*n;
   roadLineMat.emissive.copy(LINE_DAY).lerp(WIN_CYAN,n); roadLineMat.emissiveIntensity=1-.35*n; roadLineMat.color.setScalar(1-.75*n);
   if(Math.abs(n-(tick._n??-1))>.001){ tick._n=n; NEON.forEach(m=>m.opacity=m.userData.o*n); NEON_OBJ.forEach(o=>o.visible=n>.015); growCity(n); }
-  if(n>.015){ const on=(t%2.4)<.25; BEACONS.forEach(b=>b.material.opacity=on?n:n*.15); }
+
   if(n>.015) SIGNS.forEach(sg=>{ sg.next-=dt; if(sg.next<0 && !reduced){ sg.fl=.32; sg.next=3+Math.random()*8; }
     let f=1; if(sg.fl>0){ sg.fl-=dt; f=(sg.fl>.24||(sg.fl<.16&&sg.fl>.1))?.15:1; }
     sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });

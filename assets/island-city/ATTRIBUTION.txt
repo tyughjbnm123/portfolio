@@ -1,0 +1,14 @@
+Cyber City
+Original creator: papptimus
+Source: https://papptimus.itch.io/cyber-city
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License URL: https://creativecommons.org/licenses/by/4.0/
+Author's license confirmation: https://itch.io/post/7968521
+
+Changes for this portfolio (2026-10-25): converted selected FBX models to glTF 2.0 / GLB;
+normalized scale and pivots; corrected emissive material connections; extended the
+tower with repeated building sections; arranged buildings and added original signs,
+rooftop details, lighting and an elevated walkway.
+No endorsement by the original creator is implied.
+
+These are independently authored cyberpunk-style assets, not extracted Cyberpunk 2077 game assets.
