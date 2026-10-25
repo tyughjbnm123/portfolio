@@ -751,6 +751,7 @@ water.rotation.x=-Math.PI/2; water.receiveShadow=true; scene.add(water);
 const waterDay=new THREE.Color(0x79b6b0), waterNight=new THREE.Color(0x0b0f24);
 
 /* surrounding mountains */
+let SKYLINE=null; const LAND=[];   // materials of the hills and forest, darkened to silhouettes at night
 const noise=new SimplexNoise();
 function terrainH(x,z){
   const r=Math.hypot(x,z);
@@ -768,7 +769,7 @@ function terrainH(x,z){
   const tri=(a,b,c)=>{const y=(a[1]+b[1]+c[1])/3; const s=shade(y); for(const v of [a,b,c]){pos.push(...v); col.push(s.r,s.g,s.b);} };
   for(let i=0;i<nr;i++) for(let j=0;j<nt;j++){const a=grid[i][j],b=grid[i+1][j],c=grid[i+1][j+1],d=grid[i][j+1]; tri(a,c,b); tri(a,d,c);}
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals();
-  const terrain=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.95})); terrain.receiveShadow=true; scene.add(terrain);
+  const terrain=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.95})); terrain.receiveShadow=true; scene.add(terrain); LAND.push(terrain.material);
   // forest
   const N=mobile?260:520, trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.25,.35,1.6,5),mat(WOOD),N), crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5,0),mat(0x77a05a),N);
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), s=new THREE.Vector3(), v=new THREE.Vector3(); let k=0, guard=0;
@@ -781,6 +782,7 @@ function terrainH(x,z){
     m4.compose(v.set(x,y+2.6*sc,z),q,s.set(sc,sc*1.25,sc)); crown.setMatrixAt(k,m4); crown.setColorAt(k,cc[k%4]); k++;
   }
   trunk.count=crown.count=k; trunk.castShadow=crown.castShadow=true; scene.add(trunk,crown);
+  for(const im of [trunk,crown]){ im.material=im.material.clone(); LAND.push(im.material); }
 }
 
 /* islands */
@@ -1001,8 +1003,8 @@ for(let i=0;i<6;i++){const a=i/6*Math.PI*2+.3; lamp(hub,Math.cos(a)*5.6,Math.sin
 for(let i=0;i<(mobile?2:3);i++){const P=person(hub); const a=i*2.1; P.root.position.set(Math.cos(a)*5,2,Math.sin(a)*5); walkers.push({P,minR:3.4,maxR:6.6,tgt:new THREE.Vector3(),speed:.9+Math.random()*.5,wait:Math.random()*3});}
 {const hl=document.createElement('div'); hl.className='hub-label'; hl.innerHTML='IDEAS<br>IN MOTION'; const o=new CSS2DObject(hl); o.position.set(0,15.5,0); hub.add(o);}
 const hubLight=new THREE.PointLight(0xffd27a,0,60,1.6); hubLight.position.set(0,11,0); hub.add(hubLight); lampLights.push(hubLight);
-const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.13,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
-beam.position.set(0,12+75,0); hub.add(neonObj(beam));
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.07,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
+beam.position.set(0,12+75,0); beam.scale.set(.6,1,.6); hub.add(neonObj(beam));
 
 /* neon sign towers (drawn on canvas, glow through bloom) */
 const SIGN_TXT={about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']};
@@ -1035,6 +1037,53 @@ function neonSign(g,key,pinAng){
   const glow=new THREE.PointLight(vc,0,26,1.8); glow.position.set(0,8,0); T.add(glow);
   SIGNS.push({mats:[vm,hm],glow,next:2+Math.random()*7,fl:0});
 }
+/* night towers: skyscrapers that grow out of the islands (and around the lake) after dark */
+const TOWERS=[], TOWER_MATS=[];
+const WIN_COLS=['#2fe6ff','#ff3df0','#ffb35c','#e8f0ff','#7a5cff'];
+function windowTex(seed,cols=6,rows=14,lit=.42){
+  const c=document.createElement('canvas'); c.width=cols*16; c.height=rows*16; const x=c.getContext('2d');
+  x.fillStyle='#05050c'; x.fillRect(0,0,c.width,c.height);
+  let r=seed; const rnd=()=>((r=(r*16807)%2147483647)/2147483647);
+  const pal=WIN_COLS.slice(0,2+Math.floor(rnd()*3));
+  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){ if(rnd()>lit) continue; x.globalAlpha=.55+rnd()*.45; x.fillStyle=pal[Math.floor(rnd()*pal.length)]; x.fillRect(i*16+3,j*16+4,10,8); }
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.NearestFilter; return t;
+}
+const WTEX=[1,7,13,29,41].map(sd=>windowTex(sd*977));
+const towerGeo=new THREE.BoxGeometry(1,1,1); towerGeo.translate(0,.5,0);
+const capMat=new THREE.MeshStandardMaterial({color:0x0d0d18,roughness:.7,metalness:.4});
+const TOWER_WORDS={about:['PM','UX','HI'],work:['CRM','n8n','SEO'],tools:['PRD','UTM','GIF'],lab:['AI','AR','3D'],games:['1UP','WIN','GO']};
+function towerMat(tex,w,h){ const t=tex.clone(); t.needsUpdate=true; t.repeat.set(Math.max(1,Math.round(w/.62))/6,Math.max(1,Math.round(h/.8))/14);
+  const m=new THREE.MeshStandardMaterial({color:0x10111f,roughness:.55,metalness:.35,emissive:0xffffff,emissiveMap:t,emissiveIntensity:0}); TOWER_MATS.push(m); return m; }
+function nightTowers(g,key,landmarks){
+  const rnd=Math.random, angs=landmarks.map(L=>Math.atan2(L.z,L.x)).sort((a,b)=>a-b), spots=[];
+  angs.forEach((a,i)=>{ let b=angs[(i+1)%angs.length]; if(b<=a) b+=Math.PI*2; const gapArc=(b-a)*LM_R-6.6;
+    if(angs.length===1){ spots.push(a+Math.PI*.66,a+Math.PI,a+Math.PI*1.33); return; }
+    if(gapArc>9) spots.push(a+(b-a)/3,a+2*(b-a)/3); else if(gapArc>2.6) spots.push((a+b)/2); });
+  const T=new THREE.Group(); g.add(neonObj(T)); const blockers=[];
+  spots.forEach((a,i)=>{
+    const w=2.4+rnd()*1.2, d=2.4+rnd()*1.2, h=13+rnd()*17, r=LM_R+(rnd()-.5)*1.2, x=Math.cos(a)*r, z=Math.sin(a)*r;
+    const tw=new THREE.Group(); tw.position.set(x,2,z); tw.rotation.y=-a; T.add(tw);
+    const body=new THREE.Mesh(towerGeo,towerMat(WTEX[(i+key.length)%WTEX.length],w,h)); body.scale.set(w,h,d); body.castShadow=true; tw.add(body);
+    const cap=new THREE.Mesh(towerGeo,capMat); cap.scale.set(w+.12,.25,d+.12); cap.position.y=h; tw.add(cap);
+    let top=h+.25;
+    if(rnd()<.55){ const w2=w*.62, h2=3+rnd()*6; const up=new THREE.Mesh(towerGeo,towerMat(WTEX[(i+2)%WTEX.length],w2,h2)); up.scale.set(w2,h2,d*.62); up.position.y=top; tw.add(up);
+      const c2=new THREE.Mesh(towerGeo,capMat); c2.scale.set(w2+.1,.2,d*.62+.1); c2.position.y=top+h2; tw.add(c2); top+=h2+.2; }
+    // antenna with a slow red beacon
+    const ant=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,2.6,5),capMat); ant.position.y=top+1.3; tw.add(ant);
+    const tip=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),neonMat(0xff2a3d,1,{boost:1.4})); tip.position.y=top+2.65; tw.add(tip); BEACONS.push(tip);
+    // neon edge strips on two corners
+    if(rnd()<.7){ const sm=neonMat(rnd()<.5?NEONC.cyan:NEONC.magenta,.85,{boost:1.1});
+      for(const sx of [-1,1]){ const st=new THREE.Mesh(towerGeo,sm); st.scale.set(.07,h*.92,.07); st.position.set(sx*w/2,h*.04,d/2); tw.add(st); } }
+    // a vertical sign hanging off one side, Hong Kong style
+    if(rnd()<.6){ const words=TOWER_WORDS[key]||['NEON'], word=words[i%words.length];
+      const sm=neonMat(0xffffff,1,{map:signTex(word,true,rnd()<.5?NEONC.magenta:NEONC.cyan),boost:1.15});
+      for(const side of [0,Math.PI]){ const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.1,3.1),sm); pl.position.set(w/2+.62,h*.62,0); pl.rotation.y=Math.PI/2+side; tw.add(pl); } }
+    blockers.push({x,z,r:Math.max(w,d)*.72+.6});
+  });
+  TOWERS.push({T,blockers});
+  return blockers;
+}
+const BEACONS=[];
 /* place islands + bridges */
 const bridgeMat=mat(0xc9a77c); const islandsTmp=[];
 D.forEach((d,i)=>{
@@ -1097,7 +1146,7 @@ D.forEach((d,i)=>{
     const po=new CSS2DObject(a2); po.position.set(px,7,pz); zg.add(po); pinLabels.push(a2); zones[zoneOf[j]].labels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
   });
   islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,groupLabels,landmarks,zones,zoneOf,label:el,lift:0};
-  neonSign(g,d.key,pinAng);
+  neonSign(g,d.key,pinAng); islands[d.key].towers=nightTowers(g,d.key,landmarks);
 });
 
 /* boats + clouds */
@@ -1228,13 +1277,16 @@ const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
   for(const x of [-.35,.35]){ mk(new THREE.BoxGeometry(.26,.12,.05),new THREE.MeshBasicMaterial({color:0xfff2cf}),x,.48,-1.11,dcar); mk(new THREE.BoxGeometry(.26,.12,.05),new THREE.MeshBasicMaterial({color:0xff4a4a}),x,.48,1.11,dcar); }
   const hl=new THREE.SpotLight(0xfff0d0,0,22,.6,.5,1.2); hl.position.set(0,.6,-1); const tg=new THREE.Object3D(); tg.position.set(0,0,-8); dcar.add(hl,tg); hl.target=tg; dcar.userData.hl=hl; }
 const INR=R*Math.cos(Math.PI/6)-.7;
+const _tw=new THREE.Vector3();
 function whereAt(x,z){
   const r=Math.hypot(x,z);
   if(r<=7.1 && r>=1.7) return 'hub';
   for(const k in islands){ const o=islands[k]; const dx=x-o.pos.x, dz=z-o.pos.z, rr=Math.hypot(dx,dz);
     // hex inradius check against the island's rotation
     const a=Math.atan2(dz,dx)+o.g.rotation.y, seg=Math.PI/3, local=(((a+seg/2)%seg)+seg)%seg-seg/2, edge=INR/Math.cos(local);
-    if(rr<=edge && rr>=6.6){ for(const L of o.landmarks){ const lp=o.g.localToWorld(L.clone()); if(Math.hypot(x-lp.x,z-lp.z)<3.2) return null; } return k; }
+    if(rr<=edge && rr>=6.6){ for(const L of o.landmarks){ const lp=o.g.localToWorld(L.clone()); if(Math.hypot(x-lp.x,z-lp.z)<3.2) return null; }
+      if(state.nightT>.5 && o.towers) for(const b of o.towers){ _tw.set(b.x,0,b.z); o.g.localToWorld(_tw); if(Math.hypot(x-_tw.x,z-_tw.z)<b.r) return null; }
+      return k; }
     const along=x*o.dir.x+z*o.dir.z, across=Math.abs(-x*o.dir.z+z*o.dir.x);
     if(along>6.6 && along<RING-INR+1 && across<=1.45) return 'bridge:'+k;
   }
@@ -1639,13 +1691,31 @@ $('#tour-next').addEventListener('click',()=>{ if(tourStep<TOUR.length-1){tourSt
 $('#tour-skip').addEventListener('click',endTour);
 $('#t-tour').addEventListener('click',startTour);
 
+// the far shore becomes a megacity skyline at night
+{ const N=mobile?60:120, tex=windowTex(31337,8,24,.38); tex.repeat.set(3,6);
+  const m=new THREE.MeshStandardMaterial({color:0x0c0c1a,roughness:.6,metalness:.3,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0}); TOWER_MATS.push(m);
+  const im=new THREE.InstancedMesh(towerGeo,m,N); im.frustumCulled=false; const base=[];
+  for(let i=0;i<N;i++){ const a=i/N*Math.PI*2+Math.random()*.05, r=275+Math.random()*130, x=Math.cos(a)*r, z=Math.sin(a)*r;
+    base.push({x,z,y:terrainH(x,z)-2,w:8+Math.random()*14,d:8+Math.random()*14,h:40+Math.random()*(r>340?150:95),ry:Math.random()*3}); }
+  SKYLINE={im,base,last:-1}; scene.add(neonObj(im));
+}
+const _m4=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(), _p=new THREE.Vector3();
+function growCity(n){
+  const e=n<=0?0:1-Math.pow(1-n,3);
+  TOWERS.forEach(t=>{ t.T.scale.y=Math.max(.001,e); });
+  TOWER_MATS.forEach(m=>m.emissiveIntensity=n*1.05);
+  LAND.forEach(m=>m.color.setScalar(1-.78*n));
+  if(SKYLINE && Math.abs(SKYLINE.last-e)>.002){ SKYLINE.last=e; const {im,base}=SKYLINE;
+    base.forEach((b,i)=>{ _q.setFromEuler(new THREE.Euler(0,b.ry,0)); _s.set(b.w,b.h*Math.max(.001,e),b.d); _p.set(b.x,b.y,b.z); _m4.compose(_p,_q,_s); im.setMatrixAt(i,_m4); });
+    im.instanceMatrix.needsUpdate=true; }
+}
 /* ---------- bloom: only at night, loaded the first time it gets dark ---------- */
 let bloom=null, bloomLoading=null;
 function loadBloom(){
   return bloomLoading ||= Promise.all(['EffectComposer','RenderPass','UnrealBloomPass','OutputPass'].map(n=>import(`three/addons/postprocessing/${n}.js`))).then(([E,Rp,U,O])=>{
     const composer=new E.EffectComposer(renderer); composer.setPixelRatio(mobile?1:renderer.getPixelRatio()); composer.setSize(innerWidth,innerHeight);
     composer.addPass(new Rp.RenderPass(scene,camera));
-    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.7,.45,.86); composer.addPass(pass);
+    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.45,.35,.9); composer.addPass(pass);
     composer.addPass(new O.OutputPass()); bloom={composer,pass};
   }).catch(()=>{});
 }
@@ -1670,16 +1740,17 @@ function tick(){
   // day/night
   state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5);
   const n=state.nightT;
-  scene.background.copy(DAY.sky).lerp(NIGHT.sky,n); scene.fog.color.copy(scene.background); skyDome.material.uniforms.uN.value=n; skyDome.position.copy(camera.position);
+  scene.background.copy(DAY.sky).lerp(NIGHT.sky,n); scene.fog.color.copy(scene.background); scene.fog.near=240+110*n; scene.fog.far=520+300*n; skyDome.material.uniforms.uN.value=n; skyDome.position.copy(camera.position);
   hemi.color.copy(DAY.hemiSky).lerp(NIGHT.hemiSky,n); hemi.groundColor.copy(DAY.hemiGround).lerp(NIGHT.hemiGround,n); hemi.intensity=1.25-.75*n;
   sun.color.copy(DAY.sun).lerp(NIGHT.sun,n); sun.intensity=2.2-1.75*n;
   water.material.color.copy(waterDay).lerp(waterNight,n); water.material.metalness=.05+.55*n; water.material.roughness=.35-.22*n;
-  winMat.emissive.copy(WIN_WARM).lerp(WIN_CYAN,n); winMat2.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); winMat.emissiveIntensity=winMat2.emissiveIntensity=n*1.25;
-  lampMat.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); lampMat.emissiveIntensity=.15+n*2.4;
-  lampLights.forEach((l,i)=>{ l.intensity=(l===hubLight?260-150*n:120)*n; l.color.copy(LAMP_WARM).lerp(l===hubLight?WIN_CYAN:(i%2?WIN_MAG:WIN_CYAN),n); });
+  winMat.emissive.copy(WIN_WARM).lerp(WIN_CYAN,n); winMat2.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); winMat.emissiveIntensity=winMat2.emissiveIntensity=n*.8;
+  lampMat.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); lampMat.emissiveIntensity=.15+n*1.1;
+  lampLights.forEach((l,i)=>{ l.intensity=(l===hubLight?260-200*n:120-95*n)*n; l.color.copy(LAMP_WARM).lerp(l===hubLight?WIN_CYAN:(i%2?WIN_MAG:WIN_CYAN),n); });
   roadMat.color.copy(ROAD_DAY).lerp(ROAD_NIGHT,n); roadMat.roughness=.92-.5*n; roadMat.metalness=.3*n;
   roadLineMat.emissive.copy(LINE_DAY).lerp(WIN_CYAN,n); roadLineMat.emissiveIntensity=1-.35*n; roadLineMat.color.setScalar(1-.75*n);
-  if(Math.abs(n-(tick._n??-1))>.001){ tick._n=n; NEON.forEach(m=>m.opacity=m.userData.o*n); NEON_OBJ.forEach(o=>o.visible=n>.015); }
+  if(Math.abs(n-(tick._n??-1))>.001){ tick._n=n; NEON.forEach(m=>m.opacity=m.userData.o*n); NEON_OBJ.forEach(o=>o.visible=n>.015); growCity(n); }
+  if(n>.015){ const on=(t%2.4)<.25; BEACONS.forEach(b=>b.material.opacity=on?n:n*.15); }
   if(n>.015) SIGNS.forEach(sg=>{ sg.next-=dt; if(sg.next<0 && !reduced){ sg.fl=.32; sg.next=3+Math.random()*8; }
     let f=1; if(sg.fl>0){ sg.fl-=dt; f=(sg.fl>.24||(sg.fl<.16&&sg.fl>.1))?.15:1; }
     sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });
@@ -1741,7 +1812,7 @@ function tick(){
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
   sizeFig();
   if(state.nightT>.015){ if(!bloom) loadBloom(); }
-  if(bloom && state.nightT>.015){ bloom.pass.strength=.75*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
+  if(bloom && state.nightT>.015){ bloom.pass.strength=.45*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
   labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
 }
