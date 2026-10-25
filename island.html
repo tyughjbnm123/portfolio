@@ -126,7 +126,7 @@ button{cursor:pointer}
 .no-labels .isl,.no-labels .pin,.no-labels .hub-label,.no-labels .grp{visibility:hidden}
 
 /* reader: content opens on the island, never leaves it */
-.reader{position:absolute;inset:0;z-index:9;display:grid;place-items:center;padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px));padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));background:color-mix(in srgb,var(--bg) 35%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.reader{position:absolute;inset:0;z-index:9;display:grid;place-items:center;padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-bottom,0px));padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));background:color-mix(in srgb,var(--bg) 35%,transparent);}
 .reader-card{width:min(880px,100%);height:min(100%,920px);display:flex;flex-direction:column;overflow:hidden;border-top:4px solid var(--c)}
 .reader-head{flex:none;display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-items:start;padding:18px 22px 14px;border-bottom:1px solid var(--line)}
 .reader-head .eyebrow{color:var(--c)}
@@ -714,9 +714,21 @@ const controls=new OrbitControls(camera,canvas);
 controls.target.copy(HOME.look); controls.enableDamping=true; controls.dampingFactor=.08;
 controls.minDistance=28; controls.maxDistance=330; controls.maxPolarAngle=1.22; controls.minPolarAngle=.25;
 controls.autoRotateSpeed=.35; controls.autoRotate=!reduced;
-// labels float above the canvas: pass their wheel events through so zooming works anywhere on the map
-$('#labels').addEventListener('wheel',e=>{ e.preventDefault();
-  canvas.dispatchEvent(new WheelEvent('wheel',{deltaX:e.deltaX,deltaY:e.deltaY,deltaZ:e.deltaZ,deltaMode:e.deltaMode,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,ctrlKey:e.ctrlKey,shiftKey:e.shiftKey,altKey:e.altKey,metaKey:e.metaKey,bubbles:true,cancelable:true})); },{passive:false});
+// Wheel zoom: one notch is always one fixed step (mice differ wildly in how much they report), eased each frame.
+// Handled before OrbitControls sees it; pinch zoom on phones still goes through OrbitControls.
+let zoomTo=null;
+function onWheel(e){
+  e.preventDefault(); e.stopImmediatePropagation();
+  if(typeof drive!=='undefined' && drive.on) return;
+  const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?100:1); if(!dy) return;
+  const step=Math.max(-1,Math.min(1,dy/100));            // trackpads send many small deltas, mice one big one
+  const cur=zoomTo??camera.position.distanceTo(controls.target);
+  zoomTo=THREE.MathUtils.clamp(cur*Math.pow(1.13,step),controls.minDistance,controls.maxDistance);
+  fly=null; state.idle=0;
+}
+canvas.addEventListener('wheel',onWheel,{capture:true,passive:false});
+if(/[?&]debug\b/.test(location.search)) window.__zoom=()=>({zoomTo,fly:!!fly});
+$('#labels').addEventListener('wheel',onWheel,{passive:false});   // labels float above the canvas
 
 const hemi=new THREE.HemisphereLight(DAY.hemiSky,DAY.hemiGround,1.25); scene.add(hemi);
 const sun=new THREE.DirectionalLight(DAY.sun,2.2); sun.position.set(-70,120,60); sun.castShadow=true;
@@ -816,6 +828,7 @@ function islandRoad(g){
   pts.forEach(([x,z,ry],i)=>{ o.position.set(x,2.03,z); o.rotation.set(0,ry,0); o.updateMatrix(); im.setMatrixAt(i,o.matrix); });
   im.receiveShadow=true; g.add(im);
 }
+const PIN_HIT_GEO=new THREE.CylinderGeometry(1.05,1.05,6.4,8), PIN_HIT_MAT=new THREE.MeshBasicMaterial({visible:false});
 const islands={}, pickables=[], spinners=[], walkers=[], lampLights=[], pinSprings=[];
 function hexIsland(key,color){
   const g=new THREE.Group();
@@ -1130,6 +1143,7 @@ D.forEach((d,i)=>{
     cyl(.06,.06,3.4,4,mat(DARK),0,0,0,pv);
     mk(new THREE.SphereGeometry(.42,10,8),mat(C3[d.key],{emissive:C3[d.key],emissiveIntensity:.25}),0,3.7,0,pv);
     pinSprings.push({pv,key:d.key,x:px,z:pz,tx:0,tz:0,vx:0,vz:0});
+    { const hit=new THREE.Mesh(PIN_HIT_GEO,PIN_HIT_MAT); hit.position.set(px,3.4,pz); hit.userData={key:d.key,item:j,zone:zoneOf[j]}; zg.add(hit); pickables.push(hit); }
     const a2=document.createElement('button'); a2.type='button'; a2.className='pin'; a2.addEventListener('click',e=>{e.stopPropagation(); openItem(d.key,j);});
     a2.style.setProperty('--c',`var(--c-${d.key})`); a2.innerHTML=`<b>${j+1}</b><span>${it.t}</span>`;  a2.title=it.t; a2.tabIndex=-1;
     const po=new CSS2DObject(a2); po.position.set(px,7,pz); zg.add(po); pinLabels.push(a2); zones[zoneOf[j]].labels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
@@ -1529,20 +1543,31 @@ let fly=null, downAt=null;
 function setPtr(e){const r=canvas.getBoundingClientRect(); ptr.set((e.clientX-r.left)/r.width*2-1, -(e.clientY-r.top)/r.height*2+1);}
 function pickHit(){ray.setFromCamera(ptr,camera); ray.camera=camera; return ray.intersectObjects(pickables,false)[0]||null;}
 function pick(){ const h=pickHit(); return h? h.object.userData.key : null;}
-canvas.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse')return; setPtr(e); const h=pickHit(), k=h?h.object.userData.key:null; state.hover=k; canvas.style.cursor=k?'pointer':'grab';
-  const z=zoneFromHit(h); zoneState.hover = z && z.key===state.focus ? z : null; });
+// hover picking runs at most once per frame, however fast the mouse moves
+let hoverDirty=false;
+canvas.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse')return; setPtr(e); hoverDirty=true; });
+function hoverPick(){ if(!hoverDirty) return; hoverDirty=false;
+  const h=pickHit(), k=h?h.object.userData.key:null; state.hover=k; canvas.style.cursor=k?'pointer':'grab';
+  const z=zoneFromHit(h); zoneState.hover = z && z.key===state.focus ? z : null; }
 canvas.addEventListener('pointerleave',()=>{ zoneState.hover=null; });
 canvas.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];});
 canvas.addEventListener('pointerup',e=>{
   if(!downAt || drive.on) { downAt=null; return; } const moved=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]); downAt=null; if(moved>6) return;
   setPtr(e); const h=pickHit(), k=h?h.object.userData.key:null;
-  if(k&&k===state.focus&&islands[k]){ const z=zoneFromHit(h); if(z){ zoneState.sticky=sameZone(z,zoneState.sticky)?null:z; return; } }
+  if(k&&k===state.focus&&islands[k]){
+    const it=h.object.userData.item, o=islands[k];
+    // a pin you can see opens its item; anything else in a zone shows that zone, and a second click opens its first item
+    if(it!=null && o.zones[o.zoneOf[it]].t>.5){ openItem(k,it); return; }
+    const z=zoneFromHit(h);
+    if(z){ const shown=o.zones[z.zi].t>.5; zoneState.sticky=z;
+      if(shown && h.object.userData.item==null && h.object.userData.zone!=null){ const first=o.zoneOf.indexOf(z.zi); if(first>=0) openItem(k,first); }
+      return; } }
   if(k==='me') clickMe(); else if(k==='comp') focusComp(); else if(k) focus(k); else if(state.focus) unfocus();
 });
 canvas.addEventListener('pointerleave',()=>{state.hover=null;});
 controls.addEventListener('start',()=>{fly=null; state.idle=0;});
 
-function flyTo(pos,look){ if(reduced){camera.position.copy(pos); controls.target.copy(look); fly=null; return;} fly={pos:pos.clone(),look:look.clone()}; }
+function flyTo(pos,look){ zoomTo=null; if(reduced){camera.position.copy(pos); controls.target.copy(look); fly=null; return;} fly={pos:pos.clone(),look:look.clone()}; }
 function focus(key){
   const isl=islands[key]; if(!isl) return; if(state.focus!==key){ zoneState.sticky=null; zoneState.hover=null; } if(hunt.on && innerWidth<=760) endHunt();
   state.focus=key; controls.autoRotate=false;
@@ -1680,14 +1705,6 @@ $('#tour-next').addEventListener('click',()=>{ if(tourStep<TOUR.length-1){tourSt
 $('#tour-skip').addEventListener('click',endTour);
 $('#t-tour').addEventListener('click',startTour);
 
-// the far shore becomes a megacity skyline at night
-{ const N=mobile?60:120, tex=windowTex(31337,8,24,.38); tex.repeat.set(3,6);
-  const m=new THREE.MeshStandardMaterial({color:0x0c0c1a,roughness:.6,metalness:.3,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0}); TOWER_MATS.push(m);
-  const im=new THREE.InstancedMesh(towerGeo,m,N); im.frustumCulled=false; const base=[];
-  for(let i=0;i<N;i++){ const a=i/N*Math.PI*2+Math.random()*.05, r=275+Math.random()*130, x=Math.cos(a)*r, z=Math.sin(a)*r;
-    base.push({x,z,y:terrainH(x,z)-2,w:8+Math.random()*14,d:8+Math.random()*14,h:40+Math.random()*(r>340?150:95),ry:Math.random()*3}); }
-  SKYLINE={im,base,last:-1}; scene.add(neonObj(im));
-}
 const _m4=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(), _p=new THREE.Vector3();
 let CITY=null, cityLoading=null;
 function loadCity(){
@@ -1695,7 +1712,6 @@ function loadCity(){
     renderer, plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);
-      if(SKYLINE){ const t=c.skylineTex; t.repeat.set(3,8); SKYLINE.im.material.emissiveMap=t; SKYLINE.im.material.needsUpdate=true; }
       tick._n=-1;                                // re-apply the current night amount
     }).catch(e=>console.warn('night city unavailable',e));
 }
@@ -1756,6 +1772,7 @@ function tick(){
     let f=1; if(sg.fl>0){ sg.fl-=dt; f=(sg.fl>.24||(sg.fl<.16&&sg.fl>.1))?.15:1; }
     sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });
   document.body.classList.toggle('night',n>.5);
+  { const live=n<.6; if(renderer.shadowMap.autoUpdate!==live){ renderer.shadowMap.autoUpdate=live; renderer.shadowMap.needsUpdate=true; } }   // night shadows are faint: stop redrawing them every frame
   clouds.forEach(c=>{c.o.position.x+=c.s*dt; if(c.o.position.x>220)c.o.position.x=-220; c.m.opacity=.92-.8*n;});
   if(!reduced){
     spinners.forEach(s=>{
@@ -1806,6 +1823,9 @@ function tick(){
   if(foundRing.material.opacity>0 && !hunt.found) foundRing.material.opacity=Math.max(0,foundRing.material.opacity-dt*.5);
   if(drive.on){ driveStep(dt); physStep(dt); } else propsFollowLift();
   // camera
+  if(zoomTo!=null && !drive.on && !fly){ const off=camera.position.clone().sub(controls.target), d=off.length(), nd=d+(zoomTo-d)*(1-Math.exp(-dt*11));
+    camera.position.copy(controls.target).add(off.multiplyScalar(nd/d)); if(Math.abs(zoomTo-nd)<.05) zoomTo=null; }
+  hoverPick();
   if(drive.on){} else if(fly){ const k=1-Math.exp(-dt*3.2); camera.position.lerp(fly.pos,k); controls.target.lerp(fly.look,k); if(camera.position.distanceTo(fly.pos)<.15 && controls.target.distanceTo(fly.look)<.15) fly=null; }
   state.idle+=dt; controls.autoRotate = state.spin && !state.focus && !fly && state.idle>2 && $('#tour').hidden;
   if(!drive.on) controls.update();
@@ -1813,7 +1833,7 @@ function tick(){
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
   sizeFig();
   if(state.nightT>.015){ if(!bloom) loadBloom(); }
-  if(bloom && state.nightT>.015){ bloom.pass.strength=.45*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
+  if(bloom && state.nightT>.015 && reader.hidden){ bloom.pass.strength=.45*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
   labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
 }
