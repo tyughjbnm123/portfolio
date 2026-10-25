@@ -109,6 +109,11 @@ button{cursor:pointer}
 .isl{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid var(--line);background:var(--surface);box-shadow:0 6px 16px rgba(36,49,33,.16);font-size:13px;font-weight:600;white-space:nowrap;transition:transform .2s}
 .isl b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font-family:var(--mono);font-size:11px}
 .isl:hover{transform:translateY(-2px)}
+/* night city: labels turn into dark glass with a neon edge */
+.night .isl,.night .pin{background:rgba(12,9,28,.74);color:#f3efff;border-color:var(--c);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 60%,transparent),0 0 16px color-mix(in srgb,var(--c) 55%,transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.night .isl b,.night .pin b{box-shadow:0 0 10px var(--c)}
+.night .grp{box-shadow:0 0 14px var(--c),0 0 2px #fff inset;text-shadow:0 0 6px rgba(255,255,255,.6)}
+.isl,.pin{transition:transform .2s,background .6s,box-shadow .6s,color .6s}
 .pin{pointer-events:none;display:flex;align-items:center;gap:5px;padding:3px 9px 3px 3px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11px;white-space:nowrap;text-decoration:none;box-shadow:0 4px 10px rgba(36,49,33,.14);opacity:0}
 .pin b{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--c);color:#fff;font-family:var(--mono);font-size:10px}
 .pin:hover{border-color:var(--c)}
@@ -688,9 +693,16 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, mobile?1.5:2));
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 const DAY={sky:new THREE.Color(0xdfe9e4), hemiSky:new THREE.Color(0xf4f7ef), hemiGround:new THREE.Color(0x8aa07a), sun:new THREE.Color(0xfff1db)};
-const NIGHT={sky:new THREE.Color(0x1a2433), hemiSky:new THREE.Color(0x5d6f96), hemiGround:new THREE.Color(0x1d2a2a), sun:new THREE.Color(0x9fb4e6)};
+// night is a cyberpunk city: violet-black sky with a magenta horizon, cyan moonlight
+const NIGHT={sky:new THREE.Color(0x2a1043), top:new THREE.Color(0x05040f), hemiSky:new THREE.Color(0x3b3a8f), hemiGround:new THREE.Color(0x120c22), sun:new THREE.Color(0x7fd8ff)};
 scene.background=DAY.sky.clone();
 scene.fog=new THREE.Fog(scene.background, 240, 520);
+const skyDome=new THREE.Mesh(new THREE.SphereGeometry(820,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,
+  uniforms:{uDay:{value:DAY.sky.clone()},uHor:{value:NIGHT.sky.clone()},uTop:{value:NIGHT.top.clone()},uN:{value:0}},
+  vertexShader:`varying vec3 vP; void main(){ vP=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+  fragmentShader:`uniform vec3 uDay,uHor,uTop; uniform float uN; varying vec3 vP;
+    void main(){ float h=vP.y; vec3 night=mix(uHor,uTop,smoothstep(-.02,.42,h)); night+=vec3(.25,.02,.3)*exp(-abs(h-.03)*28.)*.6; gl_FragColor=vec4(mix(uDay,night,uN),1.); }`}));
+skyDome.renderOrder=-1; skyDome.frustumCulled=false;
 const camera=new THREE.PerspectiveCamera(38,1,0.5,900);
 const HOME={pos:new THREE.Vector3(0,134,183), look:new THREE.Vector3(0,0,8)};
 camera.position.copy(HOME.pos);
@@ -704,12 +716,20 @@ const hemi=new THREE.HemisphereLight(DAY.hemiSky,DAY.hemiGround,1.25); scene.add
 const sun=new THREE.DirectionalLight(DAY.sun,2.2); sun.position.set(-70,120,60); sun.castShadow=true;
 const sm=mobile?1024:2048; sun.shadow.mapSize.set(sm,sm);
 Object.assign(sun.shadow.camera,{left:-95,right:95,top:95,bottom:-95,near:20,far:380}); sun.shadow.bias=-.0006; sun.shadow.normalBias=.4;
-scene.add(sun);
+scene.add(sun); scene.add(skyDome);
 
+/* neon: everything that only glows at night fades with the night amount */
+const NEON=[], NEON_OBJ=[];
+const NEONC={about:0xff8a5c,work:0x4da3ff,tools:0xffd23f,lab:0x2fffd8,games:0xff4f8b,comp:0xe36bff, cyan:0x18e6ff, magenta:0xff3df0};
+function neonMat(hex,o=1,extra={}){ const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...extra}); m.userData.o=o; m.userData.boost=extra.boost??1.6; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
+function neonObj(o){ o.visible=false; NEON_OBJ.push(o); return o; }
 /* materials */
 const mats={};
 const mat=(hex,o={})=>{const k=hex+JSON.stringify(o); return mats[k] ||= new THREE.MeshStandardMaterial({color:hex,roughness:.88,metalness:0,flatShading:true,...o});};
 const winMat=new THREE.MeshStandardMaterial({color:0xcfdade,emissive:0xffc76b,emissiveIntensity:0,roughness:.4,flatShading:true});
+const winMat2=winMat.clone();
+const WIN_WARM=new THREE.Color(0xffc76b), WIN_CYAN=new THREE.Color(0x2fe6ff), WIN_MAG=new THREE.Color(0xff3df0), LAMP_WARM=new THREE.Color(0xffd27a);
+const ROAD_DAY=new THREE.Color(0x60656c), ROAD_NIGHT=new THREE.Color(0x15172a), LINE_DAY=new THREE.Color(0x2a2a20);
 const lampMat=new THREE.MeshStandardMaterial({color:0xf6eed8,emissive:0xffd27a,emissiveIntensity:0,flatShading:true});
 const W=0xf3efe5, CREAM=0xe9e1cc, WOOD=0xb48c62, DARK=0x4a4f47, GRASS=0xa9c483, GRASS2=0x93b26e, SAND=0xe6d7b4, ROCK=0x9b8f78;
 
@@ -728,7 +748,7 @@ function lamp(p,x,z){cyl(.08,.1,2.4,5,mat(DARK),x,2,z,p); mk(new THREE.SphereGeo
 /* water */
 const water=new THREE.Mesh(new THREE.CircleGeometry(420,64),new THREE.MeshStandardMaterial({color:0x79b6b0,roughness:.35,metalness:.05}));
 water.rotation.x=-Math.PI/2; water.receiveShadow=true; scene.add(water);
-const waterDay=new THREE.Color(0x79b6b0), waterNight=new THREE.Color(0x1f3d4a);
+const waterDay=new THREE.Color(0x79b6b0), waterNight=new THREE.Color(0x0b0f24);
 
 /* surrounding mountains */
 const noise=new SimplexNoise();
@@ -773,6 +793,11 @@ const roadMat=new THREE.MeshStandardMaterial({color:0x60656c,roughness:.92});
 const roadLineMat=new THREE.MeshStandardMaterial({color:0xf4efe2,roughness:.6,emissive:0x2a2a20});
 const dashGeo=new THREE.BoxGeometry(.95,.03,.16);
 function hexRing(inD,outD,m,y,parent){ const r=new THREE.Mesh(new THREE.RingGeometry(inD/C30,outD/C30,6,1),m); r.rotation.x=-Math.PI/2; r.rotation.z=Math.PI/2; r.position.y=y; r.receiveShadow=true; parent.add(r); return r; }
+function islandNeon(g,key){
+  const c=NEONC[key]??NEONC.cyan, top=R*C30;
+  neonObj(hexRing(top-.3,top-.1,neonMat(c,.9,{boost:1.15}),2.03,g));          // rim of the grass
+  neonObj(hexRing((R+.98)*C30,(R+1.14)*C30,neonMat(c,.7,{boost:1.1}),1.63,g)); // waterline glow
+}
 function islandRoad(g){
   hexRing(ROAD_IN,ROAD_OUT,roadMat,2.012,g);
   hexRing(ROAD_IN-.16,ROAD_IN,roadLineMat,2.016,g); hexRing(ROAD_OUT,ROAD_OUT+.16,roadLineMat,2.016,g);
@@ -790,7 +815,7 @@ function hexIsland(key,color){
   cyl(R+.9,R+1.4,1.6,6,mat(SAND),0,0,0,g);
   const top=cyl(R,R+.2,.5,6,mat(GRASS),0,1.5,0,g);
   cyl(7.4,7.4,.08,6,mat(CREAM),0,2,0,g).rotation.y=Math.PI/6;
-  islandRoad(g);
+  islandRoad(g); islandNeon(g,key);
   // district flags on alternating corners
   for(let i=0;i<3;i++){const a=i*Math.PI*2/3+Math.PI/6; const x=Math.cos(a)*(R-.45), z=Math.sin(a)*(R-.45); cyl(.06,.06,4,4,mat(DARK),x,2,z,g); box(1.3,.8,.06,mat(color),x+.65,5.1,z,g);}
   const foam=new THREE.Mesh(new THREE.RingGeometry(R+1.6,R+2.6,6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35,depthWrite:false}));
@@ -976,7 +1001,40 @@ for(let i=0;i<6;i++){const a=i/6*Math.PI*2+.3; lamp(hub,Math.cos(a)*5.6,Math.sin
 for(let i=0;i<(mobile?2:3);i++){const P=person(hub); const a=i*2.1; P.root.position.set(Math.cos(a)*5,2,Math.sin(a)*5); walkers.push({P,minR:3.4,maxR:6.6,tgt:new THREE.Vector3(),speed:.9+Math.random()*.5,wait:Math.random()*3});}
 {const hl=document.createElement('div'); hl.className='hub-label'; hl.innerHTML='IDEAS<br>IN MOTION'; const o=new CSS2DObject(hl); o.position.set(0,15.5,0); hub.add(o);}
 const hubLight=new THREE.PointLight(0xffd27a,0,60,1.6); hubLight.position.set(0,11,0); hub.add(hubLight); lampLights.push(hubLight);
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.13,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
+beam.position.set(0,12+75,0); hub.add(neonObj(beam));
 
+/* neon sign towers (drawn on canvas, glow through bloom) */
+const SIGN_TXT={about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']};
+const SIGNS=[];
+function signTex(text,vertical,hex){
+  const c=document.createElement('canvas'), W=vertical?256:768, H=vertical?704:200; c.width=W; c.height=H; const x=c.getContext('2d');
+  const col='#'+hex.toString(16).padStart(6,'0');
+  x.fillStyle='rgba(8,6,22,.78)'; x.strokeStyle=col; x.lineWidth=8; x.shadowColor=col; x.shadowBlur=22;
+  const rr=(a,b,w,h,r)=>{x.beginPath(); if(x.roundRect) x.roundRect(a,b,w,h,r); else x.rect(a,b,w,h);}; rr(10,10,W-20,H-20,22); x.fill(); x.stroke();
+  x.textAlign='center'; x.textBaseline='middle'; x.shadowBlur=28; x.fillStyle='#fff';
+  if(vertical){ x.font=`900 150px ${getComputedStyle(document.body).fontFamily}`; const ch=[...text]; ch.forEach((t,i)=>{ const y=H/2+(i-(ch.length-1)/2)*196; x.shadowColor=col; x.fillText(t,W/2,y); x.shadowBlur=8; x.fillText(t,W/2,y); x.shadowBlur=28; }); }
+  else { x.font=`800 ${text.length>7?96:118}px ui-monospace,Menlo,monospace`; x.letterSpacing='10px'; x.shadowColor=col; x.fillText(text,W/2,H/2+4); x.shadowBlur=8; x.fillText(text,W/2,H/2+4); }
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t;
+}
+function neonSign(g,key,pinAng){
+  // the three corners on the far side from the bridge; take the one with most room from the pins
+  const far=[Math.PI/6,Math.PI/2,5*Math.PI/6], gap=a=>Math.min(...pinAng.map(p=>Math.abs(Math.atan2(Math.sin(p-a),Math.cos(p-a)))));
+  const a=far.reduce((b,c)=>gap(c)>gap(b)?c:b), r=17.6/C30;
+  const T=new THREE.Group(); T.position.set(Math.cos(a)*r,2,Math.sin(a)*r); g.add(neonObj(T));
+  const metal=new THREE.MeshStandardMaterial({color:0x1b1d2a,roughness:.5,metalness:.6});
+  mk(new THREE.CylinderGeometry(.16,.22,15,8),metal,0,7.5,0,T);
+  const [zh,en]=SIGN_TXT[key], vc=NEONC[key], hc=NEONC.cyan;
+  const vt=signTex(zh,true,vc), ht=signTex(en,false,hc);
+  const vm=neonMat(0xffffff,1,{map:vt,boost:1.35}), hm=neonMat(0xffffff,1,{map:ht,boost:1.35});
+  const face=Math.atan2(-Math.cos(a), -Math.sin(a));   // look back toward the island centre / hub side
+  for(const side of [0,Math.PI]){
+    const v=new THREE.Mesh(new THREE.PlaneGeometry(2.3,6.3),vm); v.position.set(0,7.6,0); v.rotation.y=face+side; v.translateZ(.3); T.add(v);
+    const h=new THREE.Mesh(new THREE.PlaneGeometry(6.2,1.62),hm); h.position.set(0,14.2,0); h.rotation.y=face+side; h.translateZ(.3); T.add(h);
+  }
+  const glow=new THREE.PointLight(vc,0,26,1.8); glow.position.set(0,8,0); T.add(glow);
+  SIGNS.push({mats:[vm,hm],glow,next:2+Math.random()*7,fl:0});
+}
 /* place islands + bridges */
 const bridgeMat=mat(0xc9a77c); const islandsTmp=[];
 D.forEach((d,i)=>{
@@ -992,6 +1050,7 @@ D.forEach((d,i)=>{
   box(3.6,.35,len,bridgeMat,0,1.65,0,br);
   for(let k=-len/2+.6;k<len/2;k+=2.2){ for(const s of [-1,1]){ cyl(.08,.08,1.1,4,mat(WOOD),s*1.7,2,k,br);} }
   for(const s of [-1,1]) box(.12,.12,len,mat(WOOD),s*1.7,3.05,0,br);
+  { const nm=neonMat(NEONC.cyan,.8,{boost:1.2}); for(const s of [-1,1]){ const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,len),nm); st.position.set(s*1.7,3.24,0); br.add(neonObj(st)); const lo=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,len),neonMat(NEONC.magenta,.7)); lo.position.set(s*1.82,1.66,0); br.add(neonObj(lo)); } }
   for(let k=-len/2;k<=len/2;k+=len/2) cyl(.35,.35,2,6,mat(ROCK),0,-.3,k,br);
   // bridge walker
   if(i%2===0){ const P=person(br); P.root.position.y=2; walkers.push({P,bridge:true,len,dirSign:1,speed:1.2+Math.random()*.4,t:Math.random()}); }
@@ -1038,6 +1097,7 @@ D.forEach((d,i)=>{
     const po=new CSS2DObject(a2); po.position.set(px,7,pz); zg.add(po); pinLabels.push(a2); zones[zoneOf[j]].labels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
   });
   islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,groupLabels,landmarks,zones,zoneOf,label:el,lift:0};
+  neonSign(g,d.key,pinAng);
 });
 
 /* boats + clouds */
@@ -1157,6 +1217,8 @@ function sizeFig(){
 const compDir=comp.position.clone().normalize();
 
 function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.animate?.([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:600,easing:'ease-out'}); }
+// half the windows glow magenta at night, the other half cyan
+{ let i=0; scene.traverse(o=>{ if(o.isMesh && o.material===winMat && (i++%2)) o.material=winMat2; }); }
 /* ---------- drive mode: drive between the islands, park at a pin to open it ---------- */
 const drive={shake:0,knocked:0,on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0,joy:{on:false,x:0,y:0},look:0,looking:false};
 const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
@@ -1577,9 +1639,19 @@ $('#tour-next').addEventListener('click',()=>{ if(tourStep<TOUR.length-1){tourSt
 $('#tour-skip').addEventListener('click',endTour);
 $('#t-tour').addEventListener('click',startTour);
 
+/* ---------- bloom: only at night, loaded the first time it gets dark ---------- */
+let bloom=null, bloomLoading=null;
+function loadBloom(){
+  return bloomLoading ||= Promise.all(['EffectComposer','RenderPass','UnrealBloomPass','OutputPass'].map(n=>import(`three/addons/postprocessing/${n}.js`))).then(([E,Rp,U,O])=>{
+    const composer=new E.EffectComposer(renderer); composer.setPixelRatio(mobile?1:renderer.getPixelRatio()); composer.setSize(innerWidth,innerHeight);
+    composer.addPass(new Rp.RenderPass(scene,camera));
+    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.7,.45,.86); composer.addPass(pass);
+    composer.addPass(new O.OutputPass()); bloom={composer,pass};
+  }).catch(()=>{});
+}
 /* ---------- loop ---------- */
 function resize(){
-  const w=innerWidth, h=innerHeight; renderer.setSize(w,h,false); labelRenderer.setSize(w,h);
+  const w=innerWidth, h=innerHeight; renderer.setSize(w,h,false); labelRenderer.setSize(w,h); if(typeof bloom!=='undefined' && bloom) bloom.composer.setSize(w,h);
   camera.aspect=w/h; camera.fov = w<760? 50 : 38; updateOffset();
 }
 // keep the scene centred in the space the floating panels leave free
@@ -1598,12 +1670,21 @@ function tick(){
   // day/night
   state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5);
   const n=state.nightT;
-  scene.background.copy(DAY.sky).lerp(NIGHT.sky,n); scene.fog.color.copy(scene.background);
+  scene.background.copy(DAY.sky).lerp(NIGHT.sky,n); scene.fog.color.copy(scene.background); skyDome.material.uniforms.uN.value=n; skyDome.position.copy(camera.position);
   hemi.color.copy(DAY.hemiSky).lerp(NIGHT.hemiSky,n); hemi.groundColor.copy(DAY.hemiGround).lerp(NIGHT.hemiGround,n); hemi.intensity=1.25-.75*n;
   sun.color.copy(DAY.sun).lerp(NIGHT.sun,n); sun.intensity=2.2-1.75*n;
-  water.material.color.copy(waterDay).lerp(waterNight,n);
-  winMat.emissiveIntensity=n*1.3; lampMat.emissiveIntensity=.15+n*2; lampLights.forEach(l=>l.intensity=n*(l===hubLight?260:120));
-  clouds.forEach(c=>{c.o.position.x+=c.s*dt; if(c.o.position.x>220)c.o.position.x=-220; c.m.opacity=.92-.55*n;});
+  water.material.color.copy(waterDay).lerp(waterNight,n); water.material.metalness=.05+.55*n; water.material.roughness=.35-.22*n;
+  winMat.emissive.copy(WIN_WARM).lerp(WIN_CYAN,n); winMat2.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); winMat.emissiveIntensity=winMat2.emissiveIntensity=n*1.25;
+  lampMat.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); lampMat.emissiveIntensity=.15+n*2.4;
+  lampLights.forEach((l,i)=>{ l.intensity=(l===hubLight?260-150*n:120)*n; l.color.copy(LAMP_WARM).lerp(l===hubLight?WIN_CYAN:(i%2?WIN_MAG:WIN_CYAN),n); });
+  roadMat.color.copy(ROAD_DAY).lerp(ROAD_NIGHT,n); roadMat.roughness=.92-.5*n; roadMat.metalness=.3*n;
+  roadLineMat.emissive.copy(LINE_DAY).lerp(WIN_CYAN,n); roadLineMat.emissiveIntensity=1-.35*n; roadLineMat.color.setScalar(1-.75*n);
+  if(Math.abs(n-(tick._n??-1))>.001){ tick._n=n; NEON.forEach(m=>m.opacity=m.userData.o*n); NEON_OBJ.forEach(o=>o.visible=n>.015); }
+  if(n>.015) SIGNS.forEach(sg=>{ sg.next-=dt; if(sg.next<0 && !reduced){ sg.fl=.32; sg.next=3+Math.random()*8; }
+    let f=1; if(sg.fl>0){ sg.fl-=dt; f=(sg.fl>.24||(sg.fl<.16&&sg.fl>.1))?.15:1; }
+    sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });
+  document.body.classList.toggle('night',n>.5);
+  clouds.forEach(c=>{c.o.position.x+=c.s*dt; if(c.o.position.x>220)c.o.position.x=-220; c.m.opacity=.92-.8*n;});
   if(!reduced){
     spinners.forEach(s=>{
       if(s.wave) s.o.rotation[s.wave.axis||s.axis]=s.wave.base+Math.sin(t*s.wave.rate)*s.wave.amp;
@@ -1658,7 +1739,10 @@ function tick(){
   if(!drive.on) controls.update();
   // keep target near the lake
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
-  sizeFig(); renderer.render(scene,camera); labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
+  sizeFig();
+  if(state.nightT>.015){ if(!bloom) loadBloom(); }
+  if(bloom && state.nightT>.015){ bloom.pass.strength=.75*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
+  labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
 }
 // first frame then reveal
