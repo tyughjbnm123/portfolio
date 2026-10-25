@@ -711,6 +711,9 @@ const controls=new OrbitControls(camera,canvas);
 controls.target.copy(HOME.look); controls.enableDamping=true; controls.dampingFactor=.08;
 controls.minDistance=28; controls.maxDistance=330; controls.maxPolarAngle=1.22; controls.minPolarAngle=.25;
 controls.autoRotateSpeed=.35; controls.autoRotate=!reduced;
+// labels float above the canvas: pass their wheel events through so zooming works anywhere on the map
+$('#labels').addEventListener('wheel',e=>{ e.preventDefault();
+  canvas.dispatchEvent(new WheelEvent('wheel',{deltaX:e.deltaX,deltaY:e.deltaY,deltaZ:e.deltaZ,deltaMode:e.deltaMode,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,ctrlKey:e.ctrlKey,shiftKey:e.shiftKey,altKey:e.altKey,metaKey:e.metaKey,bubbles:true,cancelable:true})); },{passive:false});
 
 const hemi=new THREE.HemisphereLight(DAY.hemiSky,DAY.hemiGround,1.25); scene.add(hemi);
 const sun=new THREE.DirectionalLight(DAY.sun,2.2); sun.position.set(-70,120,60); sun.castShadow=true;
