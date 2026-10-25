@@ -201,17 +201,6 @@ button{cursor:pointer}
 button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 @media (max-width:760px){button.pin{font-size:10px}}
 
-/* tour */
-.tour{position:absolute;inset:0;display:grid;place-items:center;background:var(--scrim);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
-.tour-card{width:min(440px,100%);padding:28px 30px 24px;display:grid;gap:14px}
-.tour-card h3{margin:0;font-size:26px;line-height:1.3;text-wrap:balance}
-.tour-card p{margin:0;font-size:14px;line-height:1.8;color:var(--muted)}
-.tour-dots{display:flex;gap:6px}
-.tour-dots i{width:18px;height:4px;border-radius:2px;background:var(--line)}
-.tour-dots i.on{background:var(--accent)}
-.tour-actions{display:flex;justify-content:space-between;margin-top:8px}
-.tour-actions button{min-height:44px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:15px}
-.tour-actions .primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 .loading{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--muted);background:var(--bg);z-index:20;transition:opacity .6s}
 .loading.done{opacity:0;pointer-events:none}
@@ -270,7 +259,10 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .sprite img{display:block;width:100%;height:auto}
 @keyframes float{50%{transform:translateY(-8px)}}
 .comp-bubble{position:absolute;bottom:0;left:-110px;width:220px}
-.comp-tip{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted)}
+.comp-tip{display:block;margin-top:4px;font-size:13px;color:var(--ink)}
+.comp-row{display:flex;align-items:center;gap:12px;margin-top:6px}
+.comp-row a{margin-top:0}
+.comp-row .comp-sound{margin-left:auto}
 .comp-fig-anchor{width:0;height:0;position:relative}
 .comp-fig{position:absolute;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));animation:float 3.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
 .comp-fig img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
@@ -351,7 +343,6 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
     <button class="tool" id="t-spin" aria-pressed="true" type="button"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>環繞</button>
     <button class="tool" id="t-drive" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 16V12l2-5h10l2 5v4"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/><path d="M7 12h10"/></svg>開車</button>
     <button class="tool" id="t-hunt" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><circle cx="10.5" cy="9" r="1.8"/><path d="M7.6 13.4a3.2 3.2 0 0 1 5.8 0"/></svg>找我</button>
-    <button class="tool" id="t-tour" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>導覽</button>
   </nav>
 
   <div class="top-right">
@@ -443,15 +434,6 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 
   <div class="hint" id="hint">拖曳轉動 · 滾輪縮放 · 點島嶼走進去</div>
 
-  <div class="tour" id="tour" hidden>
-    <div class="tour-card panel" role="dialog" aria-modal="true" aria-labelledby="tour-title">
-      <div class="eyebrow" id="tour-eyebrow"></div>
-      <h3 id="tour-title"></h3>
-      <p id="tour-text"></p>
-      <div class="tour-dots" id="tour-dots"><i></i><i></i><i></i></div>
-      <div class="tour-actions"><button type="button" id="tour-skip">略過</button><button type="button" class="primary" id="tour-next">下一步 →</button></div>
-    </div>
-  </div>
 
   <div class="loading" id="loading">正在組合島嶼…</div>
 </div>
@@ -1216,9 +1198,14 @@ cyl(1.1,1.25,.25,12,mat(0xf1e6f0),0,2,0,comp);
 tree(comp,-2.6,-1.6,.75);
 comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
-compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是網頁小精靈</b><br>平常住在作品集首頁的角落，會陪你逛網站。<span class="comp-tip">${matchMedia('(hover:hover)').matches?'小祕密：點開一座島，再把滑鼠移到島上的各區，那一區的名稱就會跳出來。':'小祕密：點開一座島，再點島上的各區，那一區的名稱就會跳出來。'}</span><a href="#" id="comp-play">和我玩一下 ›</a><button type="button" class="comp-sound" id="comp-sound"></button></div>`;
+const HOVER=matchMedia('(hover:hover)').matches;
+const COMP_TIPS=['點一座島，走進去看看。', HOVER?'滑到島上各區，名稱會跳出來。':'點島上各區，名稱會跳出來。', HOVER?'想直接找？右邊清單可以搜尋。':'想直接找？右上角「清單」可以搜尋。', '按「開車」，開著車逛島。', '我藏在人群裡，按「找我」抓我。', '天黑後，小島會變成夜城。'];
+compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-play">和我玩</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
 const compObj=new CSS2DObject(compEl); compObj.position.set(0,8.4,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
+let tipI=0; const tipEl=compEl.querySelector('#comp-tip'); const showTip=()=>{ tipEl.textContent=COMP_TIPS[tipI%COMP_TIPS.length]; };
+showTip();
+compEl.querySelector('#comp-next').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); tipI++; showTip(); });
 compEl.querySelector('#comp-play').addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); openEntry('companion',{eyebrow:'✦ 湖邊小島',color:'comp'});});
 // The companion is drawn as an animated image that follows the 3D scene: point at her to wave, tap her to dance.
 const COMP_H=5.25, COMP_FEET=2.25;
@@ -1232,29 +1219,40 @@ const figAnchor=document.createElement('div'); figAnchor.className='comp-fig-anc
 figAnchor.innerHTML=`<button type="button" class="comp-fig" aria-label="網頁小精靈：指向她會揮手，點一下會跳舞"><img alt="" src="${STILL}" draggable="false"></button>`;
 const figObj=new CSS2DObject(figAnchor); figObj.position.set(0,COMP_FEET,0); comp.add(figObj);
 const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
-const clipBlobs={}; let playing=null, playTimer=0, curURL='', clickN=0, compAudio=null;
+const clipBlobs={}; let playing=null, playTimer=0, curURL='', clickN=0;
+// Her voice is decoded ahead of time and started on the frame the animation appears (same approach as the site's companion),
+// so sound and motion line up instead of the sound arriving a beat late.
+let compCtx=null, compSrc=null; const voiceBufs={};
+function compAC(){ if(!compCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; compCtx=new AC(); } if(compCtx.state==='suspended') compCtx.resume().catch(()=>{}); return compCtx; }
+function loadVoice(name){ if(!ON_SITE||!CLIPS[name]?.audio) return Promise.resolve(null); const ac=compAC(); if(!ac) return Promise.resolve(null);
+  return voiceBufs[name] ||= fetch(CLIP_DIR+CLIPS[name].audio).then(r=>r.ok?r.arrayBuffer():null).then(b=>b?ac.decodeAudioData(b):null).catch(()=>{ delete voiceBufs[name]; return null; }); }
+function stopVoice(){ if(!compSrc) return; try{ compSrc.stop(); }catch{} compSrc.disconnect(); compSrc=null; }
+function startVoice(buf,startedAt){ if(!buf||!compSound||!compCtx||compCtx.state!=='running') return;
+  const off=(performance.now()-startedAt)/1000; if(off>=buf.duration-.05) return;   // if the sound arrives late, join at the same point as the motion
+  stopVoice(); const src=compCtx.createBufferSource(), g=compCtx.createGain(); g.gain.value=.8; src.buffer=buf; src.connect(g); g.connect(compCtx.destination); src.start(0,off); compSrc=src; }
 let compSound=true; try{ compSound=localStorage.getItem('yk-island-comp-sound')!=='off'; }catch{}
 const soundBtn=compEl.querySelector('#comp-sound');
 const renderSound=()=>{ soundBtn.textContent=compSound?'🔊 聲音開':'🔇 聲音關'; soundBtn.setAttribute('aria-pressed',String(compSound)); };
 renderSound();
-soundBtn.addEventListener('click',e=>{ e.stopPropagation(); compSound=!compSound; try{localStorage.setItem('yk-island-comp-sound',compSound?'on':'off');}catch{} if(!compSound&&compAudio){compAudio.pause();} renderSound(); });
+soundBtn.addEventListener('click',e=>{ e.stopPropagation(); compSound=!compSound; try{localStorage.setItem('yk-island-comp-sound',compSound?'on':'off');}catch{} if(!compSound) stopVoice(); renderSound(); });
 function loadClip(name){ if(!ON_SITE) return Promise.resolve(null); return clipBlobs[name] ||= fetch(CLIP_DIR+CLIPS[name].src).then(r=>r.ok?r.blob():null).catch(()=>null); }
-function stopClip(){ clearTimeout(playTimer); playing=null; compAudio?.pause(); fig.classList.remove('playing'); figImg.src=STILL; if(curURL){ URL.revokeObjectURL(curURL); curURL=''; } }
+function stopClip(){ clearTimeout(playTimer); playing=null; stopVoice(); figImg.onload=null; fig.classList.remove('playing'); figImg.src=STILL; if(curURL){ URL.revokeObjectURL(curURL); curURL=''; } }
 let clipToken=0;
 async function playClip(name,withSound){
   if(reduced) return;
-  const my=++clipToken; clearTimeout(playTimer);
-  if(withSound && compSound){ try{ compAudio?.pause(); compAudio=new Audio(CLIP_DIR+CLIPS[name].audio); compAudio.volume=.8; }catch{} }
+  const my=++clipToken; clearTimeout(playTimer); stopVoice();
+  const voice = withSound && compSound ? loadVoice(name) : Promise.resolve(null);
   const blob=await loadClip(name); if(my!==clipToken) return;
   if(!blob) { fig.animate?.([{transform:'translateY(0)'},{transform:'translateY(-14px)'},{transform:'translateY(0)'}],{duration:500,easing:'ease-out'}); return; }
   // a fresh object URL makes the animated image start from its first frame every time
-  const u=URL.createObjectURL(blob); const pre=new Image(); pre.src=u; try{ await pre.decode(); }catch{}
-  if(my!==clipToken){ URL.revokeObjectURL(u); return; }
-  if(curURL) URL.revokeObjectURL(curURL); curURL=u; figImg.src=u; playing=name; fig.classList.add('playing');
-  clearTimeout(playTimer); playTimer=setTimeout(()=>{ if(my===clipToken) stopClip(); },CLIP_MS);
-  if(withSound && compSound && compAudio){ compAudio.currentTime=0; compAudio.play().catch(()=>{}); }
+  const u=URL.createObjectURL(blob);
+  figImg.onload=()=>{ figImg.onload=null; if(my!==clipToken) return;
+    const t0=performance.now(); playing=name; fig.classList.add('playing');
+    clearTimeout(playTimer); playTimer=setTimeout(()=>{ if(my===clipToken) stopClip(); },CLIP_MS);
+    voice.then(buf=>{ if(my===clipToken) startVoice(buf,t0); }); };
+  if(curURL) URL.revokeObjectURL(curURL); curURL=u; figImg.src=u;
 }
-fig.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse' && !playing) playClip('welcome',false); });
+fig.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse'){ const order=['dance','yawn','bye','welcome']; loadClip(order[clickN%order.length]); if(!playing) playClip('welcome',false); } });
 fig.addEventListener('click',e=>{ e.stopPropagation(); const order=['dance','yawn','bye','welcome']; playClip(order[clickN++%order.length],true); compBubble.classList.add('on'); if(state.focus!=='comp') focusComp(); });
 // keep the figure the same size as the scene around it
 const _ft=new THREE.Vector3(), _hd=new THREE.Vector3();
@@ -1594,7 +1592,7 @@ function unfocus(){
   hideDetail(); flyTo(HOME.pos,HOME.look); state.idle=0; updateOffset();
 }
 addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ if(!$('#lightbox').hidden) $('#lightbox').hidden=true; else if(!reader.hidden) closeReader(); else if(!$('#tour').hidden) endTour(); else if(drive.on) stopDrive(); else if(hunt.on) endHunt(); else if(state.focus) unfocus(); return; }
+  if(e.key==='Escape'){ if(!$('#lightbox').hidden) $('#lightbox').hidden=true; else if(!reader.hidden) closeReader(); else if(drive.on) stopDrive(); else if(hunt.on) endHunt(); else if(state.focus) unfocus(); return; }
   if(!reader.hidden && rApp.hidden && cur?.ctx.key && !e.target.closest('input,textarea')){ if(e.key==='ArrowRight'&&!$('#r-next').disabled) openItem(cur.ctx.key,cur.ctx.index+1); if(e.key==='ArrowLeft'&&!$('#r-prev').disabled) openItem(cur.ctx.key,cur.ctx.index-1); }
 });
 
@@ -1690,20 +1688,6 @@ let tpeNight=TPE.info().night;
 setNight(tpeNight); state.nightT=tpeNight?1:0;
 setInterval(()=>{ const n=TPE.info().night; if(n!==tpeNight){ tpeNight=n; setNight(n); } else if(!$('#music-menu').hidden) MUSIC.sync(); },30000);
 
-/* tour */
-const TOUR=[
-  ['Hello, island / 01','每座島是我的一個面向','五座六角形小島圍著中間的燈塔廣場：我是誰、作品、工具房、實驗室和遊戲室。湖邊另一座小島住著網頁小精靈。'],
-  ['Walk in / 02','點一座島，走進去看看','島上的每根標記都是一個作品或工具，點了會直接在島上展開，工具和遊戲也能在島上使用。拖曳可以轉動視角，滾輪或雙指可以縮放。'],
-  ['Shortcut / 03','不想逛，也能直接找','清單可以搜尋全部 '+total+' 個去處，右上角可以切回網頁版，也可以按「開車」開著車逛。我也藏在島上的人群裡，按上方的「找我」，看你幾秒能找到我。']
-];
-let tourStep=0;
-function renderTour(){ const [e,t,p]=TOUR[tourStep]; $('#tour-eyebrow').textContent=e; $('#tour-title').textContent=t; $('#tour-text').textContent=p;
-  $('#tour-dots').querySelectorAll('i').forEach((d,i)=>d.classList.toggle('on',i===tourStep)); $('#tour-next').textContent=tourStep===TOUR.length-1?'開始逛 →':'下一步 →'; }
-function startTour(){ tourStep=0; renderTour(); $('#tour').hidden=false; $('#tour-next').focus(); }
-function endTour(){ $('#tour').hidden=true; try{localStorage.setItem('yk-island-tour','1');}catch{} canvas.focus({preventScroll:true}); }
-$('#tour-next').addEventListener('click',()=>{ if(tourStep<TOUR.length-1){tourStep++; renderTour();} else endTour(); });
-$('#tour-skip').addEventListener('click',endTour);
-$('#t-tour').addEventListener('click',startTour);
 
 const _m4=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(), _p=new THREE.Vector3();
 let CITY=null, cityLoading=null;
@@ -1828,7 +1812,7 @@ function tick(){
     camera.position.copy(controls.target).add(off.multiplyScalar(nd/d)); if(Math.abs(zoomTo-nd)<.05) zoomTo=null; }
   hoverPick();
   if(drive.on){} else if(fly){ const k=1-Math.exp(-dt*3.2); camera.position.lerp(fly.pos,k); controls.target.lerp(fly.look,k); if(camera.position.distanceTo(fly.pos)<.15 && controls.target.distanceTo(fly.look)<.15) fly=null; }
-  state.idle+=dt; controls.autoRotate = state.spin && !state.focus && !fly && state.idle>2 && $('#tour').hidden;
+  state.idle+=dt; controls.autoRotate = state.spin && !state.focus && !fly && state.idle>2;
   if(!drive.on) controls.update();
   // keep target near the lake
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
@@ -1840,7 +1824,8 @@ function tick(){
 }
 // first frame then reveal
 renderer.compile(scene,camera);
-requestAnimationFrame(()=>{ tick(); setTimeout(()=>{$('#loading').classList.add('done'); let seen=false; try{seen=localStorage.getItem('yk-island-tour')==='1';}catch{} if(!seen) startTour(); },250); });
+requestAnimationFrame(()=>{ tick(); setTimeout(()=>{$('#loading').classList.add('done'); let seen=false; try{seen=localStorage.getItem('yk-island-tour')==='1';}catch{}
+  if(!seen){ setTimeout(()=>{ if(!state.focus){ compBubble.classList.add('on'); if(typeof playClip==='function') playClip('welcome',false); } try{localStorage.setItem('yk-island-tour','1');}catch{} },1200); } },250); });
 // open an island from #about / #work etc.
 const h=location.hash.slice(1); if(islands[h]) setTimeout(()=>focus(h),400);
 </script>
