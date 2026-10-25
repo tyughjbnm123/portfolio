@@ -58,6 +58,8 @@ button{cursor:pointer}
 .tool[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 /* index */
+.credit{margin:0;padding:8px 18px 10px;font-size:10px;color:var(--muted);border-top:1px solid var(--line);flex:none}
+.credit a{color:inherit}
 .index{position:absolute;top:calc(80px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:340px;display:flex;flex-direction:column;z-index:4;overflow:hidden}
 .index-head{padding:20px 20px 14px;border-bottom:1px solid var(--line);display:grid;gap:8px}
 .index-head h1{margin:0;font-size:21px;line-height:1.35;text-wrap:balance;font-weight:700}
@@ -384,6 +386,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="搜尋作品、工具、關鍵字…" autocomplete="off"></label>
     </div>
     <div class="index-list" id="index-list"></div>
+    <p class="credit">夜城建築：<a href="https://papptimus.itch.io/cyber-city" target="_blank" rel="noopener">Cyber City</a> by papptimus · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>（已修改）</p>
   </aside>
 
   <section class="detail panel" id="detail" hidden aria-live="polite">
@@ -711,6 +714,9 @@ const controls=new OrbitControls(camera,canvas);
 controls.target.copy(HOME.look); controls.enableDamping=true; controls.dampingFactor=.08;
 controls.minDistance=28; controls.maxDistance=330; controls.maxPolarAngle=1.22; controls.minPolarAngle=.25;
 controls.autoRotateSpeed=.35; controls.autoRotate=!reduced;
+// labels float above the canvas: pass their wheel events through so zooming works anywhere on the map
+$('#labels').addEventListener('wheel',e=>{ e.preventDefault();
+  canvas.dispatchEvent(new WheelEvent('wheel',{deltaX:e.deltaX,deltaY:e.deltaY,deltaZ:e.deltaZ,deltaMode:e.deltaMode,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,ctrlKey:e.ctrlKey,shiftKey:e.shiftKey,altKey:e.altKey,metaKey:e.metaKey,bubbles:true,cancelable:true})); },{passive:false});
 
 const hemi=new THREE.HemisphereLight(DAY.hemiSky,DAY.hemiGround,1.25); scene.add(hemi);
 const sun=new THREE.DirectionalLight(DAY.sun,2.2); sun.position.set(-70,120,60); sun.castShadow=true;
@@ -721,7 +727,7 @@ scene.add(sun); scene.add(skyDome);
 /* neon: everything that only glows at night fades with the night amount */
 const NEON=[], NEON_OBJ=[];
 const NEONC={about:0xff8a5c,work:0x4da3ff,tools:0xffd23f,lab:0x2fffd8,games:0xff4f8b,comp:0xe36bff, cyan:0x18e6ff, magenta:0xff3df0};
-function neonMat(hex,o=1,extra={}){ const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...extra}); m.userData.o=o; m.userData.boost=extra.boost??1.6; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
+function neonMat(hex,o=1,extra={}){ const {boost:_b,...ex}=extra; const m=new THREE.MeshBasicMaterial({color:hex,transparent:true,opacity:0,depthWrite:false,toneMapped:false,fog:false,...ex}); m.userData.o=o; m.userData.boost=extra.boost??1.6; m.color.multiplyScalar(m.userData.boost); NEON.push(m); return m; }
 function neonObj(o){ o.visible=false; NEON_OBJ.push(o); return o; }
 /* materials */
 const mats={};
@@ -751,6 +757,7 @@ water.rotation.x=-Math.PI/2; water.receiveShadow=true; scene.add(water);
 const waterDay=new THREE.Color(0x79b6b0), waterNight=new THREE.Color(0x0b0f24);
 
 /* surrounding mountains */
+let SKYLINE=null; const LAND=[];   // materials of the hills and forest, darkened to silhouettes at night
 const noise=new SimplexNoise();
 function terrainH(x,z){
   const r=Math.hypot(x,z);
@@ -768,7 +775,7 @@ function terrainH(x,z){
   const tri=(a,b,c)=>{const y=(a[1]+b[1]+c[1])/3; const s=shade(y); for(const v of [a,b,c]){pos.push(...v); col.push(s.r,s.g,s.b);} };
   for(let i=0;i<nr;i++) for(let j=0;j<nt;j++){const a=grid[i][j],b=grid[i+1][j],c=grid[i+1][j+1],d=grid[i][j+1]; tri(a,c,b); tri(a,d,c);}
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals();
-  const terrain=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.95})); terrain.receiveShadow=true; scene.add(terrain);
+  const terrain=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.95})); terrain.receiveShadow=true; scene.add(terrain); LAND.push(terrain.material);
   // forest
   const N=mobile?260:520, trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.25,.35,1.6,5),mat(WOOD),N), crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5,0),mat(0x77a05a),N);
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), s=new THREE.Vector3(), v=new THREE.Vector3(); let k=0, guard=0;
@@ -781,6 +788,7 @@ function terrainH(x,z){
     m4.compose(v.set(x,y+2.6*sc,z),q,s.set(sc,sc*1.25,sc)); crown.setMatrixAt(k,m4); crown.setColorAt(k,cc[k%4]); k++;
   }
   trunk.count=crown.count=k; trunk.castShadow=crown.castShadow=true; scene.add(trunk,crown);
+  for(const im of [trunk,crown]){ im.material=im.material.clone(); LAND.push(im.material); }
 }
 
 /* islands */
@@ -1001,8 +1009,8 @@ for(let i=0;i<6;i++){const a=i/6*Math.PI*2+.3; lamp(hub,Math.cos(a)*5.6,Math.sin
 for(let i=0;i<(mobile?2:3);i++){const P=person(hub); const a=i*2.1; P.root.position.set(Math.cos(a)*5,2,Math.sin(a)*5); walkers.push({P,minR:3.4,maxR:6.6,tgt:new THREE.Vector3(),speed:.9+Math.random()*.5,wait:Math.random()*3});}
 {const hl=document.createElement('div'); hl.className='hub-label'; hl.innerHTML='IDEAS<br>IN MOTION'; const o=new CSS2DObject(hl); o.position.set(0,15.5,0); hub.add(o);}
 const hubLight=new THREE.PointLight(0xffd27a,0,60,1.6); hubLight.position.set(0,11,0); hub.add(hubLight); lampLights.push(hubLight);
-const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.13,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
-beam.position.set(0,12+75,0); hub.add(neonObj(beam));
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.07,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
+beam.position.set(0,12+75,0); beam.scale.set(.6,1,.6); hub.add(neonObj(beam));
 
 /* neon sign towers (drawn on canvas, glow through bloom) */
 const SIGN_TXT={about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']};
@@ -1035,13 +1043,43 @@ function neonSign(g,key,pinAng){
   const glow=new THREE.PointLight(vc,0,26,1.8); glow.position.set(0,8,0); T.add(glow);
   SIGNS.push({mats:[vm,hm],glow,next:2+Math.random()*7,fl:0});
 }
+/* night towers: skyscrapers that grow out of the islands (and around the lake) after dark */
+const TOWERS=[], TOWER_MATS=[];
+const WIN_COLS=['#2fe6ff','#ff3df0','#ffb35c','#e8f0ff','#7a5cff'];
+function windowTex(seed,cols=6,rows=14,lit=.42){
+  const c=document.createElement('canvas'); c.width=cols*16; c.height=rows*16; const x=c.getContext('2d');
+  x.fillStyle='#05050c'; x.fillRect(0,0,c.width,c.height);
+  let r=seed; const rnd=()=>((r=(r*16807)%2147483647)/2147483647);
+  const pal=WIN_COLS.slice(0,2+Math.floor(rnd()*3));
+  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){ if(rnd()>lit) continue; x.globalAlpha=.55+rnd()*.45; x.fillStyle=pal[Math.floor(rnd()*pal.length)]; x.fillRect(i*16+3,j*16+4,10,8); }
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.NearestFilter; return t;
+}
+const towerGeo=new THREE.BoxGeometry(1,1,1); towerGeo.translate(0,.5,0);
+// Each island gets a composed skyline in the gaps between its landmarks: one hero tower on the side
+// facing away from the bridge, supporting midrises next to it, low blocks elsewhere.
+function nightTowers(g,key,landmarks){
+  const angs=landmarks.map(L=>Math.atan2(L.z,L.x)).sort((a,b)=>a-b), spots=[];
+  angs.forEach((a,i)=>{ let b=angs[(i+1)%angs.length]; if(b<=a) b+=Math.PI*2; const gapArc=(b-a)*LM_R-6.6;
+    if(angs.length===1){ spots.push(a+Math.PI*.66,a+Math.PI,a+Math.PI*1.33); return; }
+    if(gapArc>9) spots.push(a+(b-a)/3,a+2*(b-a)/3); else if(gapArc>2.6) spots.push((a+b)/2); });
+  const far=a=>Math.abs(Math.atan2(Math.sin(a-Math.PI/2),Math.cos(a-Math.PI/2)));   // 0 = the far side
+  const order=spots.map((a,i)=>({a,i})).sort((p,q)=>far(p.a)-far(q.a));
+  const SH=[{kind:'tower',w:3.2,levels:6,beacon:true},{kind:'midrise',w:3,levels:4},{kind:'midrise',w:2.8,levels:3},{kind:'terrace',w:2.1},{kind:'corner',w:2.5},{kind:'terrace',w:2}];
+  const T=new THREE.Group(); T.position.y=2; g.add(neonObj(T)); const items=[], blockers=[];
+  order.forEach(({a},rank)=>{ const sh=SH[Math.min(rank,SH.length-1)], x=Math.cos(a)*LM_R, z=Math.sin(a)*LM_R;
+    items.push({...sh,x,z,rot:-a});
+    const half=sh.kind==='terrace'?sh.w:sh.w/2; blockers.push({x,z,r:half*1.15+.6}); });
+  TOWERS.push({T,key,items});
+  return blockers;
+}
 /* place islands + bridges */
 const bridgeMat=mat(0xc9a77c); const islandsTmp=[];
 D.forEach((d,i)=>{
   const ang=-Math.PI/2 - i*Math.PI*2/D.length + Math.PI; // 01 at front-left, clockwise
   const x=Math.cos(ang)*RING, z=Math.sin(ang)*RING;
   const g=hexIsland(d.key,C3[d.key]); g.position.set(x,0,z); g.rotation.y=-ang+Math.PI/2; scene.add(g);
-  BUILD[d.key](g,C3[d.key]);
+  if(d.key==='work'){ const day=new THREE.Group(); g.add(day); g.userData.dayBuild=day; BUILD.work(day,C3.work); }
+  else BUILD[d.key](g,C3[d.key]);
   g.traverse(o=>{if(o.isMesh){o.userData.key=d.key; pickables.push(o);}});
   const pl=new THREE.PointLight(0xffd27a,0,40,1.8); pl.position.set(0,9,0); g.add(pl); lampLights.push(pl);
   // bridge from hub to island
@@ -1097,7 +1135,7 @@ D.forEach((d,i)=>{
     const po=new CSS2DObject(a2); po.position.set(px,7,pz); zg.add(po); pinLabels.push(a2); zones[zoneOf[j]].labels.push(a2); pinLocal.push(new THREE.Vector3(px,2,pz));
   });
   islands[d.key]={g,data:d,pos:new THREE.Vector3(x,0,z),dir,pinLabels,pinLocal,groupLabels,landmarks,zones,zoneOf,label:el,lift:0};
-  neonSign(g,d.key,pinAng);
+  neonSign(g,d.key,pinAng); islands[d.key].towers=nightTowers(g,d.key,landmarks);
 });
 
 /* boats + clouds */
@@ -1228,13 +1266,16 @@ const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
   for(const x of [-.35,.35]){ mk(new THREE.BoxGeometry(.26,.12,.05),new THREE.MeshBasicMaterial({color:0xfff2cf}),x,.48,-1.11,dcar); mk(new THREE.BoxGeometry(.26,.12,.05),new THREE.MeshBasicMaterial({color:0xff4a4a}),x,.48,1.11,dcar); }
   const hl=new THREE.SpotLight(0xfff0d0,0,22,.6,.5,1.2); hl.position.set(0,.6,-1); const tg=new THREE.Object3D(); tg.position.set(0,0,-8); dcar.add(hl,tg); hl.target=tg; dcar.userData.hl=hl; }
 const INR=R*Math.cos(Math.PI/6)-.7;
+const _tw=new THREE.Vector3();
 function whereAt(x,z){
   const r=Math.hypot(x,z);
   if(r<=7.1 && r>=1.7) return 'hub';
   for(const k in islands){ const o=islands[k]; const dx=x-o.pos.x, dz=z-o.pos.z, rr=Math.hypot(dx,dz);
     // hex inradius check against the island's rotation
     const a=Math.atan2(dz,dx)+o.g.rotation.y, seg=Math.PI/3, local=(((a+seg/2)%seg)+seg)%seg-seg/2, edge=INR/Math.cos(local);
-    if(rr<=edge && rr>=6.6){ for(const L of o.landmarks){ const lp=o.g.localToWorld(L.clone()); if(Math.hypot(x-lp.x,z-lp.z)<3.2) return null; } return k; }
+    if(rr<=edge && rr>=6.6){ for(const L of o.landmarks){ const lp=o.g.localToWorld(L.clone()); if(Math.hypot(x-lp.x,z-lp.z)<3.2) return null; }
+      if(state.nightT>.5 && o.towers) for(const b of o.towers){ _tw.set(b.x,0,b.z); o.g.localToWorld(_tw); if(Math.hypot(x-_tw.x,z-_tw.z)<b.r) return null; }
+      return k; }
     const along=x*o.dir.x+z*o.dir.z, across=Math.abs(-x*o.dir.z+z*o.dir.x);
     if(along>6.6 && along<RING-INR+1 && across<=1.45) return 'bridge:'+k;
   }
@@ -1639,13 +1680,43 @@ $('#tour-next').addEventListener('click',()=>{ if(tourStep<TOUR.length-1){tourSt
 $('#tour-skip').addEventListener('click',endTour);
 $('#t-tour').addEventListener('click',startTour);
 
+// the far shore becomes a megacity skyline at night
+{ const N=mobile?60:120, tex=windowTex(31337,8,24,.38); tex.repeat.set(3,6);
+  const m=new THREE.MeshStandardMaterial({color:0x0c0c1a,roughness:.6,metalness:.3,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0}); TOWER_MATS.push(m);
+  const im=new THREE.InstancedMesh(towerGeo,m,N); im.frustumCulled=false; const base=[];
+  for(let i=0;i<N;i++){ const a=i/N*Math.PI*2+Math.random()*.05, r=275+Math.random()*130, x=Math.cos(a)*r, z=Math.sin(a)*r;
+    base.push({x,z,y:terrainH(x,z)-2,w:8+Math.random()*14,d:8+Math.random()*14,h:40+Math.random()*(r>340?150:95),ry:Math.random()*3}); }
+  SKYLINE={im,base,last:-1}; scene.add(neonObj(im));
+}
+const _m4=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(), _p=new THREE.Vector3();
+let CITY=null, cityLoading=null;
+function loadCity(){
+  return cityLoading ||= import('./assets/island-city/night-city.js?v=20261025-1').then(m=>m.createNightCity({
+    renderer, plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
+    pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
+      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);
+      if(SKYLINE){ const t=c.skylineTex; t.repeat.set(3,8); SKYLINE.im.material.emissiveMap=t; SKYLINE.im.material.needsUpdate=true; }
+      tick._n=-1;                                // re-apply the current night amount
+    }).catch(e=>console.warn('night city unavailable',e));
+}
+function growCity(n){
+  const e=n<=0?0:1-Math.pow(1-n,3);
+  if(n>.015 && !CITY) loadCity();
+  TOWERS.forEach(t=>{ t.T.scale.y=Math.max(.001,e); });
+  if(CITY){ CITY.update(n); CITY.block.scale.y=Math.max(.001,e); const day=islands.work.g.userData.dayBuild; day.scale.y=Math.max(.001,1-e); day.visible=e<.995; }
+  TOWER_MATS.forEach(m=>m.emissiveIntensity=n*1.05);
+  LAND.forEach(m=>m.color.setScalar(1-.78*n));
+  if(SKYLINE && Math.abs(SKYLINE.last-e)>.002){ SKYLINE.last=e; const {im,base}=SKYLINE;
+    base.forEach((b,i)=>{ _q.setFromEuler(new THREE.Euler(0,b.ry,0)); _s.set(b.w,b.h*Math.max(.001,e),b.d); _p.set(b.x,b.y,b.z); _m4.compose(_p,_q,_s); im.setMatrixAt(i,_m4); });
+    im.instanceMatrix.needsUpdate=true; }
+}
 /* ---------- bloom: only at night, loaded the first time it gets dark ---------- */
 let bloom=null, bloomLoading=null;
 function loadBloom(){
   return bloomLoading ||= Promise.all(['EffectComposer','RenderPass','UnrealBloomPass','OutputPass'].map(n=>import(`three/addons/postprocessing/${n}.js`))).then(([E,Rp,U,O])=>{
     const composer=new E.EffectComposer(renderer); composer.setPixelRatio(mobile?1:renderer.getPixelRatio()); composer.setSize(innerWidth,innerHeight);
     composer.addPass(new Rp.RenderPass(scene,camera));
-    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.7,.45,.86); composer.addPass(pass);
+    const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.45,.35,.9); composer.addPass(pass);
     composer.addPass(new O.OutputPass()); bloom={composer,pass};
   }).catch(()=>{});
 }
@@ -1670,16 +1741,17 @@ function tick(){
   // day/night
   state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5);
   const n=state.nightT;
-  scene.background.copy(DAY.sky).lerp(NIGHT.sky,n); scene.fog.color.copy(scene.background); skyDome.material.uniforms.uN.value=n; skyDome.position.copy(camera.position);
+  scene.background.copy(DAY.sky).lerp(NIGHT.sky,n); scene.fog.color.copy(scene.background); scene.fog.near=240+110*n; scene.fog.far=520+300*n; skyDome.material.uniforms.uN.value=n; skyDome.position.copy(camera.position);
   hemi.color.copy(DAY.hemiSky).lerp(NIGHT.hemiSky,n); hemi.groundColor.copy(DAY.hemiGround).lerp(NIGHT.hemiGround,n); hemi.intensity=1.25-.75*n;
   sun.color.copy(DAY.sun).lerp(NIGHT.sun,n); sun.intensity=2.2-1.75*n;
   water.material.color.copy(waterDay).lerp(waterNight,n); water.material.metalness=.05+.55*n; water.material.roughness=.35-.22*n;
-  winMat.emissive.copy(WIN_WARM).lerp(WIN_CYAN,n); winMat2.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); winMat.emissiveIntensity=winMat2.emissiveIntensity=n*1.25;
-  lampMat.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); lampMat.emissiveIntensity=.15+n*2.4;
-  lampLights.forEach((l,i)=>{ l.intensity=(l===hubLight?260-150*n:120)*n; l.color.copy(LAMP_WARM).lerp(l===hubLight?WIN_CYAN:(i%2?WIN_MAG:WIN_CYAN),n); });
+  winMat.emissive.copy(WIN_WARM).lerp(WIN_CYAN,n); winMat2.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); winMat.emissiveIntensity=winMat2.emissiveIntensity=n*.8;
+  lampMat.emissive.copy(WIN_WARM).lerp(WIN_MAG,n); lampMat.emissiveIntensity=.15+n*1.1;
+  lampLights.forEach((l,i)=>{ l.intensity=(l===hubLight?260-200*n:120-95*n)*n; l.color.copy(LAMP_WARM).lerp(l===hubLight?WIN_CYAN:(i%2?WIN_MAG:WIN_CYAN),n); });
   roadMat.color.copy(ROAD_DAY).lerp(ROAD_NIGHT,n); roadMat.roughness=.92-.5*n; roadMat.metalness=.3*n;
   roadLineMat.emissive.copy(LINE_DAY).lerp(WIN_CYAN,n); roadLineMat.emissiveIntensity=1-.35*n; roadLineMat.color.setScalar(1-.75*n);
-  if(Math.abs(n-(tick._n??-1))>.001){ tick._n=n; NEON.forEach(m=>m.opacity=m.userData.o*n); NEON_OBJ.forEach(o=>o.visible=n>.015); }
+  if(Math.abs(n-(tick._n??-1))>.001){ tick._n=n; NEON.forEach(m=>m.opacity=m.userData.o*n); NEON_OBJ.forEach(o=>o.visible=n>.015); growCity(n); }
+
   if(n>.015) SIGNS.forEach(sg=>{ sg.next-=dt; if(sg.next<0 && !reduced){ sg.fl=.32; sg.next=3+Math.random()*8; }
     let f=1; if(sg.fl>0){ sg.fl-=dt; f=(sg.fl>.24||(sg.fl<.16&&sg.fl>.1))?.15:1; }
     sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });
@@ -1741,7 +1813,7 @@ function tick(){
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
   sizeFig();
   if(state.nightT>.015){ if(!bloom) loadBloom(); }
-  if(bloom && state.nightT>.015){ bloom.pass.strength=.75*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
+  if(bloom && state.nightT>.015){ bloom.pass.strength=.45*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
   labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
 }
