@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // All five district identities use exactly the same physical display and type layout.
-// 2026-10-27: enlarged (same 0.31 aspect) so the full category names read from the main overview.
+// 2026-10-27: enlarged (same 0.31 aspect) so the original three-character names read from the main overview.
 export const DISTRICT_LED=Object.freeze({width:5.4,height:17.4,depth:.3});
 export const DISTRICT_TITLES=Object.freeze({
   about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']

@@ -7,8 +7,7 @@ export function rideStateAt(seconds){
   return {wheel:seconds*Math.PI*2/105,ship:Math.sin(seconds*Math.PI*2/8.8)*.64,train:((seconds/24)%1+1)%1};
 }
 
-// faceView: the main overview camera (HOME in island.html)
-export function createArcadePark({parent,pick,reduced=false,faceView=[0,134,183]}){
+export function createArcadePark({parent,pick,reduced=false}){
   const park=new THREE.Group();park.name='霓虹遊樂園';parent.add(park);
   const metal=new THREE.MeshStandardMaterial({color:0x263949,emissive:0x11242f,emissiveIntensity:.28,roughness:.47,metalness:.55});
   const silver=new THREE.MeshStandardMaterial({color:0x8496a2,roughness:.48,metalness:.6});
@@ -113,11 +112,6 @@ export function createArcadePark({parent,pick,reduced=false,faceView=[0,134,183]
     cars.forEach((car,i)=>{const f=curveFrames(s.train-i*1.43/length);car.position.copy(f.p).addScaledVector(f.up,.09);rot.makeBasis(f.side,f.up,f.t.clone().negate());car.quaternion.setFromRotationMatrix(rot);});
     if(Math.abs(lastNight-night)>.004){lastNight=night;glowing.forEach(({m,k})=>m.emissiveIntensity=.22+night*k*1.12);glass.emissiveIntensity=.15+night*.32;districtSign.userData.update(night);}
   };
-  // Turn the whole ride layout about the island centre so the wheel — and its district LED — faces the main view
-  // instead of being seen edge-on. The rides keep their relative layout; all of them stay inside the ring road.
-  {const view=new THREE.Vector3(...faceView),w=new THREE.Vector3();parent.updateMatrixWorld(true);
-   for(let k=0;k<3;k++){park.updateMatrixWorld(true);ferris.getWorldPosition(w);const d=parent.worldToLocal(view.clone()).sub(parent.worldToLocal(w.clone()));
-     park.rotation.y+=Math.atan2(d.x,d.z)-(park.rotation.y+0);park.rotation.y=Math.atan2(d.x,d.z);}}
   update(0,0);park.traverse(o=>{if(o.isMesh)pick(o);});
   return {group:park,update,curveFrames,curveLength:length,
     portal(name,x,z,face){const g=new THREE.Group();g.position.set(x,2,z);g.rotation.y=face;parent.add(g);for(const sx of [-1.5,1.5])box(.12,2.6,.12,sx,1.3,0,metal,g);box(3.12,.1,.12,0,2.62,0,name==='排行榜遊戲'?cyan:pink,g);g.name='遊戲入口 / '+name;return g;}
