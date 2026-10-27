@@ -394,7 +394,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="搜尋作品、工具、關鍵字…" autocomplete="off"></label>
     </div>
     <div class="index-list" id="index-list"></div>
-    <p class="credit">夜城建築：<a href="https://papptimus.itch.io/cyber-city" target="_blank" rel="noopener">Cyber City</a> by papptimus · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>（已修改）</p>
+    <p class="credit">夜城建築為原創程序化模型，遊樂設施、車輛與招牌皆為原創。</p>
   </aside>
 
   <section class="detail panel" id="detail" hidden aria-live="polite">
@@ -1755,7 +1755,7 @@ import('./assets/island-city/metro.js?v=20261026-4').then(m=>{
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
 function loadCity(){
-  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261027-1').then(m=>m.createNightCity({
+  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261027-2').then(m=>m.createNightCity({
     renderer, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);

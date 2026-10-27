@@ -1,19 +1,22 @@
-Cyber City
-Original creator: papptimus
-Source: https://papptimus.itch.io/cyber-city
-License: Creative Commons Attribution 4.0 International (CC BY 4.0)
-License URL: https://creativecommons.org/licenses/by/4.0/
-Author's license confirmation: https://itch.io/post/7968521
+ORIGINAL MODULAR CITY KIT — 2026-10-27
+Applies ONLY to: cyber-city-original.glb
 
-Changes for this portfolio (2026-10-25): converted selected FBX models to glTF 2.0 / GLB;
-normalized scale and pivots; corrected emissive material connections; extended the
-tower with repeated building sections; arranged buildings and added original signs,
-rooftop details, lighting and an elevated walkway.
-No endorsement by the original creator is implied.
+Created for the YI-CHI KUO portfolio from newly authored procedural geometry
+and algorithmically drawn raster textures. The complete reproducible generator
+is tools/build-cyber-city.py (Python 3 standard library; no artwork inputs).
 
-These are independently authored cyberpunk-style assets, not extracted Cyberpunk 2077 game assets.
+All 14 parts, window colour atlas, emissive atlas and black wall emission mask
+are generated from numeric coordinates and pixel rules in that script.
+No Cyberpunk 2077 or other game exports are used. No third-party models,
+photographs, downloaded textures or AI-generated image textures are used.
+The kit may be used, modified and published as part of this portfolio.
 
-Changes (2026-10-27): towers stacked from repeated storey sections to form landmark high-rises; buildings
-re-arranged into composed district skylines with lit crowns; text boards removed (district LEDs only).
+Textures are embedded in the GLB (256x256, 256x256 and 1x1 PNG).
+Two shared opaque PBR materials; no normal maps. Windows are physically
+offset 0.014 units from the supporting facade. No signs, text or logos.
+Deterministic seed: 271026. Geometry is Y-up with bottom-centre pivots.
 
-Original work (not part of Cyber City): district LED signs, arcade rides, car, metro, harbour details and lighting.
+This is a newly generated asset, NOT a conversion or modification of any earlier model.
+The earlier Cyber City (papptimus, CC BY 4.0) model has been removed from the site.
+
+Also original (not part of the kit): district LED signs, arcade rides, car, metro, harbour details and lighting.

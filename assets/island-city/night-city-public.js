@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-// Public night city: "Cyber City" by papptimus, CC BY 4.0 (see ATTRIBUTION.txt), modified.
+// Public night city: original procedural city kit (cyber-city-original.glb, built by tools/build-cyber-city.py).
 // Same interface as the private preview's city module, so island.html is identical apart from the import path.
 // Loaded the first time the island turns to night; nothing here runs during the day.
 //
@@ -11,7 +11,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // - No text boards on buildings: the five district LEDs (placeLED) are the only signs.
 
 export async function createNightCity({ renderer, plans, work, pick, districts = [] }) {
-  const gltf = await new GLTFLoader().loadAsync(new URL('./cyber-city.glb', import.meta.url).href);
+  const gltf = await new GLTFLoader().loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href);
   // GLTFLoader strips '.' from node names (tower_walls.001 → tower_walls001)
   const src = n => gltf.scene.getObjectByName(n) || gltf.scene.getObjectByName(n.replace(/\./g, ''));
   const facades = new Set(), lit = [], lights = [], accents = [];
@@ -23,19 +23,21 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     if (m.emissiveMap) { m.emissiveIntensity = 0; facades.add(m); }
   });
 
-  const MIDS = { tower: ['tower_walls.001', 'tower_walls.002', 'tower_walls.003'], midrise: ['midrise_walls.001'] };
+  // Every part has a bottom-centre pivot and is one storey (1 unit) tall: storey k sits at y = k, the roof on top.
+  const MIDS = { tower: ['tower_walls.001', 'tower_walls.002', 'tower_walls.001', 'tower_walls.003'], midrise: ['midrise_walls.001'], slim: ['slim_walls.001'] };
+  const ROOF_H = { tower: .4, midrise: .3, slim: .4 };
   function make(kind, levels = 1) {
     const g = new THREE.Group();
     if (MIDS[kind]) {
       g.add(src(kind + '_walls').clone());
-      for (let k = 1; k < levels; k++) { const s = src(MIDS[kind][(k - 1) % MIDS[kind].length]).clone(); s.position.set(0, k - 1, 0); g.add(s); }
-      const roof = src(kind + '_roof').clone(); roof.position.set(0, levels - 2, 0); g.add(roof);
+      for (let k = 1; k < levels; k++) { const s = src(MIDS[kind][(k - 1) % MIDS[kind].length]).clone(); s.position.set(0, k, 0); g.add(s); }
+      const roof = src(kind + '_roof').clone(); roof.position.set(0, levels, 0); g.add(roof);
     } else g.add(src(kind).clone(true));
     g.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
     return g;
   }
   // footprint of each part at scale 1: tower/midrise/corner 1×1, terrace 1×2; height in storeys
-  const FOOT = { tower: [1, 1], midrise: [1, 1], corner: [1, 1], terrace: [1, 2] };
+  const FOOT = { tower: [1, 1], midrise: [1, 1], slim: [.7, .7], corner: [1, 1], terrace: [1, 2], podium: [1.6, 1.6] };
 
   const metal = new THREE.MeshStandardMaterial({ color: 0x263446, metalness: .45, roughness: .58 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x101825, roughness: .6, metalness: .25 });
@@ -55,14 +57,14 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     order.forEach((i, rank) => {
       const it = plan.items[i], L = LANDMARK[plan.key] || { w: 3.1, levels: 8 };
       const spec = rank === 0 ? { kind: 'tower', w: L.w, levels: L.levels }
-        : rank === 1 ? { kind: 'midrise', w: 3, levels: 4 }
+        : rank === 1 ? (plan.key === 'tools' || plan.key === 'lab' ? { kind: 'slim', w: 3.2, levels: 7 } : { kind: 'midrise', w: 3, levels: 5 })
         : rank === 2 ? { kind: 'midrise', w: 2.7, levels: 3 }
         : { kind: rank % 2 ? 'terrace' : 'corner', w: rank % 2 ? 2 : 2.5, levels: 1 };
       if (rank === 0) it.beacon = true;
       const b = make(spec.kind, spec.levels); b.scale.setScalar(spec.w); b.position.set(it.x, 0, it.z); b.rotation.y = it.rot; plan.group.add(b);
       b.traverse(o => { if (o.isMesh) pick(o, plan.key); });
       const [fx, fz] = FOOT[spec.kind];
-      it.renderBounds = { halfX: fx * spec.w / 2, halfZ: fz * spec.w / 2, height: spec.w * spec.levels, host: b };
+      it.renderBounds = { halfX: fx * spec.w / 2, halfZ: fz * spec.w / 2, height: spec.w * (spec.levels + (ROOF_H[spec.kind] || 0)), host: b };
       const d = districts.find(x => x.key === plan.key); if (d?.towers?.[i]) d.towers[i].r = Math.hypot(it.renderBounds.halfX, it.renderBounds.halfZ) + .15;
     });
     // landmark: a thin lit crown and a coloured wash at its foot, so it reads as a lit volume against the sky
@@ -83,13 +85,13 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     // every footprint stays inside the island's central collision area (radius 6.3)
     box(9.8, .12, 8.6, 0, 0, 0, concrete);
     const tw = make('tower', 6); tw.scale.setScalar(3.25); tw.position.set(-2.25, .12, -1.65); block.add(tw);
-    building('midrise', 3.1, 2, -2.55, Math.PI / 2);
+    { const mr = make('midrise', 2); mr.scale.setScalar(3.1); mr.position.set(2, .12, -2.55); mr.rotation.y = Math.PI / 2; block.add(mr); }
     building('terrace', 2.15, 3.35, 1.8, 0);
     building('corner', 2.4, -3.25, 2.5, Math.PI / 2);
     building('corner', 1.75, -.3, 3.55, Math.PI);
-    const tTop = .12 + 3.25 * 6;
+    const tTop = .12 + 3.25 * 6.4;
     box(1.4, .8, 1.3, -2.25, tTop, -1.65, dark); box(.08, 2, .08, -2.25, tTop + .8, -1.65, metal); box(.18, .18, .18, -2.25, tTop + 2.8, -1.65, pink);
-    box(.75, .55, .85, 2.2, 6.32, -2.45, dark); box(.25, 1.5, .25, 2.65, 6.32, -2.9, metal);
+    box(.75, .55, .85, 2.2, 7.25, -2.45, dark); box(.25, 1.5, .25, 2.65, 7.25, -2.9, metal);
     // elevated walkway between the two towers
     box(4.25, .2, 1.05, -.1, 5.05, -1.6, metal);
     for (const z of [-2.1, -1.1]) { box(4.25, .06, .06, -.1, 5.3, z, cyan); box(4.25, .06, .06, -.1, 6, z, metal); for (let x = -2; x <= 2; x += .8) box(.04, .75, .04, x, 5.25, z, metal); }
@@ -137,8 +139,8 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     return true;
   }
 
-  const skylineTex = src('tower_walls.001').material.emissiveMap.clone();
-  skylineTex.wrapS = skylineTex.wrapT = THREE.RepeatWrapping; skylineTex.needsUpdate = true;
+  let skylineTex = null; src('tower_walls.001').traverse(o => { if (!skylineTex && o.isMesh && o.material.emissiveMap) skylineTex = o.material.emissiveMap.clone(); });
+  if (skylineTex) { skylineTex.wrapS = skylineTex.wrapT = THREE.RepeatWrapping; skylineTex.needsUpdate = true; }
 
   let last = -1;
   return {
