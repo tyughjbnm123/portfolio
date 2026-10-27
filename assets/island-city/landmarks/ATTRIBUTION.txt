@@ -1,0 +1,43 @@
+Five Island Landmarks / 五座原創夜城地標
+Created for YI-CHI KUO's portfolio, 2026-10-27.
+
+All geometry is authored procedurally in tools/build-five-landmarks.py and
+tools/build-tool-tower.py. Texture pixels are drawn by code with Pillow:
+windows, restrained LED illumination, alloy grain and roughness.
+No Cyberpunk 2077 or other game exports, Meshy output, third-party model,
+downloaded texture, normal map or AI-generated bitmap is included.
+
+The Tool Room silhouette continues the previously approved design study.
+That concept image is not embedded, sampled or distributed with these models.
+Chinese LED glyphs are rasterized with the locally installed Microsoft JhengHei
+font. No font software is embedded or redistributed.
+
+The geometry and procedural textures were created for use and modification in
+this portfolio, including its public GitHub Pages deployment. Retain this
+provenance note with the source files so future changes remain traceable.
+
+Preview dependencies: Three.js r160 (MIT), loaded from jsDelivr. The avatar
+preview reuses the portfolio's existing authored character geometry. Neither
+the avatar nor the Three.js runtime is embedded in the five building GLBs.
+
+This is a separate landmark study, not the prior 600-triangle modular-floor kit.
+Each building uses two opaque materials, with embedded images no larger than
+512 x 512. Rides are static meshes in this first model set.
+
+--- tools.glb (gear factory) ---
+Tool Room Gear Factory — original architecture study, 2026-10-27
+All geometry and all texture pixels created by original Python code.
+Build: tools/build-gear-factory.py (Python 3 + Pillow), with the existing original geometry helpers.
+References influence structural layout and colour only. No game models, game textures, sampled image pixels, logos, Meshy model or AI bitmap textures.
+The Windows system font is used to rasterize the Tool Room LED; the font file is not distributed.
+Independent building preview only. The five islands, central lighthouse and previous tank building remain unchanged.
+
+--- lab.glb (tanks and pipes) ---
+Tool Room Heavy Factory — original study, 2026-10-27
+All geometry and all texture pixels authored procedurally for YI-CHI KUO.
+Build: tools/build-heavy-factory.py; shared helpers: tools/build-tool-factory.py and tools/build-tool-tower.py.
+Reference used only for industrial forms, palette and wear direction. No game meshes, game textures, logos, copied graffiti, Meshy models or AI bitmap textures.
+Concrete noise, stains, bands and abstract maintenance marks are drawn by code. System font rasterizes the Tool Room LED; no font file is distributed.
+Independent architecture preview only. The original five islands and central lighthouse are unchanged.
+
+Files here: about.glb, work.glb, tools.glb, lab.glb — packaged by tools/package-building-models.py (2026-10-27). In the site each building's own LED panel is replaced by the shared district LED.

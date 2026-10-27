@@ -10,12 +10,17 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 //   high-rise, then mid and low blocks.
 // - No text boards on buildings: the five district LEDs (placeLED) are the only signs.
 
+export const HUMAN_SCALE = .45;   // island.html scales people by the same factor
 export async function createNightCity({ renderer, plans, work, pick, districts = [] }) {
   const loader = new GLTFLoader();
-  // Tool-room landmark: a bespoke original tower (tools/build-tool-tower.py). Optional — the kit is used if it fails.
-  const [gltf, toolTower] = await Promise.all([
+  // District landmarks: bespoke original buildings (tools/build-five-landmarks.py etc.), one per city island.
+  // They are authored at the scale of the island's people before HUMAN_SCALE; buildings and people share that
+  // scale so doors, floors and figures stay in proportion. Each is optional — the kit is used if one fails.
+  const LANDMARK_FILES = { about: 'about', work: 'work', tools: 'tools', lab: 'lab' };
+  const [gltf, ...lm] = await Promise.all([
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
-    loader.loadAsync(new URL('./tool-room-tower-v1.glb', import.meta.url).href).catch(() => null)]);
+    ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb`, import.meta.url).href).catch(() => null))]);
+  const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
   // GLTFLoader strips '.' from node names (tower_walls.001 → tower_walls001)
   const src = n => gltf.scene.getObjectByName(n) || gltf.scene.getObjectByName(n.replace(/\./g, ''));
   const facades = new Set(), lit = [], lights = [], accents = [];
@@ -49,6 +54,20 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   const glow = color => { const m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0, roughness: .4 }); lit.push(m); return m; };
   const cyan = glow(0x29e7ff), pink = glow(0xff488b), amber = glow(0xffc263);
 
+  // Each landmark stands at its island's centre with its front (+Z, where its own LED was) turned away from the hub.
+  const lmInfo = {};
+  for (const d of districts) {
+    const T = LM[d.key]; if (!T) continue;
+    d.g.updateMatrixWorld(true);
+    const out = d.g.worldToLocal(d.g.getWorldPosition(new THREE.Vector3()).multiplyScalar(2)); out.y = 0; out.normalize();
+    const box = new THREE.Box3().setFromObject(T), led = T.getObjectByName('vertical_led'), lb = led ? new THREE.Box3().setFromObject(led) : null;
+    lmInfo[d.key] = { yaw: Math.atan2(out.x, out.z), box, lb };
+  }
+  function overlapsLandmark(key, it) {
+    const L = lmInfo[key]; if (!L) return false;
+    const c = Math.cos(-L.yaw), s = Math.sin(-L.yaw), x = it.x * c - it.z * s, z = it.x * s + it.z * c, S = HUMAN_SCALE, m = 1.6;
+    return x > L.box.min.x * S - m && x < L.box.max.x * S + m && z > L.box.min.z * S - m && z < L.box.max.z * S + m;
+  }
   // Skyline tiers per district; storeys differ so the four city islands never share a silhouette.
   const LANDMARK = { tools: { w: 3.1, levels: 10 }, work: { w: 3.2, levels: 9 }, lab: { w: 3.2, levels: 8 }, about: { w: 3.1, levels: 8 } };
   const CROWN = { about: 0xff9a6a, work: 0x5fb4ff, tools: 0xffd25a, lab: 0x38ffe0 };
@@ -60,9 +79,13 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     plan.items.forEach(it => { it.beacon = false; });
     order.forEach((i, rank) => {
       const it = plan.items[i], L = LANDMARK[plan.key] || { w: 3.1, levels: 8 };
-      const bespoke = toolTower && plan.key === 'tools';
-      const spec = rank === 0 && bespoke ? { kind: 'midrise', w: 3, levels: 5 }
+      const bespoke = !!LM[plan.key], low = plan.key === 'tools' || plan.key === 'lab';   // factory districts stay low-rise
+      if (bespoke && overlapsLandmark(plan.key, it)) { it.renderBounds = null; const d = districts.find(x => x.key === plan.key); if (d?.towers?.[i]) d.towers[i].r = 0; if (rank === 0) { it.beacon = true; it.bespoke = true; } return; }
+      const spec = rank === 0 && bespoke ? { kind: 'midrise', w: 1.9, levels: low ? 4 : 6 }
         : rank === 0 ? { kind: 'tower', w: L.w, levels: L.levels }
+        : bespoke && rank === 1 ? (low ? { kind: 'slim', w: 2.4, levels: 5 } : { kind: 'slim', w: 2.4, levels: 8 })
+        : bespoke && rank === 2 ? { kind: 'midrise', w: 1.8, levels: 3 }
+        : bespoke ? { kind: rank % 2 ? 'terrace' : 'corner', w: rank % 2 ? 1.5 : 1.8, levels: 1 }
         : rank === 1 ? (plan.key === 'tools' || plan.key === 'lab' ? { kind: 'slim', w: 3.2, levels: 7 } : { kind: 'midrise', w: 3, levels: 5 })
         : rank === 2 ? { kind: 'midrise', w: 2.7, levels: 3 }
         : { kind: rank % 2 ? 'terrace' : 'corner', w: rank % 2 ? 2 : 2.5, levels: 1 };
@@ -84,7 +107,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
 
   // The work island trades its daytime buildings for a designed block at night (no text boards).
   let block = null;
-  if (work) {
+  if (work && !LM.work) {
     block = new THREE.Group(); block.name = 'work night block';
     const box = (w, h, d, x, y, z, m = metal) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y + h / 2, z); o.castShadow = o.receiveShadow = true; block.add(o); return o; };
     const building = (name, width, x, z, angle = 0) => { const r = src(name).clone(true); r.scale.setScalar(width); r.position.set(x, .12, z); r.rotation.y = angle; block.add(r); return r; };
@@ -111,23 +134,23 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   }
 
   // The other city islands swap their daytime centre for a small night block, so no cottage sits under the towers.
-  const centres = [], TOOL_SCALE = .82; let toolLED = null;
+  const centres = [], ledAt = {};
   for (const d of districts) {
-    if (d.key === 'games' || d.key === 'work' || !d.g?.userData?.dayBuild) continue;
+    if (d.key === 'games' || !d.g?.userData?.dayBuild) continue;
+    if (d.key === 'work' && !LM.work) continue;
     const root = new THREE.Group(); root.position.y = 2; root.name = 'night centre / ' + d.key; root.visible = false; d.g.add(root);
     const put = (kind, levels, w, x, z, a = 0) => { const b = make(kind, levels); b.scale.setScalar(w); b.position.set(x, .12, z); b.rotation.y = a; root.add(b); };
     const plate = new THREE.Mesh(new THREE.BoxGeometry(9.4, .12, 8.2), concrete); plate.position.y = .06; plate.receiveShadow = true; root.add(plate);
-    if (d.key === 'tools' && toolTower) {
-      const T = toolTower.scene, S = TOOL_SCALE;
+    if (LM[d.key]) {
+      const T = LM[d.key], S = HUMAN_SCALE, L = lmInfo[d.key];
       T.getObjectByName('vertical_led')?.removeFromParent();          // the shared district LED replaces its own panel
       T.traverse(o => { if (o.isMesh) { for (const t of [o.material.map, o.material.emissiveMap]) if (t) t.anisotropy = aniso; if (o.material.emissiveMap) { o.material.emissiveIntensity = 0; facades.add(o.material); } } });
-      T.scale.setScalar(S);
-      d.g.updateMatrixWorld(true);
-      const out = d.g.worldToLocal(d.g.getWorldPosition(new THREE.Vector3()).multiplyScalar(2)); out.y = 0; out.normalize();
-      T.rotation.y = Math.atan2(out.x, out.z); root.add(T);
-      // where the LED goes: the old panel's spot on the main tower's front face, in island-local space
-      const face = new THREE.Vector3(-2.36 * S, 16.2 * S, 2.69 * S + .32).applyAxisAngle(new THREE.Vector3(0, 1, 0), T.rotation.y);
-      toolLED = { root, pos: face, yaw: T.rotation.y, height: 28 * S };
+      plate.visible = false; T.scale.setScalar(S); T.rotation.y = L.yaw; root.add(T);
+      // the shared LED goes exactly where the building's own panel was
+      if (L.lb) { const c = L.lb.getCenter(new THREE.Vector3()); ledAt[d.key] = { root, pos: new THREE.Vector3(c.x * S, c.y * S, L.lb.max.z * S + .05).applyAxisAngle(new THREE.Vector3(0, 1, 0), L.yaw), yaw: L.yaw }; }
+      // the car drives around it, not through it
+      const half = Math.hypot(L.box.max.x - L.box.min.x, L.box.max.z - L.box.min.z) / 2 * S * .8;
+      if (d.towers) d.towers.push({ x: 0, z: 0, r: Math.min(half, 11.5) });
       root.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; pick(o, d.key); } });
       centres.push({ root, day: d.g.userData.dayBuild });
       continue;
@@ -143,10 +166,8 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   // Mount a district LED on the landmark face that looks outward, away from the island centre, mid-height.
   const _q = new THREE.Quaternion(), _p = new THREE.Quaternion(), _d = new THREE.Vector3();
   function placeLED(tower, sign) {
-    if (tower.key === 'tools' && toolLED) {
-      // the root grows with the night like the rest of the centre; the sign rides on it
-      toolLED.root.add(sign); sign.position.copy(toolLED.pos); sign.rotation.set(0, toolLED.yaw, 0); return true;
-    }
+    const at = ledAt[tower.key];
+    if (at) { at.root.add(sign); sign.position.copy(at.pos); sign.rotation.set(0, at.yaw, 0); return true; }   // rides on the growing centre
     // island.html passes its TOWERS entries ({T,key,items})
     const group = tower.group || tower.T, it = tower.items.find(x => x.beacon); if (!it || !group || !it.renderBounds) return false;
     const b = it.renderBounds;
@@ -168,6 +189,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   if (skylineTex) { skylineTex.wrapS = skylineTex.wrapT = THREE.RepeatWrapping; skylineTex.needsUpdate = true; }
 
   let last = -1;
+  if (!block) { block = new THREE.Group(); block.name = 'work night block (unused)'; if (work) work.parent.add(block); }
   return {
     block, skylineTex, placeLED,
     update(n) {
