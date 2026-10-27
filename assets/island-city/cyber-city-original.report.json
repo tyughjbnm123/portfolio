@@ -1,0 +1,236 @@
+{
+  "generator": "tools/build-cyber-city.py",
+  "seed": 271026,
+  "glbBytes": 269612,
+  "sha256": "107105ae8b46c6f54e831a2d5515ad7c20e435b6f9836bc78153effa0e468f4b",
+  "triangleTotal": 2832,
+  "embeddedTextures": [
+    [
+      256,
+      256
+    ],
+    [
+      256,
+      256
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "litWindowRatio": 0.4018,
+  "warmShareOfLitWindows": 0.7111,
+  "parts": [
+    {
+      "name": "tower_walls",
+      "loaderName": "tower_walls",
+      "triangles": 206,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 19,
+      "litWindows": 8,
+      "warmLitWindows": 6,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "tower_walls.001",
+      "loaderName": "tower_walls001",
+      "triangles": 228,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 24,
+      "litWindows": 10,
+      "warmLitWindows": 7,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "tower_walls.002",
+      "loaderName": "tower_walls002",
+      "triangles": 244,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 32,
+      "litWindows": 13,
+      "warmLitWindows": 9,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "tower_walls.003",
+      "loaderName": "tower_walls003",
+      "triangles": 356,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 12,
+      "litWindows": 5,
+      "warmLitWindows": 4,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "tower_roof",
+      "loaderName": "tower_roof",
+      "triangles": 212,
+      "dimensions": [
+        1.0,
+        0.4,
+        1.0
+      ],
+      "materials": 1,
+      "windows": 0,
+      "litWindows": 0,
+      "warmLitWindows": 0,
+      "glassOffset": null
+    },
+    {
+      "name": "midrise_walls",
+      "loaderName": "midrise_walls",
+      "triangles": 196,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 20,
+      "litWindows": 8,
+      "warmLitWindows": 6,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "midrise_walls.001",
+      "loaderName": "midrise_walls001",
+      "triangles": 228,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 24,
+      "litWindows": 10,
+      "warmLitWindows": 7,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "midrise_roof",
+      "loaderName": "midrise_roof",
+      "triangles": 164,
+      "dimensions": [
+        1.0,
+        0.3,
+        1.0
+      ],
+      "materials": 1,
+      "windows": 0,
+      "litWindows": 0,
+      "warmLitWindows": 0,
+      "glassOffset": null
+    },
+    {
+      "name": "corner",
+      "loaderName": "corner",
+      "triangles": 164,
+      "dimensions": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2,
+      "windows": 20,
+      "litWindows": 8,
+      "warmLitWindows": 6,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "terrace",
+      "loaderName": "terrace",
+      "triangles": 152,
+      "dimensions": [
+        1.0,
+        1.0,
+        2.0
+      ],
+      "materials": 2,
+      "windows": 16,
+      "litWindows": 6,
+      "warmLitWindows": 4,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "slim_walls",
+      "loaderName": "slim_walls",
+      "triangles": 178,
+      "dimensions": [
+        0.7,
+        1.0,
+        0.7
+      ],
+      "materials": 2,
+      "windows": 17,
+      "litWindows": 7,
+      "warmLitWindows": 5,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "slim_walls.001",
+      "loaderName": "slim_walls001",
+      "triangles": 188,
+      "dimensions": [
+        0.7,
+        1.0,
+        0.7
+      ],
+      "materials": 2,
+      "windows": 16,
+      "litWindows": 6,
+      "warmLitWindows": 4,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "slim_roof",
+      "loaderName": "slim_roof",
+      "triangles": 148,
+      "dimensions": [
+        0.7,
+        1.0,
+        0.7
+      ],
+      "materials": 2,
+      "windows": 8,
+      "litWindows": 3,
+      "warmLitWindows": 2,
+      "glassOffset": 0.014
+    },
+    {
+      "name": "podium",
+      "loaderName": "podium",
+      "triangles": 168,
+      "dimensions": [
+        1.6,
+        0.6,
+        1.6
+      ],
+      "materials": 2,
+      "windows": 16,
+      "litWindows": 6,
+      "warmLitWindows": 4,
+      "glassOffset": 0.014
+    }
+  ],
+  "validation": "geometry, bounds, pivots, budgets and deterministic material construction passed; see preview page for GLTFLoader tests"
+}
