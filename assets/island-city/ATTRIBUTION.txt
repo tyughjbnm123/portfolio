@@ -12,3 +12,8 @@ rooftop details, lighting and an elevated walkway.
 No endorsement by the original creator is implied.
 
 These are independently authored cyberpunk-style assets, not extracted Cyberpunk 2077 game assets.
+
+Changes (2026-10-27): towers stacked from repeated storey sections to form landmark high-rises; buildings
+re-arranged into composed district skylines with lit crowns; text boards removed (district LEDs only).
+
+Original work (not part of Cyber City): district LED signs, arcade rides, car, metro, harbour details and lighting.
