@@ -1,0 +1,28 @@
+TOOL ROOM TOWER / ARCHITECTURE STUDY 01
+Generated 2026-10-27 for YI-CHI KUO's portfolio.
+
+Model: tool-room-tower-v1.glb
+Generator: tools/build-tool-tower.py
+
+All geometry is authored procedurally in the supplied Python source.
+All four embedded images are drawn by the source using Pillow: original
+window interiors, a typeset LED panel, alloy grain and roughness variation.
+No Meshy model, Cyberpunk 2077 export, third-party model, AI bitmap texture,
+normal map or external texture resource is used.
+
+The approved AI-generated concept image was used only as a visual reference.
+It is displayed separately by the preview page and is not inside the GLB.
+LED lettering is rasterized from the locally installed Microsoft JhengHei
+font. The font software is not embedded or redistributed.
+
+This is one bespoke whole-building design study. It does not replace the
+earlier modular kit and does not satisfy that kit's per-floor 600-triangle
+limit. Current measured counts are in tool-room-tower-v1.report.json.
+Source is supplied so the owner can revise and rebuild the model.
+
+V2 / HUMAN SCALE REVISION (2026-10-27)
+tool-room-tower-v2.glb uses the same original procedural asset provenance.
+Floor rows and door height were revised to fit the original island protagonist.
+The separately rendered preview figure comes from the user's own local
+island.html person() and ME appearance code; it is not embedded in the GLB.
+No production island file or character controls were changed.
