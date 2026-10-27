@@ -460,7 +460,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 </script>
 <script type="module">
 import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261027-1';
-import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-1';
+import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
 import {nightLook} from './assets/island-city/night-look.js?v=20261027-1';
 import {createCyberVehicle} from './assets/island-city/cyber-vehicle.js?v=20261027-1';
 const PRIVATE_FRONTAGES=[], PRIVATE_LEDS=[];
@@ -859,10 +859,12 @@ const SM={}; const smooth=hex=>SM[hex] ||= new THREE.MeshStandardMaterial({color
 const G={leg:new THREE.CapsuleGeometry(.11,.34,4,8), shoe:new THREE.SphereGeometry(.13,10,6), torso:new THREE.CapsuleGeometry(.27,.32,4,12), arm:new THREE.CapsuleGeometry(.085,.3,4,8), hand:new THREE.SphereGeometry(.085,8,6), head:new THREE.SphereGeometry(.36,18,14), eye:new THREE.SphereGeometry(.042,8,6),
   hairCap:new THREE.SphereGeometry(.385,18,12,0,Math.PI*2,0,1.25), hairBob:new THREE.SphereGeometry(.4,18,12,0,Math.PI*2,0,1.9), bun:new THREE.SphereGeometry(.16,10,8), brim:new THREE.CylinderGeometry(.42,.42,.04,16)};
 function part(geo,m,x,y,z,parent,shadow=true){const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=shadow; parent.add(o); return o;}
+// people share the night-city landmarks' human scale (night-city-public.js HUMAN_SCALE), so doors and floors fit them
+const PERSON_SCALE=.45;
 function person(parent,o={}){
   const r=Math.random, pick=a=>a[Math.floor(r()*a.length)];
   const skin=o.skin??pick(SKIN), shirt=o.shirt??pick(SHIRT), pants=o.pants??pick(PANTS), hair=o.hair??pick(HAIR), style=o.style??Math.floor(r()*4);
-  const root=new THREE.Group(); parent.add(root);
+  const root=new THREE.Group(); root.scale.setScalar(PERSON_SCALE); parent.add(root);
   const body=new THREE.Group(); root.add(body);
   const legs=[-1,1].map(s=>{const pv=new THREE.Group(); pv.position.set(s*.12,.6,0); body.add(pv);
     part(G.leg,smooth(pants),0,-.27,0,pv); const sh=part(G.shoe,smooth(0x2a2a2d),0,-.55,.05,pv,false); sh.scale.set(1,.55,1.45); return pv;});
@@ -1202,7 +1204,7 @@ for(let i=0;i<9;i++){
 
 /* ---------- me ---------- */
 const ME=person(scene,{skin:0xf2d3b6,shirt:0x4b4f56,sleeve:0x4b4f56,pants:0x40434a,hair:0x1b1918,style:1});
-ME.root.scale.setScalar(1.22); ME.root.position.set(0,2,4.5);
+ME.root.scale.setScalar(1.22*PERSON_SCALE); ME.root.position.set(0,2,4.5);
 { const h=ME.head, glass=smooth(0x2b2724), gTor=new THREE.TorusGeometry(.088,.017,6,18);
   [-1,1].forEach(s=>part(gTor,glass,s*.13,.0,.352,h,false));
   part(new THREE.BoxGeometry(.07,.016,.016),glass,0,.01,.358,h,false);
@@ -1755,7 +1757,7 @@ import('./assets/island-city/metro.js?v=20261026-4').then(m=>{
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
 function loadCity(){
-  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261027-3').then(m=>m.createNightCity({
+  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261027-4').then(m=>m.createNightCity({
     renderer, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);

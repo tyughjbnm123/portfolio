@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
 // All five district identities use exactly the same physical display and type layout.
-// 2026-10-27: enlarged (same 0.31 aspect) so the original three-character names read from the main overview.
-export const DISTRICT_LED=Object.freeze({width:5.4,height:17.4,depth:.3});
+// Sized to the district landmarks' own LED panels at human scale (3.15 × 20.6 × 0.45), so all five match the buildings.
+export const DISTRICT_LED=Object.freeze({width:1.45,height:9.2,depth:.16});
 export const DISTRICT_TITLES=Object.freeze({
   about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']
 });
