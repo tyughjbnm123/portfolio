@@ -6,11 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // Loaded the first time the island turns to night; nothing here runs during the day.
 //
 // - Height comes from stacking one-storey wall sections, so towers are tall without stretching any texture.
-// - Each district gets a composed skyline: a landmark tower where the main view sees it unobstructed,
-//   a secondary high-rise, then mid and low blocks.
+// - Each district gets a composed skyline: a landmark tower on the island's outer side, a secondary
+//   high-rise, then mid and low blocks.
 // - No text boards on buildings: the five district LEDs (placeLED) are the only signs.
-
-const MAIN_VIEW = new THREE.Vector3(0, 134, 183);   // HOME camera in island.html
 
 export async function createNightCity({ renderer, plans, work, pick, districts = [] }) {
   const gltf = await new GLTFLoader().loadAsync(new URL('./cyber-city.glb', import.meta.url).href);
@@ -51,8 +49,8 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   const _w = new THREE.Vector3();
   for (const plan of plans) {
     plan.group.updateMatrixWorld(true);
-    const dist = plan.items.map(it => { _w.set(it.x, 0, it.z); plan.group.localToWorld(_w); return Math.hypot(_w.x - MAIN_VIEW.x, _w.z - MAIN_VIEW.z); });
-    const order = plan.items.map((_, i) => i).sort((a, b) => dist[b] - dist[a]);
+    // island.html already ranks the spots: the first one is on the island's outer side, away from the bridge.
+    const order = plan.items.map((_, i) => i);
     plan.items.forEach(it => { it.beacon = false; });
     order.forEach((i, rank) => {
       const it = plan.items[i], L = LANDMARK[plan.key] || { w: 3.1, levels: 8 };
@@ -119,7 +117,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     centres.push({ root, day: d.g.userData.dayBuild });
   }
 
-  // Mount a district LED on the landmark face that looks toward the main view, mid-height, clear of the roof.
+  // Mount a district LED on the landmark face that looks outward, away from the island centre, mid-height.
   const _q = new THREE.Quaternion(), _p = new THREE.Quaternion(), _d = new THREE.Vector3();
   function placeLED(tower, sign) {
     // island.html passes its TOWERS entries ({T,key,items})
@@ -127,7 +125,8 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     const b = it.renderBounds;
     group.add(sign); group.updateMatrixWorld(true);
     _w.set(it.x, 0, it.z); group.localToWorld(_w);
-    _d.set(MAIN_VIEW.x - _w.x, 0, MAIN_VIEW.z - _w.z).normalize();
+    const centre = new THREE.Vector3(0, 0, 0); group.localToWorld(centre);
+    _d.set(_w.x - centre.x, 0, _w.z - centre.z).normalize();
     group.getWorldQuaternion(_p); _q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(_d.x, _d.z));
     sign.quaternion.copy(_p.clone().invert().multiply(_q));
     const local = _d.clone().applyQuaternion(_p.clone().invert());
