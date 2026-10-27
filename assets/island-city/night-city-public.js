@@ -11,7 +11,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // - No text boards on buildings: the five district LEDs (placeLED) are the only signs.
 
 export async function createNightCity({ renderer, plans, work, pick, districts = [] }) {
-  const gltf = await new GLTFLoader().loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href);
+  const loader = new GLTFLoader();
+  // Tool-room landmark: a bespoke original tower (tools/build-tool-tower.py). Optional — the kit is used if it fails.
+  const [gltf, toolTower] = await Promise.all([
+    loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
+    loader.loadAsync(new URL('./tool-room-tower-v1.glb', import.meta.url).href).catch(() => null)]);
   // GLTFLoader strips '.' from node names (tower_walls.001 → tower_walls001)
   const src = n => gltf.scene.getObjectByName(n) || gltf.scene.getObjectByName(n.replace(/\./g, ''));
   const facades = new Set(), lit = [], lights = [], accents = [];
@@ -56,11 +60,13 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     plan.items.forEach(it => { it.beacon = false; });
     order.forEach((i, rank) => {
       const it = plan.items[i], L = LANDMARK[plan.key] || { w: 3.1, levels: 8 };
-      const spec = rank === 0 ? { kind: 'tower', w: L.w, levels: L.levels }
+      const bespoke = toolTower && plan.key === 'tools';
+      const spec = rank === 0 && bespoke ? { kind: 'midrise', w: 3, levels: 5 }
+        : rank === 0 ? { kind: 'tower', w: L.w, levels: L.levels }
         : rank === 1 ? (plan.key === 'tools' || plan.key === 'lab' ? { kind: 'slim', w: 3.2, levels: 7 } : { kind: 'midrise', w: 3, levels: 5 })
         : rank === 2 ? { kind: 'midrise', w: 2.7, levels: 3 }
         : { kind: rank % 2 ? 'terrace' : 'corner', w: rank % 2 ? 2 : 2.5, levels: 1 };
-      if (rank === 0) it.beacon = true;
+      if (rank === 0) { it.beacon = true; it.bespoke = bespoke; }   // island.html mounts the LED on the beacon item
       const b = make(spec.kind, spec.levels); b.scale.setScalar(spec.w); b.position.set(it.x, 0, it.z); b.rotation.y = it.rot; plan.group.add(b);
       b.traverse(o => { if (o.isMesh) pick(o, plan.key); });
       const [fx, fz] = FOOT[spec.kind];
@@ -69,7 +75,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     });
     // landmark: a thin lit crown and a coloured wash at its foot, so it reads as a lit volume against the sky
     const it = plan.items.find(x => x.beacon), col = CROWN[plan.key] || 0x7fe8ff;
-    if (it) {
+    if (it && it.renderBounds && !it.bespoke) {
       const b = it.renderBounds, crownMat = new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0, roughness: .4 }); accents.push({ m: crownMat, k: 1.15 });
       const crown = new THREE.Mesh(new THREE.BoxGeometry(b.halfX * 2 + .16, .14, b.halfZ * 2 + .16), crownMat); crown.position.set(it.x, b.height - .3, it.z); crown.rotation.y = it.rot; plan.group.add(crown);
       const wash = new THREE.PointLight(col, 0, b.height * 1.1, 1.6); wash.position.set(it.x, b.height * .35, it.z); plan.group.add(wash); lights.push({ l: wash, k: 26 });
@@ -105,12 +111,27 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   }
 
   // The other city islands swap their daytime centre for a small night block, so no cottage sits under the towers.
-  const centres = [];
+  const centres = [], TOOL_SCALE = .82; let toolLED = null;
   for (const d of districts) {
     if (d.key === 'games' || d.key === 'work' || !d.g?.userData?.dayBuild) continue;
     const root = new THREE.Group(); root.position.y = 2; root.name = 'night centre / ' + d.key; root.visible = false; d.g.add(root);
     const put = (kind, levels, w, x, z, a = 0) => { const b = make(kind, levels); b.scale.setScalar(w); b.position.set(x, .12, z); b.rotation.y = a; root.add(b); };
     const plate = new THREE.Mesh(new THREE.BoxGeometry(9.4, .12, 8.2), concrete); plate.position.y = .06; plate.receiveShadow = true; root.add(plate);
+    if (d.key === 'tools' && toolTower) {
+      const T = toolTower.scene, S = TOOL_SCALE;
+      T.getObjectByName('vertical_led')?.removeFromParent();          // the shared district LED replaces its own panel
+      T.traverse(o => { if (o.isMesh) { for (const t of [o.material.map, o.material.emissiveMap]) if (t) t.anisotropy = aniso; if (o.material.emissiveMap) { o.material.emissiveIntensity = 0; facades.add(o.material); } } });
+      T.scale.setScalar(S);
+      d.g.updateMatrixWorld(true);
+      const out = d.g.worldToLocal(d.g.getWorldPosition(new THREE.Vector3()).multiplyScalar(2)); out.y = 0; out.normalize();
+      T.rotation.y = Math.atan2(out.x, out.z); root.add(T);
+      // where the LED goes: the old panel's spot on the main tower's front face, in island-local space
+      const face = new THREE.Vector3(-2.36 * S, 16.2 * S, 2.69 * S + .32).applyAxisAngle(new THREE.Vector3(0, 1, 0), T.rotation.y);
+      toolLED = { root, pos: face, yaw: T.rotation.y, height: 28 * S };
+      root.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; pick(o, d.key); } });
+      centres.push({ root, day: d.g.userData.dayBuild });
+      continue;
+    }
     put('midrise', d.key === 'tools' ? 4 : 3, 3, -1.6, -1.4);
     put('corner', 1, 2.4, 2.4, -1.8, Math.PI / 2);
     put('terrace', 1, 2, 2.5, 2.1);
@@ -122,6 +143,10 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   // Mount a district LED on the landmark face that looks outward, away from the island centre, mid-height.
   const _q = new THREE.Quaternion(), _p = new THREE.Quaternion(), _d = new THREE.Vector3();
   function placeLED(tower, sign) {
+    if (tower.key === 'tools' && toolLED) {
+      // the root grows with the night like the rest of the centre; the sign rides on it
+      toolLED.root.add(sign); sign.position.copy(toolLED.pos); sign.rotation.set(0, toolLED.yaw, 0); return true;
+    }
     // island.html passes its TOWERS entries ({T,key,items})
     const group = tower.group || tower.T, it = tower.items.find(x => x.beacon); if (!it || !group || !it.renderBounds) return false;
     const b = it.renderBounds;
