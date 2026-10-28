@@ -1228,7 +1228,7 @@ const HELLO=['嗨，被你發現了！歡迎來我的島。','點任何一座島
 let helloI=0;
 
 // walking route: hub → bridge → stroll around an island → back → next island
-const me={path:[],wait:2,isl:0,speed:2.1,at:null};
+const me={path:[],wait:2,isl:0,speed:2.1,at:null,blocked:0};
 const v3=(x,z)=>new THREE.Vector3(x,2,z);
 function planVisit(k){
   const isl=islands[D[k].key], d=isl.dir, g=isl.g;
@@ -1236,11 +1236,19 @@ function planVisit(k){
   const base=Math.atan2(-d.z,-d.x), stroll=[];
   const turns=[.9,1.9,2.9,-2.6,-1.6,-.8].slice(0,3+Math.floor(Math.random()*3));
   const sgn=Math.random()<.5?1:-1;
-  for(const t of turns){ const a=base+t*sgn; stroll.push(Object.assign(v3(isl.pos.x+Math.cos(a)*12.5,isl.pos.z+Math.sin(a)*12.5),{pause:Math.random()<.5?1.6:0})); }
+  const G=WALK.grids.get(g), _l=new THREE.Vector3();
+  const local=(x,z)=>{ _l.set(x,g.position.y,z); g.worldToLocal(_l); return [_l.x,_l.z]; };
+  let prev=null;
+  for(const t of turns){ const a=base+t*sgn;
+    // the stroll ring is 12.5 out; nudge in or out where a building stands on it
+    let r=12.5; if(G) for(const rr of [12.5,13.3,11.7,14,11]){ const [x,z]=local(isl.pos.x+Math.cos(a)*rr,isl.pos.z+Math.sin(a)*rr); if(walkAt(G,x,z)===1 && (!prev || walkLine(G,prev[0],prev[1],x,z))){ r=rr; prev=[x,z]; break; } }
+    stroll.push(Object.assign(v3(isl.pos.x+Math.cos(a)*r,isl.pos.z+Math.sin(a)*r),{pause:Math.random()<.5?1.6:0})); }
   const back=[...stroll].reverse().slice(1).map(p=>v3(p.x,p.z));
   return [...out,...stroll,...back,v3(d.x*(RING-R+2.4),d.z*(RING-R+2.4)),v3(d.x*(RING-R+.6),d.z*(RING-R+.6)),v3(d.x*7.6,d.z*7.6),v3(d.x*4.6,d.z*4.6)];
 }
 function nextLeg(){ me.path=planVisit(me.isl); me.isl=(me.isl+1)%D.length; }
+function meUnstick(p){ for(const k in islands){ const o=islands[k], G=WALK.grids.get(o.g); if(!G||Math.hypot(p.x-o.pos.x,p.z-o.pos.z)>=R) continue;
+  _mw.set(p.x,o.g.position.y,p.z); o.g.worldToLocal(_mw); if(walkSnap(G,_mw)){ o.g.localToWorld(_mw); p.x=_mw.x; p.z=_mw.z; } return; } }
 
 /* ---------- companion islet ---------- */
 const comp=new THREE.Group(); const CA=Math.PI*.7, CR=RING+18;
@@ -1387,7 +1395,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addE
   if(e.pointerId===lookId){ lookId=null; drive.looking=false; }
 });
 joyZone.addEventListener('contextmenu',e=>e.preventDefault());
-if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene}; window.__renderer=renderer; }
+if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub}; window.__renderer=renderer; }
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
@@ -1532,6 +1540,79 @@ function dodge(w,P,p,dt){
       if(!(w.hop>0) && d<2) w.hop=.42; w.wait=Math.max(w.wait||0,.6); } }
   if(w.hop>0){ w.hop=Math.max(0,w.hop-dt); P.body.position.y=Math.sin((1-w.hop/.42)*Math.PI)*.55; }
 }
+
+/* ---------- walk grid: people walk around buildings, never through them ----------
+   The hub and every island get a 2D grid in their own local frame. A cell is blocked when a visible solid mesh crosses
+   the body band (ankle to shoulder of a 0.45-scale person). Only the largest connected open area counts as walkable,
+   so the inside of a building is never a place to stand. Rebuilt once a day/night change has settled and when the
+   night city finishes loading. */
+const WALK={cell:.25,lo:2.16,hi:2.9,pad:.24,grids:new Map(),mode:null,queue:[]};
+if(window.__isl){ window.__isl.WALK=WALK; window.__isl.state=state; window.__isl.buildWalkGrid=(...a)=>buildWalkGrid(...a); window.__isl.walkSurfaces=()=>walkSurfaces(); window.__isl.me=me; window.__isl.ME=ME; }
+function walkSurfaces(){ return [{g:hub,ext:8,limit:6.9,seeds:[5,6]},...Object.values(islands).map(o=>({g:o.g,ext:15,limit:14.5,seeds:[12,13]}))]; }
+function buildWalkGrid({g,ext,limit,seeds}){
+  const c=WALK.cell, N=Math.ceil(2*ext/c), blk=new Uint8Array(N*N), lo=WALK.lo, hi=WALK.hi, pr=Math.ceil(WALK.pad/c);
+  const skip=new Set([dcar,ME.root,...walkers.map(w=>w.P.root)]);
+  g.updateMatrixWorld(true);
+  const inv=new THREE.Matrix4().copy(g.matrixWorld).invert(), L=new THREE.Matrix4(), M=new THREE.Matrix4(), IM=new THREE.Matrix4(), bb=new THREE.Box3();
+  const A=new THREE.Vector3(), B=new THREE.Vector3(), C=new THREE.Vector3();
+  const mark=(x,z)=>{ const i=Math.floor((x+ext)/c), j=Math.floor((z+ext)/c);
+    for(let dj=-pr;dj<=pr;dj++) for(let di=-pr;di<=pr;di++){ if(di*di+dj*dj>pr*pr+1) continue; const ii=i+di, jj=j+dj; if(ii>=0&&jj>=0&&ii<N&&jj<N) blk[jj*N+ii]=1; } };
+  const seg=(x0,z0,x1,z1)=>{ const n=Math.max(1,Math.ceil(Math.hypot(x1-x0,z1-z0)/(c*.5))); for(let k=0;k<=n;k++){ const t=k/n; mark(x0+(x1-x0)*t,z0+(z1-z0)*t); } };
+  const cut=h=>{ const P=[]; for(const [u,v] of [[A,B],[B,C],[C,A]]) if((u.y-h)*(v.y-h)<0){ const t=(h-u.y)/(v.y-u.y); P.push(u.x+(v.x-u.x)*t,u.z+(v.z-u.z)*t); }
+    if(P.length>=4) seg(P[0],P[1],P[2],P[3]); };
+  const tri=()=>{ const y0=Math.min(A.y,B.y,C.y), y1=Math.max(A.y,B.y,C.y); if(y1<lo||y0>hi) return;
+    if(y0>=lo && y1<=hi){ // a piece inside the band (a step, a plinth top, a small base): fill its footprint
+      const n=Math.max(1,Math.ceil(Math.max(A.distanceTo(B),A.distanceTo(C))/(c*.5)));
+      for(let a=0;a<=n;a++) for(let b=0;a+b<=n;b++){ const u=a/n, v=b/n; mark(A.x+(B.x-A.x)*u+(C.x-A.x)*v, A.z+(B.z-A.z)*u+(C.z-A.z)*v); }
+      return; }
+    for(const h of [lo,(lo+hi)/2,hi]) cut(h); };
+  const solid=m=>m && m.visible!==false && m.depthWrite!==false && !(m.transparent && m.opacity<.05);
+  const visit=o=>{
+    if(!o.visible || skip.has(o) || o.isSprite || o.isPoints || o.isLine) return;
+    if(o.isMesh && o.geometry?.attributes?.position && (Array.isArray(o.material)?o.material.some(solid):solid(o.material))){
+      const geo=o.geometry, pos=geo.attributes.position, idx=geo.index, n=idx?idx.count:pos.count;
+      if(!geo.boundingBox) geo.computeBoundingBox(); L.multiplyMatrices(inv,o.matrixWorld);
+      for(let k=0;k<(o.isInstancedMesh?o.count:1);k++){
+        if(o.isInstancedMesh){ o.getMatrixAt(k,IM); M.multiplyMatrices(L,IM); } else M.copy(L);
+        bb.copy(geo.boundingBox).applyMatrix4(M);
+        if(bb.max.y<lo||bb.min.y>hi||bb.max.x<-ext||bb.min.x>ext||bb.max.z<-ext||bb.min.z>ext) continue;
+        for(let t=0;t+2<n;t+=3){
+          A.fromBufferAttribute(pos,idx?idx.getX(t):t).applyMatrix4(M); B.fromBufferAttribute(pos,idx?idx.getX(t+1):t+1).applyMatrix4(M); C.fromBufferAttribute(pos,idx?idx.getX(t+2):t+2).applyMatrix4(M);
+          tri(); }
+      }
+    }
+    for(const ch of o.children) visit(ch);
+  };
+  for(const ch of g.children) visit(ch);
+  // keep the largest open area connected to the walking ring
+  const lab=new Int32Array(N*N), q=new Int32Array(N*N), inside=(i,j)=>{ const x=(i+.5)*c-ext, z=(j+.5)*c-ext; return x*x+z*z<=limit*limit; };
+  let label=0, best=0, bestN=0;
+  for(const r of seeds) for(let a=0;a<48;a++){
+    const i=Math.floor((Math.cos(a/48*Math.PI*2)*r+ext)/c), j=Math.floor((Math.sin(a/48*Math.PI*2)*r+ext)/c), id=j*N+i;
+    if(i<0||j<0||i>=N||j>=N||blk[id]||lab[id]) continue;
+    let qh=0, qt=0; lab[id]=++label; q[qt++]=id;
+    while(qh<qt){ const cur=q[qh++], ci=cur%N, cj=(cur/N)|0;
+      for(const [ni,nj] of [[ci+1,cj],[ci-1,cj],[ci,cj+1],[ci,cj-1]]){ if(ni<0||nj<0||ni>=N||nj>=N) continue; const nid=nj*N+ni; if(blk[nid]||lab[nid]||!inside(ni,nj)) continue; lab[nid]=label; q[qt++]=nid; } }
+    if(qt>bestN){ bestN=qt; best=label; }
+  }
+  const ok=new Uint8Array(N*N); for(let k=0;k<N*N;k++) ok[k]=lab[k]===best&&best?1:0;
+  return {ext,c,N,ok,limit};
+}
+// 1 = free, 0 = blocked, -1 = outside this surface's walking area
+function walkAt(G,x,z){ if(x*x+z*z>G.limit*G.limit) return -1; const i=Math.floor((x+G.ext)/G.c), j=Math.floor((z+G.ext)/G.c); if(i<0||j<0||i>=G.N||j>=G.N) return -1; return G.ok[j*G.N+i]; }
+function walkLine(G,x0,z0,x1,z1,need=1){ const n=Math.max(1,Math.ceil(Math.hypot(x1-x0,z1-z0)/(G.c*.5))); for(let k=1;k<=n;k++){ const v=walkAt(G,x0+(x1-x0)*k/n,z0+(z1-z0)*k/n); if(need===1?v!==1:v===0) return false; } return true; }
+function walkSnap(G,p){ const i0=Math.floor((p.x+G.ext)/G.c), j0=Math.floor((p.z+G.ext)/G.c);
+  for(let r=1;r<80;r++) for(let dj=-r;dj<=r;dj++) for(let di=-r;di<=r;di++){ if(Math.max(Math.abs(di),Math.abs(dj))!==r) continue; const i=i0+di, j=j0+dj;
+    if(i>=0&&j>=0&&i<G.N&&j<G.N&&G.ok[j*G.N+i]){ p.x=(i+.5)*G.c-G.ext; p.z=(j+.5)*G.c-G.ext; return true; } }
+  return false; }
+function walkUpdate(n){
+  const m=n>.97?1:n<.03?0:-1;
+  if(m>=0 && m!==WALK.mode){ WALK.mode=m; WALK.queue=walkSurfaces(); }
+  if(WALK.queue.length){ const s=WALK.queue.shift(); WALK.grids.set(s.g,buildWalkGrid(s)); walkers.forEach(w=>{ if(w.P.root.parent===s.g) w.has=false; }); }
+}
+// the island (and its grid) a world position stands on, for the avatar who walks in world space
+const _mw=new THREE.Vector3();
+function meWalk(x,z){ for(const k in islands){ const o=islands[k]; if(Math.hypot(x-o.pos.x,z-o.pos.z)<R){ const G=WALK.grids.get(o.g); if(!G) return 1; _mw.set(x,o.g.position.y,z); o.g.worldToLocal(_mw); return walkAt(G,_mw.x,_mw.z); } } return 1; }
 
 /* ---------- find-me game ---------- */
 const hunt={on:false,t0:0,found:false,hints:0};
@@ -1763,6 +1844,7 @@ function loadCity(){
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);
       TOWERS.forEach(neonSign);
       tick._n=-1;                                // re-apply the current night amount
+      WALK.mode=null;                            // the city changed the ground: rebuild the walk grids
       import('./assets/island-city/harbor-city.js?v=20261027-1').then(m=>{
         HARBOR=m.createHarborCity({islands,bridges:harborBridges,pick:(o,key)=>{
           o.userData.key=key;
@@ -1770,7 +1852,7 @@ function loadCity(){
           o.raycast=function(ray,hits){for(let p=this;p;p=p.parent)if(!p.visible)return;cast.call(this,ray,hits);};
           pickables.push(o);
         }});
-        HARBOR.update(state.nightT); tick._n=-1;
+        HARBOR.update(state.nightT); tick._n=-1; WALK.mode=null;
       }).catch(e=>console.warn('Harbor detail unavailable; existing night city retained.',e));
     }).catch(e=>console.warn('night city unavailable',e));
 }
@@ -1850,15 +1932,25 @@ function tick(){
     });
     lightHead.rotation.y+=dt*1.5;
     boats.forEach(b=>{b.a+=b.s*dt;placeBoat(b,t);b.wake.scale.z=1+Math.sin(t*2+b.phase)*.07;b.wakeMat.opacity=.16+.04*Math.sin(t*2.3+b.phase);});
+    walkUpdate(n);
     walkers.forEach(w=>{
       const P=w.P, p=P.root.position;
       dodge(w,P,p,dt); if(w.hop>0 && !w.bridge){ return; }
       if(w.bridge){ if(!(w.hop>0)) w.t+=w.dirSign*w.speed*dt/w.len; if(w.t>1||w.t<0){w.dirSign*=-1; w.t=THREE.MathUtils.clamp(w.t,0,1);} p.z=(w.t-.5)*w.len*.9; p.x=THREE.MathUtils.clamp(.55*w.dirSign+(w.dx||0),-1.4,1.4); if(w.hop>0) return; P.root.rotation.y=w.dirSign>0?0:Math.PI; animPerson(P,true,dt,w.speed*.8); return; }
+      const G=WALK.grids.get(P.root.parent);
+      if(G && walkAt(G,p.x,p.z)!==1){ walkSnap(G,p); w.has=false; }   // pushed (or grown over) into a building: step back out
       if(w.wait>0){w.wait-=dt; animPerson(P,false,dt); return;}
-      if(!w.has){const a=Math.random()*6.28, r=w.minR+Math.random()*(w.maxR-w.minR); w.tgt.set(Math.cos(a)*r,2,Math.sin(a)*r); w.has=true;}
+      if(!w.has){
+        // pick a spot that is open ground with a clear straight line to it
+        for(let k=0;k<24 && !w.has;k++){ const a=Math.random()*6.28, r=w.minR+Math.random()*(w.maxR-w.minR), x=Math.cos(a)*r, z=Math.sin(a)*r;
+          if(!G || (walkAt(G,x,z)===1 && walkLine(G,p.x,p.z,x,z))){ w.tgt.set(x,2,z); w.has=true; } }
+        if(!w.has){ w.wait=.8; animPerson(P,false,dt); return; }
+      }
       const dx=w.tgt.x-p.x, dz=w.tgt.z-p.z, d=Math.hypot(dx,dz);
       if(d<.2){w.has=false; w.wait=1+Math.random()*3; return;}
-      const st=Math.min(d,w.speed*dt); p.x+=dx/d*st; p.z+=dz/d*st; P.root.rotation.y=Math.atan2(dx,dz); animPerson(P,true,dt,w.speed*.8);
+      const st=Math.min(d,w.speed*dt), nx=p.x+dx/d*st, nz=p.z+dz/d*st;
+      if(G && walkAt(G,nx,nz)!==1){ w.has=false; w.wait=.3; animPerson(P,false,dt); return; }
+      p.x=nx; p.z=nz; P.root.rotation.y=Math.atan2(dx,dz); animPerson(P,true,dt,w.speed*.8);
     });
     // me
     { const p=ME.root.position;
@@ -1867,7 +1959,11 @@ function tick(){
       if(me.wait>0){ me.wait-=dt; animPerson(ME,false,dt); }
       else { if(!me.path.length) nextLeg(); const tg=me.path[0]; const dx=tg.x-p.x, dz=tg.z-p.z, d=Math.hypot(dx,dz);
         if(d<.15){ me.path.shift(); if(tg.say && !hunt.on){ if(Math.random()<.5) say(D.find(x=>x.key===tg.say).say); me.wait=1.2; } if(tg.pause) me.wait=tg.pause; if(!me.path.length) me.wait=1.5; }
-        else { const st=Math.min(d,me.speed*dt); p.x+=dx/d*st; p.z+=dz/d*st; const want=Math.atan2(dx,dz); let df=want-ME.root.rotation.y; df=Math.atan2(Math.sin(df),Math.cos(df)); ME.root.rotation.y+=df*Math.min(1,dt*10); animPerson(ME,true,dt,1.05); } }
+        else { const st=Math.min(d,me.speed*dt), nx=p.x+dx/d*st, nz=p.z+dz/d*st;
+          // a building in the way: drop this waypoint and head for the next one (after a few in a row, step out to open ground)
+          if(meWalk(nx,nz)===0){ me.path.shift(); if(++me.blocked>6){ me.blocked=0; meUnstick(p); } }
+          else { me.blocked=0; p.x=nx; p.z=nz; }
+          const want=Math.atan2(dx,dz); let df=want-ME.root.rotation.y; df=Math.atan2(Math.sin(df),Math.cos(df)); ME.root.rotation.y+=df*Math.min(1,dt*10); animPerson(ME,true,dt,1.05); } }
       let lift=0; for(const k in islands){ const o=islands[k]; if(Math.hypot(p.x-o.pos.x,p.z-o.pos.z)<R+.5) lift=o.lift; } p.y=2+lift;
     }
     Object.values(islands).forEach(o=>{const f=o.g.userData.foam; f.material.opacity=(.25+.15*Math.sin(t*1.4+o.pos.x))*(1-n); f.scale.setScalar(1+.015*Math.sin(t*1.4+o.pos.x));});
