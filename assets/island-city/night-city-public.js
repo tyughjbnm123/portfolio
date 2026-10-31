@@ -197,7 +197,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   let last = -1;
   if (!block) { block = new THREE.Group(); block.name = 'work night block (unused)'; if (work) work.parent.add(block); }
   return {
-    block, skylineTex, placeLED,
+    block, skylineTex, placeLED, landmarks: LM,
     tick(dt) { if (animate) for (const m of mixers) m.update(dt); },
     update(n) {
       if (Math.abs(n - last) < .003) return; last = n;
