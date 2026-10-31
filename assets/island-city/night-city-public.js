@@ -11,7 +11,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // - No text boards on buildings: the five district LEDs (placeLED) are the only signs.
 
 export const HUMAN_SCALE = .45;   // island.html scales people by the same factor
-export async function createNightCity({ renderer, plans, work, pick, districts = [] }) {
+export async function createNightCity({ renderer, plans, work, pick, districts = [], animate = true }) {
   const loader = new GLTFLoader();
   // District landmarks: bespoke original buildings (tools/build-five-landmarks.py etc.), one per city island.
   // They are authored at the scale of the island's people before HUMAN_SCALE; buildings and people share that
@@ -19,8 +19,11 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   const LANDMARK_FILES = { about: 'about', work: 'work', tools: 'tools', lab: 'lab' };
   const [gltf, ...lm] = await Promise.all([
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
-    ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb`, import.meta.url).href).catch(() => null))]);
+    ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
+  // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
+  const mixers = [];
+  Object.keys(LANDMARK_FILES).forEach((k, i) => { const clip = lm[i]?.animations?.find(a => a.name === 'GearDrive'); if (clip) { const mx = new THREE.AnimationMixer(lm[i].scene); mx.clipAction(clip).play(); mx.update(0); mixers.push(mx); } });
   // GLTFLoader strips '.' from node names (tower_walls.001 → tower_walls001)
   const src = n => gltf.scene.getObjectByName(n) || gltf.scene.getObjectByName(n.replace(/\./g, ''));
   const facades = new Set(), lit = [], lights = [], accents = [];
@@ -192,6 +195,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   if (!block) { block = new THREE.Group(); block.name = 'work night block (unused)'; if (work) work.parent.add(block); }
   return {
     block, skylineTex, placeLED,
+    tick(dt) { if (animate) for (const m of mixers) m.update(dt); },
     update(n) {
       if (Math.abs(n - last) < .003) return; last = n;
       const mix = THREE.MathUtils.smoothstep(n, .05, .92);

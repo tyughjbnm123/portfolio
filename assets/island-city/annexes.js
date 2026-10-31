@@ -9,9 +9,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // each hall shrinks away and its annex grows in, with the rest of the night city.
 //
 // Where each annex stands comes from island.html (ANNEX_LAYOUT): the zone's original spot, nudged
-// outward or around the island only as far as needed to clear the main building (day and night),
-// the arcade rides and the ring road. One tools annex overlaps the night factory's apron and
-// stands on a plinth at the apron's height.
+// outward or around the island only as far as needed to clear the night main building, the arcade
+// rides and the ring road. Tools annexes that reach the factory's apron stand on a plinth at the
+// apron's height, so the two meet flush.
 const PREFIX = { about: '01-about', work: '02-work', tools: '03-tools', lab: '04-lab', games: '05-games' };
 const PLINTH_H = .21;
 
