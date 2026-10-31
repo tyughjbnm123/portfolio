@@ -22,7 +22,7 @@ export const SPECS = {
       { id: 'gas', lane: 0, z: 9.5, kind: 'source', t: 'Google Apps Script', d: '定時掃描確認出貨的訂單，POST 至 n8n Webhook。' },
       { id: 'order', lane: 1, z: -7, kind: 'n8n', t: '訂單事件整合', d: '依 paid／cancelled／refunded 三種事件即時分流，觸發對應供應商 Email 通知，並寫入執行紀錄與訂單列表。' },
       { id: 'health', lane: 1, z: -1.5, kind: 'n8n', t: '排程更新與健康檢查', d: '定時取得訂單、更新狀態、比對供應商主檔，整理缺漏與異常寄出健康檢查報告。' },
-      { id: 'tags', lane: 1, z: 4, kind: 'n8n', t: '供應商主檔與商品標籤', d: '同步營運總表與 Data Table 的供應商對照，回填 Cyberbiz 商品 ID，標籤異常另寄報告。' },
+      { id: 'tags', lane: 1, z: 4, kind: 'n8n', t: '供應商主檔與商品標籤', d: '從營運總表讀取供應商清單，同步到 Data Table；檢查 Cyberbiz 商品的供應商標籤並回填商品 ID，標籤異常寄 Email 通知。' },
       { id: 'ship', lane: 1, z: 9.5, kind: 'n8n', t: '物流接收與出貨回寫', d: '接收物流資料後呼叫 Cyberbiz 出貨 API，將結果回寫 Google Sheet 並發送內部通知。' },
       { id: 'dt', lane: 2, z: -8.5, kind: 'data', t: 'n8n Data Tables', d: '供應商對照、Webhook 紀錄與流程狀態。' },
       { id: 'ops', lane: 2, z: -4, kind: 'data', t: '營運總表', d: 'Google Sheet：供應商與商品主檔。' },
@@ -33,13 +33,14 @@ export const SPECS = {
     edges: [
       ['cyberbiz', 'order', 'Webhook'], ['order', 'dt', '寫入紀錄'], ['order', 'orders', '寫入訂單'], ['order', 'email', '通知供應商'],
       ['schedule', 'health', '排程'], ['cyberbiz', 'health', 'API 讀取訂單'], ['health', 'ops', '比對主檔'], ['health', 'email', '健康報告'],
-      ['tags', 'ops', '同步'], ['tags', 'dt', '供應商對照'], ['tags', 'products', '回填商品 ID'],
-      ['supplier', 'orders', '填寫物流'], ['orders', 'gas', '定時掃描'], ['gas', 'ship', 'Webhook'], ['ship', 'cyberbiz', '出貨 API'], ['ship', 'orders', '回寫結果'], ['ship', 'email', '內部通知']
+      ['ops', 'tags', '讀取供應商清單'], ['tags', 'dt', '供應商對照'], ['tags', 'products', '回填商品 ID'],
+      ['supplier', 'orders', '填寫物流'], ['orders', 'gas', '定時掃描'], ['gas', 'ship', 'Webhook'], ['ship', 'cyberbiz', '出貨 API'], ['ship', 'orders', '回寫結果'], ['ship', 'email', '內部通知'],
+      ['cyberbiz', 'tags', 'API 讀取商品'], ['tags', 'email', '標籤錯誤通知']
     ],
     steps: [
       { t: '訂單成立', d: '顧客付款後，Cyberbiz 送出 Webhook。n8n 依事件分流，寫入紀錄與訂單列表，並依商品寄信通知對應供應商。', e: [0, 1, 2, 3] },
       { t: '排程健康檢查', d: '排程定時讀取所有訂單、更新狀態並比對供應商主檔，把缺漏與異常整理成健康檢查報告寄出。', e: [4, 5, 6, 7] },
-      { t: '商品標籤管理', d: '同步營運總表與 Data Table 的供應商對照，每天檢查商品的供應商標籤並回填 Cyberbiz 商品 ID。', e: [8, 9, 10] },
+      { t: '商品標籤管理', d: '從營運總表讀取供應商清單同步到 Data Table；定時從 Cyberbiz 抓所有商品檢查供應商標籤，回填商品 ID，標籤有錯就寄 Email 通知。', e: [8, 9, 10, 17, 18] },
       { t: '供應商出貨回寫', d: '供應商填寫物流資料並確認出貨，Apps Script 定時掃描後觸發 n8n，呼叫 Cyberbiz 出貨 API 並回寫結果。', e: [11, 12, 13, 14, 15, 16] }
     ]
   },
