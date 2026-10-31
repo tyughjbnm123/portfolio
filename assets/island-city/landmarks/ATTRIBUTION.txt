@@ -46,3 +46,5 @@ Files here: about.glb, work.glb, tools.glb, lab.glb — packaged by tools/packag
 package (tools/build-landmarks-refined.py, tools/build-gear-factory.py with the GearDrive clip).
 Same provenance rules: procedural geometry and code-drawn pixels only, no game or AI assets.
 The site keeps its shared district LED; each model's own vertical_led panel is removed at load.
+
+2026-10-31: about.glb replaced by the night-lit derivative (about-night-lighting-20261031, SHA-256 75d45c9d…): the same original model plus procedural architectural light strips and a baked facade light-spill texture. Geometry, origin and vertical_led unchanged. No extracted game assets, downloaded models or AI bitmap textures.

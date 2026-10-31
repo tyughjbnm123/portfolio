@@ -19,7 +19,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   const LANDMARK_FILES = { about: 'about', work: 'work', tools: 'tools', lab: 'lab' };
   const [gltf, ...lm] = await Promise.all([
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
-    ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031`, import.meta.url).href).catch(() => null))]);
+    ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031-2`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
   // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
   const mixers = [];
