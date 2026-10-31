@@ -83,6 +83,9 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     order.forEach((i, rank) => {
       const it = plan.items[i], L = LANDMARK[plan.key] || { w: 3.1, levels: 8 };
       const bespoke = !!LM[plan.key], low = plan.key === 'tools' || plan.key === 'lab';   // factory districts stay low-rise
+      // islands with their own main building and annexes get no generic kit towers in the gaps (they read as clutter);
+      // the first spot still carries the beacon flag so the district LED is mounted on the main building
+      if (bespoke) { it.renderBounds = null; const d = districts.find(x => x.key === plan.key); if (d?.towers?.[i]) d.towers[i].r = 0; if (rank === 0) { it.beacon = true; it.bespoke = true; } return; }
       if (bespoke && overlapsLandmark(plan.key, it)) { it.renderBounds = null; const d = districts.find(x => x.key === plan.key); if (d?.towers?.[i]) d.towers[i].r = 0; if (rank === 0) { it.beacon = true; it.bespoke = true; } return; }
       const spec = rank === 0 && bespoke ? { kind: 'midrise', w: 1.9, levels: low ? 4 : 6 }
         : rank === 0 ? { kind: 'tower', w: L.w, levels: L.levels }
