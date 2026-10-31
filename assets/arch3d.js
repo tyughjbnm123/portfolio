@@ -83,21 +83,21 @@ const STYLE = `
 .arch3d{position:relative;border:1px solid var(--yk-line,#d5dccb);border-radius:16px;overflow:hidden;background:var(--yk-surface,#fdfcf8);font-family:inherit}
 .arch3d-stage{position:relative;height:clamp(380px,46vw,540px);touch-action:pan-y}
 .arch3d-stage canvas{display:block;width:100%;height:100%;cursor:grab}
-.arch3d-labels{position:absolute;inset:0;pointer-events:none}
+.arch3d-labels{position:absolute;inset:0;pointer-events:none;z-index:1}
 .arch3d-node{pointer-events:auto;cursor:pointer;padding:5px 10px;border-radius:9px;background:var(--yk-surface,#fff);border:1px solid var(--yk-line,#d5dccb);box-shadow:0 4px 12px rgba(0,0,0,.12);font-size:12px;font-weight:600;color:var(--yk-ink,#30382f);white-space:nowrap;transition:opacity .25s,transform .2s;display:flex;align-items:center;gap:6px}
 .arch3d-node i{width:8px;height:8px;border-radius:50%;flex:none}
 .arch3d-node:hover{transform:translateY(-2px)}
 .arch3d-node.dim{opacity:.28}
 .arch3d-node.sel{outline:2px solid var(--yk-accent,#536f35);outline-offset:1px}
-.arch3d-lane{font-size:11px;letter-spacing:.12em;color:var(--yk-muted,#646f5d);font-weight:600;white-space:nowrap;text-transform:uppercase}
+.arch3d-lane{position:absolute;top:14px;transform:translateX(-50%);z-index:2;pointer-events:none;font-size:11px;letter-spacing:.12em;color:var(--yk-muted,#646f5d);font-weight:600;white-space:nowrap;text-transform:uppercase}
 .arch3d-edge{font-size:10.5px;color:var(--yk-ink,#30382f);background:color-mix(in srgb,var(--yk-surface,#fff) 88%,transparent);padding:1px 6px;border-radius:6px;white-space:nowrap;opacity:0;transition:opacity .25s}
 .arch3d-edge.on{opacity:1}
-.arch3d-info{position:absolute;left:12px;top:12px;max-width:min(300px,calc(100% - 24px));padding:12px 14px;border-radius:12px;background:var(--yk-surface,#fff);border:1px solid var(--yk-line,#d5dccb);box-shadow:0 10px 30px rgba(0,0,0,.15);font-size:13px;line-height:1.7;color:var(--yk-ink,#30382f)}
+.arch3d-info{position:absolute;z-index:3;left:12px;top:12px;max-width:min(300px,calc(100% - 24px));padding:12px 14px;border-radius:12px;background:var(--yk-surface,#fff);border:1px solid var(--yk-line,#d5dccb);box-shadow:0 10px 30px rgba(0,0,0,.15);font-size:13px;line-height:1.7;color:var(--yk-ink,#30382f)}
 .arch3d-info b{display:block;font-size:14px;margin-bottom:2px}
 .arch3d-info small{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;color:#fff;margin-bottom:6px}
 .arch3d-info button{position:absolute;top:6px;right:6px;border:0;background:none;font-size:16px;cursor:pointer;color:var(--yk-muted,#646f5d);width:28px;height:28px}
-.arch3d-hint{position:absolute;right:12px;top:12px;font-size:11px;color:var(--yk-muted,#646f5d);background:color-mix(in srgb,var(--yk-surface,#fff) 80%,transparent);padding:4px 10px;border-radius:999px}
-.arch3d-zoom{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:4px}
+.arch3d-hint{position:absolute;z-index:2;right:12px;top:12px;font-size:11px;color:var(--yk-muted,#646f5d);background:color-mix(in srgb,var(--yk-surface,#fff) 80%,transparent);padding:4px 10px;border-radius:999px}
+.arch3d-zoom{position:absolute;z-index:2;right:12px;bottom:12px;display:flex;flex-direction:column;gap:4px}
 .arch3d-zoom button{width:34px;height:34px;border-radius:10px;border:1px solid var(--yk-line,#d5dccb);background:var(--yk-surface,#fff);color:var(--yk-ink,#30382f);font-size:16px;cursor:pointer}
 .arch3d-bar{display:grid;gap:10px;padding:14px 16px;border-top:1px solid var(--yk-line,#d5dccb)}
 .arch3d-steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -146,9 +146,10 @@ export function mount(host, spec) {
   const laneMat = new THREE.MeshStandardMaterial({ color: 0xe7ebdf, roughness: 1, transparent: true, opacity: .75 });
   const zs = spec.nodes.map(n => n.z), zMin = Math.min(...zs) - 3.5, zMax = Math.max(...zs) + 3;
   home.target.set(0, 0, (zMin + zMax) / 2 + .5); controls.target.copy(home.target);
+  const laneEls = [];
   for (const l of spec.lanes) {
     const plane = new THREE.Mesh(new THREE.BoxGeometry(12.5, .2, zMax - zMin), laneMat); plane.position.set(l.x, -.1, (zMin + zMax) / 2); scene.add(plane);
-    const el = document.createElement('div'); el.className = 'arch3d-lane'; el.textContent = l.label; const o = new CSS2DObject(el); o.position.set(l.x, 0, zMin - .8); scene.add(o);
+    const el = document.createElement('div'); el.className = 'arch3d-lane'; el.textContent = l.label; stage.append(el); laneEls.push({ el, x: l.x });
   }
   const nodes = new Map();
   for (const n of spec.nodes) {
@@ -183,7 +184,7 @@ export function mount(host, spec) {
     const active = step < 0 ? null : new Set(spec.steps[step].e);
     const used = new Set(); if (active) active.forEach(i => { used.add(edges[i].a); used.add(edges[i].b); });
     edges.forEach(e => { e.on = !active || active.has(e.i); e.mat.opacity = e.on ? (active ? .95 : .5) : .1; e.mat.color.set(active && e.on ? 0xe0762b : (isDark() ? 0x7d8a80 : 0x9aa59a)); e.el.classList.toggle('on', !!active && e.on); e.pk.forEach(p => p.m.visible = e.on); });
-    nodes.forEach(o => { const on = !active || used.has(o.n.id); o.el.classList.toggle('dim', !on); o.body.material.opacity = o.top.material.opacity = on ? 1 : .3; o.top.material.emissiveIntensity = active && on ? .6 : .15; });
+    nodes.forEach(o => { const on = !active || used.has(o.n.id); o.el.classList.toggle('dim', !on); o.body.material.opacity = o.top.material.opacity = on ? 1 : .3; o.top.material.emissiveIntensity = active && on ? .6 : .15; const c = on || !isDark() ? KIND[o.n.kind].color : 0x56645a; o.top.material.color.set(c); o.top.material.emissive.set(c); });
     host.querySelectorAll('[data-step]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.step === step)));
     if (ready) frame(active ? [...used] : null);
     caption.innerHTML = step < 0 ? `<b>${spec.title}</b>　按「播放流程」依序看資料怎麼流動，或點任一步驟。` : `<b>${step + 1}. ${spec.steps[step].t}</b>　${spec.steps[step].d}`;
@@ -193,9 +194,10 @@ export function mount(host, spec) {
     const k = KIND[o.n.kind]; info.hidden = false; info.querySelector('small').textContent = k.label; info.querySelector('small').style.background = hex(k.color);
     info.querySelector('b').textContent = o.n.t; info.querySelector('span').textContent = o.n.d;
   }
-  info.querySelector('button').addEventListener('click', () => { info.hidden = true; nodes.forEach(x => x.el.classList.remove('sel')); });
+  function closeInfo() { info.hidden = true; selected = null; nodes.forEach(x => x.el.classList.remove('sel')); }
+  info.querySelector('button').addEventListener('click', closeInfo);
   host.querySelector('.arch3d-steps').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
+    const b = e.target.closest('button'); if (!b) return; closeInfo();
     if (b.classList.contains('arch3d-play')) { playing = !playing; b.textContent = playing ? '❚❚ 暫停' : '▶ 播放流程'; if (playing) { step = step >= spec.steps.length - 1 ? 0 : step + 1; playTimer = 0; applyStep(); } return; }
     playing = false; host.querySelector('.arch3d-play').textContent = '▶ 播放流程'; step = +b.dataset.step; applyStep();
   });
@@ -227,6 +229,9 @@ export function mount(host, spec) {
     goal.target = target; goal.pos = target.clone().addScaledVector(dir, Math.max(16, d));
     if (instant || reduced) { camera.position.copy(goal.pos); controls.target.copy(goal.target); goal.pos = goal.target = null; controls.update(); }
   }
+  // lane titles stay pinned to the top edge, following each lane's column as the camera moves
+  const lv = new THREE.Vector3();
+  function placeLanes() { const w = stage.clientWidth; laneEls.forEach(o => { lv.set(o.x, 0, controls.target.z).project(camera); const half = o.el.offsetWidth / 2 + 8; o.el.style.left = THREE.MathUtils.clamp((lv.x + 1) / 2 * w, half, Math.max(half, w - half)) + 'px'; }); }
   function fit() { frame(null, true); }
   function resize() { const w = stage.clientWidth, h = stage.clientHeight; if (!w) return; renderer.setSize(w, h); lr.setSize(w, h); camera.aspect = w / h; camera.fov = w < 640 ? 50 : 36; camera.updateProjectionMatrix(); fit(); }
   const ro = new ResizeObserver(resize); ro.observe(stage); resize();
@@ -236,9 +241,9 @@ export function mount(host, spec) {
     raf = 0; const dt = Math.min(.05, last ? (now - last) / 1000 : 0); last = now;
     if (!reduced) edges.forEach(e => { if (!e.on) return; const sp = step >= 0 ? .55 : .3; e.pk.forEach(p => { p.t = (p.t + dt * sp) % 1; p.m.position.copy(e.curve.getPoint(p.t)); }); });
     else edges.forEach(e => e.pk.forEach(p => p.m.position.copy(e.curve.getPoint(p.t))));
-    if (playing) { playTimer += dt; if (playTimer > 4.5) { playTimer = 0; step = (step + 1) % spec.steps.length; applyStep(); } }
+    if (playing) { playTimer += dt; if (playTimer > 4.5) { playTimer = 0; step = (step + 1) % spec.steps.length; closeInfo(); applyStep(); } }
     if (goal.pos) { const k = 1 - Math.exp(-dt * 3); camera.position.lerp(goal.pos, k); controls.target.lerp(goal.target, k); if (camera.position.distanceTo(goal.pos) < .05) goal.pos = goal.target = null; }
-    controls.update(); renderer.render(scene, camera); lr.render(scene, camera);
+    controls.update(); renderer.render(scene, camera); lr.render(scene, camera); placeLanes();
     if (visible && !document.hidden) raf = requestAnimationFrame(tick); else last = 0;
   }
   document.addEventListener('visibilitychange', () => { if (!document.hidden && visible && !raf) raf = requestAnimationFrame(tick); });
