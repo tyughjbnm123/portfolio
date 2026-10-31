@@ -41,3 +41,8 @@ Concrete noise, stains, bands and abstract maintenance marks are drawn by code. 
 Independent architecture preview only. The original five islands and central lighthouse are unchanged.
 
 Files here: about.glb, work.glb, tools.glb, lab.glb — packaged by tools/package-building-models.py (2026-10-27). In the site each building's own LED panel is replaced by the shared district LED.
+
+2026-10-31 update: about, work, tools and lab replaced by the refined originals from the annex
+package (tools/build-landmarks-refined.py, tools/build-gear-factory.py with the GearDrive clip).
+Same provenance rules: procedural geometry and code-drawn pixels only, no game or AI assets.
+The site keeps its shared district LED; each model's own vertical_led panel is removed at load.

@@ -468,7 +468,7 @@ const ANNEX_SPOTS=[]; let ANNEX=null;   // zone halls that the original annex GL
 // Annex per zone: [style, x, z, yaw, footprint minX, maxX, minZ, maxZ, plinth] in island coordinates (scale .45).
 // Found by checking each island's occupancy by day and by night, so no annex meets a main building, an
 // arcade ride or the road; night towers then keep clear of these footprints.
-const ANNEX_LAYOUT={about:[['01',5.923,8.791,0.593,-2.68,2.68,-2.21,2.21,0],['02',-10.496,-1.479,4.572,-3.22,3.22,-2.18,2.18,0],['03',8.122,-6.812,2.269,-2.16,2.16,-2.03,2.02,0]],work:[['01',7.897,7.071,0.841,-3.42,3.42,-2.34,2.34,0],['02',-3.536,9.993,-0.34,-3.38,3.38,-2.59,2.59,0],['03',-10.587,0.531,-1.521,-2.66,2.66,-2.14,2.14,0],['01',-0.636,-10.581,3.202,-3.42,3.42,-2.34,2.34,0],['02',10.243,-2.727,1.831,-3.38,3.38,-2.59,2.59,0]],tools:[['01',2.397,10.223,0.23,-3.15,3.15,-2.7,2.7,0],['02',-6.231,8.451,-0.485,-3.24,3.24,-2.88,2.88,1],['03',-6.121,-8.654,3.757,-2.47,2.48,-2.21,2.2,0],['01',5.509,-9.289,2.606,-3.15,3.15,-2.7,2.7,0]],lab:[['01',4.653,9.746,0.445,-3.15,3.15,-2.57,2.57,0],['02',-5.91,9.631,-0.55,-3.02,3.02,-2.25,2.25,0],['03',-6.225,-9.19,3.737,-2.63,2.63,-2.25,2.25,0],['01',5.278,-9.651,2.641,-3.15,3.15,-2.57,2.57,0]],games:[['01',0.886,10.864,0.231,-3.33,3.33,-2.59,2.59,0],['03',5.845,-9.671,2.598,-2.61,2.61,-2.23,2.23,0]]};
+const ANNEX_LAYOUT={about:[['01',5.923,8.791,0.593,-2.68,2.68,-2.21,2.21,0],['02',-10.496,-1.479,4.572,-3.22,3.22,-2.18,2.18,0],['03',8.122,-6.812,2.269,-2.16,2.16,-2.02,2.02,0]],work:[['01',7.897,7.071,0.841,-3.42,3.42,-2.34,2.34,0],['02',-3.536,9.993,-0.34,-3.37,3.38,-2.59,2.59,0],['03',-10.587,0.531,-1.521,-2.66,2.66,-2.14,2.14,0],['01',-0.636,-10.581,3.202,-3.42,3.42,-2.34,2.34,0],['02',10.243,-2.727,1.831,-3.37,3.38,-2.59,2.59,0]],tools:[['01',2.397,10.223,0.23,-3.15,3.15,-2.7,2.7,1],['02',-6.231,8.451,-0.485,-3.24,3.24,-2.88,2.88,1],['03',-4.264,-10.356,3.532,-2.47,2.47,-2.21,2.21,0],['01',5.509,-9.289,2.606,-3.15,3.15,-2.7,2.7,1]],lab:[['01',4.16,9.966,0.395,-3.15,3.15,-2.57,2.57,0],['02',-5.421,9.914,-0.5,-3.01,3.02,-2.25,2.25,0],['03',-5.862,-9.661,3.687,-2.63,2.63,-2.25,2.25,0],['01',4.21,-9.946,2.741,-3.15,3.15,-2.57,2.57,0]],games:[['01',0.886,10.864,0.231,-3.33,3.33,-2.59,2.59,0],['03',5.845,-9.671,2.598,-2.61,2.61,-2.23,2.23,0]]};
 function annexHit(key,x,z,r){ for(const a of ANNEX_LAYOUT[key]||[]){ const [,ax,az,yaw,x0,x1,z0,z1]=a, dx=x-ax, dz=z-az, c=Math.cos(yaw), s=Math.sin(yaw);
   const u=dx*c-dz*s, v=dx*s+dz*c, cu=Math.max(x0,Math.min(x1,u)), cv=Math.max(z0,Math.min(z1,v)); if(Math.hypot(u-cu,v-cv)<r) return true; } return false; }
 let ARCADE_PARK=null;
@@ -1848,8 +1848,8 @@ import('./assets/island-city/metro.js?v=20261026-4').then(m=>{
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
 function loadCity(){
-  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261027-4').then(m=>m.createNightCity({
-    renderer, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
+  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261031-2').then(m=>m.createNightCity({
+    renderer, animate:!mobile&&!reduced, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);
       TOWERS.forEach(neonSign);
@@ -1870,7 +1870,7 @@ function loadCity(){
 // the zone halls stay as they are; after dark each hall gives way to its annex. Main buildings, LEDs, roads
 // and the hub are untouched.
 function loadAnnexes(){
-  import('./assets/island-city/annexes.js?v=20261031-2').then(m=>m.createAnnexes({
+  import("./assets/island-city/annexes.js?v=20261031-3").then(m=>m.createAnnexes({
     spots:ANNEX_SPOTS, scale:.45, animate:!mobile&&!reduced,
     pick:(o,s)=>{ if(!s){ const i=pickables.indexOf(o); if(i>=0) pickables.splice(i,1); return; } o.userData.key=s.key; o.userData.zone=s.zone; pickables.push(o); }
   })).then(A=>{
@@ -1928,6 +1928,7 @@ function tick(){
   const n=state.nightT;
   if(ARCADE_PARK)ARCADE_PARK.update(dt,n,{paused:document.hidden||!reader.hidden});
   if(ANNEX&&!document.hidden)ANNEX.tick(n>.08?dt:0);
+  if(CITY?.tick&&!document.hidden&&n>.08)CITY.tick(dt);
   if(PHYS&&PHYS.night!==(n>.5)){ PHYS.night=n>.5; PHYS.dayBodies.forEach(b=>b.collisionResponse=!PHYS.night); PHYS.nightBodies.forEach(b=>b.collisionResponse=PHYS.night); }
   if(METRO)METRO.update(dt,n,{focus:state.focus,labelsOn:state.labels,driving:drive.on,reading:!reader.hidden,paused:document.hidden});
   // Keep the expanded metro overview clear when narrow screens move the camera back.
