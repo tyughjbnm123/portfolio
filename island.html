@@ -1832,7 +1832,15 @@ setInterval(()=>{ const n=TPE.info().night; if(n!==tpeNight){ tpeNight=n; setNig
 
 
 const _m4=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(), _p=new THREE.Vector3();
-let CITY=null, HARBOR=null, METRO=null, cityLoading=null;
+let CITY=null, HARBOR=null, METRO=null, cityLoading=null, STEAM=null;
+// Lab steam (confirmed trial effect): desktop only, at night, while the lab is on screen. Phones, touch-only
+// devices and reduced motion never download the noise or add the extra depth pass.
+const steamOK=!mobile&&!reduced&&!matchMedia('(hover: none) and (pointer: coarse)').matches&&renderer.capabilities.isWebGL2;
+const _fr=new THREE.Frustum(), _fm=new THREE.Matrix4();
+function loadSteam(c){ const lab=c.landmarks?.lab; if(!steamOK||!lab||STEAM) return;
+  import('./assets/island-city/lab-steam.js?v=20261031-1').then(m=>{ m.addLabNozzle(lab);
+    return m.createLabSteam({renderer,scene,camera,parent:lab,noiseURL:new URL('./assets/island-city/steam-noise-64.bin',location.href).href}); })
+  .then(st=>{ STEAM=st; st.t=2.8; st.setNight(true); st.setEnabled(false); }).catch(e=>console.warn('Lab steam unavailable',e)); }
 const metroPassengerMaterials=new Map();
 function goMetroStation(key){if(drive.on)stopDrive();if(hunt.on)endHunt();if(!reader.hidden)closeReader();focus(key);}
 function fitMetroOverview(){
@@ -1848,10 +1856,10 @@ import('./assets/island-city/metro.js?v=20261026-4').then(m=>{
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
 function loadCity(){
-  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261031-2').then(m=>m.createNightCity({
+  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261031-3').then(m=>m.createNightCity({
     renderer, animate:!mobile&&!reduced, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
-      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block);
+      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c);
       TOWERS.forEach(neonSign);
       tick._n=-1;                                // re-apply the current night amount
       WALK.mode=null;                            // the city changed the ground: rebuild the walk grids
@@ -2023,6 +2031,9 @@ function tick(){
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
   sizeFig();
   if(state.nightT>.015){ if(!bloom) loadBloom(); }
+  if(STEAM){ let on=state.nightT>.6 && reader.hidden && !document.hidden;
+    if(on){ camera.updateMatrixWorld(); _fr.setFromProjectionMatrix(_fm.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse)); STEAM.volume.updateMatrixWorld(); on=_fr.intersectsObject(STEAM.volume); }
+    STEAM.setEnabled(on); if(on){ STEAM.t+=dt; STEAM.setTime(STEAM.t); STEAM.renderDepth(); } }
   if(bloom && state.nightT>.015 && reader.hidden){ bloom.pass.strength=.4*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);
   labelRenderer.render(scene,camera); window.__calls=renderer.info.render.calls;
   requestAnimationFrame(tick);
