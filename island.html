@@ -1350,7 +1350,7 @@ function whereAt(x,z){
   for(const k in islands){ const o=islands[k]; const dx=x-o.pos.x, dz=z-o.pos.z, rr=Math.hypot(dx,dz);
     // hex inradius check against the island's rotation
     const a=Math.atan2(dz,dx)+o.g.rotation.y, seg=Math.PI/3, local=(((a+seg/2)%seg)+seg)%seg-seg/2, edge=INR/Math.cos(local);
-    if(rr<=edge && rr>=6.6){ for(const [i,L] of o.landmarks.entries()){ const lp=o.g.localToWorld(L.clone()); if(Math.hypot(x-lp.x,z-lp.z)<Math.max(3.2,(o.annexR?.[i]||0)*.85)) return null; }
+    if(rr<=edge && rr>=6.6){ const night=state.nightT>.5; for(const [i,L] of o.landmarks.entries()){ const A=night&&o.annexPos?.[i], lp=o.g.localToWorld((A||L).clone()); if(Math.hypot(x-lp.x,z-lp.z)<(A?o.annexR[i]*.85:3.2)) return null; }
       if(state.nightT>.5 && o.towers) for(const b of o.towers){ _tw.set(b.x,0,b.z); o.g.localToWorld(_tw); if(Math.hypot(x-_tw.x,z-_tw.z)<b.r) return null; }
       return k; }
     const along=x*o.dir.x+z*o.dir.z, across=Math.abs(-x*o.dir.z+z*o.dir.x);
@@ -1488,11 +1488,13 @@ function loadPhysics(){
     const world=new CANNON.World({gravity:new CANNON.Vec3(0,-22,0)});
     world.broadphase=new CANNON.SAPBroadphase(world); world.allowSleep=true;
     world.defaultContactMaterial.friction=.45; world.defaultContactMaterial.restitution=.2;
+    const dayBodies=[], nightBodies=[];
     const stat=(shape,x,y,z,ry=0)=>{ const b=new CANNON.Body({type:CANNON.Body.STATIC,shape,position:new CANNON.Vec3(x,y,z)}); b.quaternion.setFromEuler(0,ry,0); world.addBody(b); return b; };
     for(const k in islands){ const o=islands[k], ry=o.g.rotation.y;
       stat(new CANNON.Cylinder(R,R,2,6),o.pos.x,1,o.pos.z,ry);                       // island top (hex)
       stat(new CANNON.Cylinder(6.3,6.3,12,12),o.pos.x,8,o.pos.z);                     // the main building
-      o.landmarks.forEach((L,i)=>{ const w=o.g.localToWorld(L.clone()), r=Math.max(3,(o.annexR?.[i]||0)*.8); stat(new CANNON.Cylinder(r,r,10,10),w.x,7,w.z); });
+      o.landmarks.forEach((L,i)=>{ const w=o.g.localToWorld(L.clone()); dayBodies.push(stat(new CANNON.Cylinder(3,3,10,10),w.x,7,w.z));
+        const A=o.annexPos?.[i]; if(A){ const a=o.g.localToWorld(A.clone()), r=o.annexR[i]*.8; nightBodies.push(stat(new CANNON.Cylinder(r,r,10,10),a.x,7,a.z)); } });   // zone halls by day, annexes by night
       // bridge deck
       const len=RING-R-8.2+1.2, mid=o.dir.clone().multiplyScalar(8.2+len/2-.6);
       stat(new CANNON.Box(new CANNON.Vec3(1.8,.25,len/2)),mid.x,1.75,mid.z,Math.atan2(o.dir.x,o.dir.z));
@@ -1505,7 +1507,7 @@ function loadPhysics(){
     world.addEventListener('beginContact',e=>{ const other=e.bodyA===carBody?e.bodyB:e.bodyB===carBody?e.bodyA:null; const p=other?.userData?.p; if(!p) return;
       const now=performance.now(); if(now-(p.hitAt||0)<500) return; p.hitAt=now;
       if(Math.abs(drive.v)>1.5){ drive.v*=p.slow; drive.shake=Math.min(1,drive.shake+(p.kind==='crate'?.35:.12)); if(!p.hit){ p.hit=true; drive.knocked++; } } });
-    PHYS={CANNON,world,carBody}; resetProps(); if(window.__isl) window.__isl.props=PROPS; return PHYS;
+    PHYS={CANNON,world,carBody,dayBodies,nightBodies,night:null}; resetProps(); if(window.__isl) window.__isl.props=PROPS; return PHYS;
   }).catch(()=>null);
 }
 function resetProps(){
@@ -1864,14 +1866,15 @@ function loadCity(){
       }).catch(e=>console.warn('Harbor detail unavailable; existing night city retained.',e));
     }).catch(e=>console.warn('night city unavailable',e));
 }
-// Original annex buildings (assets/island-city/annexes): fetched after the first frame, then swapped in
-// for the small zone halls. Main buildings, LEDs, roads and the hub are untouched.
+// Original annex buildings (assets/island-city/annexes): fetched after the first frame. Night only: by day
+// the zone halls stay as they are; after dark each hall gives way to its annex. Main buildings, LEDs, roads
+// and the hub are untouched.
 function loadAnnexes(){
-  import('./assets/island-city/annexes.js?v=20261031-1').then(m=>m.createAnnexes({
+  import('./assets/island-city/annexes.js?v=20261031-2').then(m=>m.createAnnexes({
     spots:ANNEX_SPOTS, scale:.45, animate:!mobile&&!reduced,
     pick:(o,s)=>{ if(!s){ const i=pickables.indexOf(o); if(i>=0) pickables.splice(i,1); return; } o.userData.key=s.key; o.userData.zone=s.zone; pickables.push(o); }
   })).then(A=>{
-    ANNEX=A; for(const p of A.placed){ const o=islands[p.key]; (o.annexR||=[])[p.zone]=p.radius; o.landmarks[p.zone]?.set(p.x,0,p.z); }
+    ANNEX=A; for(const p of A.placed){ const o=islands[p.key]; (o.annexR||=[])[p.zone]=p.radius; (o.annexPos||=[])[p.zone]=new THREE.Vector3(p.x,0,p.z); }
     if(window.__isl) window.__isl.annex=A;
     tick._n=-1; WALK.mode=null;                   // re-apply night glow; walk grids go around the new footprints
   }).catch(e=>console.warn('Annexes unavailable; original halls kept.',e));
@@ -1924,7 +1927,8 @@ function tick(){
   state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5);
   const n=state.nightT;
   if(ARCADE_PARK)ARCADE_PARK.update(dt,n,{paused:document.hidden||!reader.hidden});
-  if(ANNEX&&!document.hidden)ANNEX.tick(dt);
+  if(ANNEX&&!document.hidden)ANNEX.tick(n>.08?dt:0);
+  if(PHYS&&PHYS.night!==(n>.5)){ PHYS.night=n>.5; PHYS.dayBodies.forEach(b=>b.collisionResponse=!PHYS.night); PHYS.nightBodies.forEach(b=>b.collisionResponse=PHYS.night); }
   if(METRO)METRO.update(dt,n,{focus:state.focus,labelsOn:state.labels,driving:drive.on,reading:!reader.hidden,paused:document.hidden});
   // Keep the expanded metro overview clear when narrow screens move the camera back.
   const overviewFogOffset=METRO?Math.max(0,camera.position.distanceTo(controls.target)-265):0;
