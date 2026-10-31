@@ -893,6 +893,69 @@ function animPerson(P,moving,dt,speed=1){
     P.legs[0].rotation.x=s*.65; P.legs[1].rotation.x=-s*.65; P.arms[0].rotation.x=-s*.55; P.arms[1].rotation.x=s*.55; P.body.position.y=Math.abs(Math.cos(P.phase))*.07; P.head.rotation.z=s*.04; }
   else { const k=Math.min(1,dt*8); P.legs.forEach(l=>l.rotation.x*=1-k); P.arms.forEach(a=>a.rotation.x*=1-k); P.body.position.y*=1-k; P.head.rotation.z*=1-k; P.phase+=dt; P.body.position.y=Math.sin(P.phase*1.6)*.015+.0; }
 }
+/* ---------- little people and the island: doors, photos, waving ----------
+   Desktop only: phones and reduced motion keep the plain walk. By day a walker may head for a zone hall, open its
+   door, go in and come back out a while later; anyone may stop to take a photo of (or, after dark, point up at) the
+   island's main building; people wave at a car driving past. */
+const INTERACT=!mobile&&!reduced;
+const HALL_DOORS=[];
+const PHONE={geo:new THREE.BoxGeometry(.17,.03,.27), mat:new THREE.MeshStandardMaterial({color:0x22262b,roughness:.5}), flashGeo:new THREE.SphereGeometry(.05,8,6), flashMat:new THREE.MeshBasicMaterial({color:0xffffff})};
+function phoneOf(P){ if(P.phone) return P.phone;
+  const g=new THREE.Group(); g.position.set(0,-.48,0); g.visible=false; P.arms[1].add(g);
+  const b=new THREE.Mesh(PHONE.geo,PHONE.mat); g.add(b); const f=new THREE.Mesh(PHONE.flashGeo,PHONE.flashMat); f.position.set(0,-.04,.08); f.visible=false; g.add(f); P.flash=f;
+  return P.phone=g; }
+// arm and head poses laid over the walk cycle; a new pose waits until the last one has faded out
+function posePerson(P,mode,dt,t=0){
+  if(mode && P.pm && mode!==P.pm && P.pw>.05) mode=null;
+  if(mode) P.pm=mode;
+  P.pw=(P.pw||0)+((mode?1:0)-(P.pw||0))*Math.min(1,dt*7);
+  const [A0,A1]=P.arms, w=P.pw;
+  if(w<.002 && !mode){ if(P.pm){ A0.rotation.z=-.14; A1.rotation.z=.14; P.head.rotation.x=0; if(P.phone) P.phone.visible=false; P.pm=null; } return; }
+  const to=(a,b)=>a+(b-a)*w, m=P.pm;
+  if(m==='phone'){ A1.rotation.x=to(A1.rotation.x,-1.62); A1.rotation.z=to(.14,-.4); A0.rotation.x=to(A0.rotation.x,-1.5); A0.rotation.z=to(-.14,.4); P.head.rotation.x=to(0,.16); phoneOf(P).visible=w>.45; }
+  else if(m==='point'){ A1.rotation.x=to(A1.rotation.x,-2.55); A1.rotation.z=.14; A0.rotation.z=-.14; P.head.rotation.x=to(0,-.42); }
+  else if(m==='look'){ P.head.rotation.x=to(0,-.38); }
+  else if(m==='wave'){ A0.rotation.x=to(A0.rotation.x,0); A0.rotation.z=to(-.14,-2.55+Math.sin(t*13)*.38); A1.rotation.z=.14; P.head.rotation.x=to(0,-.06); }
+}
+function turnTo(o,yaw,dt){ let d=yaw-o.rotation.y; d=Math.atan2(Math.sin(d),Math.cos(d)); o.rotation.y+=d*Math.min(1,dt*8); }
+// stop and take a photo of the building in the middle of the island (or point up at its LED after dark)
+function startAct(w,p,n){ const r=Math.random(), kind=n>.5?(r<.5?'point':'phone'):(r<.65?'phone':'look'), dur=2.2+Math.random()*1.4;
+  w.act={kind,t:0,dur,face:Math.atan2(-p.x,-p.z),flash:n>.4&&kind==='phone'}; w.wait=Math.max(w.wait,dur+.3); }
+// zone hall doors: (0,0,z) in front of a hall, in its island's frame
+function hallPt(L,z){ return new THREE.Vector3(L.position.x+Math.sin(L.rotation.y)*z,2,L.position.z+Math.cos(L.rotation.y)*z); }
+function pickDoor(w,G,p){
+  const open=HALL_DOORS.filter(d=>d.parent===w.P.root.parent && !d.busy); if(!open.length||!G) return null;
+  const d=open[Math.floor(Math.random()*open.length)];
+  const ok=q=>walkAt(G,q.x,q.z)===1;
+  for(const z of [3.5,3.35,3.7,3.9]){ const A=hallPt(d.L,z); if(!ok(A)) continue;
+    // straight there, or round one of the hall's front corners
+    let via=null; if(!walkLine(G,p.x,p.z,A.x,A.z)){ via=[-1,1].map(s=>hallPt(d.L,2.3).add(new THREE.Vector3(Math.cos(d.L.rotation.y),0,-Math.sin(d.L.rotation.y)).multiplyScalar(s*3.8)))
+      .find(C=>ok(C) && walkLine(G,p.x,p.z,C.x,C.z) && walkLine(G,C.x,C.z,A.x,A.z)); if(!via) continue; }
+    return {door:d,stage:'go',t:0,A,via,D:hallPt(d.L,1.85),I:hallPt(d.L,1.15),yaw:d.L.rotation.y,stay:3+Math.random()*4}; }
+  return null; }
+function endVisit(w){ const v=w.visit; if(!v) return; v.door.busy=null; v.door.want=0; w.visit=null; w.P.root.visible=true; }
+function stepTo(P,q,speed,dt){ const p=P.root.position, dx=q.x-p.x, dz=q.z-p.z, d=Math.hypot(dx,dz);
+  if(d<.04){ p.x=q.x; p.z=q.z; return true; } const st=Math.min(d,speed*dt); p.x+=dx/d*st; p.z+=dz/d*st; turnTo(P.root,Math.atan2(dx,dz),dt); animPerson(P,true,dt,.7); return false; }
+function doorStep(w,dt,n){
+  const v=w.visit, P=w.P, p=P.root.position, L=v.door.L; v.t+=dt;
+  if(n>.3){ p.copy(v.A); endVisit(w); w.has=false; w.wait=.5; return; }          // dusk: the hall makes way for the night annex
+  if(v.stage==='open'){ v.door.want=1; turnTo(P.root,v.yaw+Math.PI,dt); animPerson(P,false,dt); if(v.t>.55){ v.stage='in'; v.t=0; v.leg=0; } }
+  else if(v.stage==='in'){ if(stepTo(P,v.leg?v.I:v.D,1.1,dt)){ if(v.leg){ P.root.visible=false; v.stage='inside'; v.t=0; } else v.leg=1; } }
+  else if(v.stage==='inside'){ if(v.t>.4) v.door.want=0; if(v.t>v.stay){ v.door.want=1; if(v.t>v.stay+.5){ P.root.visible=true; P.root.rotation.y=v.yaw; v.stage='out'; v.t=0; v.leg=0; } } }
+  else if(v.stage==='out'){ if(stepTo(P,v.leg?v.A:v.D,1.1,dt)){ if(v.leg){ endVisit(w); w.wait=.8+Math.random()*1.5; } else { v.leg=1; v.door.want=0; } } }
+  const r=Math.hypot(p.x-L.position.x,p.z-L.position.z); p.y=2+.3*THREE.MathUtils.clamp((3.15-r)/.3,0,1);   // up onto the hall's step
+}
+const _wv=new THREE.Vector3();
+function interact(w,dt,t){
+  const P=w.P; if(w.visit && w.visit.stage!=='go'){ posePerson(P,null,dt,t); return; }
+  if(drive.on && Math.abs(drive.v)>.6 && !(w.hop>0)){ _wv.set(drive.x,2,drive.z); P.root.parent.worldToLocal(_wv); const p=P.root.position, dx=_wv.x-p.x, dz=_wv.z-p.z, d=Math.hypot(dx,dz);
+    if(d>2.8 && d<7.5){ w.waveT=1.1; w.waveYaw=Math.atan2(dx,dz); } }
+  let mode=null;
+  if(w.waveT>0){ w.waveT-=dt; mode='wave'; w.act=null; w.wait=Math.max(w.wait||0,.15); turnTo(P.root,w.waveYaw,dt); }
+  else if(w.act){ const a=w.act; a.t+=dt; turnTo(P.root,a.face,dt); if(a.t<a.dur) mode=a.kind; else w.act=null;
+    if(P.flash) P.flash.visible=a.flash && a.t>a.dur*.62 && a.t<a.dur*.62+.09; }
+  posePerson(P,mode,dt,t);
+}
 function roamers(g,n,minR=7,maxR=13){
   n = mobile? Math.max(1,n-1) : n;
   for(let i=0;i<n;i++){
@@ -986,7 +1049,9 @@ function landmark(parent,gname,color,x,z,face){
   cyl(2.9,3.1,.3,10,mat(CREAM),0,0,0,L);
   // a small hall the icon sits on
   box(3.8,2.4,3,white,0,.3,0,L); box(4.1,.3,3.3,accent,0,2.7,0,L);
-  box(1.1,1.5,.08,winMat,0,.3,1.52,L); [-1.25,1.25].forEach(wx=>box(.7,.6,.08,winMat,wx,1.4,1.52,L));
+  box(1,1.45,.02,mat(0x2c3238),0,.3,1.505,L);                 // the doorway behind the door
+  { const door=new THREE.Group(); door.position.set(-.55,.3,1.54); L.add(door); box(1.1,1.5,.06,winMat,.55,0,0,door).userData.noWalk=true; HALL_DOORS.push({L,parent,pivot:door,open:0,want:0,busy:null}); }
+  [-1.25,1.25].forEach(wx=>box(.7,.6,.08,winMat,wx,1.4,1.52,L));
   const I=new THREE.Group(); I.position.y=3; L.add(I);
   const kind=LANDMARK[gname]||'badge';
   if(kind==='clap'){ box(2.4,1.5,.25,dark,0,.2,0,I); const top=new THREE.Group(); top.position.set(-1.2,1.75,0); top.rotation.z=.32; I.add(top); for(let k=0;k<6;k++) box(.4,.35,.27,k%2?white:dark,.2+k*.4,0,0,top); spinners.push({o:top,axis:'z',speed:0,wave:{base:.32,amp:.28,rate:3}}); }
@@ -1403,7 +1468,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addE
   if(e.pointerId===lookId){ lookId=null; drive.looking=false; }
 });
 joyZone.addEventListener('contextmenu',e=>e.preventDefault());
-if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS}; window.__renderer=renderer; }
+if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS,people:{doors:HALL_DOORS,hallPt,startAct}}; window.__renderer=renderer; }
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
@@ -1578,7 +1643,7 @@ function buildWalkGrid({g,ext,limit,seeds}){
     for(const h of [lo,(lo+hi)/2,hi]) cut(h); };
   const solid=m=>m && m.visible!==false && m.depthWrite!==false && !(m.transparent && m.opacity<.05);
   const visit=o=>{
-    if(!o.visible || skip.has(o) || o.isSprite || o.isPoints || o.isLine) return;
+    if(!o.visible || skip.has(o) || o.userData.noWalk || o.isSprite || o.isPoints || o.isLine) return;
     if(o.isMesh && o.geometry?.attributes?.position && (Array.isArray(o.material)?o.material.some(solid):solid(o.material))){
       const geo=o.geometry, pos=geo.attributes.position, idx=geo.index, n=idx?idx.count:pos.count;
       if(!geo.boundingBox) geo.computeBoundingBox(); L.multiplyMatrices(inv,o.matrixWorld);
@@ -1849,9 +1914,9 @@ function fitMetroOverview(){
   const distance=Math.min(530,Math.max(265,84*h/(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*Math.max(260,free))));
   HOME.look.set(0,5,0);HOME.pos.set(0,.63,.777).normalize().multiplyScalar(distance).add(HOME.look);
 }
-import('./assets/island-city/metro.js?v=20261026-4').then(m=>{
-  METRO=m.createMetro({scene,islands,host:$('#app'),reduced,onStation:goMetroStation,
-    createPassenger:(parent,i)=>{const p=person(parent,{shirt:[0xe6c36e,0x87bbc5,0xc6a6d8,0xe6b39e,0x99c6a5,0xd7dcd1][i]});p.root.name='metro passenger '+i;p.root.scale.setScalar(.6);p.root.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;const original=o.material;if(!metroPassengerMaterials.has(original)){const material=original.clone();material.emissive.copy(material.color).multiplyScalar(.18);metroPassengerMaterials.set(original,material);}o.material=metroPassengerMaterials.get(original);});return {root:p.root,animate:(walking,dt)=>animPerson(p,walking,dt,.8)};},
+import('./assets/island-city/metro.js?v=20261031-1').then(m=>{
+  METRO=m.createMetro({scene,islands,host:$('#app'),reduced,crowd:INTERACT,onStation:goMetroStation,
+    createPassenger:(parent,i)=>{const p=person(parent,{shirt:[0xe6c36e,0x87bbc5,0xc6a6d8,0xe6b39e,0x99c6a5,0xd7dcd1][i]});p.root.name='metro passenger '+i;p.root.scale.setScalar(.6);p.root.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;const original=o.material;if(!metroPassengerMaterials.has(original)){const material=original.clone();material.emissive.copy(material.color).multiplyScalar(.18);metroPassengerMaterials.set(original,material);}o.material=metroPassengerMaterials.get(original);});return {root:p.root,animate:(walking,dt)=>animPerson(p,walking,dt,.8),pose:(mode,dt,t)=>posePerson(p,mode,dt,t)};},
     onOverview:()=>{if(drive.on)stopDrive();if(hunt.on)endHunt();unfocus();},pick:(o,key)=>{o.userData.key=key;o.userData.metroStation=true;pickables.push(o);}});
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
@@ -1930,7 +1995,7 @@ addEventListener('resize',resize); resize();
 
 const clock=new THREE.Clock(); const tmpC=new THREE.Color(); const up=new THREE.Vector3(0,1,0);
 function tick(){
-  const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
+  const dt=Math.min(clock.getDelta(),.05)*(window.__dtScale||1), t=clock.elapsedTime;   // __dtScale: test hook (unset in normal use)
   // day/night
   state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5);
   const n=state.nightT;
@@ -1968,25 +2033,32 @@ function tick(){
     lightHead.rotation.y+=dt*1.5;
     boats.forEach(b=>{b.a+=b.s*dt;placeBoat(b,t);b.wake.scale.z=1+Math.sin(t*2+b.phase)*.07;b.wakeMat.opacity=.16+.04*Math.sin(t*2.3+b.phase);});
     walkUpdate(n);
-    walkers.forEach(w=>{
+    if(INTERACT) for(const d of HALL_DOORS){ d.open+=(d.want-d.open)*Math.min(1,dt*6); d.pivot.rotation.y=-1.35*d.open; }
+    walkers.forEach(w=>{ stepWalker(w,dt,n); if(INTERACT) interact(w,dt,t); });
+    function stepWalker(w,dt,n){
       const P=w.P, p=P.root.position;
+      if(w.visit && w.visit.stage!=='go'){ doorStep(w,dt,n); return; }
+      if(w.visit && (!w.has || n>.3)) endVisit(w);
       dodge(w,P,p,dt); if(w.hop>0 && !w.bridge){ return; }
+      if(w.bridge && w.waveT>0){ animPerson(P,false,dt); return; }
       if(w.bridge){ if(!(w.hop>0)) w.t+=w.dirSign*w.speed*dt/w.len; if(w.t>1||w.t<0){w.dirSign*=-1; w.t=THREE.MathUtils.clamp(w.t,0,1);} p.z=(w.t-.5)*w.len*.9; p.x=THREE.MathUtils.clamp(.55*w.dirSign+(w.dx||0),-1.4,1.4); if(w.hop>0) return; P.root.rotation.y=w.dirSign>0?0:Math.PI; animPerson(P,true,dt,w.speed*.8); return; }
       const G=WALK.grids.get(P.root.parent);
       if(G && walkAt(G,p.x,p.z)!==1){ walkSnap(G,p); w.has=false; }   // pushed (or grown over) into a building: step back out
       if(w.wait>0){w.wait-=dt; animPerson(P,false,dt); return;}
       if(!w.has){
+        // now and then by day: go into one of this island's zone halls
+        if(INTERACT && n<.15 && Math.random()<.3){ const v=pickDoor(w,G,p); if(v){ w.visit=v; v.door.busy=w; w.tgt.copy(v.via||v.A); w.has=true; } }
         // pick a spot that is open ground with a clear straight line to it
         for(let k=0;k<24 && !w.has;k++){ const a=Math.random()*6.28, r=w.minR+Math.random()*(w.maxR-w.minR), x=Math.cos(a)*r, z=Math.sin(a)*r;
           if(!G || (walkAt(G,x,z)===1 && walkLine(G,p.x,p.z,x,z))){ w.tgt.set(x,2,z); w.has=true; } }
         if(!w.has){ w.wait=.8; animPerson(P,false,dt); return; }
       }
       const dx=w.tgt.x-p.x, dz=w.tgt.z-p.z, d=Math.hypot(dx,dz);
-      if(d<.2){w.has=false; w.wait=1+Math.random()*3; return;}
+      if(d<.2){ w.has=false; if(w.visit){ if(w.visit.via){ w.visit.via=null; w.tgt.copy(w.visit.A); w.has=true; } else { w.visit.stage='open'; w.visit.t=0; } return; } w.wait=1+Math.random()*3; if(INTERACT && Math.random()<.35) startAct(w,p,n); return; }
       const st=Math.min(d,w.speed*dt), nx=p.x+dx/d*st, nz=p.z+dz/d*st;
       if(G && walkAt(G,nx,nz)!==1){ w.has=false; w.wait=.3; animPerson(P,false,dt); return; }
       p.x=nx; p.z=nz; P.root.rotation.y=Math.atan2(dx,dz); animPerson(P,true,dt,w.speed*.8);
-    });
+    }
     // me
     { const p=ME.root.position;
       if(drive.on && Math.abs(drive.v)>.6){ const dx=p.x-drive.x, dz=p.z-drive.z, d=Math.hypot(dx,dz)||.01; if(d<2.8){ const k=(2.8-d)*5*dt, nx=p.x+dx/d*k, nz=p.z+dz/d*k; if(whereAt(nx,nz)){ p.x=nx; p.z=nz; } if(!(me.hop>0)&&d<2) me.hop=.42; me.wait=Math.max(me.wait,.5); } }
