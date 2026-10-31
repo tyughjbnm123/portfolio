@@ -1,0 +1,5 @@
+Original procedural annex models for YI-CHI KUO, 2026-10-31.
+All annex geometry and texture pixels authored in the included Python sources.
+No game extraction, external model, AI bitmap texture, brand mark or annex signage.
+Source: tools/build-annexes-refined.py; tools/build-island-annexes.py; tools/build-tool-tower.py.
+The landmarks/ folder contains unchanged copies of the previously approved original main buildings, for preview comparison only. Their original sources and hashes are recorded in the main-building handoff.
