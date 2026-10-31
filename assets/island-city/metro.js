@@ -26,7 +26,7 @@ export function createPassengerSchedule(count = 5) {
   }};
 }
 
-export function createMetro({ scene, islands, host, onStation, onOverview, pick, createPassenger, reduced = false }) {
+export function createMetro({ scene, islands, host, onStation, onOverview, pick, createPassenger, reduced = false, crowd = false }) {
   const radius = 75, trackY = 10.2, platformY=trackY+.66, keys = ['about', 'work', 'tools', 'lab', 'games'];
   const stops = keys.map((key, i) => ({ key, no: String(i + 1).padStart(2, '0'), name: islands[key].data.name,
     angle: Math.atan2(islands[key].pos.z, islands[key].pos.x), color: [0xe7a97c,0x73b9de,0xe0c06d,0x77c5b3,0xd588ae][i] }));
@@ -157,6 +157,8 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
     b.finish();cars.push(g);
   }
   const passengers=createPassenger?Array.from({length:6},(_,i)=>createPassenger(root,i)):[];
+  // A few more people wait along each platform (desktop only): heads down in their phones until a train pulls in.
+  const waiting=createPassenger&&crowd?stops.flatMap((s,i)=>[-1,1].map((side,k)=>({stop:i,side,p:createPassenger(root,6+i*2+k),look:Math.random()*.5-.25}))):[];
   const schedule=createPassengerSchedule(), smooth=u=>{const x=THREE.MathUtils.clamp(u,0,1);return x*x*(3-2*x);};
   function point(a,r,tangent=0){return new THREE.Vector3(Math.cos(a)*r-Math.sin(a)*tangent,platformY,Math.sin(a)*r+Math.cos(a)*tangent);}
   function pose(id,position,heading,walking,dt){const p=passengers[id];p.root.position.copy(position);p.root.rotation.y=heading;p.animate(walking,dt);}
@@ -180,6 +182,12 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
         pose(ex.outgoing,queued(ex.outgoingSide),Math.PI/2-a,false,liveDt);
         pose(ex.incoming,point(angle,radius-.15),Math.PI-angle,false,liveDt);
       }
+    }
+    for(const c of waiting){
+      const a=stops[c.stop].angle, here=(!state.moving&&state.from===c.stop)||(state.moving&&state.to===c.stop&&state.progress>.8);
+      c.p.root.position.copy(point(a,72.25,c.side*3.5));
+      c.p.root.rotation.y=Math.PI/2-a+(here?c.side*.5:c.look);
+      c.p.animate(false,liveDt); if(c.p.pose) c.p.pose(here?null:'phone',liveDt||.016,elapsed);
     }
     if(Math.abs(n-lastNight)>.001){lastNight=n;lit.forEach(({m,power})=>m.emissiveIntensity=.08+n*power);colors.forEach(({m,day,night})=>m.color.copy(day).lerp(night,n));screenMaterials.forEach(m=>m.emissiveIntensity=.08+n*.7);}
     const activity=passengers.length?(phase<1.4?'・乘客下車':'・乘客上車'):'';
