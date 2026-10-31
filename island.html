@@ -651,7 +651,7 @@ function openEntry(id,ctx){
   h+=renderBlocks(e.blocks||[]);
   archMod?.disposeAll();
   rBody.innerHTML=h; rBody.scrollTop=0;
-  if(rBody.querySelector('.arch3d-host')) import('./assets/arch3d.js?v=20261023-1').then(m=>{ archMod=m; m.mountAll(rBody); }).catch(()=>{}); rBody.hidden=false; rApp.hidden=true; rApp.innerHTML=''; $('#r-back').hidden=true;
+  if(rBody.querySelector('.arch3d-host')) import('./assets/arch3d.js?v=20261031-1').then(m=>{ archMod=m; m.mountAll(rBody); }).catch(()=>{}); rBody.hidden=false; rApp.hidden=true; rApp.innerHTML=''; $('#r-back').hidden=true;
   const run=$('#r-run'); if(run) run.addEventListener('click',()=>runApp(e));
   const n=ctx.total||1, i=ctx.index??0;
   $('#r-count').textContent = n>1 ? `${String(i+1).padStart(2,'0')} / ${String(n).padStart(2,'0')}` : '';
