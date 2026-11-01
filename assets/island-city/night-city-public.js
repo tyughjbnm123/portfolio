@@ -14,10 +14,42 @@ export const HUMAN_SCALE = .45;
 // The tool factory and the laboratory were built lower than the other two towers. Only their middle storeys are
 // drawn out (y0..y1, model units, by k): the ground floor with its doors, the gear bay, the roof plant and the
 // crown stay exactly as built, and window panes keep their shape, moving up with their storey.
-export const STRETCH = { tools: [12, 25, 1.8], lab: [6, 19, 1.75] };
+export const STRETCH = { tools: [12, 25, 1.8], lab: [7.2, 20, 1.76] };
+// the laboratory is drawn taller piece by piece, so its tanks grow whole and its pipe bends stay round
+const BY_PIECE = { lab: true };
 export const stretchY = ([y0, y1, k]) => y => y <= y0 ? y : y < y1 ? y0 + (y - y0) * k : y + (y1 - y0) * (k - 1);
 // every district LED is the same size; the stretched two hang theirs at the About tower's height
 const LED_CENTRE_Y = 23.83;
+// Each connected piece (welded by position) either moves as one block — short pieces: pipe bends, rims, rails,
+// window panes — or, if tall (a tank wall, a straight pipe run), stretches between the shifts of the pieces it meets.
+function stretchPieces(root, band, minH = 2.4) {
+  const map = stretchY(band), sh = y => map(y) - y, v = new THREE.Vector3(), pieces = [];
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  root.traverse(o => {
+    if (!o.isMesh || o.name === 'vertical_led' || o.parent?.name === 'vertical_led') return;
+    const rel = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld), irel = rel.clone().invert();
+    const geo = o.geometry = o.geometry.clone(), pos = geo.attributes.position, n = pos.count, P = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(rel); P[i * 3] = v.x; P[i * 3 + 1] = v.y; P[i * 3 + 2] = v.z; }
+    const par = new Int32Array(n).map((_, i) => i), find = i => { while (par[i] !== i) { par[i] = par[par[i]]; i = par[i]; } return i; }, join = (a, b) => { a = find(a); b = find(b); if (a !== b) par[a] = b; };
+    const seen = new Map(); for (let i = 0; i < n; i++) { const key = Math.round(P[i * 3] * 200) + ',' + Math.round(P[i * 3 + 1] * 200) + ',' + Math.round(P[i * 3 + 2] * 200); if (seen.has(key)) join(i, seen.get(key)); else seen.set(key, i); }
+    const idx = geo.index; if (idx) for (let t = 0; t < idx.count; t += 3) { join(idx.getX(t), idx.getX(t + 1)); join(idx.getX(t), idx.getX(t + 2)); } else for (let t = 0; t + 2 < n; t += 3) { join(t, t + 1); join(t, t + 2); }
+    const groups = new Map(); for (let i = 0; i < n; i++) { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(i); }
+    for (const ids of groups.values()) {
+      const lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9]; for (const i of ids) for (let a = 0; a < 3; a++) { lo[a] = Math.min(lo[a], P[i * 3 + a]); hi[a] = Math.max(hi[a], P[i * 3 + a]); }
+      pieces.push({ pos, P, ids, lo, hi, irel, rigid: hi[1] - lo[1] < minH });
+    }
+  });
+  const touches = (a, b, y) => b.lo[0] <= a.hi[0] + .05 && b.hi[0] >= a.lo[0] - .05 && b.lo[2] <= a.hi[2] + .05 && b.hi[2] >= a.lo[2] - .05 && b.lo[1] <= y + .15 && b.hi[1] >= y - .15;
+  const bends = pieces.filter(p => p.rigid && p.hi[1] - p.lo[1] < 2);
+  for (const p of pieces) if (p.rigid) p.s = sh((p.lo[1] + p.hi[1]) / 2);
+  for (const p of pieces) if (!p.rigid) [p.sb, p.st] = [p.lo[1], p.hi[1]].map(y => { const r = bends.find(q => touches(p, q, y)); return r ? r.s : sh(y); });
+  for (const p of pieces) {
+    const H = Math.max(1e-6, p.hi[1] - p.lo[1]);
+    for (const i of p.ids) { let y = p.P[i * 3 + 1]; y += p.rigid ? p.s : p.sb + (p.st - p.sb) * (y - p.lo[1]) / H; v.set(p.P[i * 3], y, p.P[i * 3 + 2]).applyMatrix4(p.irel); p.pos.setXYZ(i, v.x, v.y, v.z); }
+  }
+  new Set(pieces.map(p => p.pos)).forEach(pos => pos.needsUpdate = true);
+  root.traverse(o => { if (o.isMesh) { o.geometry.computeBoundingBox(); o.geometry.computeBoundingSphere(); } });
+}
 function stretchStoreys(root, band) {
   const map = stretchY(band), v = new THREE.Vector3(), inv = new THREE.Matrix4(), rel = new THREE.Matrix4(), irel = new THREE.Matrix4();
   root.updateMatrixWorld(true); inv.copy(root.matrixWorld).invert();
@@ -46,7 +78,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
     ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031-2`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
-  for (const k in STRETCH) if (LM[k]) stretchStoreys(LM[k], STRETCH[k]);
+  for (const k in STRETCH) if (LM[k]) (BY_PIECE[k] ? stretchPieces : stretchStoreys)(LM[k], STRETCH[k]);
   // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
   const mixers = [];
   Object.keys(LANDMARK_FILES).forEach((k, i) => { const clip = lm[i]?.animations?.find(a => a.name === 'GearDrive'); if (clip) { const mx = new THREE.AnimationMixer(lm[i].scene); mx.clipAction(clip).play(); mx.update(0); mixers.push(mx); } });
