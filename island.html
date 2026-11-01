@@ -921,8 +921,8 @@ function startAct(w,p,n){ const r=Math.random(), kind=n>.5?(r<.5?'point':'phone'
   w.act={kind,t:0,dur,face:Math.atan2(-p.x,-p.z),flash:n>.4&&kind==='phone'}; w.wait=Math.max(w.wait,dur+.3); }
 // zone hall doors: (0,0,z) in front of a hall, in its island's frame
 function hallPt(L,z){ return new THREE.Vector3(L.position.x+Math.sin(L.rotation.y)*z,2,L.position.z+Math.cos(L.rotation.y)*z); }
-function pickDoor(w,G,p){
-  const open=HALL_DOORS.filter(d=>d.parent===w.P.root.parent && !d.busy); if(!open.length||!G) return null;
+function pickDoor(w,G,p,n){
+  const open=HALL_DOORS.filter(d=>d.parent===w.P.root.parent && !d.busy && (n<.15||d.L.userData.night)); if(!open.length||!G) return null;
   const d=open[Math.floor(Math.random()*open.length)];
   const ok=q=>walkAt(G,q.x,q.z)===1;
   for(const z of [3.5,3.35,3.7,3.9]){ const A=hallPt(d.L,z); if(!ok(A)) continue;
@@ -936,7 +936,7 @@ function stepTo(P,q,speed,dt){ const p=P.root.position, dx=q.x-p.x, dz=q.z-p.z, 
   if(d<.04){ p.x=q.x; p.z=q.z; return true; } const st=Math.min(d,speed*dt); p.x+=dx/d*st; p.z+=dz/d*st; turnTo(P.root,Math.atan2(dx,dz),dt); animPerson(P,true,dt,.7); return false; }
 function doorStep(w,dt,n){
   const v=w.visit, P=w.P, p=P.root.position, L=v.door.L; v.t+=dt;
-  if(n>.3){ p.copy(v.A); endVisit(w); w.has=false; w.wait=.5; return; }          // dusk: the hall makes way for the night annex
+  if(n>.3 && !L.userData.night){ p.copy(v.A); endVisit(w); w.has=false; w.wait=.5; return; }   // dusk: a hall without a night building makes way for its annex
   if(v.stage==='open'){ v.door.want=1; turnTo(P.root,v.yaw+Math.PI,dt); animPerson(P,false,dt); if(v.t>.55){ v.stage='in'; v.t=0; v.leg=0; } }
   else if(v.stage==='in'){ if(stepTo(P,v.leg?v.I:v.D,1.1,dt)){ if(v.leg){ P.root.visible=false; v.stage='inside'; v.t=0; } else v.leg=1; } }
   else if(v.stage==='inside'){ if(v.t>.4) v.door.want=0; if(v.t>v.stay){ v.door.want=1; if(v.t>v.stay+.5){ P.root.visible=true; P.root.rotation.y=v.yaw; v.stage='out'; v.t=0; v.leg=0; } } }
@@ -1047,10 +1047,10 @@ function landmark(parent,gname,color,x,z,face){
   cyl(2.9,3.1,.3,10,mat(CREAM),0,0,0,L);
   // a small hall the icon sits on
   box(3.8,2.4,3,white,0,.3,0,L); box(4.1,.3,3.3,accent,0,2.7,0,L);
-  box(1,1.45,.02,mat(0x2c3238),0,.3,1.505,L);                 // the doorway behind the door
-  { const door=new THREE.Group(); door.position.set(-.55,.3,1.54); L.add(door); box(1.1,1.5,.06,winMat,.55,0,0,door).userData.noWalk=true; HALL_DOORS.push({L,parent,pivot:door,open:0,want:0,busy:null}); }
+  const doorway=box(1,1.45,.02,mat(0x2c3238),0,.3,1.505,L);   // the doorway behind the door
+  const door=new THREE.Group(); door.position.set(-.55,.3,1.54); L.add(door); box(1.1,1.5,.06,winMat,.55,0,0,door).userData.noWalk=true; HALL_DOORS.push({L,parent,pivot:door,open:0,want:0,busy:null});
   [-1.25,1.25].forEach(wx=>box(.7,.6,.08,winMat,wx,1.4,1.52,L));
-  const I=new THREE.Group(); I.position.y=3; L.add(I);
+  const I=new THREE.Group(); I.position.y=3; I.userData.y=3; L.add(I); L.userData.hall={doorway,door,icon:I};
   const kind=LANDMARK[gname]||'badge';
   if(kind==='clap'){ box(2.4,1.5,.25,dark,0,.2,0,I); const top=new THREE.Group(); top.position.set(-1.2,1.75,0); top.rotation.z=.32; I.add(top); for(let k=0;k<6;k++) box(.4,.35,.27,k%2?white:dark,.2+k*.4,0,0,top); spinners.push({o:top,axis:'z',speed:0,wave:{base:.32,amp:.28,rate:3}}); }
   else if(kind==='note'){ mk(new THREE.SphereGeometry(.55,14,10),accent,-.5,.6,0,I).scale.set(1.25,.9,.9); cyl(.09,.09,2.4,6,accent,-.05,.6,0,I); box(.9,.25,.12,accent,.38,2.85,0,I).rotation.z=-.4; mk(new THREE.SphereGeometry(.55,14,10),accent,.9,.3,0,I).scale.set(1.25,.9,.9); cyl(.09,.09,2.2,6,accent,1.35,.3,0,I); box(1.5,.22,.12,accent,.65,2.4,0,I).rotation.z=.25; spinners.push({o:I,axis:'y',speed:.5}); }
@@ -1071,6 +1071,76 @@ function landmark(parent,gname,color,x,z,face){
   else if(kind==='score'){ box(.25,3,.25,dark,-1.4,0,0,I); box(.25,3,.25,dark,1.4,0,0,I); const b=new THREE.Mesh(new THREE.BoxGeometry(3,1.6,.15),textTex([['HIGH SCORE',22],['2048',50]],'#1d2433','#f6d365')); b.position.set(0,2.3,0); b.castShadow=true; I.add(b); }
   else if(kind==='bowl'){ const bw=mk(new THREE.SphereGeometry(1.3,16,10,0,Math.PI*2,Math.PI/2,Math.PI/2),mat(0xf6ecd8,{side:THREE.DoubleSide}),0,1.5,0,I); cyl(1.2,1.2,.08,16,mat(0x9f4e30),0,1.42,0,I); [-.2,.2].forEach(dx=>{ const c=box(.1,2.6,.1,mat(WOOD),dx,1.2,.3,I); c.rotation.z=.4+dx; }); for(let k=0;k<3;k++){ const st=box(.06,.9,.06,mat(0xe8e2d1),-.4+k*.4,2,0,I); st.material=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.45}); } spinners.push({o:I,axis:'y',speed:0,bob:{amp:.12,rate:2}}); }
   return L;
+}
+
+/* Night zone halls: after dark each category hall grows into a small building in its island's night style
+   (the main building's own window atlas, a dark shell; the only light of its own is the category icon on the roof). Same spot, same facing as the
+   day hall, so it still faces its pins; the door, doorway and category icon stay, and the icon rises to
+   the roof and glows. Built once the night city (and its window atlas) has loaded. */
+const NIGHT_HALL_KEYS={about:1,work:1,tools:1,lab:1}, NIGHT_HALLS=[];
+const HALL_SHELL={about:[0x4a4547,0x2a2628],work:[0x3e4759,0x232836],tools:[0x3e4252,0x24262f],lab:[0x3c4a4d,0x22292b]};
+const HALL_ROOF=7.46, HALL_ICON=HALL_ROOF+.14, HALL_WIN={};
+const HALL_DOOR=new THREE.MeshStandardMaterial({color:0xcfdade,emissive:0xffc76b,emissiveIntensity:0,roughness:.4,flatShading:true});
+// window tiles of a main building's atlas, each as its top and bottom v so they never come out upside down
+function hallWindowTiles(root){
+  let material=null; const tiles=[], seen=new Set();
+  root?.traverse(o=>{ if(!o.isMesh||!/^Windows/.test(o.material?.name||'')||!o.geometry.index) return;
+    const P=o.geometry.attributes.position, U=o.geometry.attributes.uv, X=o.geometry.index;
+    for(let t=0;t+5<X.count;t+=6){ const ids=[...new Set([0,1,2,3,4,5].map(q=>X.getX(t+q)))]; if(ids.length!==4) continue;
+      const ys=ids.map(i=>P.getY(i)), us=ids.map(i=>U.getX(i)), vs=ids.map(i=>U.getY(i));
+      if(Math.max(...us)-Math.min(...us)<.05||Math.max(...vs)-Math.min(...vs)<.05||Math.max(...ys)-Math.min(...ys)<.8) continue;   // tiles only, no strips
+      const my=(Math.max(...ys)+Math.min(...ys))/2, top=ids.find((_,k)=>ys[k]>my), bot=ids.find((_,k)=>ys[k]<my); if(top==null||bot==null) continue;
+      const u0=Math.min(...us), u1=Math.max(...us), vt=U.getY(top), vb=U.getY(bot), key=u0.toFixed(3)+','+Math.min(vt,vb).toFixed(3);
+      if(seen.has(key)) continue; seen.add(key); tiles.push({u0,u1,vt,vb}); material=o.material; } });
+  return material?{material,tiles}:null;
+}
+function buildNightHalls(city){
+  const at=(g,x,y,z,ry=0)=>{ if(ry) g.rotateY(ry); g.translate(x,y,z); return g; };
+  const B=(w,h,d,x,y,z)=>at(new THREE.BoxGeometry(w,h,d),x,y+h/2,z);
+  for(const f of PRIVATE_FRONTAGES){ const L=f.parent, H=L.userData.hall; if(!NIGHT_HALL_KEYS[f.key]||!H||L.userData.night) continue;
+    const [shellHex,trimHex]=HALL_SHELL[f.key];
+    const atlas=hallWindowTiles(city.landmarks?.[f.key]);
+    const shell=[], trim=[], wins=[];
+    // plinth, ground storey with a shop front either side of the door, canopy
+    trim.push(at(new THREE.CylinderGeometry(3,3.1,.3,12),0,.15,0));
+    shell.push(B(3.9,2.2,2.9,0,.3,.05));
+    trim.push(B(4.3,.24,3.3,0,2.5,.05));
+    // the tower: set back above the canopy, three lit storeys
+    shell.push(B(3.3,4.5,2.5,0,2.74,-.1));
+    trim.push(B(3.6,.22,2.8,0,7.24,-.1), at(new THREE.CylinderGeometry(.95,1.05,.14,12),0,HALL_ROOF+.07,-.1));
+    const win=(w,h,x,y,z,ry,k)=>{ const g=new THREE.PlaneGeometry(w,h), t=atlas?.tiles[k%atlas.tiles.length];
+      if(t){ const uv=g.attributes.uv; uv.setXY(0,t.u0,t.vt); uv.setXY(1,t.u1,t.vt); uv.setXY(2,t.u0,t.vb); uv.setXY(3,t.u1,t.vb); }
+      wins.push(at(g,x,y,z,ry)); };
+    let k=f.zone*5;
+    [-1.32,1.32].forEach(x=>win(.95,1.2,x,1.25,1.506,0,k++));
+    [-1,1].forEach(s=>win(1.1,1.05,s*1.956,1.25,.05,s*Math.PI/2,k++));
+    for(const y of [3.55,4.98,6.41]){
+      [-1.05,0,1.05].forEach(x=>{ win(.68,1.02,x,y,1.156,0,k++); win(.68,1.02,x,y,-1.356,Math.PI,k++); });
+      [-1,1].forEach(s=>[-.6,.4].forEach(z=>win(.62,1.02,s*1.656,y,z,s*Math.PI/2,k++)));
+    }
+    const N=new THREE.Group(); N.name='night hall / '+f.key+' '+f.zone; N.visible=false; N.scale.y=.001; L.add(N);
+    const shellMat=new THREE.MeshStandardMaterial({color:shellHex,roughness:.82,metalness:0,flatShading:true,emissive:shellHex,emissiveIntensity:0});
+    const trimMat=mat(trimHex);
+    const add=(list,m)=>{ const o=new THREE.Mesh(mergeGeometries(list,false),m); o.castShadow=o.receiveShadow=true; N.add(o); return o; };
+    add(shell,shellMat); add(trim,trimMat);
+    // the main building's window atlas, on its own dimmer copy so the roof icon stays the brightest thing
+    const winM=HALL_WIN[f.key] ||= (atlas?atlas.material:winMat).clone();
+    add(wins,winM).castShadow=false;
+    H.door.traverse(o=>{ if(o.isMesh) o.material=HALL_DOOR; });   // warm white like the windows, not the city's cyan
+    N.traverse(o=>{ if(o.isMesh){ o.userData.key=f.key; o.userData.zone=f.zone; pickables.push(o); } });
+    // the day hall's own parts, minus the door, doorway and icon, sink away as the night hall rises
+    const D=new THREE.Group(); D.name='day hall parts'; L.add(D);
+    for(const o of [...L.children]) if(o!==N&&o!==D&&o!==H.door&&o!==H.doorway&&o!==H.icon) D.add(o);
+    const glow=[]; H.icon.traverse(o=>{ if(o.isMesh&&o.material.isMeshStandardMaterial){ o.material=o.material.clone(); o.material.emissive.copy(o.material.color); glow.push(o.material); } });
+    L.userData.night=true;
+    let last=-1;
+    NIGHT_HALLS.push({L,update(n){ if(Math.abs(n-last)<.003) return; last=n;
+      const mix=THREE.MathUtils.smoothstep(n,.05,.92);
+      N.visible=n>.08; N.scale.y=Math.max(.001,mix); D.visible=mix<.98; D.scale.y=Math.max(.001,1-mix);
+      H.icon.userData.y=Math.max(3*(1-mix),HALL_ICON*mix); H.icon.position.y=H.icon.userData.y;
+      shellMat.emissiveIntensity=n*.12; winM.emissiveIntensity=n*.45; HALL_DOOR.emissiveIntensity=n*.5; glow.forEach(m=>m.emissiveIntensity=n*.9); }});
+  }
+  tick._n=-1;
 }
 
 /* hub */
@@ -1556,7 +1626,7 @@ function loadPhysics(){
     for(const k in islands){ const o=islands[k], ry=o.g.rotation.y;
       stat(new CANNON.Cylinder(R,R,2,6),o.pos.x,1,o.pos.z,ry);                       // island top (hex)
       stat(new CANNON.Cylinder(6.3,6.3,12,12),o.pos.x,8,o.pos.z);                     // the main building
-      o.landmarks.forEach((L,i)=>{ const w=o.g.localToWorld(L.clone()); dayBodies.push(stat(new CANNON.Cylinder(3,3,10,10),w.x,7,w.z));
+      o.landmarks.forEach((L,i)=>{ const w=o.g.localToWorld(L.clone()), hb=stat(new CANNON.Cylinder(3,3,10,10),w.x,7,w.z); if(!NIGHT_HALL_KEYS[k]) dayBodies.push(hb);
         const A=o.annexPos?.[i]; if(A){ const a=o.g.localToWorld(A.clone()), r=o.annexR[i]*.8; nightBodies.push(stat(new CANNON.Cylinder(r,r,10,10),a.x,7,a.z)); } });   // zone halls by day, annexes by night
       // bridge deck
       const len=RING-R-8.2+1.2, mid=o.dir.clone().multiplyScalar(8.2+len/2-.6);
@@ -1923,7 +1993,7 @@ function loadCity(){
   return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261101-2').then(m=>m.createNightCity({
     renderer, animate:!mobile&&!reduced, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
-      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c);
+      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c); buildNightHalls(c);
       TOWERS.forEach(neonSign);
       tick._n=-1;                                // re-apply the current night amount
       WALK.mode=null;                            // the city changed the ground: rebuild the walk grids
@@ -1943,7 +2013,7 @@ function loadCity(){
 // and the hub are untouched.
 function loadAnnexes(){
   import("./assets/island-city/annexes.js?v=20261031-3").then(m=>m.createAnnexes({
-    spots:ANNEX_SPOTS, scale:.45, animate:!mobile&&!reduced,
+    spots:ANNEX_SPOTS.filter(s=>!NIGHT_HALL_KEYS[s.key]), scale:.45, animate:!mobile&&!reduced,
     pick:(o,s)=>{ if(!s){ const i=pickables.indexOf(o); if(i>=0) pickables.splice(i,1); return; } o.userData.key=s.key; o.userData.zone=s.zone; pickables.push(o); }
   })).then(A=>{
     ANNEX=A; for(const p of A.placed){ const o=islands[p.key]; (o.annexR||=[])[p.zone]=p.radius; (o.annexPos||=[])[p.zone]=new THREE.Vector3(p.x,0,p.z); }
@@ -1953,6 +2023,7 @@ function loadAnnexes(){
 }
 function growCity(n){
   if(ANNEX) ANNEX.update(n);
+  NIGHT_HALLS.forEach(h=>h.update(n));
   const e=n<=0?0:1-Math.pow(1-n,3);
   if(n>.015 && !CITY) loadCity();
   TOWERS.forEach(t=>{ t.T.scale.y=Math.max(.001,e); });
@@ -2025,7 +2096,7 @@ function tick(){
   if(!reduced){
     spinners.forEach(s=>{
       if(s.wave) s.o.rotation[s.wave.axis||s.axis]=s.wave.base+Math.sin(t*s.wave.rate)*s.wave.amp;
-      else if(s.bob){ s.o.position.y=3+Math.sin(t*s.bob.rate)*s.bob.amp; }
+      else if(s.bob){ s.o.position.y=(s.o.userData.y??3)+Math.sin(t*s.bob.rate)*s.bob.amp; }
       else s.o.rotation[s.axis]+=s.speed*dt;
       s.cabins&&s.cabins.forEach(cb=>cb.rotation.z=-s.o.rotation.z);
     });
@@ -2046,7 +2117,7 @@ function tick(){
       if(w.wait>0){w.wait-=dt; animPerson(P,false,dt); return;}
       if(!w.has){
         // now and then by day: go into one of this island's zone halls
-        if(INTERACT && n<.15 && Math.random()<.3){ const v=pickDoor(w,G,p); if(v){ w.visit=v; v.door.busy=w; w.tgt.copy(v.via||v.A); w.has=true; } }
+        if(INTERACT && Math.random()<.3){ const v=pickDoor(w,G,p,n); if(v){ w.visit=v; v.door.busy=w; w.tgt.copy(v.via||v.A); w.has=true; } }
         // pick a spot that is open ground with a clear straight line to it
         for(let k=0;k<24 && !w.has;k++){ const a=Math.random()*6.28, r=w.minR+Math.random()*(w.maxR-w.minR), x=Math.cos(a)*r, z=Math.sin(a)*r;
           if(!G || (walkAt(G,x,z)===1 && walkLine(G,p.x,p.z,x,z))){ w.tgt.set(x,2,z); w.has=true; } }
