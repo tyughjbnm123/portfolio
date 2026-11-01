@@ -855,35 +855,81 @@ function hexIsland(key,color){
   foam.rotation.x=-Math.PI/2; foam.rotation.z=Math.PI/2; foam.position.y=.06; g.add(foam); g.userData.foam=foam;
   return g;
 }
-const SKIN=[0xf3d2b3,0xe8bd97,0xf6dcc6,0xd8a47c];
-const HAIR=[0x2f2925,0x5a3d2b,0x8a5a36,0x1f1d1c,0xc9a06a];
+const SKIN=[0xf3d2b3,0xe8bd97,0xf6dcc6,0xd8a47c,0xb98563];
+const HAIR=[0x2f2925,0x5a3d2b,0x8a5a36,0x1f1d1c,0xc9a06a,0x3b3330,0xb5523b];
 const SHIRT=[0x6c8fb8,0xe39a78,0x8fb36a,0xe8c56a,0x9a86c8,0x5f8f7f,0xe07f93,0xf4f0e6,0x7fa7c9];
 const PEOPLE=SHIRT;
-const PANTS=[0x4a4f5c,0x6b5a48,0x3e4a5e,0x8a8f96,0x2f3336];
+const PANTS=[0x4a4f5c,0x6b5a48,0x3e4a5e,0x8a8f96,0x2f3336,0xc9b48c];
+const SHOES=[0x2a2a2d,0x2a2a2d,0xf2efe8,0xc8553d,0x6b4a33];
+const ACC=[0x2c3a4f,0xc8553d,0xe8c56a,0x5f8f7f,0xf2efe8,0x8a6a4a];
 const SM={}; const smooth=hex=>SM[hex] ||= new THREE.MeshStandardMaterial({color:hex,roughness:.72});
+const FACE={eye:new THREE.MeshStandardMaterial({color:0x241f1c,roughness:.5}), blush:new THREE.MeshStandardMaterial({color:0xf08f8f,roughness:.9,transparent:true,opacity:.55,depthWrite:false}),
+  frame:new THREE.MeshStandardMaterial({color:0x1d1d20,roughness:.4}), cup:new THREE.MeshStandardMaterial({color:0xf4efe6,roughness:.6}), sleeve:new THREE.MeshStandardMaterial({color:0x9b6a43,roughness:.8})};
 const G={leg:new THREE.CapsuleGeometry(.11,.34,4,8), shoe:new THREE.SphereGeometry(.13,10,6), torso:new THREE.CapsuleGeometry(.27,.32,4,12), arm:new THREE.CapsuleGeometry(.085,.3,4,8), hand:new THREE.SphereGeometry(.085,8,6), head:new THREE.SphereGeometry(.36,18,14), eye:new THREE.SphereGeometry(.042,8,6),
-  hairCap:new THREE.SphereGeometry(.385,18,12,0,Math.PI*2,0,1.25), hairBob:new THREE.SphereGeometry(.4,18,12,0,Math.PI*2,0,1.9), bun:new THREE.SphereGeometry(.16,10,8), brim:new THREE.CylinderGeometry(.42,.42,.04,16)};
+  hairCap:new THREE.SphereGeometry(.385,18,12,0,Math.PI*2,0,1.25), hairBob:new THREE.SphereGeometry(.4,18,12,0,Math.PI*2,0,1.9), bun:new THREE.SphereGeometry(.16,10,8), brim:new THREE.CylinderGeometry(.42,.42,.04,16),
+  long:new THREE.CapsuleGeometry(.3,.34,4,10), spike:new THREE.ConeGeometry(.09,.26,6), curl:new THREE.SphereGeometry(.13,8,6), beanie:new THREE.SphereGeometry(.39,16,10,0,Math.PI*2,0,1.45), pom:new THREE.SphereGeometry(.1,8,6), band:new THREE.TorusGeometry(.375,.045,6,18),
+  brow:new THREE.BoxGeometry(.1,.025,.02), mouth:new THREE.TorusGeometry(.055,.014,4,10,Math.PI), blush:new THREE.CircleGeometry(.05,10), lens:new THREE.TorusGeometry(.075,.014,5,14), bridge:new THREE.BoxGeometry(.07,.014,.014),
+  stripe:new THREE.TorusGeometry(.272,.028,4,20), scarf:new THREE.TorusGeometry(.2,.07,6,14), hood:new THREE.TorusGeometry(.2,.09,6,12,Math.PI*1.3), skirt:new THREE.CylinderGeometry(.24,.42,.4,14), short:new THREE.CylinderGeometry(.13,.13,.2,8),
+  pack:new THREE.BoxGeometry(.4,.46,.2), tote:new THREE.BoxGeometry(.06,.34,.3), strap:new THREE.BoxGeometry(.035,.5,.035), cup:new THREE.CylinderGeometry(.07,.055,.17,10), cupSleeve:new THREE.CylinderGeometry(.073,.066,.07,10),
+  phonesArc:new THREE.TorusGeometry(.38,.03,5,16,Math.PI), earCup:new THREE.CylinderGeometry(.09,.09,.08,10), strapH:new THREE.BoxGeometry(.04,.62,.04)};
 function part(geo,m,x,y,z,parent,shadow=true){const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=shadow; parent.add(o); return o;}
 // people share the night-city landmarks' human scale (night-city-public.js HUMAN_SCALE), so doors and floors fit them
 const PERSON_SCALE=.45;
+// hair: 0 short, 1 bob, 2 bun, 3 cap, 4 long, 5 spiky, 6 curly, 7 beanie, 8 pigtails.
+// o.extras=false keeps a plain figure (the visitor's own avatar); everyone else gets a random outfit, face and accessory.
 function person(parent,o={}){
-  const r=Math.random, pick=a=>a[Math.floor(r()*a.length)];
-  const skin=o.skin??pick(SKIN), shirt=o.shirt??pick(SHIRT), pants=o.pants??pick(PANTS), hair=o.hair??pick(HAIR), style=o.style??Math.floor(r()*4);
+  const r=Math.random, pick=a=>a[Math.floor(r()*a.length)], X=o.extras!==false;
+  const skin=o.skin??pick(SKIN), shirt=o.shirt??pick(SHIRT), pants=o.pants??pick(PANTS), hair=o.hair??pick(HAIR), style=o.style??Math.floor(r()*9);
   const root=new THREE.Group(); root.scale.setScalar(PERSON_SCALE); parent.add(root);
   const body=new THREE.Group(); root.add(body);
+  // build: a little taller/shorter and rounder/slimmer per person
+  if(X){ const tall=.92+r()*.16, wide=r()<.2?1.14:.94+r()*.1; body.scale.set(wide,tall,wide); }
+  const bottom=X?(r()<.2?'skirt':r()<.15?'shorts':'pants'):'pants';
+  const shoes=smooth(X?pick(SHOES):0x2a2a2d);
   const legs=[-1,1].map(s=>{const pv=new THREE.Group(); pv.position.set(s*.12,.6,0); body.add(pv);
-    part(G.leg,smooth(pants),0,-.27,0,pv); const sh=part(G.shoe,smooth(0x2a2a2d),0,-.55,.05,pv,false); sh.scale.set(1,.55,1.45); return pv;});
+    part(G.leg,smooth(bottom==='pants'?pants:skin),0,-.27,0,pv);
+    if(bottom==='shorts') part(G.short,smooth(pants),0,-.08,0,pv);
+    const sh=part(G.shoe,shoes,0,-.55,.05,pv,false); sh.scale.set(1,.55,1.45); return pv;});
+  if(bottom==='skirt') part(G.skirt,smooth(pants),0,.66,0,body);
   const torso=part(G.torso,smooth(shirt),0,1.0,0,body); torso.scale.z=.82;
+  // top: plain, striped tee, jacket over a tee, hoodie, or a scarf
+  const top=X?pick(['plain','plain','stripe','jacket','hoodie','scarf']):'plain', accent=smooth(pick(ACC.filter(c=>c!==shirt)));
+  let sleeve=o.sleeve??shirt;
+  if(top==='stripe') [.86,1.0,1.14].forEach(y=>{const b=part(G.stripe,accent,0,y,0,body,false); b.rotation.x=Math.PI/2; b.scale.set(1,.82,1);});
+  if(top==='jacket'){ sleeve=pick(ACC.filter(c=>c!==shirt)); const j=smooth(sleeve); [-1,1].forEach(s=>{const p=part(G.torso,j,s*.14,1.0,-.015,body); p.scale.set(.52,1.02,.86);}); }
+  if(top==='hoodie'){ const h=part(G.hood,smooth(shirt),0,1.42,-.12,body,false); h.rotation.set(-1.15,0,Math.PI*1.35); }
+  if(top==='scarf'){ const s=part(G.scarf,accent,0,1.4,0,body,false); s.rotation.x=Math.PI/2; const t=part(G.strapH,accent,.12,1.18,.2,body,false); t.scale.set(1.8,.45,1); t.rotation.z=.15; }
   const arms=[-1,1].map(s=>{const pv=new THREE.Group(); pv.position.set(s*.33,1.22,0); pv.rotation.z=s*.14; body.add(pv);
-    part(G.arm,smooth(o.sleeve??shirt),0,-.2,0,pv); part(G.hand,smooth(skin),0,-.41,0,pv,false); return pv;});
+    part(G.arm,smooth(sleeve),0,-.2,0,pv); part(G.hand,smooth(skin),0,-.41,0,pv,false); return pv;});
+  // carry: backpack, tote bag, takeaway coffee
+  const carry=X?pick([null,null,null,'pack','tote','coffee']):null;
+  if(carry==='pack'){ const c=smooth(pick(ACC)); part(G.pack,c,0,1.04,-.3,body); [-1,1].forEach(s=>part(G.strap,c,s*.15,1.12,.2,body,false)); }
+  if(carry==='tote'){ const c=smooth(pick(ACC)); part(G.tote,c,-.4,.86,0,body); const st=part(G.strap,c,-.3,1.18,0,body,false); st.rotation.z=.35; }
+  if(carry==='coffee'){ const cup=new THREE.Group(); cup.position.set(0,-.46,.08); arms[0].add(cup); part(G.cup,FACE.cup,0,0,0,cup,false); part(G.cupSleeve,FACE.sleeve,0,-.01,0,cup,false); }
   const head=new THREE.Group(); head.position.y=1.72; body.add(head);
+  if(X) head.scale.setScalar(1/body.scale.y*(.96+r()*.08));
   part(G.head,smooth(skin),0,0,0,head);
-  [-1,1].forEach(s=>part(G.eye,smooth(0x241f1c),s*.13,.0,.33,head,false));
+  // face: eyes, and for most people brows, a smile, rosy cheeks, maybe glasses
+  [-1,1].forEach(s=>part(G.eye,FACE.eye,s*.13,.0,.33,head,false));
+  if(X){
+    if(r()<.7){ const m=part(G.mouth,FACE.eye,0,-.13,.335,head,false); m.rotation.z=Math.PI; m.rotation.x=-.25; }
+    if(r()<.5) [-1,1].forEach(s=>{const b=part(G.blush,FACE.blush,s*.2,-.08,.29,head,false); b.rotation.y=s*.55;});
+    if(r()<.45) [-1,1].forEach(s=>{const b=part(G.brow,smooth(hair),s*.13,.12,.33,head,false); b.rotation.z=s*-.15;});
+    if(r()<.2){ [-1,1].forEach(s=>part(G.lens,FACE.frame,s*.13,0,.345,head,false)); part(G.bridge,FACE.frame,0,.01,.35,head,false); }
+  }
   const hm=smooth(hair);
-  if(style===1){ const h=part(G.hairBob,hm,0,.02,-.015,head); h.rotation.x=-.18; }
-  else { const h=part(G.hairCap,hm,0,.03,-.03,head); h.rotation.x=-.32; }
+  const cap=(rx=-.32)=>{ const h=part(G.hairCap,hm,0,.03,-.03,head); h.rotation.x=rx; return h; };
+  if(style===1){ const h=part(G.hairBob,hm,0,.02,-.015,head); h.rotation.x=X?-.4:-.18; }
+  else if(style===4){ const h=part(G.hairBob,hm,0,.02,-.015,head); h.rotation.x=-.42; const b=part(G.long,hm,0,-.32,-.2,head); b.scale.set(1.05,1,.45); }
+  else if(style===5){ cap(-.4); [[0,.36,-.02],[.15,.33,-.06],[-.15,.33,-.06],[.07,.34,.1],[-.08,.32,-.18]].forEach(([x,y,z])=>{const s=part(G.spike,hm,x,y,z,head,false); s.rotation.set(z*2.4,0,-x*3);}); }
+  else if(style===6){ for(let i=0;i<11;i++){ const a=i/11*Math.PI*2, ring=i%2?.24:.3; part(G.curl,hm,Math.cos(a)*ring,.24+(i%3)*.04,Math.sin(a)*ring-.05,head,false);} part(G.curl,hm,0,.34,-.03,head,false).scale.setScalar(1.6); }
+  else if(style===7){ const c=smooth(pick(ACC)); const b=part(G.beanie,c,0,.05,-.01,head); b.rotation.x=-.12; const band=part(G.band,c,0,.08,-.02,head,false); band.rotation.x=Math.PI/2-.12; part(G.pom,c,0,.45,-.06,head,false); }
+  else if(style===8){ cap(); [-1,1].forEach(s=>{const b=part(G.bun,hm,s*.36,.02,-.1,head); b.scale.set(.9,1.2,.9);}); }
+  else cap();
   if(style===2) part(G.bun,hm,0,.34,-.18,head);
-  if(style===3){ const cap=smooth(pick(SHIRT)); part(G.hairCap,cap,0,.06,-.02,head).rotation.x=-.2; const b=part(G.brim,cap,0,.08,.2,head); b.scale.set(.75,1,.9); }
+  if(style===3){ const c=smooth(pick(SHIRT)); part(G.hairCap,c,0,.06,-.02,head).rotation.x=-.2; const b=part(G.brim,c,0,.17,.27,head); b.scale.set(.72,1,.62); b.rotation.x=.18; }
+  // headphones on some walkers without a hat
+  if(X && style!==3 && style!==7 && r()<.12){ const c=smooth(pick([0x1d1d20,0xf2efe8,0xc8553d])); part(G.phonesArc,c,0,.02,0,head,false); [-1,1].forEach(s=>{const e=part(G.earCup,c,s*.37,.0,0,head,false); e.rotation.z=Math.PI/2;}); }
   return {root,body,legs,arms,head,phase:r()*6};
 }
 function animPerson(P,moving,dt,speed=1){
@@ -1274,7 +1320,7 @@ for(let i=0;i<9;i++){
 }
 
 /* ---------- me ---------- */
-const ME=person(scene,{skin:0xf2d3b6,shirt:0x4b4f56,sleeve:0x4b4f56,pants:0x40434a,hair:0x1b1918,style:1});
+const ME=person(scene,{skin:0xf2d3b6,shirt:0x4b4f56,sleeve:0x4b4f56,pants:0x40434a,hair:0x1b1918,style:1,extras:false});
 ME.root.scale.setScalar(1.22*PERSON_SCALE); ME.root.position.set(0,2,4.5);
 { const h=ME.head, glass=smooth(0x2b2724), gTor=new THREE.TorusGeometry(.088,.017,6,18);
   [-1,1].forEach(s=>part(gTor,glass,s*.13,.0,.352,h,false));
