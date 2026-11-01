@@ -10,7 +10,32 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 //   high-rise, then mid and low blocks.
 // - No text boards on buildings: the five district LEDs (placeLED) are the only signs.
 
-export const HUMAN_SCALE = .45;   // island.html scales people by the same factor
+export const HUMAN_SCALE = .45;
+// The tool factory and the laboratory were built lower than the other two towers. Only their middle storeys are
+// drawn out (y0..y1, model units, by k): the ground floor with its doors, the gear bay, the roof plant and the
+// crown stay exactly as built, and window panes keep their shape, moving up with their storey.
+export const STRETCH = { tools: [12, 25, 1.8], lab: [6, 19, 1.75] };
+export const stretchY = ([y0, y1, k]) => y => y <= y0 ? y : y < y1 ? y0 + (y - y0) * k : y + (y1 - y0) * (k - 1);
+// every district LED is the same size; the stretched two hang theirs at the About tower's height
+const LED_CENTRE_Y = 23.83;
+function stretchStoreys(root, band) {
+  const map = stretchY(band), v = new THREE.Vector3(), inv = new THREE.Matrix4(), rel = new THREE.Matrix4(), irel = new THREE.Matrix4();
+  root.updateMatrixWorld(true); inv.copy(root.matrixWorld).invert();
+  root.traverse(o => {
+    if (!o.isMesh || o.name === 'vertical_led' || o.parent?.name === 'vertical_led') return;
+    rel.multiplyMatrices(inv, o.matrixWorld); irel.copy(rel).invert();
+    const geo = o.geometry = o.geometry.clone(), pos = geo.attributes.position, idx = geo.index;
+    if (o.material.emissiveMap && idx) {                    // window panes: each quad moves as one piece
+      const done = new Set();
+      for (let t = 0; t < idx.count; t += 6) {
+        const ids = new Set(); for (let q = 0; q < 6 && t + q < idx.count; q++) ids.add(idx.getX(t + q));
+        let cy = 0; ids.forEach(i => { cy += v.fromBufferAttribute(pos, i).applyMatrix4(rel).y; }); cy /= ids.size; const dy = map(cy) - cy;
+        ids.forEach(i => { if (done.has(i)) return; done.add(i); v.fromBufferAttribute(pos, i).applyMatrix4(rel); v.y += dy; v.applyMatrix4(irel); pos.setXYZ(i, v.x, v.y, v.z); });
+      }
+    } else for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(rel); v.y = map(v.y); v.applyMatrix4(irel); pos.setXYZ(i, v.x, v.y, v.z); }
+    pos.needsUpdate = true; geo.computeBoundingBox(); geo.computeBoundingSphere();
+  });
+}   // island.html scales people by the same factor
 export async function createNightCity({ renderer, plans, work, pick, districts = [], animate = true }) {
   const loader = new GLTFLoader();
   // District landmarks: bespoke original buildings (tools/build-five-landmarks.py etc.), one per city island.
@@ -21,6 +46,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
     ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031-2`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
+  for (const k in STRETCH) if (LM[k]) stretchStoreys(LM[k], STRETCH[k]);
   // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
   const mixers = [];
   Object.keys(LANDMARK_FILES).forEach((k, i) => { const clip = lm[i]?.animations?.find(a => a.name === 'GearDrive'); if (clip) { const mx = new THREE.AnimationMixer(lm[i].scene); mx.clipAction(clip).play(); mx.update(0); mixers.push(mx); } });
@@ -153,7 +179,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
       T.traverse(o => { if (o.isMesh) { for (const t of [o.material.map, o.material.emissiveMap]) if (t) t.anisotropy = aniso; if (o.material.emissiveMap) { o.material.emissiveIntensity = 0; facades.add(o.material); } } });
       plate.visible = false; T.scale.setScalar(S); T.rotation.y = L.yaw; root.add(T);
       // the shared LED goes exactly where the building's own panel was
-      if (L.lb) { const c = L.lb.getCenter(new THREE.Vector3()); ledAt[d.key] = { root, pos: new THREE.Vector3(c.x * S, c.y * S, L.lb.max.z * S + .05).applyAxisAngle(new THREE.Vector3(0, 1, 0), L.yaw), yaw: L.yaw }; }
+      if (L.lb) { const c = L.lb.getCenter(new THREE.Vector3()); if (STRETCH[d.key]) c.y = LED_CENTRE_Y; ledAt[d.key] = { root, pos: new THREE.Vector3(c.x * S, c.y * S, L.lb.max.z * S + .05).applyAxisAngle(new THREE.Vector3(0, 1, 0), L.yaw), yaw: L.yaw }; }
       // the car drives around it, not through it
       const half = Math.hypot(L.box.max.x - L.box.min.x, L.box.max.z - L.box.min.z) / 2 * S * .8;
       if (d.towers) d.towers.push({ x: 0, z: 0, r: Math.min(half, 11.5) });
@@ -197,7 +223,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
   let last = -1;
   if (!block) { block = new THREE.Group(); block.name = 'work night block (unused)'; if (work) work.parent.add(block); }
   return {
-    block, skylineTex, placeLED, landmarks: LM,
+    block, skylineTex, placeLED, landmarks: LM, stretchY: Object.fromEntries(Object.entries(STRETCH).map(([k, b]) => [k, stretchY(b)])),
     tick(dt) { if (animate) for (const m of mixers) m.update(dt); },
     update(n) {
       if (Math.abs(n - last) < .003) return; last = n;
