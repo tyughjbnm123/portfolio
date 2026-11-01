@@ -15,7 +15,7 @@ export function createArcadePark({parent,pick,reduced=false}){
   const plum=new THREE.MeshStandardMaterial({color:0x98466e,emissive:0x43122d,emissiveIntensity:.32,roughness:.42,metalness:.4});
   const cabinPaint=new THREE.MeshStandardMaterial({color:0x9aafbb,emissive:0x244656,emissiveIntensity:.32,roughness:.4,metalness:.4});
   const gold=new THREE.MeshStandardMaterial({color:0xc7a06c,roughness:.5,metalness:.45});
-  const glass=new THREE.MeshStandardMaterial({color:0x193c56,emissive:0x235878,emissiveIntensity:.22,roughness:.22,metalness:.35});
+  const glass=new THREE.MeshStandardMaterial({color:0x193c56,emissive:0x235878,emissiveIntensity:.22,roughness:.22,metalness:.35,transparent:true,opacity:.42,depthWrite:false});
   const glowing=[];
   const glow=(color,k=1)=>{const m=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.4,roughness:.35});glowing.push({m,k});return m;};
   const cyan=glow(0x37ddeb,.75),pink=glow(0xf459b3,.9),amber=glow(0xffc68c,.7);
@@ -65,7 +65,10 @@ export function createArcadePark({parent,pick,reduced=false}){
   const cabinTrim=new THREE.Group();box(1.29,.07,1.1,0,1.26,0,cyan,cabinTrim);box(1.1,.06,.98,0,0,0,cyan,cabinTrim);for(const x of [-.56,.56])box(.05,.98,.05,x,.63,.52,cyan,cabinTrim);batch(cabinTrim);
   const cabinCount=16,shells=new THREE.InstancedMesh(shellGeo,cabinPaint,cabinCount),windows=new THREE.InstancedMesh(new THREE.BoxGeometry(.99,.76,.82),glass,cabinCount),underlights=new THREE.InstancedMesh(cabinTrim.children[0].geometry,cyan,cabinCount);
   for(const o of [shells,windows,underlights]){o.instanceMatrix.setUsage(THREE.DynamicDrawUsage);o.castShadow=true;o.frustumCulled=false;ferris.add(o);}
-  const personGeo=new THREE.SphereGeometry(.15,6,4),riders=new THREE.InstancedMesh(personGeo,gold,cabinCount);riders.frustumCulled=false;ferris.add(riders);
+  // two seats per cabin; each cabin anchor follows its gondola and stays upright
+  const cabins=[];const seats=[];
+  for(let i=0;i<cabinCount;i++){const a=new THREE.Object3D();a.name='摩天輪車廂 '+(i+1);ferris.add(a);cabins.push(a);
+    for(const x of [-.25,.25]){const s=new THREE.Object3D();s.position.set(x,-1.22,0);a.add(s);seats.push({ride:'wheel',anchor:s,cabin:i,pose:'sit'});}}
   box(5.8,.22,2.8,-1.6,2.2,-4.2,metal);
 
   // Compact coaster with a high bank and a low station return; the track is a closed 3D curve.
@@ -83,8 +86,9 @@ export function createArcadePark({parent,pick,reduced=false}){
     const car=new THREE.Group();car.name='雲霄飛車車廂 '+(c+1);park.add(car);
     box(1.13,.3,1.28,0,.2,0,plum,car);box(1.22,.12,1.32,0,.03,0,metal,car);
     box(1.11,.65,.17,0,.56,-.52,plum,car);for(const x of [-.51,.51])box(.12,.49,1.13,x,.43,0,plum,car);
-    for(const x of [-.25,.25]){box(.37,.15,.49,x,.44,0,dark,car);box(.34,.5,.12,x,.67,-.3,dark,car);rod([x-.16,.77,.18],[x+.16,.77,.18],.04,gold,car);mesh(new THREE.SphereGeometry(.15,7,5),gold,[x,1.04,-.06],car);box(.24,.27,.18,x,.8,-.06,metal,car);}
+    for(const x of [-.25,.25]){box(.37,.15,.49,x,.44,0,dark,car);box(.34,.5,.12,x,.67,-.3,dark,car);rod([x-.16,.77,.18],[x+.16,.77,.18],.04,gold,car);}
     box(.82,.075,.06,0,.32,.67,cyan,car);batch(car);cars.push(car);
+    for(const x of [-.25,.25]){const s=new THREE.Object3D();s.position.set(x,.25,-.04);car.add(s);seats.push({ride:'coaster',anchor:s,car:c,pose:'cheer'});}
   }
   box(3,.18,2.2,5.25,2.3,-1.4,metal);
 
@@ -101,19 +105,22 @@ export function createArcadePark({parent,pick,reduced=false}){
   for(let i=0;i<5;i++){const x=-1.9+i*.95;box(.42,.18,1.4,x,.4,0,dark,boat);box(.16,.42,1.4,x-.21,.66,0,dark,boat);rod([x+.1,.83,-.65],[x+.1,.83,.65],.045,silver,boat);}
   for(const z of [-.93,.93]){rod([-3.3,.5,z],[3.3,.5,z],.07,amber,boat);rod([-2.7,-.5,z],[2.7,-.5,z],.055,cyan,boat);}
   batch(boat);
+  for(let i=0;i<5;i++)for(const z of [-.36,.36]){const s=new THREE.Object3D();s.position.set(-1.9+i*.95+.03,.22,z);s.rotation.y=Math.PI/2;boat.add(s);seats.push({ride:'ship',anchor:s,pose:'swing'});}
   box(8.4,.22,5.7,-6,2.2,5.3,dark);
 
   const matrix=new THREE.Matrix4(),rot=new THREE.Matrix4();let time=0,lastNight=-1;
   const update=(dt,night,{paused=false}={})=>{
     if(!reduced&&!paused)time+=Math.max(0,Math.min(dt,.05));
     const s=rideStateAt(time);wheel.rotation.z=s.wheel;pendulum.rotation.z=s.ship;
-    for(let i=0;i<cabinCount;i++){const a=i*Math.PI*2/cabinCount+s.wheel,x=Math.cos(a)*wheelRadius,y=Math.sin(a)*wheelRadius;matrix.makeTranslation(x,y,0);shells.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-.6,0);windows.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-1.34,0);underlights.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-.44,.32);riders.setMatrixAt(i,matrix);}
-    for(const o of [shells,windows,underlights,riders])o.instanceMatrix.needsUpdate=true;
+    for(let i=0;i<cabinCount;i++){const a=i*Math.PI*2/cabinCount+s.wheel,x=Math.cos(a)*wheelRadius,y=Math.sin(a)*wheelRadius;matrix.makeTranslation(x,y,0);shells.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-.6,0);windows.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-1.34,0);underlights.setMatrixAt(i,matrix);cabins[i].position.set(x,y,0);}
+    for(const o of [shells,windows,underlights])o.instanceMatrix.needsUpdate=true;
     cars.forEach((car,i)=>{const f=curveFrames(s.train-i*1.43/length);car.position.copy(f.p).addScaledVector(f.up,.09);rot.makeBasis(f.side,f.up,f.t.clone().negate());car.quaternion.setFromRotationMatrix(rot);});
     if(Math.abs(lastNight-night)>.004){lastNight=night;glowing.forEach(({m,k})=>m.emissiveIntensity=.22+night*k*1.12);glass.emissiveIntensity=.15+night*.32;districtSign.userData.update(night);}
   };
   update(0,0);park.traverse(o=>{if(o.isMesh)pick(o);});
-  return {group:park,update,curveFrames,curveLength:length,
+  // where riders sit, and where people queue for each ride (park coordinates = island coordinates, ground y=2)
+  const rides={wheel:{centre:[-1.6,-4.2],ring:[3.4,4.8],ferris,cabins,radius:wheelRadius},coaster:{centre:[5.25,-1.4],ring:[2.3,3.4],cars},ship:{centre:[-6,5.3],ring:[4.6,5.8],boat}};
+  return {group:park,update,curveFrames,curveLength:length,seats,rides,
     portal(name,x,z,face){const g=new THREE.Group();g.position.set(x,2,z);g.rotation.y=face;parent.add(g);for(const sx of [-1.5,1.5])box(.12,2.6,.12,sx,1.3,0,metal,g);box(3.12,.1,.12,0,2.62,0,name==='排行榜遊戲'?cyan:pink,g);g.name='遊戲入口 / '+name;return g;}
   };
 }
