@@ -1901,8 +1901,9 @@ let CITY=null, HARBOR=null, METRO=null, cityLoading=null, STEAM=null;
 const steamOK=!mobile&&!reduced&&!matchMedia('(hover: none) and (pointer: coarse)').matches&&renderer.capabilities.isWebGL2;
 const _fr=new THREE.Frustum(), _fm=new THREE.Matrix4();
 function loadSteam(c){ const lab=c.landmarks?.lab; if(!steamOK||!lab||STEAM) return;
-  import('./assets/island-city/lab-steam.js?v=20261031-1').then(m=>{ m.addLabNozzle(lab);
-    return m.createLabSteam({renderer,scene,camera,parent:lab,noiseURL:new URL('./assets/island-city/steam-noise-64.bin',location.href).href}); })
+  const lift=c.stretchY?.lab?c.stretchY.lab(14.14)-14.14:0, anchor=[-6.3,15.92+lift,-2.5];   // the vent rides on tank A, which the taller lab lifts
+  import('./assets/island-city/lab-steam.js?v=20261101-1').then(m=>{ m.addLabNozzle(lab,anchor);
+    return m.createLabSteam({renderer,scene,camera,parent:lab,anchor,noiseURL:new URL('./assets/island-city/steam-noise-64.bin',location.href).href}); })
   .then(st=>{ STEAM=st; st.t=2.8; st.setNight(true); st.setEnabled(false); }).catch(e=>console.warn('Lab steam unavailable',e)); }
 const metroPassengerMaterials=new Map();
 function goMetroStation(key){if(drive.on)stopDrive();if(hunt.on)endHunt();if(!reader.hidden)closeReader();focus(key);}
@@ -1919,7 +1920,7 @@ import('./assets/island-city/metro.js?v=20261031-1').then(m=>{
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
 function loadCity(){
-  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261031-4').then(m=>m.createNightCity({
+  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261101-2').then(m=>m.createNightCity({
     renderer, animate:!mobile&&!reduced, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c);

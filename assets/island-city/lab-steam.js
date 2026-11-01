@@ -154,7 +154,7 @@ export async function createLabSteam({renderer,scene,camera,parent,noiseURL,anch
 
 // The exhaust nozzle from the confirmed preview, fitted to the left tank's roof hatch (model coordinates).
 export function addLabNozzle(parent,anchor=[-6.3,15.92,-2.5]){
-  const [x,,z]=anchor,g=new THREE.Group();g.name='lab_steam_nozzle';
+  const [x,ay,z]=anchor,g=new THREE.Group();g.name='lab_steam_nozzle';g.position.y=ay-15.92;   // follows the tank top if the lab is drawn taller
   const metal=new THREE.MeshStandardMaterial({color:0x778a88,metalness:.6,roughness:.48});
   const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,1.05,16,1,true),metal);pipe.position.set(x,15.395,z);g.add(pipe);
   for(const y of [14.92,15.84]){const c=new THREE.Mesh(new THREE.TorusGeometry(.265,.065,8,20),metal);c.rotation.x=Math.PI/2;c.position.set(x,y,z);g.add(c);}
