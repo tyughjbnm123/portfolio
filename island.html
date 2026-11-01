@@ -459,7 +459,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
 </script>
 <script type="module">
-import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261027-1';
+import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261101-1';
 import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
 import {nightLook} from './assets/island-city/night-look.js?v=20261027-1';
 import {createCyberVehicle} from './assets/island-city/cyber-vehicle.js?v=20261027-1';
@@ -967,31 +967,94 @@ function startAct(w,p,n){ const r=Math.random(), kind=n>.5?(r<.5?'point':'phone'
   w.act={kind,t:0,dur,face:Math.atan2(-p.x,-p.z),flash:n>.4&&kind==='phone'}; w.wait=Math.max(w.wait,dur+.3); }
 // zone hall doors: (0,0,z) in front of a hall, in its island's frame
 function hallPt(L,z){ return new THREE.Vector3(L.position.x+Math.sin(L.rotation.y)*z,2,L.position.z+Math.cos(L.rotation.y)*z); }
-function pickDoor(w,G,p){
-  const open=HALL_DOORS.filter(d=>d.parent===w.P.root.parent && !d.busy); if(!open.length||!G) return null;
+// by day the zone halls (with their opening doors); after dark the night annexes' front entrances
+function pickDoor(w,G,p,n=0){
+  const night=n>.6, open=(night?NIGHT_DOORS:HALL_DOORS).filter(d=>d.parent===w.P.root.parent && !d.busy && d.L.visible); if(!open.length||!G) return null;
   const d=open[Math.floor(Math.random()*open.length)];
   const ok=q=>walkAt(G,q.x,q.z)===1;
-  for(const z of [3.5,3.35,3.7,3.9]){ const A=hallPt(d.L,z); if(!ok(A)) continue;
-    // straight there, or round one of the hall's front corners
-    let via=null; if(!walkLine(G,p.x,p.z,A.x,A.z)){ via=[-1,1].map(s=>hallPt(d.L,2.3).add(new THREE.Vector3(Math.cos(d.L.rotation.y),0,-Math.sin(d.L.rotation.y)).multiplyScalar(s*3.8)))
-      .find(C=>ok(C) && walkLine(G,p.x,p.z,C.x,C.z) && walkLine(G,C.x,C.z,A.x,A.z)); if(!via) continue; }
-    return {door:d,stage:'go',t:0,A,via,D:hallPt(d.L,1.85),I:hallPt(d.L,1.15),yaw:d.L.rotation.y,stay:3+Math.random()*4}; }
+  for(const z of night?[.85,.7,1,.55].map(z=>d.front+z):[3.5,3.35,3.7,3.9]){ const A=hallPt(d.L,z); if(!ok(A)) continue;
+    const via=walkPath(G,p.x,p.z,A.x,A.z); if(!via) continue;      // round any building in the way
+    return {door:d,stage:'go',t:0,A,via,D:hallPt(d.L,night?d.front:1.85),I:hallPt(d.L,night?d.front-.6:1.15),yaw:d.L.rotation.y,stay:3+Math.random()*4}; }
   return null; }
 function endVisit(w){ const v=w.visit; if(!v) return; v.door.busy=null; v.door.want=0; w.visit=null; w.P.root.visible=true; }
 function stepTo(P,q,speed,dt){ const p=P.root.position, dx=q.x-p.x, dz=q.z-p.z, d=Math.hypot(dx,dz);
   if(d<.04){ p.x=q.x; p.z=q.z; return true; } const st=Math.min(d,speed*dt); p.x+=dx/d*st; p.z+=dz/d*st; turnTo(P.root,Math.atan2(dx,dz),dt); animPerson(P,true,dt,.7); return false; }
 function doorStep(w,dt,n){
   const v=w.visit, P=w.P, p=P.root.position, L=v.door.L; v.t+=dt;
-  if(n>.3){ p.copy(v.A); endVisit(w); w.has=false; w.wait=.5; return; }          // dusk: the hall makes way for the night annex
+  if(v.door.night?n<.3:n>.3){ p.copy(v.A); P.root.visible=true; endVisit(w); w.has=false; w.wait=.5; return; }   // dusk/dawn: the hall and the annex swap
   if(v.stage==='open'){ v.door.want=1; turnTo(P.root,v.yaw+Math.PI,dt); animPerson(P,false,dt); if(v.t>.55){ v.stage='in'; v.t=0; v.leg=0; } }
   else if(v.stage==='in'){ if(stepTo(P,v.leg?v.I:v.D,1.1,dt)){ if(v.leg){ P.root.visible=false; v.stage='inside'; v.t=0; } else v.leg=1; } }
   else if(v.stage==='inside'){ if(v.t>.4) v.door.want=0; if(v.t>v.stay){ v.door.want=1; if(v.t>v.stay+.5){ P.root.visible=true; P.root.rotation.y=v.yaw; v.stage='out'; v.t=0; v.leg=0; } } }
   else if(v.stage==='out'){ if(stepTo(P,v.leg?v.A:v.D,1.1,dt)){ if(v.leg){ endVisit(w); w.wait=.8+Math.random()*1.5; } else { v.leg=1; v.door.want=0; } } }
-  const r=Math.hypot(p.x-L.position.x,p.z-L.position.z); p.y=2+.3*THREE.MathUtils.clamp((3.15-r)/.3,0,1);   // up onto the hall's step
+  if(!v.door.night){ const r=Math.hypot(p.x-L.position.x,p.z-L.position.z); p.y=2+.3*THREE.MathUtils.clamp((3.15-r)/.3,0,1); }   // up onto the hall's step
+}
+/* ---------- after dark: the night annexes ----------
+   An annex has no door that swings, so while someone goes in or comes out a warm light spills onto the
+   ground in front of its entrance (front centre, local +Z). */
+const NIGHT_DOORS=[];
+const GLOW_TEX=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), g=x.createRadialGradient(32,40,0,32,40,34);
+  g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.55,'rgba(255,255,255,.35)'); g.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
+function addNightDoors(){
+  const geo=new THREE.PlaneGeometry(1.6,1.5);
+  for(const a of ANNEX.placed){ const L=a.root.parent, b=ANNEX_LAYOUT[a.key]?.[a.zone]; if(!L||!b) continue;
+    const front=b[7], half=Math.max(-b[4],b[5]);
+    const glow=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xffc27a,map:GLOW_TEX,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+    glow.rotation.x=-Math.PI/2; glow.position.set(0,(b[8]?.21:0)+.04,front+.2); glow.visible=false; glow.renderOrder=2; L.add(glow);
+    NIGHT_DOORS.push({L,parent:L.parent,night:true,front,half,glow,open:0,want:0,busy:null}); }
+}
+/* ---------- the arcade rides ----------
+   Every ride carries people: the regulars are baked into one mesh each (one draw call, no animation), and on
+   desktop the island's walkers queue up, board a free seat, ride a round and get off again. */
+const RIDER_MAT=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.72});
+function seatPose(P,pose,t=0,ph=0){
+  P.body.position.y=0; P.legs.forEach(l=>l.rotation.x=-1.45); P.head.rotation.z=0; const [A0,A1]=P.arms;
+  if(pose==='cheer'){ const k=Math.sin(t*6+ph)*.18; A0.rotation.set(-2.85+k,0,-.35); A1.rotation.set(-2.85-k,0,.35); }
+  else if(pose==='swing'){ const up=Math.max(0,Math.sin(t*.71*Math.PI+ph)); A0.rotation.set(-.6-2.2*up,0,-.14-.25*up); A1.rotation.set(-.6-2.2*up,0,.14+.25*up); }
+  else { A0.rotation.set(-.55,0,-.14); A1.rotation.set(-.55,0,.14); P.head.rotation.y=Math.sin(t*.5+ph)*.5; }
+}
+function standPose(P){ P.legs.forEach(l=>l.rotation.x=0); P.arms[0].rotation.set(0,0,-.14); P.arms[1].rotation.set(0,0,.14); P.head.rotation.set(0,0,0); P.body.position.y=0; }
+function bakeRider(pose){
+  const tmp=new THREE.Group(), P=person(tmp); P.root.scale.setScalar(1); seatPose(P,pose,Math.random()*6,pose==='swing'?Math.PI/2:Math.random()*6);
+  tmp.updateMatrixWorld(true); const parts=[], c=new THREE.Color(), skin=new THREE.Color(0xe8bd97);
+  P.root.traverse(o=>{ if(!o.isMesh) return; const g=o.geometry.clone().applyMatrix4(o.matrixWorld), k=g.attributes.position.count, col=new Float32Array(k*3);
+    c.copy(o.material.color); if(o.material.transparent) c.lerp(skin,.45); for(let i=0;i<k;i++){ col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b; }
+    g.setAttribute('color',new THREE.BufferAttribute(col,3)); parts.push(g); });
+  const m=new THREE.Mesh(mergeGeometries(parts,false),RIDER_MAT); parts.forEach(g=>g.dispose()); m.scale.setScalar(PERSON_SCALE); m.name='ride regular'; return m;
+}
+function seatRegulars(){
+  for(const s of ARCADE_PARK.seats){
+    const fill=s.ride==='wheel'?(s.cabin%3!==2 && (s.anchor.position.x<0 || Math.random()<.35)):s.ride==='coaster'?(s.car===0 || Math.random()<.3):Math.random()<.5;
+    s.taken=null; if(fill){ s.anchor.add(bakeRider(s.pose)); s.taken='regular'; } }
+}
+const RIDE_TIME={wheel:[55,400],coaster:[8,32],ship:[13,20]};
+const _rv=new THREE.Vector3();
+// a seat is at its boarding point: a wheel gondola at the bottom, a coaster car in the station, the ship always
+function atStation(s){ const R=ARCADE_PARK.rides[s.ride];
+  if(s.ride==='wheel') return R.cabins[s.cabin].position.y < -R.radius+1.1;
+  if(s.ride==='coaster'){ const c=R.cars[s.car].position; return Math.hypot(c.x-R.centre[0],c.z-R.centre[1])<2.2; }
+  return true; }
+function pickRide(w,G,p){
+  if(!ARCADE_PARK || !G || w.P.root.parent!==ARCADE_PARK.group.parent) return null;
+  const names=Object.keys(ARCADE_PARK.rides).filter(k=>ARCADE_PARK.seats.some(s=>s.ride===k && !s.taken)); if(!names.length) return null;
+  const name=names[Math.floor(Math.random()*names.length)], [cx,cz]=ARCADE_PARK.rides[name].centre, ring=ARCADE_PARK.rides[name].ring;
+  for(let k=0;k<24;k++){ const a=Math.random()*6.28, r=ring[0]+Math.random()*(ring[1]-ring[0]), x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r;
+    if(walkAt(G,x,z)!==1) continue; const via=walkPath(G,p.x,p.z,x,z); if(via) return {name,stage:'go',t:0,A:new THREE.Vector3(x,2,z),via,face:Math.atan2(cx-x,cz-z)}; }
+  return null; }
+function rideStep(w,dt,t){
+  const v=w.ride, P=w.P; v.t+=dt;
+  if(v.stage==='queue'){ turnTo(P.root,v.face,dt); animPerson(P,false,dt);
+    if(v.t>1.2){ const seat=ARCADE_PARK.seats.find(s=>s.ride===v.name && !s.taken && atStation(s));
+      if(seat){ seat.taken=w; v.seat=seat; v.home=P.root.parent; seat.anchor.add(P.root); P.root.position.set(0,0,0); P.root.rotation.set(0,0,0); v.stage='riding'; v.t=0; }
+      else if(v.t>30){ w.ride=null; w.has=false; w.wait=.5; } }
+    return; }
+  seatPose(P,v.seat.pose,t,P.phase);
+  const [lo,hi]=RIDE_TIME[v.name];
+  if(v.t>hi || (v.t>lo && atStation(v.seat))){ v.home.add(P.root); P.root.position.copy(v.A); P.root.rotation.set(0,v.face+Math.PI,0); standPose(P); v.seat.taken=null; w.ride=null; w.has=false; w.wait=.8+Math.random(); }
 }
 const _wv=new THREE.Vector3();
 function interact(w,dt,t){
   const P=w.P; if(w.visit && w.visit.stage!=='go'){ posePerson(P,null,dt,t); return; }
+  if(w.ride && w.ride.stage!=='go') return;
   if(drive.on && Math.abs(drive.v)>.6 && !(w.hop>0)){ _wv.set(drive.x,2,drive.z); P.root.parent.worldToLocal(_wv); const p=P.root.position, dx=_wv.x-p.x, dz=_wv.z-p.z, d=Math.hypot(dx,dz);
     if(d>2.8 && d<7.5){ w.waveT=1.1; w.waveYaw=Math.atan2(dx,dz); } }
   let mode=null;
@@ -1080,7 +1143,8 @@ const BUILD={
   },
   games(g,c){
     ARCADE_PARK=createArcadePark({parent:g,reduced,pick:o=>{o.userData.key='games';pickables.push(o);}});
-    roamers(g,3);
+    seatRegulars();
+    roamers(g,INTERACT?5:3);
   }
 };
 
@@ -1512,7 +1576,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addE
   if(e.pointerId===lookId){ lookId=null; drive.looking=false; }
 });
 joyZone.addEventListener('contextmenu',e=>e.preventDefault());
-if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS,people:{doors:HALL_DOORS,hallPt,startAct}}; window.__renderer=renderer; }
+if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS,people:{doors:HALL_DOORS,night:NIGHT_DOORS,park:()=>ARCADE_PARK,pickRide,pickDoor,hallPt,startAct}}; window.__renderer=renderer; }
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
@@ -1724,6 +1788,24 @@ function walkSnap(G,p){ const i0=Math.floor((p.x+G.ext)/G.c), j0=Math.floor((p.z
   for(let r=1;r<80;r++) for(let dj=-r;dj<=r;dj++) for(let di=-r;di<=r;di++){ if(Math.max(Math.abs(di),Math.abs(dj))!==r) continue; const i=i0+di, j=j0+dj;
     if(i>=0&&j>=0&&i<G.N&&j<G.N&&G.ok[j*G.N+i]){ p.x=(i+.5)*G.c-G.ext; p.z=(j+.5)*G.c-G.ext; return true; } }
   return false; }
+// shortest open-ground route on a walk grid (breadth-first, 8 neighbours), pulled tight into a few straight legs;
+// used when someone heads for a door or a ride that is round a building. Returns waypoints ending at (bx,bz), or null.
+const _wq={};
+function walkPath(G,ax,az,bx,bz){
+  const N=G.N, c=G.c, cell=(x,z)=>[Math.floor((x+G.ext)/c),Math.floor((z+G.ext)/c)], [ai,aj]=cell(ax,az), [bi,bj]=cell(bx,bz);
+  if(walkAt(G,bx,bz)!==1) return null;
+  if(walkLine(G,ax,az,bx,bz)) return [new THREE.Vector3(bx,2,bz)];
+  const from=_wq[N] ||= new Int32Array(N*N), q=_wq['q'+N] ||= new Int32Array(N*N); from.fill(-1);
+  const start=aj*N+ai, goal=bj*N+bi; if(start<0||start>=N*N) return null; from[start]=start; let h=0,t=0; q[t++]=start;
+  while(h<t){ const k=q[h++]; if(k===goal) break; const i=k%N, j=(k-i)/N;
+    for(let dj=-1;dj<=1;dj++) for(let di=-1;di<=1;di++){ if(!di&&!dj) continue; const ii=i+di, jj=j+dj; if(ii<0||jj<0||ii>=N||jj>=N) continue; const n=jj*N+ii;
+      if(from[n]>=0 || G.ok[n]!==1 || (di&&dj&&(G.ok[j*N+ii]!==1||G.ok[jj*N+i]!==1))) continue; from[n]=k; q[t++]=n; } }
+  if(from[goal]<0) return null;
+  const pts=[]; for(let k=goal;k!==start;k=from[k]){ const i=k%N, j=(k-i)/N; pts.push([(i+.5)*c-G.ext,(j+.5)*c-G.ext]); } pts.reverse(); pts[pts.length-1]=[bx,bz];
+  const out=[]; let x=ax, z=az, k=0;
+  while(k<pts.length){ let far=k; for(let m=pts.length-1;m>k;m--) if(walkLine(G,x,z,pts[m][0],pts[m][1])){ far=m; break; }
+    [x,z]=pts[far]; out.push(new THREE.Vector3(x,2,z)); k=far+1; if(out.length>12) return null; }
+  return out; }
 function walkUpdate(n){
   const m=n>.97?1:n<.03?0:-1;
   if(m>=0 && m!==WALK.mode){ WALK.mode=m; WALK.queue=walkSurfaces(); }
@@ -1992,7 +2074,7 @@ function loadAnnexes(){
     spots:ANNEX_SPOTS, scale:.45, animate:!mobile&&!reduced,
     pick:(o,s)=>{ if(!s){ const i=pickables.indexOf(o); if(i>=0) pickables.splice(i,1); return; } o.userData.key=s.key; o.userData.zone=s.zone; pickables.push(o); }
   })).then(A=>{
-    ANNEX=A; for(const p of A.placed){ const o=islands[p.key]; (o.annexR||=[])[p.zone]=p.radius; (o.annexPos||=[])[p.zone]=new THREE.Vector3(p.x,0,p.z); }
+    ANNEX=A; if(INTERACT) addNightDoors(); for(const p of A.placed){ const o=islands[p.key]; (o.annexR||=[])[p.zone]=p.radius; (o.annexPos||=[])[p.zone]=new THREE.Vector3(p.x,0,p.z); }
     if(window.__isl) window.__isl.annex=A;
     tick._n=-1; WALK.mode=null;                   // re-apply night glow; walk grids go around the new footprints
   }).catch(e=>console.warn('Annexes unavailable; original halls kept.',e));
@@ -2079,11 +2161,13 @@ function tick(){
     boats.forEach(b=>{b.a+=b.s*dt;placeBoat(b,t);b.wake.scale.z=1+Math.sin(t*2+b.phase)*.07;b.wakeMat.opacity=.16+.04*Math.sin(t*2.3+b.phase);});
     walkUpdate(n);
     if(INTERACT) for(const d of HALL_DOORS){ d.open+=(d.want-d.open)*Math.min(1,dt*6); d.pivot.rotation.y=-1.35*d.open; }
+    if(INTERACT) for(const d of NIGHT_DOORS){ d.open+=(d.want-d.open)*Math.min(1,dt*5); d.glow.visible=d.open>.01; d.glow.material.opacity=d.open*.9; }
     walkers.forEach(w=>{ stepWalker(w,dt,n); if(INTERACT) interact(w,dt,t); });
     function stepWalker(w,dt,n){
       const P=w.P, p=P.root.position;
       if(w.visit && w.visit.stage!=='go'){ doorStep(w,dt,n); return; }
-      if(w.visit && (!w.has || n>.3)) endVisit(w);
+      if(w.ride && w.ride.stage!=='go'){ rideStep(w,dt,t); return; }
+      if(w.visit && (!w.has || (w.visit.door.night?n<.3:n>.3))) endVisit(w);
       dodge(w,P,p,dt); if(w.hop>0 && !w.bridge){ return; }
       if(w.bridge && w.waveT>0){ animPerson(P,false,dt); return; }
       if(w.bridge){ if(!(w.hop>0)) w.t+=w.dirSign*w.speed*dt/w.len; if(w.t>1||w.t<0){w.dirSign*=-1; w.t=THREE.MathUtils.clamp(w.t,0,1);} p.z=(w.t-.5)*w.len*.9; p.x=THREE.MathUtils.clamp(.55*w.dirSign+(w.dx||0),-1.4,1.4); if(w.hop>0) return; P.root.rotation.y=w.dirSign>0?0:Math.PI; animPerson(P,true,dt,w.speed*.8); return; }
@@ -2091,15 +2175,18 @@ function tick(){
       if(G && walkAt(G,p.x,p.z)!==1){ walkSnap(G,p); w.has=false; }   // pushed (or grown over) into a building: step back out
       if(w.wait>0){w.wait-=dt; animPerson(P,false,dt); return;}
       if(!w.has){
-        // now and then by day: go into one of this island's zone halls
-        if(INTERACT && n<.15 && Math.random()<.3){ const v=pickDoor(w,G,p); if(v){ w.visit=v; v.door.busy=w; w.tgt.copy(v.via||v.A); w.has=true; } }
+        w.ride=null;
+        // now and then: go into one of this island's zone halls (by day) or annexes (after dark), or ride an arcade ride
+        if(INTERACT && Math.random()<.35){ const r=pickRide(w,G,p); if(r){ w.ride=r; w.tgt.copy(r.via.shift()); w.has=true; } }
+        if(INTERACT && !w.has && (n<.15||n>.6) && Math.random()<.3){ const v=pickDoor(w,G,p,n); if(v){ w.visit=v; v.door.busy=w; w.tgt.copy(v.via.shift()); w.has=true; } }
         // pick a spot that is open ground with a clear straight line to it
         for(let k=0;k<24 && !w.has;k++){ const a=Math.random()*6.28, r=w.minR+Math.random()*(w.maxR-w.minR), x=Math.cos(a)*r, z=Math.sin(a)*r;
           if(!G || (walkAt(G,x,z)===1 && walkLine(G,p.x,p.z,x,z))){ w.tgt.set(x,2,z); w.has=true; } }
         if(!w.has){ w.wait=.8; animPerson(P,false,dt); return; }
       }
       const dx=w.tgt.x-p.x, dz=w.tgt.z-p.z, d=Math.hypot(dx,dz);
-      if(d<.2){ w.has=false; if(w.visit){ if(w.visit.via){ w.visit.via=null; w.tgt.copy(w.visit.A); w.has=true; } else { w.visit.stage='open'; w.visit.t=0; } return; } w.wait=1+Math.random()*3; if(INTERACT && Math.random()<.35) startAct(w,p,n); return; }
+      if(d<.2){ w.has=false; const go=w.ride||w.visit; if(go && go.via.length){ w.tgt.copy(go.via.shift()); w.has=true; return; }
+        if(w.ride){ w.ride.stage='queue'; w.ride.t=0; return; } if(w.visit){ w.visit.stage='open'; w.visit.t=0; return; } w.wait=1+Math.random()*3; if(INTERACT && Math.random()<.35) startAct(w,p,n); return; }
       const st=Math.min(d,w.speed*dt), nx=p.x+dx/d*st, nz=p.z+dz/d*st;
       if(G && walkAt(G,nx,nz)!==1){ w.has=false; w.wait=.3; animPerson(P,false,dt); return; }
       p.x=nx; p.z=nz; P.root.rotation.y=Math.atan2(dx,dz); animPerson(P,true,dt,w.speed*.8);
