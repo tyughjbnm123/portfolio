@@ -24,6 +24,22 @@ const LED_CENTRE_Y = 23.83;
 // factory and the lab), which read as a board under each building. Everything below BASE_CUT (model units) is
 // dropped and the building is lowered by the same amount, so it stands straight on the island.
 const BASE_CUT = .42;
+// The About tower lit every recess on its front and every step of its crown, so it read as all light. Dark now:
+// the outermost strip on each side of the LED (front face) and the two lower crown rings — the top keeps one ring.
+// The recesses themselves remain.
+const DARK_STRIPS = { about: (x, y, z) => (Math.abs(x) > 4.4 && Math.abs(x) < 5 && z > 4.9 && y > 13 && y < 41) || (y > 41.5 && y < 43.6) };
+function dropStrips(root, gone) {
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), rel = new THREE.Matrix4(), v = new THREE.Vector3();
+  root.traverse(o => {
+    if (!o.isMesh || !/light strips/i.test(o.material?.name || '')) return;
+    rel.multiplyMatrices(inv, o.matrixWorld);
+    const geo = o.geometry = o.geometry.clone(), pos = geo.attributes.position, n = pos.count, out = new Uint8Array(n);
+    for (let i = 0; i < n; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(rel); out[i] = gone(v.x, v.y, v.z) ? 1 : 0; }
+    const src = geo.index ? geo.index.array : Array.from({ length: n }, (_, i) => i), keep = [];
+    for (let t = 0; t + 2 < src.length; t += 3) if (!(out[src[t]] && out[src[t + 1]] && out[src[t + 2]])) keep.push(src[t], src[t + 1], src[t + 2]);
+    if (keep.length !== src.length) { geo.setIndex(keep); geo.clearGroups(); }
+  });
+}
 // Drop every triangle lying wholly at or below y=cut (root space). Geometry is cloned, so cached GLBs stay intact.
 export function dropBase(root, cut) {
   root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), rel = new THREE.Matrix4(), v = new THREE.Vector3();
@@ -97,7 +113,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
     ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031-2`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
-  for (const k in LM) dropBase(LM[k], BASE_CUT);
+  for (const k in LM) { dropBase(LM[k], BASE_CUT); if (DARK_STRIPS[k]) dropStrips(LM[k], DARK_STRIPS[k]); }
   for (const k in STRETCH) if (LM[k]) (BY_PIECE[k] ? stretchPieces : stretchStoreys)(LM[k], STRETCH[k]);
   // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
   const mixers = [];

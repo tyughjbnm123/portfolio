@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { dropBase } from './night-city-public.js?v=20261102-1';
+import { dropBase } from './night-city-public.js?v=20261102-2';
 
 // District annexes: 15 original GLB buildings (tools/build-annexes-refined.py), three styles per island.
 // Each one replaces the small zone hall in front of a category's pins. Bottom-centre origin, +Y up,
