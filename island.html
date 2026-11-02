@@ -969,7 +969,7 @@ function startAct(w,p,n){ const r=Math.random(), kind=n>.5?(r<.5?'point':'phone'
 function hallPt(L,z){ return new THREE.Vector3(L.position.x+Math.sin(L.rotation.y)*z,2,L.position.z+Math.cos(L.rotation.y)*z); }
 // by day the zone halls (with their opening doors); after dark the night annexes' front entrances
 function pickDoor(w,G,p,n=0){
-  const night=n>.6, open=(night?NIGHT_DOORS:HALL_DOORS).filter(d=>d.parent===w.P.root.parent && !d.busy && d.L.visible); if(!open.length||!G) return null;
+  const night=n>.6, open=(night?NIGHT_DOORS:HALL_DOORS).filter(d=>d.parent===w.P.root.parent && !d.busy && (d.vis||d.L).visible); if(!open.length||!G) return null;
   const d=open[Math.floor(Math.random()*open.length)];
   const ok=q=>walkAt(G,q.x,q.z)===1;
   for(const z of night?[.85,.7,1,.55].map(z=>d.front+z):[3.5,3.35,3.7,3.9]){ const A=hallPt(d.L,z); if(!ok(A)) continue;
@@ -1001,6 +1001,117 @@ function addNightDoors(){
     const glow=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xffc27a,map:GLOW_TEX,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
     glow.rotation.x=-Math.PI/2; glow.position.set(0,.04,front+.2); glow.visible=false; glow.renderOrder=2; L.add(glow);
     NIGHT_DOORS.push({L,parent:L.parent,night:true,front,half,glow,open:0,want:0,busy:null}); }
+}
+/* ---------- 我是誰: three night buildings, one per category ----------
+   After dark each about hall grows into a building that shows what its category is: 認識我 a small apartment
+   with balconies and plants, 經歷 three blocks rising like steps, 能力 a workshop with a glass ground floor and a
+   sawtooth roof. Same spot and facing as the day hall (front +Z, towards its pins). Dark shell in the about
+   tower's tones and the tower's own window atlas, dimmed; the category icon rises onto the roof and is the
+   only thing that glows. No base plate: each stands straight on the island. */
+const ABOUT_NIGHT=[];
+const AN_DOOR=new THREE.MeshStandardMaterial({color:0xcfdade,emissive:0xffc76b,emissiveIntensity:0,roughness:.4,flatShading:true});
+// window tiles of a main building's atlas, each with its top and bottom v so none comes out upside down
+function hallWindowTiles(root){
+  let material=null; const tiles=[], seen=new Set();
+  root?.traverse(o=>{ if(!o.isMesh||!/^Windows/.test(o.material?.name||'')||!o.geometry.index) return;
+    const P=o.geometry.attributes.position, U=o.geometry.attributes.uv, X=o.geometry.index;
+    for(let t=0;t+5<X.count;t+=6){ const ids=[...new Set([0,1,2,3,4,5].map(q=>X.getX(t+q)))]; if(ids.length!==4) continue;
+      const ys=ids.map(i=>P.getY(i)), us=ids.map(i=>U.getX(i)), vs=ids.map(i=>U.getY(i));
+      if(Math.max(...us)-Math.min(...us)<.05||Math.max(...vs)-Math.min(...vs)<.05||Math.max(...ys)-Math.min(...ys)<.8) continue;   // tiles only, no strips
+      const my=(Math.max(...ys)+Math.min(...ys))/2, top=ids.find((_,k)=>ys[k]>my), bot=ids.find((_,k)=>ys[k]<my); if(top==null||bot==null) continue;
+      const u0=Math.min(...us), u1=Math.max(...us), vt=U.getY(top), vb=U.getY(bot), key=u0.toFixed(3)+','+Math.min(vt,vb).toFixed(3);
+      if(seen.has(key)) continue; seen.add(key); tiles.push({u0,u1,vt,vb}); material=o.material; } });
+  return material?{material,tiles}:null;
+}
+function buildAboutNight(city){
+  if(ABOUT_NIGHT.length) return;
+  const atlas=hallWindowTiles(city.landmarks?.about), winM=(atlas?atlas.material:winMat).clone();
+  const M={shell:new THREE.MeshStandardMaterial({color:0x4a4547,roughness:.82,flatShading:true,emissive:0x4a4547,emissiveIntensity:0}),
+    trim:mat(0x2a2628), metal:mat(0x1b1d22), plant:mat(0x3e6a3c), pot:mat(0x6b4a3a), win:winM, door:AN_DOOR,
+    glass:new THREE.MeshStandardMaterial({color:0x29435a,roughness:.15,transparent:true,opacity:.42,depthWrite:false}),
+    screen:new THREE.MeshStandardMaterial({color:0x0e1820,emissive:0x5fd0e6,emissiveIntensity:0,roughness:.4}),
+    room:new THREE.MeshStandardMaterial({color:0x2a2830,emissive:0xffc98a,emissiveIntensity:0,roughness:.9})};
+  for(const f of PRIVATE_FRONTAGES){ if(f.key!=='about') continue;
+    const L=f.parent, I=L.userData.icon, kind=LANDMARK[f.name]; if(!I) continue;
+    const G=Object.fromEntries(Object.keys(M).map(k=>[k,[]]));
+    const at=(g,x,y,z,ry=0)=>{ if(ry) g.rotateY(ry); g.translate(x,y,z); return g; };
+    const B=(m,w,h,d,x,y,z)=>G[m].push(at(new THREE.BoxGeometry(w,h,d),x,y+h/2,z));
+    const C=(m,r,h,x,y,z,n=10)=>G[m].push(at(new THREE.CylinderGeometry(r,r,h,n),x,y+h/2,z));
+    const bush=(x,y,z,r=.22)=>G.plant.push(at(new THREE.IcosahedronGeometry(r,0),x,y,z));
+    let k=f.zone*7;
+    const W=(w,h,x,y,z,ry=0)=>{ const g=new THREE.PlaneGeometry(w,h), t=atlas?.tiles[k++%atlas.tiles.length];
+      if(t){ const uv=g.attributes.uv; uv.setXY(0,t.u0,t.vt); uv.setXY(1,t.u1,t.vt); uv.setXY(2,t.u0,t.vb); uv.setXY(3,t.u1,t.vb); }
+      G.win.push(at(g,x,y,z,ry)); };
+    const front=1.5, door=()=>{ B('trim',1.36,1.72,.1,0,0,front+.03); B('door',.98,1.5,.04,0,0,front+.1); B('trim',1.6,.1,.6,0,1.78,front+.3); };
+    let roof=0, iconX=0, iconZ=0, iconS=.85, half=2.2;
+    if(kind==='badge'){                        // 認識我: home — a four-storey apartment, balconies with plants, a roof garden
+      const H=6.6; B('shell',4,H,3,0,0,0); door();
+      [2.1,3.6,5.1].forEach(y=>{ B('trim',4.08,.1,3.08,0,y-.05,0);
+        B('trim',3.4,.12,.75,0,y,front+.375);                                     // balcony slab
+        B('metal',3.4,.05,.05,0,y+.66,front+.73); [-1,1].forEach(s=>B('metal',.05,.05,.75,s*1.68,y+.66,front+.375));
+        for(let x=-1.6;x<=1.61;x+=.4) B('metal',.035,.6,.035,x,y+.08,front+.73);
+        [-.75,.75].forEach(x=>W(.78,1.05,x,y+.72,front+.006));
+        const px=y===3.6?-1.25:1.25; B('pot',.34,.22,.28,px,y+.12,front+.45); bush(px,y+.48,front+.45,.24);
+        if(y!==3.6){ B('pot',.26,.2,.24,-px*.35,y+.12,front+.5); bush(-px*.35,y+.42,front+.5,.17); } });
+      [-1.3,1.3].forEach(x=>W(.9,1.1,x,1.05,front+.006));
+      [.5,2.1,3.6,5.1].forEach(y=>{ [-1,1].forEach(s=>[-.6,.6].forEach(z=>W(.62,.9,s*2.006,y+.62,z,s*Math.PI/2))); [-1.1,0,1.1].forEach(x=>W(.7,.95,x,y+.62,-1.506,Math.PI)); });
+      B('trim',4.12,.3,.12,0,H,1.44); B('trim',4.12,.3,.12,0,H,-1.44); [-1,1].forEach(s=>B('trim',.12,.3,2.76,s*2,H,0));   // parapet
+      C('metal',.42,.75,1.35,H,-.85); C('trim',.46,.06,1.35,H+.75,-.85);        // water tank
+      B('pot',.5,.34,.5,1.45,H,.95); bush(1.45,H+.75,.95,.42);                  // a little tree
+      B('pot',.9,.22,.3,-1.4,H,1.1); bush(-1.6,H+.4,1.1,.18); bush(-1.2,H+.4,1.1,.2);
+      roof=H+.02; iconZ=-.2;
+    } else if(kind==='trophy'){              // 經歷: three blocks rising like steps — one per stage
+      const blocks=[[-1.6,1.25,2.9],[-.2,1.4,5.2],[1.38,1.65,7.6]];
+      blocks.forEach(([x,w,h],b)=>{ B('shell',w,h,3,x,0,0);
+        for(let y=1.5;y<h-.3;y+=1.5) B('trim',w+.08,.1,3.08,x,y-.05,0);
+        B('trim',w+.16,.32,3.16,x,h,0); B('trim',w+.16,.5,.12,x,h,1.52);         // a heavy cap and a raised lip mark each step
+        for(let y=0;y<h-.6;y+=1.5){ if(!(b===1&&y===0)) W(w-.5,.9,x,y+.8,front+.006); W(w-.5,.9,x,y+.8,-1.506,Math.PI); }
+        if(b===0) for(let y=0;y<h-.6;y+=1.5) [-.6,.6].forEach(z=>W(.6,.9,x-w/2-.006,y+.8,z,-Math.PI/2));
+        if(b===2) for(let y=0;y<h-.6;y+=1.5) [-.6,.6].forEach(z=>W(.6,.9,x+w/2+.006,y+.8,z,Math.PI/2)); });
+      door();
+      // a rail climbs from one roof to the next, like a line on a chart
+      const rail=(x0,y0,x1,y1)=>{ const len=Math.hypot(x1-x0,y1-y0), g=new THREE.BoxGeometry(len,.07,.07); g.rotateZ(Math.atan2(y1-y0,x1-x0)); G.metal.push(at(g,(x0+x1)/2,(y0+y1)/2,1.2)); };
+      rail(-2.1,3.7,-.6,5.9); rail(-.3,6.0,1.1,8.4);
+      B('metal',.5,.4,.5,-1.55,3.26,-.6); C('metal',.05,1.2,-.2,5.46,-1.0,6);   // roof plant, an antenna
+      roof=7.94; iconX=1.38; iconS=.62; half=2.4;
+    } else {                                   // 能力: workshop — glass ground floor you can see into, sawtooth roof
+      [-1,1].forEach(s=>B('shell',.3,2.4,3,s*2.05,0,0)); B('shell',4.4,2.4,.3,0,0,-1.35);
+      B('trim',4.44,.25,3.04,0,2.4,0);                                          // first floor slab
+      G.glass.push(at(new THREE.PlaneGeometry(3.8,2.3),0,1.15,1.44));
+      [-1.9,-.62,.62,1.9].forEach(x=>B('metal',.06,2.4,.08,x,0,1.46)); B('metal',3.8,.08,.08,0,1.95,1.46);
+      door();
+      B('room',3.8,2.2,.05,0,0,-1.17); B('room',3.8,.05,2.6,0,2.33,.1);          // the room behind the glass, softly lit
+      B('trim',1.2,.75,.6,-1.2,0,.35); [-1.45,-.95].forEach(x=>B('screen',.42,.3,.04,x,.8,.25));   // a bench with two screens
+      B('trim',.5,1.7,.6,1.55,0,-.7); B('metal',1.4,.9,.05,.6,.85,-1.18);       // shelves, a tool wall
+      [.2,.5,.8,1.05].forEach((x,i)=>B('metal',.05,.35+i%2*.15,.05,x,1.05,-1.13));
+      B('shell',4.4,1.4,3,0,2.65,0); [-1.4,0,1.4].forEach(x=>W(.95,.8,x,3.38,front+.006)); [-1,1].forEach(s=>[-.6,.6].forEach(z=>W(.6,.8,s*2.206,3.38,z,s*Math.PI/2)));
+      const tooth=cx=>{ const sh=new THREE.Shape(); sh.moveTo(-1.5,0); sh.lineTo(-1.5,1.25); sh.lineTo(1.5,0); sh.closePath();
+        const g=new THREE.ExtrudeGeometry(sh,{depth:1.3,bevelEnabled:false}); g.rotateY(Math.PI/2); G.trim.push(at(g,cx-.65,4.05,0)); W(1.2,1.05,cx,4.6,1.506); };
+      tooth(-1.45); tooth(1.45);
+      B('trim',1.3,.12,3,0,4.05,0);                                             // flat bay for the icon
+      C('metal',.16,1.6,-2.4,2.65,-1.0,8);                                      // a flue up the side
+      roof=4.17; iconS=.58; half=2.4;
+    }
+    const N=new THREE.Group(); N.name='night about / '+f.zone+' '+kind; N.visible=false; N.scale.y=.001; L.add(N);
+    for(const m in G){ if(!G[m].length) continue; const geo=mergeGeometries(G[m].map(g=>g.index?g.toNonIndexed():g),false); G[m].forEach(g=>g.dispose());
+      const o=new THREE.Mesh(geo,M[m]); o.castShadow=m!=='win'&&m!=='glass'; o.receiveShadow=true; N.add(o); }
+    N.traverse(o=>{ if(o.isMesh){ o.userData.key='about'; o.userData.zone=f.zone; pickables.push(o); } });
+    // the day hall's own parts sink away as the building rises; the icon climbs onto the roof
+    const D=new THREE.Group(); D.name='day hall parts'; L.add(D);
+    for(const o of [...L.children]) if(o!==N&&o!==D&&o!==I) D.add(o);
+    const glow=[]; I.traverse(o=>{ if(o.isMesh&&o.material.isMeshStandardMaterial){ o.material=o.material.clone(); o.material.emissive.copy(o.material.color); glow.push(o.material); } });
+    const o=islands.about; (o.annexPos||=[])[f.zone]=new THREE.Vector3(L.position.x,0,L.position.z); (o.annexR||=[])[f.zone]=half+.4;
+    if(INTERACT){ const g=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.5),new THREE.MeshBasicMaterial({color:0xffc27a,map:GLOW_TEX,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+      g.rotation.x=-Math.PI/2; g.position.set(0,.04,front+.45); g.visible=false; g.renderOrder=2; L.add(g);
+      NIGHT_DOORS.push({L,vis:N,parent:L.parent,night:true,front:front+.12,half,glow:g,open:0,want:0,busy:null}); }
+    let last=-1;
+    ABOUT_NIGHT.push({L,update(n){ if(Math.abs(n-last)<.003) return; last=n;
+      const mix=THREE.MathUtils.smoothstep(n,.05,.92);
+      N.visible=n>.08; N.scale.y=Math.max(.001,mix); D.visible=mix<.98; D.scale.y=Math.max(.001,1-mix);
+      I.position.set(iconX*mix,3+(roof-3)*mix,iconZ*mix); I.userData.y=I.position.y; I.scale.setScalar(1+(iconS-1)*mix);
+      M.shell.emissiveIntensity=n*.12; winM.emissiveIntensity=n*.45; AN_DOOR.emissiveIntensity=n*.5; M.screen.emissiveIntensity=n*.35; M.room.emissiveIntensity=n*.16; glow.forEach(m=>m.emissiveIntensity=n*.9); }});
+  }
+  tick._n=-1; WALK.mode=null;
 }
 /* ---------- the arcade rides ----------
    Every ride carries people: the regulars are baked into one mesh each (one draw call, no animation), and on
@@ -1160,7 +1271,7 @@ function landmark(parent,gname,color,x,z,face){
   box(1,1.45,.02,mat(0x2c3238),0,.3,1.505,L);                 // the doorway behind the door
   { const door=new THREE.Group(); door.position.set(-.55,.3,1.54); L.add(door); box(1.1,1.5,.06,winMat,.55,0,0,door).userData.noWalk=true; HALL_DOORS.push({L,parent,pivot:door,open:0,want:0,busy:null}); }
   [-1.25,1.25].forEach(wx=>box(.7,.6,.08,winMat,wx,1.4,1.52,L));
-  const I=new THREE.Group(); I.position.y=3; L.add(I);
+  const I=new THREE.Group(); I.position.y=3; L.add(I); L.userData.icon=I;
   const kind=LANDMARK[gname]||'badge';
   if(kind==='clap'){ box(2.4,1.5,.25,dark,0,.2,0,I); const top=new THREE.Group(); top.position.set(-1.2,1.75,0); top.rotation.z=.32; I.add(top); for(let k=0;k<6;k++) box(.4,.35,.27,k%2?white:dark,.2+k*.4,0,0,top); spinners.push({o:top,axis:'z',speed:0,wave:{base:.32,amp:.28,rate:3}}); }
   else if(kind==='note'){ mk(new THREE.SphereGeometry(.55,14,10),accent,-.5,.6,0,I).scale.set(1.25,.9,.9); cyl(.09,.09,2.4,6,accent,-.05,.6,0,I); box(.9,.25,.12,accent,.38,2.85,0,I).rotation.z=-.4; mk(new THREE.SphereGeometry(.55,14,10),accent,.9,.3,0,I).scale.set(1.25,.9,.9); cyl(.09,.09,2.2,6,accent,1.35,.3,0,I); box(1.5,.22,.12,accent,.65,2.4,0,I).rotation.z=.25; spinners.push({o:I,axis:'y',speed:.5}); }
@@ -1576,7 +1687,7 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addE
   if(e.pointerId===lookId){ lookId=null; drive.looking=false; }
 });
 joyZone.addEventListener('contextmenu',e=>e.preventDefault());
-if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS,people:{doors:HALL_DOORS,night:NIGHT_DOORS,park:()=>ARCADE_PARK,pickRide,pickDoor,hallPt,startAct}}; window.__renderer=renderer; }
+if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS,people:{doors:HALL_DOORS,night:NIGHT_DOORS,about:ABOUT_NIGHT,park:()=>ARCADE_PARK,pickRide,pickDoor,hallPt,startAct}}; window.__renderer=renderer; }
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
@@ -2051,7 +2162,7 @@ function loadCity(){
   return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261102-1').then(m=>m.createNightCity({
     renderer, animate:!mobile&&!reduced, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
-      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c);
+      CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c); buildAboutNight(c);
       TOWERS.forEach(neonSign);
       tick._n=-1;                                // re-apply the current night amount
       WALK.mode=null;                            // the city changed the ground: rebuild the walk grids
@@ -2071,7 +2182,7 @@ function loadCity(){
 // and the hub are untouched.
 function loadAnnexes(){
   import("./assets/island-city/annexes.js?v=20261102-1").then(m=>m.createAnnexes({
-    spots:ANNEX_SPOTS, scale:.45, animate:!mobile&&!reduced,
+    spots:ANNEX_SPOTS.filter(s=>s.key!=='about'), scale:.45, animate:!mobile&&!reduced,   // 我是誰 has its own (buildAboutNight)
     pick:(o,s)=>{ if(!s){ const i=pickables.indexOf(o); if(i>=0) pickables.splice(i,1); return; } o.userData.key=s.key; o.userData.zone=s.zone; pickables.push(o); }
   })).then(A=>{
     ANNEX=A; if(INTERACT) addNightDoors(); for(const p of A.placed){ const o=islands[p.key]; (o.annexR||=[])[p.zone]=p.radius; (o.annexPos||=[])[p.zone]=new THREE.Vector3(p.x,0,p.z); }
@@ -2081,6 +2192,7 @@ function loadAnnexes(){
 }
 function growCity(n){
   if(ANNEX) ANNEX.update(n);
+  ABOUT_NIGHT.forEach(h=>h.update(n));
   const e=n<=0?0:1-Math.pow(1-n,3);
   if(n>.015 && !CITY) loadCity();
   TOWERS.forEach(t=>{ t.T.scale.y=Math.max(.001,e); });
@@ -2155,7 +2267,7 @@ function tick(){
   if(!reduced){
     spinners.forEach(s=>{
       if(s.wave) s.o.rotation[s.wave.axis||s.axis]=s.wave.base+Math.sin(t*s.wave.rate)*s.wave.amp;
-      else if(s.bob){ s.o.position.y=3+Math.sin(t*s.bob.rate)*s.bob.amp; }
+      else if(s.bob){ s.o.position.y=(s.o.userData.y??3)+Math.sin(t*s.bob.rate)*s.bob.amp; }
       else s.o.rotation[s.axis]+=s.speed*dt;
       s.cabins&&s.cabins.forEach(cb=>cb.rotation.z=-s.o.rotation.z);
     });
