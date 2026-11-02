@@ -26,12 +26,32 @@ const LED_CENTRE_Y = 23.83;
 const BASE_CUT = .42;
 // The About tower lit every recess on its front and every step of its crown, so it read as all light. Dark now:
 // the outermost strip on each side of the LED (front face) and the two lower crown rings — the top keeps one ring.
-// The recesses themselves remain.
+// The dark backing behind each of those strips goes with it, so no black line is left where a light was.
 const DARK_STRIPS = { about: (x, y, z) => (Math.abs(x) > 4.4 && Math.abs(x) < 5 && z > 4.9 && y > 13 && y < 41) || (y > 41.5 && y < 43.6) };
+// ...and the channel each of those front strips sat in is filled, its face sloping from the outer panel (z .. ) to
+// the inner one, in the tower's own wall material, so neither the channel nor a step is left as a black line.
+// Model units: outer x, inner x, outer z, inner z, back z, y from–to.
+const FILL_GROOVES = { about: [-1, 1].map(s => [s * 4.86, s * 4.47, 5.076, 5.206, 4.58, 7, 39.6]) };
+function fillGrooves(root, list) {
+  let wall = null; root.traverse(o => { if (!wall && o.isMesh && /core/i.test(o.name + ' ' + (o.parent?.name || ''))) wall = o; });
+  if (!wall) return;
+  const P = wall.geometry.attributes.position, Cl = wall.geometry.attributes.color, v = new THREE.Vector3();
+  for (const [xo, xi, zo, zi, zb, y0, y1] of list) {
+    const xm = xi + (xo - xi) * .18, sh = new THREE.Shape(); sh.moveTo(xo, zb); sh.lineTo(xo, zo); sh.lineTo(xm, zi + .008); sh.lineTo(xi, zi + .008); sh.lineTo(xi, zb); sh.closePath();   // reaches the inner panel before the channel's inner wall, so that wall cannot peek out
+    const g = new THREE.ExtrudeGeometry(sh, { depth: y1 - y0, bevelEnabled: false }); g.rotateX(Math.PI / 2); g.translate(0, y1, 0);
+    // the wall is coloured per vertex: take the colour of the panel right beside the channel (a missing colour renders black)
+    if (Cl) { const q = new THREE.Vector3(xi - Math.sign(xi) * .2, (y0 + y1) / 2, zi); let best = 0, bd = Infinity;
+      for (let i = 0; i < P.count; i++) { const d = v.fromBufferAttribute(P, i).distanceToSquared(q); if (d < bd) { bd = d; best = i; } }
+      const n = g.attributes.position.count, c = new Float32Array(n * Cl.itemSize);
+      for (let i = 0; i < n; i++) for (let k = 0; k < Cl.itemSize; k++) c[i * Cl.itemSize + k] = Cl.getComponent(best, k);
+      g.setAttribute('color', new THREE.BufferAttribute(c, Cl.itemSize)); }
+    const m = new THREE.Mesh(g, wall.material); m.name = 'groove fill'; m.userData.noShadow = true; root.add(m);
+  }
+}
 function dropStrips(root, gone) {
   root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), rel = new THREE.Matrix4(), v = new THREE.Vector3();
   root.traverse(o => {
-    if (!o.isMesh || !/light strips/i.test(o.material?.name || '')) return;
+    if (!o.isMesh || !/lighting/i.test(o.name + ' ' + (o.parent?.name || ''))) return;   // strips and their backing
     rel.multiplyMatrices(inv, o.matrixWorld);
     const geo = o.geometry = o.geometry.clone(), pos = geo.attributes.position, n = pos.count, out = new Uint8Array(n);
     for (let i = 0; i < n; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(rel); out[i] = gone(v.x, v.y, v.z) ? 1 : 0; }
@@ -113,7 +133,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
     ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031-2`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
-  for (const k in LM) { dropBase(LM[k], BASE_CUT); if (DARK_STRIPS[k]) dropStrips(LM[k], DARK_STRIPS[k]); }
+  for (const k in LM) { dropBase(LM[k], BASE_CUT); if (DARK_STRIPS[k]) dropStrips(LM[k], DARK_STRIPS[k]); if (FILL_GROOVES[k]) fillGrooves(LM[k], FILL_GROOVES[k]); }
   for (const k in STRETCH) if (LM[k]) (BY_PIECE[k] ? stretchPieces : stretchStoreys)(LM[k], STRETCH[k]);
   // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
   const mixers = [];
@@ -251,7 +271,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
       // the car drives around it, not through it
       const half = Math.hypot(L.box.max.x - L.box.min.x, L.box.max.z - L.box.min.z) / 2 * S * .8;
       if (d.towers) d.towers.push({ x: 0, z: 0, r: Math.min(half, 11.5) });
-      root.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; pick(o, d.key); } });
+      root.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = !o.userData.noShadow; pick(o, d.key); } });
       centres.push({ root, day: d.g.userData.dayBuild });
       continue;
     }
