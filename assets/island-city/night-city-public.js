@@ -20,6 +20,25 @@ const BY_PIECE = { lab: true };
 export const stretchY = ([y0, y1, k]) => y => y <= y0 ? y : y < y1 ? y0 + (y - y0) * k : y + (y1 - y0) * (k - 1);
 // every district LED is the same size; the stretched two hang theirs at the About tower's height
 const LED_CENTRE_Y = 23.83;
+// The landmarks were authored standing on their own plates (a stepped foundation, or a whole yard apron for the
+// factory and the lab), which read as a board under each building. Everything below BASE_CUT (model units) is
+// dropped and the building is lowered by the same amount, so it stands straight on the island.
+const BASE_CUT = .42;
+// Drop every triangle lying wholly at or below y=cut (root space). Geometry is cloned, so cached GLBs stay intact.
+export function dropBase(root, cut) {
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), rel = new THREE.Matrix4(), v = new THREE.Vector3();
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    rel.multiplyMatrices(inv, o.matrixWorld);
+    const geo = o.geometry = o.geometry.clone(), pos = geo.attributes.position, n = pos.count, Y = new Float32Array(n);
+    for (let i = 0; i < n; i++) Y[i] = v.fromBufferAttribute(pos, i).applyMatrix4(rel).y;
+    const src = geo.index ? geo.index.array : Array.from({ length: n }, (_, i) => i), keep = [];
+    for (let t = 0; t + 2 < src.length; t += 3) { const a = src[t], b = src[t + 1], c = src[t + 2]; if (Math.max(Y[a], Y[b], Y[c]) > cut + 1e-3) keep.push(a, b, c); }
+    if (keep.length === src.length) return;
+    if (!keep.length) { o.visible = false; return; }
+    geo.setIndex(keep); geo.clearGroups(); geo.computeBoundingBox(); geo.computeBoundingSphere();
+  });
+}
 // Each connected piece (welded by position) either moves as one block — short pieces: pipe bends, rims, rails,
 // window panes — or, if tall (a tank wall, a straight pipe run), stretches between the shifts of the pieces it meets.
 function stretchPieces(root, band, minH = 2.4) {
@@ -78,6 +97,7 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
     loader.loadAsync(new URL('./cyber-city-original.glb', import.meta.url).href),
     ...Object.values(LANDMARK_FILES).map(f => loader.loadAsync(new URL(`./landmarks/${f}.glb?v=20261031-2`, import.meta.url).href).catch(() => null))]);
   const LM = {}; Object.keys(LANDMARK_FILES).forEach((k, i) => { if (lm[i]) LM[k] = lm[i].scene; });
+  for (const k in LM) dropBase(LM[k], BASE_CUT);
   for (const k in STRETCH) if (LM[k]) (BY_PIECE[k] ? stretchPieces : stretchStoreys)(LM[k], STRETCH[k]);
   // the 2026-10-31 tool factory carries its own GearDrive clip; desktop plays it, phones and reduced motion keep it still
   const mixers = [];
@@ -209,9 +229,9 @@ export async function createNightCity({ renderer, plans, work, pick, districts =
       const T = LM[d.key], S = HUMAN_SCALE, L = lmInfo[d.key];
       T.getObjectByName('vertical_led')?.removeFromParent();          // the shared district LED replaces its own panel
       T.traverse(o => { if (o.isMesh) { for (const t of [o.material.map, o.material.emissiveMap]) if (t) t.anisotropy = aniso; if (o.material.emissiveMap) { o.material.emissiveIntensity = 0; facades.add(o.material); } } });
-      plate.visible = false; T.scale.setScalar(S); T.rotation.y = L.yaw; root.add(T);
+      plate.visible = false; T.scale.setScalar(S); T.rotation.y = L.yaw; T.position.y = -BASE_CUT * S; root.add(T);
       // the shared LED goes exactly where the building's own panel was
-      if (L.lb) { const c = L.lb.getCenter(new THREE.Vector3()); if (STRETCH[d.key]) c.y = LED_CENTRE_Y; ledAt[d.key] = { root, pos: new THREE.Vector3(c.x * S, c.y * S, L.lb.max.z * S + .05).applyAxisAngle(new THREE.Vector3(0, 1, 0), L.yaw), yaw: L.yaw }; }
+      if (L.lb) { const c = L.lb.getCenter(new THREE.Vector3()); if (STRETCH[d.key]) c.y = LED_CENTRE_Y; ledAt[d.key] = { root, pos: new THREE.Vector3(c.x * S, (c.y - BASE_CUT) * S, L.lb.max.z * S + .05).applyAxisAngle(new THREE.Vector3(0, 1, 0), L.yaw), yaw: L.yaw }; }
       // the car drives around it, not through it
       const half = Math.hypot(L.box.max.x - L.box.min.x, L.box.max.z - L.box.min.z) / 2 * S * .8;
       if (d.towers) d.towers.push({ x: 0, z: 0, r: Math.min(half, 11.5) });

@@ -849,7 +849,7 @@ function hexIsland(key,color){
   cyl(R+1.4,R+2.4,5,6,mat(ROCK),0,-4.6,0,g);
   cyl(R+.9,R+1.4,1.6,6,mat(SAND),0,0,0,g);
   const top=cyl(R,R+.2,.5,6,mat(GRASS),0,1.5,0,g);
-  cyl(7.4,7.4,.08,6,mat(CREAM),0,2,0,g).rotation.y=Math.PI/6;
+  const plaza=cyl(7.4,7.4,.08,6,mat(CREAM),0,2,0,g); plaza.rotation.y=Math.PI/6; g.userData.plaza=plaza;
   islandRoad(g); islandNeon(g,key);
   const foam=new THREE.Mesh(new THREE.RingGeometry(R+1.6,R+2.6,6),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35,depthWrite:false}));
   foam.rotation.x=-Math.PI/2; foam.rotation.z=Math.PI/2; foam.position.y=.06; g.add(foam); g.userData.foam=foam;
@@ -999,7 +999,7 @@ function addNightDoors(){
   for(const a of ANNEX.placed){ const L=a.root.parent, b=ANNEX_LAYOUT[a.key]?.[a.zone]; if(!L||!b) continue;
     const front=b[7], half=Math.max(-b[4],b[5]);
     const glow=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xffc27a,map:GLOW_TEX,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
-    glow.rotation.x=-Math.PI/2; glow.position.set(0,(b[8]?.21:0)+.04,front+.2); glow.visible=false; glow.renderOrder=2; L.add(glow);
+    glow.rotation.x=-Math.PI/2; glow.position.set(0,.04,front+.2); glow.visible=false; glow.renderOrder=2; L.add(glow);
     NIGHT_DOORS.push({L,parent:L.parent,night:true,front,half,glow,open:0,want:0,busy:null}); }
 }
 /* ---------- the arcade rides ----------
@@ -2048,7 +2048,7 @@ import('./assets/island-city/metro.js?v=20261031-1').then(m=>{
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
 function loadCity(){
-  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261101-2').then(m=>m.createNightCity({
+  return cityLoading ||= import('./assets/island-city/night-city-public.js?v=20261102-1').then(m=>m.createNightCity({
     renderer, animate:!mobile&&!reduced, frontages:PRIVATE_FRONTAGES, districts:Object.values(islands).map(i=>({key:i.data.key,g:i.g,towers:i.towers})), plans:TOWERS.map(t=>({group:t.T,key:t.key,items:t.items})), work:{parent:islands.work.g},
     pick:(o,key)=>{ o.userData.key=key; pickables.push(o); } })).then(c=>{
       CITY=c; c.block.scale.y=.001; c.block.visible=false; NEON_OBJ.push(c.block); loadSteam(c);
@@ -2070,7 +2070,7 @@ function loadCity(){
 // the zone halls stay as they are; after dark each hall gives way to its annex. Main buildings, LEDs, roads
 // and the hub are untouched.
 function loadAnnexes(){
-  import("./assets/island-city/annexes.js?v=20261031-3").then(m=>m.createAnnexes({
+  import("./assets/island-city/annexes.js?v=20261102-1").then(m=>m.createAnnexes({
     spots:ANNEX_SPOTS, scale:.45, animate:!mobile&&!reduced,
     pick:(o,s)=>{ if(!s){ const i=pickables.indexOf(o); if(i>=0) pickables.splice(i,1); return; } o.userData.key=s.key; o.userData.zone=s.zone; pickables.push(o); }
   })).then(A=>{
@@ -2085,6 +2085,8 @@ function growCity(n){
   if(n>.015 && !CITY) loadCity();
   TOWERS.forEach(t=>{ t.T.scale.y=Math.max(.001,e); });
   PRIVATE_LEDS.forEach(sign=>sign.userData.update(n));
+  // the cream daytime plaza would read as a board under the night towers: it goes when the city comes up
+  if(CITY) for(const k of ['about','work','tools','lab']){ const pz=islands[k]?.g.userData.plaza; if(pz) pz.visible=e<.5; }
   if(CITY){ CITY.update(n); CITY.block.scale.y=Math.max(.001,e); const day=islands.work.g.userData.dayBuild; day.scale.y=Math.max(.001,1-e); day.visible=e<.995; }
   if(HARBOR) HARBOR.update(n);
   TOWER_MATS.forEach(m=>m.emissiveIntensity=n*1.05);

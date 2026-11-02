@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { dropBase } from './night-city-public.js?v=20261102-1';
 
 // District annexes: 15 original GLB buildings (tools/build-annexes-refined.py), three styles per island.
 // Each one replaces the small zone hall in front of a category's pins. Bottom-centre origin, +Y up,
@@ -10,10 +11,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 //
 // Where each annex stands comes from island.html (ANNEX_LAYOUT): the zone's original spot, nudged
 // outward or around the island only as far as needed to clear the night main building, the arcade
-// rides and the ring road. Tools annexes that reach the factory's apron stand on a plinth at the
-// apron's height, so the two meet flush.
+// rides and the ring road.
 const PREFIX = { about: '01-about', work: '02-work', tools: '03-tools', lab: '04-lab', games: '05-games' };
-const PLINTH_H = .21;
+// each annex was modelled on a pale pavement slab (y 0–.28) wider than the building; it is cut away and the
+// building lowered onto the island (the landmarks lost their aprons the same way).
+const SLAB_TOP = .29;
 
 export async function createAnnexes({ spots, scale, pick, animate = true, base = new URL('./annexes/', import.meta.url).href }) {
   const loader = new GLTFLoader();
@@ -23,12 +25,12 @@ export async function createAnnexes({ spots, scale, pick, animate = true, base =
     loader.loadAsync(base + f + '.glb').then(g => { loaded[f] = g; }).catch(e => console.warn('annex unavailable', f, e))));
 
   const lit = new Set(), mixers = [], placed = [], swaps = [];
-  const plinthMat = new THREE.MeshStandardMaterial({ color: 0x9aa1a4, roughness: .92 });
   for (const s of plan) {
     const g = loaded[s.file]; if (!g) continue;            // keep the original hall if a file failed
-    const [, x, z, yaw, x0, x1, z0, z1, plinth] = s.place;
+    const [, x, z, yaw, x0, x1, z0, z1] = s.place;
     const root = g.scene.clone(true);
-    root.name = 'annex / ' + s.file; root.scale.setScalar(scale);
+    dropBase(root, SLAB_TOP);
+    root.name = 'annex / ' + s.file; root.scale.setScalar(scale); root.position.y = -SLAB_TOP * scale;
     root.traverse(o => {
       if (!o.isMesh) return;
       o.castShadow = o.receiveShadow = true;
@@ -41,11 +43,6 @@ export async function createAnnexes({ spots, scale, pick, animate = true, base =
     // the annex stands on its own spot next to the hall; update() swaps the two with the night
     const hall = s.parent, L = new THREE.Group(); L.name = 'night annex / ' + s.key + ' ' + s.zone;
     L.position.set(x, hall.position.y, z); L.rotation.y = yaw; L.visible = false; hall.parent.add(L);
-    if (plinth) {
-      const p = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0 + .3, PLINTH_H, z1 - z0 + .3), plinthMat);
-      p.position.set((x0 + x1) / 2, PLINTH_H / 2, (z0 + z1) / 2); p.receiveShadow = p.castShadow = true; p.name = 'annex plinth'; L.add(p); pick(p, s);
-      root.position.y = PLINTH_H;
-    }
     L.add(root);
     root.traverse(o => { if (o.isMesh) pick(o, s); });
     const anim = g.animations.find(a => a.name === 'AnnexGearDrive');
