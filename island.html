@@ -1673,7 +1673,8 @@ function loadPhysics(){
       stat(new CANNON.Box(new CANNON.Vec3(1.8,.25,len/2)),mid.x,1.75,mid.z,Math.atan2(o.dir.x,o.dir.z));
     }
     stat(new CANNON.Cylinder(7.3,7.3,2,16),0,1,0);                                      // hub
-    const carBody=new CANNON.Body({type:CANNON.Body.KINEMATIC,shape:new CANNON.Box(new CANNON.Vec3(.62,.45,1.18))}); world.addBody(carBody);
+    // the car is moved by hand every frame, so it must never fall asleep (a sleeping body stops colliding)
+    const carBody=new CANNON.Body({allowSleep:false,type:CANNON.Body.KINEMATIC,shape:new CANNON.Box(new CANNON.Vec3(.62,.45,1.18))}); world.addBody(carBody);
     const KIND={cone:{mass:1.6,slow:.985,shape:()=>new CANNON.Cylinder(.08,.32,.76,8)},crate:{mass:5,slow:.93,shape:()=>new CANNON.Box(new CANNON.Vec3(.45,.45,.45))}};
     PROPS.forEach(p=>{ const K=KIND[p.kind]; p.body=new CANNON.Body({mass:K.mass,shape:K.shape(),linearDamping:.12,angularDamping:.18,sleepSpeedLimit:.25,sleepTimeLimit:.6});
       p.body.userData={p}; p.slow=K.slow; world.addBody(p.body); });
@@ -1686,7 +1687,7 @@ function loadPhysics(){
 function resetProps(){
   PROPS.forEach(p=>{ p.mesh.position.copy(p.home.p); p.mesh.quaternion.copy(p.home.q); p.gone=0; p.hit=false; p.mesh.visible=true;
     if(p.body){ p.body.position.set(p.home.p.x,p.home.p.y,p.home.p.z); p.body.quaternion.set(p.home.q.x,p.home.q.y,p.home.q.z,p.home.q.w);
-      p.body.velocity.set(0,0,0); p.body.angularVelocity.set(0,0,0); p.body.sleep(); } });
+      p.body.velocity.set(0,0,0); p.body.angularVelocity.set(0,0,0); p.body.aabbNeedsUpdate=true; p.body.updateAABB(); p.body.sleep(); } });   // a sleeping body keeps its old bounds: refresh them at the new spot first
   drive.knocked=0;
 }
 const _cw=new THREE.Vector3();
@@ -1708,7 +1709,7 @@ function physStep(dt){
   carBody.position.set(drive.x,2.47,drive.z); carBody.velocity.set(fx*drive.v,0,fz*drive.v); carBody.quaternion.setFromEuler(0,drive.h,0);
   world.step(1/60,Math.min(dt,.1),3);
   for(const p of PROPS){ const b=p.body;
-    if(b.position.y<-1){ p.gone+=dt; if(p.gone>5){ p.gone=0; b.position.set(p.home.p.x,p.home.p.y,p.home.p.z); b.quaternion.set(p.home.q.x,p.home.q.y,p.home.q.z,p.home.q.w); b.velocity.set(0,0,0); b.angularVelocity.set(0,0,0); b.sleep(); } }
+    if(b.position.y<-1){ p.gone+=dt; if(p.gone>5){ p.gone=0; b.position.set(p.home.p.x,p.home.p.y,p.home.p.z); b.quaternion.set(p.home.q.x,p.home.q.y,p.home.q.z,p.home.q.w); b.velocity.set(0,0,0); b.angularVelocity.set(0,0,0); b.aabbNeedsUpdate=true; b.updateAABB(); b.sleep(); } }
     p.mesh.position.set(b.position.x,b.position.y,b.position.z); p.mesh.quaternion.set(b.quaternion.x,b.quaternion.y,b.quaternion.z,b.quaternion.w);
   }
 }
