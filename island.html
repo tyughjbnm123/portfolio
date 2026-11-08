@@ -706,7 +706,10 @@ const canvas=$('#scene');
 let renderer;
 try{ renderer=new THREE.WebGLRenderer({canvas,antialias:true}); }
 catch(e){ $('#loading').classList.add('done'); document.getElementById('app').insertAdjacentHTML('beforeend','<p class="fallback">這台裝置無法顯示 3D 畫面。可以直接用右側清單瀏覽全部內容。</p>'); throw e; }
-renderer.setPixelRatio(Math.min(devicePixelRatio, mobile?1.5:2));
+// Phones have 3× screens: 1.5 looked soft and the night pass ran at 1×, so it read as blurry. Both now render at up
+// to 2×; if a phone can't keep up (under ~28 fps for the first seconds), it steps back to 1.5×.
+let PR=Math.min(devicePixelRatio,2);
+renderer.setPixelRatio(PR);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 const DAY={sky:new THREE.Color(0xdfe9e4), hemiSky:new THREE.Color(0xf4f7ef), hemiGround:new THREE.Color(0x8aa07a), sun:new THREE.Color(0xfff1db)};
@@ -2101,7 +2104,7 @@ function growCity(n){
 let bloom=null, bloomLoading=null;
 function loadBloom(){
   return bloomLoading ||= Promise.all(['EffectComposer','RenderPass','UnrealBloomPass','OutputPass'].map(n=>import(`three/addons/postprocessing/${n}.js`))).then(([E,Rp,U,O])=>{
-    const pr=mobile?1:renderer.getPixelRatio(), rt=new THREE.WebGLRenderTarget(innerWidth*pr,innerHeight*pr,{type:THREE.HalfFloatType,samples:mobile?2:4});
+    const pr=renderer.getPixelRatio(), rt=new THREE.WebGLRenderTarget(innerWidth*pr,innerHeight*pr,{type:THREE.HalfFloatType,samples:mobile?2:4});
     const composer=new E.EffectComposer(renderer,rt); composer.setPixelRatio(pr); composer.setSize(innerWidth,innerHeight);
     composer.addPass(new Rp.RenderPass(scene,camera));
     const pass=new U.UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.4,.28,1.02); composer.addPass(pass);
@@ -2124,8 +2127,13 @@ function updateOffset(){
 addEventListener('resize',resize); resize();
 
 const clock=new THREE.Clock(); const tmpC=new THREE.Color(); const up=new THREE.Vector3(0,1,0);
+const fpsWatch={t:0,n:0,done:!mobile||!!window.__keepPR};   // __keepPR: test hook (unset in normal use)
+function stepDownPR(){ if(PR<=1.5) return; PR=1.5; renderer.setPixelRatio(PR); renderer.setSize(innerWidth,innerHeight,false);
+  if(bloom){ bloom.composer.setPixelRatio(PR); bloom.composer.setSize(innerWidth,innerHeight); } }
 function tick(){
-  const dt=Math.min(clock.getDelta(),.05)*(window.__dtScale||1), t=clock.elapsedTime;   // __dtScale: test hook (unset in normal use)
+  const raw=clock.getDelta(), dt=Math.min(raw,.05)*(window.__dtScale||1), t=clock.elapsedTime;   // __dtScale: test hook (unset in normal use)
+  // phones: watch the frame rate for 4 s after the first 2 s; drop to 1.5× if it is low
+  if(!fpsWatch.done && t>2 && !document.hidden){ fpsWatch.t+=raw; fpsWatch.n++; if(fpsWatch.t>4){ fpsWatch.done=true; if(fpsWatch.n/fpsWatch.t<28) stepDownPR(); } }
   // day/night
   state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5);
   const n=state.nightT;
