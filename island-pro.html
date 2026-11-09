@@ -124,14 +124,15 @@ body.driving .metro-panel,body.reading .metro-panel{display:none}
 .detail-foot a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 /* 3D labels */
-.isl{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid var(--line);background:var(--surface);box-shadow:0 6px 16px rgba(36,49,33,.16);font-size:13px;font-weight:600;white-space:nowrap;transition:transform .2s}
+.isl{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid var(--line);background:var(--surface);box-shadow:0 6px 16px rgba(36,49,33,.16);font-size:13px;font-weight:600;white-space:nowrap;touch-action:none}
 .isl b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font-family:var(--mono);font-size:11px}
-.isl:hover{transform:translateY(-2px)}
+.isl:hover{translate:0 -2px}
 /* night city: labels turn into dark glass with a neon edge */
 .night .isl,.night .pin{background:rgba(12,9,28,.74);color:#f3efff;border-color:var(--c);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 60%,transparent),0 0 16px color-mix(in srgb,var(--c) 55%,transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .night .isl b,.night .pin b{box-shadow:0 0 10px var(--c)}
 .night .grp{box-shadow:0 0 14px var(--c),0 0 2px #fff inset;text-shadow:0 0 6px rgba(255,255,255,.6)}
-.isl,.pin{transition:transform .2s,background .6s,box-shadow .6s,color .6s}
+/* the label renderer moves tags with `transform` every frame: animate only `translate` (the hover lift), never `transform` */
+.isl,.pin{transition:translate .2s,background .6s,box-shadow .6s,color .6s;touch-action:none}
 .pin{pointer-events:none;display:flex;align-items:center;gap:5px;padding:3px 9px 3px 3px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:11px;white-space:nowrap;text-decoration:none;box-shadow:0 4px 10px rgba(36,49,33,.14);opacity:0}
 .pin b{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--c);color:#fff;font-family:var(--mono);font-size:10px}
 .pin:hover{border-color:var(--c)}
@@ -748,6 +749,22 @@ function onWheel(e){
 canvas.addEventListener('wheel',onWheel,{capture:true,passive:false});
 if(/[?&]debug\b/.test(location.search)) window.__zoom=()=>({zoomTo,fly:!!fly});
 $('#labels').addEventListener('wheel',onWheel,{passive:false});   // labels float above the canvas
+{ const lab=$('#labels'), onTag=new Map(), down=new Set();
+  const hand=id=>{ const e=onTag.get(id); if(!e) return; onTag.delete(id);
+    canvas.dispatchEvent(new PointerEvent('pointerdown',{pointerId:id,pointerType:'touch',isPrimary:false,clientX:e.x,clientY:e.y,button:0,buttons:1,bubbles:true,cancelable:true}));
+    try{ canvas.setPointerCapture(id); }catch{} };
+  document.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch') return; down.add(e.pointerId);
+    if(lab.contains(e.target)) onTag.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    // a second finger: hand every finger resting on a tag over to the canvas, so the pinch zooms the island
+    if(down.size>=2) [...onTag.keys()].forEach(hand); },true);
+  lab.addEventListener('pointermove',e=>{ const t=onTag.get(e.pointerId); if(t){ t.x=e.clientX; t.y=e.clientY; } });
+  const up=e=>{ down.delete(e.pointerId); onTag.delete(e.pointerId); };
+  document.addEventListener('pointerup',up,true); document.addEventListener('pointercancel',up,true);
+  // iOS Safari ignores touch-action for page zoom: stop its pinch gesture over the island itself
+  const onStage=t=>t===canvas||lab.contains(t);
+  ['gesturestart','gesturechange'].forEach(k=>document.addEventListener(k,e=>{ if(onStage(e.target)) e.preventDefault(); },{passive:false}));
+  document.addEventListener('touchmove',e=>{ if(e.touches.length>1 && onStage(e.target)) e.preventDefault(); },{passive:false});
+}
 
 const hemi=new THREE.HemisphereLight(DAY.hemiSky,DAY.hemiGround,1.25); scene.add(hemi);
 const sun=new THREE.DirectionalLight(DAY.sun,2.2); sun.position.set(-70,120,60); sun.castShadow=true;
