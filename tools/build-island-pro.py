@@ -8,7 +8,7 @@ after changing island.html, run  python3 tools/build-island-pro.py  to bring the
 import pathlib, sys
 root = pathlib.Path(__file__).resolve().parent.parent
 src = (root / 'island.html').read_text(encoding='utf-8')
-VER = '20261109-2'
+VER = '20261109-3'
 
 def patch(s, old, new, count=1):
     n = s.count(old)
@@ -24,7 +24,7 @@ s = patch(s, "state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5)
              "state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*.9);")
 # the PRO look owns the frame: light, sea, sky, air and lens
 s = patch(s, "function tick(){",
-             "const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam});\n"
+             "const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam,clouds});\n"
              "if(/[?&]debug\\b/.test(location.search)) window.__pro=PRO;\n"
              "function tick(){")
 s = patch(s, "if(bloom && state.nightT>.015 && reader.hidden){ bloom.pass.strength=.4*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);",
