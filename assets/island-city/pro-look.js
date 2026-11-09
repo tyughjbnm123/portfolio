@@ -25,7 +25,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 export function createProLook(ctx) {
   const { renderer, scene, camera, controls, sun, hemi, skyDome, water, lampMat, islands, state, mobile, reduced, canvas, hub, beacon, beam, softClouds } = ctx;
   const lite = mobile;
-  let quality = lite ? 1 : 2;              // 2 = everything, 1 = no AO / smaller mirror, 0 = no mirror
+  let quality = lite ? 1 : 2;              // 2 = everything, 1 = no AO, 0 = no mirror (then the resolution steps down)
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
   if (!lite) { sun.shadow.mapSize.set(4096, 4096); sun.shadow.map?.dispose(); sun.shadow.map = null; }
@@ -110,8 +110,20 @@ export function createProLook(ctx) {
   scene.add(sea); water.visible = false;
   const seaU = sea.material.uniforms;
   // a mirror needs its own render each frame: allow switching it off when the frame rate drops
+  // The mirror is a second render of the whole scene. Draw it at most once a frame (the AO pass renders the scene again
+  // and would otherwise redraw the mirror too), only every other frame while the camera is still, and leave the little
+  // people (layer 1) out of it.
   const mirrorRender = sea.onBeforeRender;
-  function setMirror(on) { if (lite) return; sea.onBeforeRender = on ? mirrorRender : () => {}; seaU.uReflect.value = on ? 1 : 0; }
+  let mirrorFrame = -1, mirrorEvery = 2; const lastPos = new THREE.Vector3(1e9, 0, 0), lastQ = new THREE.Quaternion();
+  const throttledMirror = function (r, s, c, ...rest) {
+    if (c !== camera || mirrorFrame === frameNo) return;
+    const moved = lastPos.distanceToSquared(c.position) > 1e-4 || lastQ.angleTo(c.quaternion) > 1e-4;
+    if (!moved && frameNo % mirrorEvery) return;
+    mirrorFrame = frameNo; lastPos.copy(c.position); lastQ.copy(c.quaternion); mirrorRender.call(this, r, s, c, ...rest);
+  };
+  let frameNo = 0;
+  if (!lite) sea.onBeforeRender = throttledMirror;
+  function setMirror(on) { if (lite) return; sea.onBeforeRender = on ? throttledMirror : () => {}; seaU.uReflect.value = on ? 1 : 0; }
 
   /* ---------------- harbour lighthouse (replaces the hub beacon; same spot, label and walkers kept) ---------------- */
   let LH = null;
@@ -270,12 +282,13 @@ export function createProLook(ctx) {
   composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(W(), H());
   composer.addPass(new RenderPass(scene, camera));
   let gtao = null;
-  if (!lite) {
+  if (!lite) {   // ambient occlusion: desktop only; switched off at the start on very large / high-DPI screens
     gtao = new GTAOPass(scene, camera, W(), H());
     gtao.output = GTAOPass.OUTPUT.Default; gtao.blendIntensity = .85;
     gtao.updateGtaoMaterial({ radius: 1.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12 });
     gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
     composer.addPass(gtao);
+    if (W() * H() * renderer.getPixelRatio() ** 2 > 4.2e6) { gtao.enabled = false; quality = 1; }
   }
   const bloom = new UnrealBloomPass(new THREE.Vector2(W(), H()), .2, .45, .86);
   composer.addPass(bloom);
@@ -320,13 +333,15 @@ export function createProLook(ctx) {
     if (reduced) return;
     if (fps.wait > 0) { fps.wait -= raw; return; }
     fps.t += raw; fps.n++;
-    if (fps.t < 3) return;
+    if (fps.t < 2.5) return;
     const f = fps.n / fps.t; fps.t = 0; fps.n = 0;
-    if (f < 40 && quality > 0) {
-      quality--; fps.wait = 2;
-      if (quality === 1 && gtao) { gtao.enabled = false; }
-      if (quality === 0) setMirror(false);
-    }
+    if (f >= 50) return;
+    fps.wait = 1.5;
+    if (quality === 2) { quality = 1; if (gtao) gtao.enabled = false; return; }                 // 1. no ambient occlusion
+    if (quality === 1 && mirrorEvery < 3 && !lite) { mirrorEvery = 3; return; }                  // 2. mirror every third still frame
+    if (quality === 1) { quality = 0; setMirror(false); return; }                               // 3. no mirror
+    const pr = renderer.getPixelRatio();                                                        // 4. lower the resolution
+    if (pr > 1.25) { renderer.setPixelRatio(pr > 1.5 ? 1.5 : 1.25); renderer.setSize(innerWidth, innerHeight, false); resize(); }
   }
   if (window.__keepPro) guard.off = true;
 
@@ -337,6 +352,7 @@ export function createProLook(ctx) {
   return {
     sea, composer,
     render(reading) {
+      frameNo++;
       const now = performance.now(), raw = Math.min(.1, (now - last) / 1000); last = now;
       if (!reduced) U.time.value += raw;
       const n = state.nightT; U.n.value = n;

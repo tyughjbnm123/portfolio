@@ -459,7 +459,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
 </script>
 <script type="module">
-import {createSoftClouds} from './assets/island-city/soft-clouds.js?v=20261109-1';
+import {createSoftClouds} from './assets/island-city/soft-clouds.js?v=20261109-2';
 import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261101-1';
 import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
 import {nightLook} from './assets/island-city/night-look.js?v=20261027-1';
@@ -724,7 +724,7 @@ const skyDome=new THREE.Mesh(new THREE.SphereGeometry(820,32,16),new THREE.Shade
   fragmentShader:`uniform vec3 uDay,uHor,uTop; uniform float uN; varying vec3 vP;
     void main(){ float h=vP.y; vec3 night=mix(uHor,uTop,smoothstep(-.02,.42,h)); night+=vec3(.25,.02,.3)*exp(-abs(h-.03)*28.)*.6; gl_FragColor=vec4(mix(uDay,night,uN),1.); }`}));
 skyDome.renderOrder=-1; skyDome.frustumCulled=false;
-const camera=new THREE.PerspectiveCamera(38,1,0.5,900);
+const camera=new THREE.PerspectiveCamera(38,1,0.5,900); camera.layers.enable(1);   // layer 1: little people (see bakeRig)
 const HOME={pos:new THREE.Vector3(0,134,183), look:new THREE.Vector3(0,0,8)};
 camera.position.copy(HOME.pos);
 const labelRenderer=new CSS2DRenderer({element:$('#labels')});
@@ -934,7 +934,29 @@ function person(parent,o={}){
   if(style===3){ const c=smooth(pick(SHIRT)); part(G.hairCap,c,0,.06,-.02,head).rotation.x=-.2; const b=part(G.brim,c,0,.17,.27,head); b.scale.set(.72,1,.62); b.rotation.x=.18; }
   // headphones on some walkers without a hat
   if(X && style!==3 && style!==7 && r()<.12){ const c=smooth(pick([0x1d1d20,0xf2efe8,0xc8553d])); part(G.phonesArc,c,0,.02,0,head,false); [-1,1].forEach(s=>{const e=part(G.earCup,c,s*.37,.0,0,head,false); e.rotation.z=Math.PI/2;}); }
+  if(o.bake!==false) bakeRig(root,skin);
+  root.traverse(o=>o.layers.set(LAYER_SMALL));   // little people: drawn, but left out of the PRO sea's mirror
   return {root,body,legs,arms,head,phase:r()*6};
+}
+/* Every joint of a person (body, each leg, each arm, the head, a coffee cup) keeps its group so the walk and the poses
+   still move it, but the many little parts hanging off one joint are merged into a single vertex-coloured mesh:
+   about 6 draws per person instead of 20-30. */
+const PEOPLE_MAT=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.72});
+const LAYER_SMALL=1;
+function bakeRig(root,skinHex){
+  const skin=new THREE.Color(skinHex), c=new THREE.Color(), nodes=[];
+  root.traverse(o=>{ if(!o.isMesh) nodes.push(o); });
+  for(const N of nodes){
+    const leaf=N.children.filter(o=>o.isMesh && !o.children.length && o.material?.isMeshStandardMaterial && !o.material.map);
+    if(leaf.length<2) continue;
+    const parts=[]; let shadow=false;
+    for(const o of leaf){ o.updateMatrix(); const g=(o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone()).applyMatrix4(o.matrix);
+      for(const k of Object.keys(g.attributes)) if(k!=='position'&&k!=='normal') g.deleteAttribute(k);
+      const n=g.attributes.position.count, col=new Float32Array(n*3); c.copy(o.material.color); if(o.material.transparent) c.lerp(skin,1-(o.material.opacity??1));
+      for(let i=0;i<n;i++){ col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b; } g.setAttribute('color',new THREE.BufferAttribute(col,3));
+      parts.push(g); shadow ||= o.castShadow; N.remove(o); }
+    const m=new THREE.Mesh(mergeGeometries(parts,false),PEOPLE_MAT); parts.forEach(g=>g.dispose()); m.castShadow=shadow; m.name='person part'; N.add(m);
+  }
 }
 function animPerson(P,moving,dt,speed=1){
   if(moving){ P.phase+=dt*9*speed; const s=Math.sin(P.phase);
@@ -1018,7 +1040,7 @@ function seatPose(P,pose,t=0,ph=0){
 }
 function standPose(P){ P.legs.forEach(l=>l.rotation.x=0); P.arms[0].rotation.set(0,0,-.14); P.arms[1].rotation.set(0,0,.14); P.head.rotation.set(0,0,0); P.body.position.y=0; }
 function bakeRider(pose){
-  const tmp=new THREE.Group(), P=person(tmp); P.root.scale.setScalar(1); seatPose(P,pose,Math.random()*6,pose==='swing'?Math.PI/2:Math.random()*6);
+  const tmp=new THREE.Group(), P=person(tmp,{bake:false}); P.root.scale.setScalar(1); seatPose(P,pose,Math.random()*6,pose==='swing'?Math.PI/2:Math.random()*6);
   tmp.updateMatrixWorld(true); const parts=[], c=new THREE.Color(), skin=new THREE.Color(0xe8bd97);
   P.root.traverse(o=>{ if(!o.isMesh) return; const g=o.geometry.clone().applyMatrix4(o.matrixWorld), k=g.attributes.position.count, col=new Float32Array(k*3);
     c.copy(o.material.color); if(o.material.transparent) c.lerp(skin,.45); for(let i=0;i<k;i++){ col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b; }
@@ -1385,6 +1407,7 @@ const softClouds=createSoftClouds({scene,clouds,sun,mobile,reduced});
 
 /* ---------- me ---------- */
 const ME=person(scene,{skin:0xf2d3b6,shirt:0x4b4f56,sleeve:0x4b4f56,pants:0x40434a,hair:0x1b1918,style:1,extras:false});
+ME.root.traverse(o=>o.layers.set(0));   // the sprite is clicked: keep it on the default layer
 ME.root.scale.setScalar(1.22*PERSON_SCALE); ME.root.position.set(0,2,4.5);
 { const h=ME.head, glass=smooth(0x2b2724), gTor=new THREE.TorusGeometry(.088,.017,6,18);
   [-1,1].forEach(s=>part(gTor,glass,s*.13,.0,.352,h,false));
@@ -2044,7 +2067,7 @@ function fitMetroOverview(){
 }
 import('./assets/island-city/metro.js?v=20261031-1').then(m=>{
   METRO=m.createMetro({scene,islands,host:$('#app'),reduced,crowd:INTERACT,onStation:goMetroStation,
-    createPassenger:(parent,i)=>{const p=person(parent,{shirt:[0xe6c36e,0x87bbc5,0xc6a6d8,0xe6b39e,0x99c6a5,0xd7dcd1][i]});p.root.name='metro passenger '+i;p.root.scale.setScalar(.6);p.root.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;const original=o.material;if(!metroPassengerMaterials.has(original)){const material=original.clone();material.emissive.copy(material.color).multiplyScalar(.18);metroPassengerMaterials.set(original,material);}o.material=metroPassengerMaterials.get(original);});return {root:p.root,animate:(walking,dt)=>animPerson(p,walking,dt,.8),pose:(mode,dt,t)=>posePerson(p,mode,dt,t)};},
+    createPassenger:(parent,i)=>{const p=person(parent,{shirt:[0xe6c36e,0x87bbc5,0xc6a6d8,0xe6b39e,0x99c6a5,0xd7dcd1][i]});p.root.name='metro passenger '+i;p.root.scale.setScalar(.6);p.root.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;const original=o.material;if(!metroPassengerMaterials.has(original)){const material=original.clone();if(material.vertexColors){material.emissive.setScalar(.18);material.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n\ttotalEmissiveRadiance*=vColor.rgb;');};material.customProgramCacheKey=()=>'metro-passenger-glow';}else material.emissive.copy(material.color).multiplyScalar(.18);metroPassengerMaterials.set(original,material);}o.material=metroPassengerMaterials.get(original);});return {root:p.root,animate:(walking,dt)=>animPerson(p,walking,dt,.8),pose:(mode,dt,t)=>posePerson(p,mode,dt,t)};},
     onOverview:()=>{if(drive.on)stopDrive();if(hunt.on)endHunt();unfocus();},pick:(o,key)=>{o.userData.key=key;o.userData.metroStation=true;pickables.push(o);}});
   fitMetroOverview();if(!state.focus&&!drive.on){flyTo(HOME.pos,HOME.look);updateOffset();}
 }).catch(e=>console.warn('Metro unavailable; existing island navigation retained.',e));
@@ -2156,7 +2179,8 @@ function tick(){
     let f=1; if(sg.fl>0){ sg.fl-=dt; f=(sg.fl>.24||(sg.fl<.16&&sg.fl>.1))?.15:1; }
     sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });
   document.body.classList.toggle('night',n>.5);
-  { const live=n<.6; if(renderer.shadowMap.autoUpdate!==live){ renderer.shadowMap.autoUpdate=live; renderer.shadowMap.needsUpdate=true; } }   // night shadows are faint: stop redrawing them every frame
+  { const live=n<.6; renderer.shadowMap.autoUpdate=false; tick._sf=(tick._sf|0)+1;   // shadows: every other frame by day, frozen at night (night shadows are faint)
+    if((live&&tick._sf%2===0)||(tick._live&&!live)) renderer.shadowMap.needsUpdate=true; tick._live=live; }
   softClouds.update(dt,n,controls.target);
   if(!reduced){
     spinners.forEach(s=>{

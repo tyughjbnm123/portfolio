@@ -65,7 +65,9 @@ export function createSoftClouds({ scene, clouds, sun, mobile, reduced }) {
   return {
     u: cU, group: ringG,
     update(dt, n, target) {
-      cU.n.value = n; cU.uOp.value = .95 - .82 * n; cU.uTarget.value.set(target.x, target.z);
+      cU.n.value = n; cU.uTarget.value.set(target.x, target.z);
+      cU.uOp.value = .95 * Math.pow(1 - n, 1.6);   // gone after dark (they read as grey blobs against the night sky)
+      ringG.visible = cU.uOp.value > .01;
       if (!reduced) ringG.rotation.y += dt * .006;
     },
   };
