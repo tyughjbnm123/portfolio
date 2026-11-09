@@ -24,7 +24,7 @@ s = patch(s, "state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*2.5)
              "state.nightT+= ((state.night?1:0)-state.nightT)*Math.min(1,dt*.9);")
 # the PRO look owns the frame: light, sea, sky, air and lens
 s = patch(s, "function tick(){",
-             "const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam,clouds});\n"
+             "const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam,softClouds});\n"
              "if(/[?&]debug\\b/.test(location.search)) window.__pro=PRO;\n"
              "function tick(){")
 s = patch(s, "if(bloom && state.nightT>.015 && reader.hidden){ bloom.pass.strength=.4*state.nightT; bloom.composer.render(); } else renderer.render(scene,camera);",

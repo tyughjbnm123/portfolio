@@ -459,6 +459,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
 </script>
 <script type="module">
+import {createSoftClouds} from './assets/island-city/soft-clouds.js?v=20261109-1';
 import {createProLook} from './assets/island-city/pro-look.js?v=20261109-3';
 import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261101-1';
 import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
@@ -1380,12 +1381,8 @@ for(let i=0;i<6;i++){
   const boat={o:b,wake,wakeMat,r:i%2?88:82,a:Math.PI/2+Math.floor(i/2)*Math.PI*2/3+(i%2?.4:0),s:i%2?-.022:.027,phase:i*1.7};
   boats.push(boat);placeBoat(boat,0);if(reduced)wake.visible=false;
 }
-const clouds=[];
-for(let i=0;i<9;i++){
-  const c=new THREE.Group(); const m=new THREE.MeshStandardMaterial({color:0xffffff,flatShading:true,roughness:1,transparent:true,opacity:.92});
-  for(let k=0;k<4;k++){const s=mk(new THREE.IcosahedronGeometry(3+Math.random()*3,0),m,k*4-6,Math.random()*1.5,Math.random()*3); s.castShadow=false; s.scale.y=.6; c.add(s);}
-  const a=Math.random()*6.28, r=60+Math.random()*120; c.position.set(Math.cos(a)*r,48+Math.random()*24,Math.sin(a)*r); scene.add(c); clouds.push({o:c,s:.6+Math.random()*.8,m});
-}
+const clouds=[];   // the faceted clouds were replaced by soft cumulus (soft-clouds.js)
+const softClouds=createSoftClouds({scene,clouds,sun,mobile,reduced});
 
 /* ---------- me ---------- */
 const ME=person(scene,{skin:0xf2d3b6,shirt:0x4b4f56,sleeve:0x4b4f56,pants:0x40434a,hair:0x1b1918,style:1,extras:false});
@@ -2131,7 +2128,7 @@ const clock=new THREE.Clock(); const tmpC=new THREE.Color(); const up=new THREE.
 const fpsWatch={t:0,n:0,done:!mobile||!!window.__keepPR};   // __keepPR: test hook (unset in normal use)
 function stepDownPR(){ if(PR<=1.5) return; PR=1.5; renderer.setPixelRatio(PR); renderer.setSize(innerWidth,innerHeight,false); PRO.resize();
   if(bloom){ bloom.composer.setPixelRatio(PR); bloom.composer.setSize(innerWidth,innerHeight); } }
-const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam,clouds});
+const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam,softClouds});
 if(/[?&]debug\b/.test(location.search)) window.__pro=PRO;
 function tick(){
   const raw=clock.getDelta(), dt=Math.min(raw,.05)*(window.__dtScale||1), t=clock.elapsedTime;   // __dtScale: test hook (unset in normal use)
@@ -2163,7 +2160,7 @@ function tick(){
     sg.mats.forEach(m=>m.opacity=m.userData.o*n*f); sg.glow.intensity=n*f*90; });
   document.body.classList.toggle('night',n>.5);
   { const live=n<.6; if(renderer.shadowMap.autoUpdate!==live){ renderer.shadowMap.autoUpdate=live; renderer.shadowMap.needsUpdate=true; } }   // night shadows are faint: stop redrawing them every frame
-  clouds.forEach(c=>{c.o.position.x+=c.s*dt; if(c.o.position.x>220)c.o.position.x=-220; c.m.opacity=.92-.8*n;});
+  softClouds.update(dt,n,controls.target);
   if(!reduced){
     spinners.forEach(s=>{
       if(s.wave) s.o.rotation[s.wave.axis||s.axis]=s.wave.base+Math.sin(t*s.wave.rate)*s.wave.amp;
