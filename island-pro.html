@@ -459,7 +459,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
 </script>
 <script type="module">
-import {createProLook} from './assets/island-city/pro-look.js?v=20261109-1';
+import {createProLook} from './assets/island-city/pro-look.js?v=20261109-2';
 import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261101-1';
 import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
 import {nightLook} from './assets/island-city/night-look.js?v=20261027-1';
@@ -2131,7 +2131,7 @@ const clock=new THREE.Clock(); const tmpC=new THREE.Color(); const up=new THREE.
 const fpsWatch={t:0,n:0,done:!mobile||!!window.__keepPR};   // __keepPR: test hook (unset in normal use)
 function stepDownPR(){ if(PR<=1.5) return; PR=1.5; renderer.setPixelRatio(PR); renderer.setSize(innerWidth,innerHeight,false); PRO.resize();
   if(bloom){ bloom.composer.setPixelRatio(PR); bloom.composer.setSize(innerWidth,innerHeight); } }
-const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas});
+const PRO=createProLook({renderer,scene,camera,controls,sun,hemi,skyDome,water,lampMat,islands,state,mobile,reduced,canvas,hub,beacon,beam});
 if(/[?&]debug\b/.test(location.search)) window.__pro=PRO;
 function tick(){
   const raw=clock.getDelta(), dt=Math.min(raw,.05)*(window.__dtScale||1), t=clock.elapsedTime;   // __dtScale: test hook (unset in normal use)
