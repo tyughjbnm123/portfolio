@@ -14,6 +14,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 //  · mirror sea: a stylised water shader with a live reflection, wave normals, sun glints, shallows
 //    round every island and a darker, glassier surface after dark (phones: same shader, no mirror)
 //  · harbour lighthouse: the hub beacon becomes a slim steel lighthouse with a glass lantern and two slow sweeping beams
+//  · clouds (soft-clouds.js, shared with the original island) turn pink-gold at sunset
 //  · sky: a soft blue zenith, a sun halo, drifting clouds; a golden-pink band at dusk; stars, a moon glow
 //    and the odd shooting star at night
 //  · dusk: switching day ↔ night now passes through a slow sunset — the sun drops, goes amber, the sky blushes
@@ -22,7 +23,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 //  · lens: ambient occlusion (desktop), bloom, a tilt-shift miniature focus, colour grade, vignette, grain
 //  · a frame-rate guard steps the extras down on slower machines
 export function createProLook(ctx) {
-  const { renderer, scene, camera, controls, sun, hemi, skyDome, water, lampMat, islands, state, mobile, reduced, canvas, hub, beacon, beam } = ctx;
+  const { renderer, scene, camera, controls, sun, hemi, skyDome, water, lampMat, islands, state, mobile, reduced, canvas, hub, beacon, beam, softClouds } = ctx;
   const lite = mobile;
   let quality = lite ? 1 : 2;              // 2 = everything, 1 = no AO / smaller mirror, 0 = no mirror
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -350,6 +351,8 @@ export function createProLook(ctx) {
       // sea
       seaU.uSun.value.copy(sun.position).normalize(); seaU.uSunCol.value.copy(sun.color).multiplyScalar(n > .5 ? .6 : 1);
       seaU.uEye.value.copy(camera.position); seaU.uSky.value.copy(scene.background);
+      // clouds
+      if (softClouds) softClouds.u.dusk.value = dusk;   // the soft clouds themselves live in island.html (soft-clouds.js); here they only blush at sunset
       // lighthouse
       if (LH) { beacon.visible = false; if (beam) beam.visible = false;
         LH.glows.forEach(m => m.emissiveIntensity = .2 + n * 1.5); LH.lamp.intensity = 12 + n * 68;
