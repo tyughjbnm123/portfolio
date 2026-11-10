@@ -31,7 +31,7 @@ export function createSoftClouds({ scene, clouds, sun, mobile, reduced }) {
         vec3 lit=vec3(1.,.99,.96), shade=vec3(.66,.74,.86);           // sunny tops, cool blue-grey undersides
         vec3 col=mix(shade, lit, smoothstep(.2,.95,wrap));
         col*=mix(.80,1.,smoothstep(0.,.75,vH));                        // flatter, darker base
-        col+=vec3(1.,.96,.9)*pow(1.-ndv,3.)*pow(max(dot(-V,L),0.),2.)*.5; // silver lining against the sun
+        col+=vec3(1.,.96,.9)*pow(max(1.-ndv,1e-6),3.)*pow(max(dot(-V,L),1e-6),2.)*.5; // silver lining against the sun
         col=mix(col, col*vec3(1.,.72,.6)+vec3(.12,.03,.05), dusk);      // pink-gold at sunset
         col=mix(col, vec3(.30,.32,.44), n);                            // moonlit grey after dark
         float a=uOp*vFade*smoothstep(0.,.55,ndv);                            // feathered silhouette

@@ -8,7 +8,7 @@ after changing island.html, run  python3 tools/build-island-pro.py  to bring the
 import pathlib, sys
 root = pathlib.Path(__file__).resolve().parent.parent
 src = (root / 'island.html').read_text(encoding='utf-8')
-VER = '20261109-4'
+VER = '20261110-1'
 
 def patch(s, old, new, count=1):
     n = s.count(old)

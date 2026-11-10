@@ -82,12 +82,12 @@ export function createProLook(ctx) {
         vec3 refl=mix(base*1.2,uSky,.35);   // phones have no mirror: a soft sky tint over the water colour
         if(uReflect>.5) refl=texture2DProj(tDiffuse, vUvR+vec4(rip*vUvR.w,0.,0.)).rgb;
         refl*=mix(vec3(1.),vec3(1.,.66,.52),dusk);
-        float f=pow(1.-abs(V.y),2.);
+        float f=pow(max(1.-abs(V.y),1e-6),2.);
         vec3 col=mix(base,refl,mix(.25,.46,n)+.25*f);
-        float r=pow(max(0.,sin(p.x*.9+p.y*.17+time*.8)*sin(p.y*.8-time*.6)),14.);
+        float r=pow(max(1e-6,sin(p.x*.9+p.y*.17+time*.8)*sin(p.y*.8-time*.6)),14.);
         col+=r*mix(vec3(.012,.025,.024),vec3(.003,.009,.012),n);
         // a faint, broad sun / moon sheen so the surface still reads as water
-        vec3 H=normalize(normalize(uSun)+V); col+=uSunCol*pow(max(dot(N,H),0.),180.)*mix(.55,.25,n)*(1.-n*.5);
+        vec3 H=normalize(normalize(uSun)+V); col+=uSunCol*pow(max(dot(N,H),1e-6),180.)*mix(.55,.25,n)*(1.-n*.5);
         col=mix(col,base,(1.-exp(-length(p)*.004))*.4);
         gl_FragColor=vec4(col,1.);
         #include <tonemapping_fragment>
@@ -157,7 +157,7 @@ export function createProLook(ctx) {
     const bGeo = new THREE.ConeGeometry(3.2, 64, 24, 1, true); bGeo.translate(0, -32, 0); bGeo.rotateZ(Math.PI / 2);
     const bMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, uniforms: { n: U.n },
       vertexShader: 'varying vec3 v; void main(){ v=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-      fragmentShader: 'uniform float n; varying vec3 v; void main(){ float t=clamp(v.x/64.,0.,1.); gl_FragColor=vec4(.55,.84,1.,pow(1.-t,1.5)*.05*n); }' });
+      fragmentShader: 'uniform float n; varying vec3 v; void main(){ float t=clamp(v.x/64.,0.,1.); gl_FragColor=vec4(.55,.84,1.,pow(max(1.-t,1e-6),1.5)*.05*n); }' });
     for (const a of [0, Math.PI]) { const b = new THREE.Mesh(bGeo, bMat); b.rotation.y = a; b.renderOrder = 4; sweep.add(b); }
     for (const o of hub.children) if (o.isCSS2DObject) o.position.y = 25.5;               // IDEAS IN MOTION sits above the new roof
     beacon.visible = false;
@@ -179,20 +179,20 @@ export function createProLook(ctx) {
       vec3 zen=vec3(.42,.62,.86);
       vec3 day=mix(uDay, zen, smoothstep(.02,.65,h));
       float sd=max(dot(d,normalize(uSun)),0.);
-      day+=vec3(1.,.86,.62)*(pow(sd,12.)*.35+pow(sd,600.)*1.6);
+      day+=vec3(1.,.86,.62)*(pow(max(sd,1e-6),12.)*.35+pow(max(sd,1e-6),600.)*1.6);
       vec2 cuv=d.xz/max(h+.12,.06)*.9+vec2(time*.004,time*.0015);
       float cl=smoothstep(.08,.55,fbm(cuv*1.3)+.25*fbm(cuv*4.));
       vec3 cloudCol=mix(vec3(1.,.99,.97), vec3(1.,.72,.55), dusk);
       day=mix(day, cloudCol, cl*smoothstep(.03,.25,h)*.7);
       // dusk: a golden-pink band along the horizon, the zenith deepening
       vec3 duskSky=mix(vec3(1.,.55,.38), vec3(.36,.30,.62), smoothstep(-.02,.5,h));
-      duskSky+=vec3(1.,.6,.3)*pow(sd,6.)*.8;
+      duskSky+=vec3(1.,.6,.3)*pow(max(sd,1e-6),6.)*.8;
       day=mix(day, duskSky, dusk);
       // night: the original violet city glow, plus stars, a moon glow and a rare shooting star
       vec3 night=mix(uHor,uTop,smoothstep(-.02,.42,h)); night+=vec3(.25,.02,.3)*exp(-abs(h-.03)*28.)*.6;
       night+=vec3(.9,.95,1.)*star(d)*1.4;
       vec3 md=normalize(vec3(.45,.55,-.7)); float mg=max(dot(d,md),0.);
-      night+=vec3(.55,.75,1.)*(pow(mg,40.)*.25+smoothstep(.9994,.9997,mg)*1.4);
+      night+=vec3(.55,.75,1.)*(pow(max(mg,1e-6),40.)*.25+smoothstep(.9994,.9997,mg)*1.4);
       float ss=fract(time*.07); vec3 sp=normalize(vec3(-.8+1.6*ss,.55-.25*ss,-.6));
       night+=vec3(1.)*smoothstep(.9996,1.,dot(d,sp))*step(.82,fract(time*.07*.31))*2.;
       gl_FragColor=vec4(mix(day,night,uN),1.);
@@ -238,9 +238,11 @@ export function createProLook(ctx) {
   /* ---------------- lamp light cones (after dark) ---------------- */
   const beamMat = new THREE.ShaderMaterial({
     uniforms: { n: U.n }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
-    vertexShader: `varying vec2 vUv; varying float vF; void main(){ vUv=uv; vec4 w=modelMatrix*vec4(position,1.); vec3 Nw=normalize(mat3(modelMatrix)*normal);
-      vF=abs(dot(Nw,normalize(cameraPosition-w.xyz))); gl_Position=projectionMatrix*viewMatrix*w; }`,
-    fragmentShader: `uniform float n; varying vec2 vUv; varying float vF; void main(){ float a=pow(vUv.y,1.6)*pow(vF,1.5)*n*.32; gl_FragColor=vec4(vec3(1.,.82,.5)*a,1.); }`,
+    // pow(0.,y) is undefined on Direct3D GPUs (AMD/Intel through ANGLE) and came out NaN: one NaN pixel and the bloom
+    // blur turns the whole frame black. Keep every pow() base strictly positive.
+    vertexShader: `varying vec2 vUv; varying float vF; void main(){ vUv=uv; vec4 w=modelMatrix*vec4(position,1.); vec3 Nw=mat3(modelMatrix)*normal, V=cameraPosition-w.xyz;
+      vF=clamp(abs(dot(Nw,V))*inversesqrt(max(dot(Nw,Nw)*dot(V,V),1e-12)),0.,1.); gl_Position=projectionMatrix*viewMatrix*w; }`,
+    fragmentShader: `uniform float n; varying vec2 vUv; varying float vF; void main(){ float a=pow(clamp(vUv.y,1e-4,1.),1.6)*pow(max(vF,1e-4),1.5)*n*.32; gl_FragColor=vec4(vec3(1.,.82,.5)*a,1.); }`,
   });
   const beamGeo = new THREE.CylinderGeometry(.26, 1.7, 2.45, 20, 1, true); beamGeo.translate(0, -1.225, 0);
   const beams = [];
