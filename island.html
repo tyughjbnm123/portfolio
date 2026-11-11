@@ -461,6 +461,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 </script>
 <script type="module">
 import {createSoftClouds} from './assets/island-city/soft-clouds.js?v=20261109-2';
+import {createHarbor} from './assets/island-city/harbor.js?v=20261110-1';
 import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261101-1';
 import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
 import {nightLook} from './assets/island-city/night-look.js?v=20261027-1';
@@ -1239,6 +1240,8 @@ for(let i=0;i<(mobile?2:3);i++){const P=person(hub); const a=i*2.1; P.root.posit
 const hubLight=new THREE.PointLight(0xffd27a,0,60,1.6); hubLight.position.set(0,11,0); hub.add(hubLight); lampLights.push(hubLight);
 const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.07,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
 beam.position.set(0,12+75,0); beam.scale.set(.6,1,.6); hub.add(neonObj(beam));
+// harbour sea and lighthouse (replace the plain water and the hub beacon; see harbor.js)
+const harbor=createHarbor({scene,camera,renderer,water,hub,beacon,beam,neonObjs:NEON_OBJ,sun,mobile,reduced});
 
 /* Facade-mounted LED signs, drawn locally on canvas and lit through bloom. */
 const SIGN_TXT={about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']};
@@ -2198,7 +2201,7 @@ function tick(){
   document.body.classList.toggle('night',n>.5);
   { const live=n<.6; renderer.shadowMap.autoUpdate=false; tick._sf=(tick._sf|0)+1;   // shadows: every other frame by day, frozen at night (night shadows are faint)
     if((live&&tick._sf%2===0)||(tick._live&&!live)) renderer.shadowMap.needsUpdate=true; tick._live=live; }
-  softClouds.update(dt,n,controls.target);
+  softClouds.update(dt,n,controls.target); harbor.update(raw>0?Math.min(raw,.1):dt,n);
   if(!reduced){
     spinners.forEach(s=>{
       if(s.wave) s.o.rotation[s.wave.axis||s.axis]=s.wave.base+Math.sin(t*s.wave.rate)*s.wave.amp;
