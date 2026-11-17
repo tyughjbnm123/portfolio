@@ -1,4 +1,4 @@
-import {t,write} from './i18n.js?v=guide-1';
+import {t,write} from './i18n.js?v=voice-1';
 
 export function initPerformance({release,enable,isReady,onLayout}) {
  const body=document.body, instrument=document.querySelector('.instrument');

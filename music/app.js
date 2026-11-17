@@ -1,5 +1,6 @@
-import {initLanguage,write,t,getLanguage} from './i18n.js?v=guide-1';
-import {initPerformance} from './performance.js?v=guide-1';
+import {initLanguage,write,t,getLanguage} from './i18n.js?v=voice-1';
+import {initVoice} from './voice.js?v=voice-1';
+import {initPerformance} from './performance.js?v=voice-1';
 import {analyzeMelody,describeMelody,melodyPrompt} from './melody-analysis.js?v=melody-1';
 import {DEFAULTS,LIMITS,makeDocument,validateDocument,stylePrompt,noteName} from './model.js?v=88-keys';
 import {PianoAudio,TAIL,encodeWav} from './audio.js?v=88-keys';
@@ -9,7 +10,7 @@ const codes=['KeyZ','KeyS','KeyX','KeyD','KeyC','KeyV','KeyG','KeyB','KeyH','Key
 const black=new Set([1,3,6,8,10]);
 let settings={...DEFAULTS},notes=[],duration=0,mode='idle',busy=false,ready=false,recordAt=0,playAt=0,operation=0,lastDraw=0,wavURL=null;
 const held=new Map(),keys=new Map();
-let melodyAnalysis=null;
+let melodyAnalysis=null,voice=null;
 const ANALYSIS_STORAGE='yk-melody-description-v1';
 let metroTimer=null,nextBeat=0,beatNumber=0,visibleCenter=60;
 const audio=new PianoAudio(state=>{if(state==='suspended'||state==='interrupted'||state==='closed'){interrupt('音訊已暫停，點「啟用鋼琴」即可繼續。');ready=false;update();}});
@@ -52,7 +53,7 @@ function update(){const recording=mode==='recording',playing=mode==='playing',ha
  $('record').disabled=busy||!ready||mode!=='idle';$('stop-record').disabled=!recording;$('play').disabled=busy||!has||mode!=='idle';$('stop-play').disabled=!playing;$('clear').disabled=busy||mode!=='idle'||(!has&&!duration);$('wav').disabled=busy||!has||mode!=='idle';$('json').disabled=busy||!has||mode!=='idle';$('import').disabled=busy||mode!=='idle';$('enable').disabled=busy||mode!=='idle';write('enable',busy?'準備中…':ready?'鋼琴已啟用':'啟用鋼琴');$('octave').disabled=busy||playing;$('volume').disabled=busy;for(const k of ['bpm','metronome'])$(k).disabled=busy;
  write('state',recording?'正在錄製':playing?'正在播放':busy?'處理中':'等待演奏');$('state').className='state'+(recording?' recording':playing?' playing':'');$('piano').dataset.ready=ready;for(const b of keys.values())b.disabled=!ready||playing||busy;
  write('note-count',has?'{count} 個音符 · {seconds} 秒':'尚無音符',{count:notes.length,seconds:duration.toFixed(1)});if(mode==='idle')$('clock').textContent=time(duration);const performing=document.body.classList.contains('performing');const instrument=document.querySelector('.instrument');instrument.dataset.mode=mode;instrument.dataset.ready=ready;write('record',performing?'● 錄製':'● '+t('開始錄製'));write('stop-record',performing?'■ 停止':'■ 停止錄製');write('stop-play',performing?'■ 停止':'■ 停止播放');$('performance-bpm').textContent=settings.bpm+' BPM';
-}
+voice?.sync();}
 async function prepare(midis=allPitches){
  await audio.unlock(settings.volume);await audio.load(midis,(n,total)=>{write('audio-status','載入鋼琴取樣 {count} / {total}',{count:n,total});});
  write('audio-status',"聲音已啟用 · 可同時彈奏多個音");
@@ -108,6 +109,8 @@ $('bpm').addEventListener('input',()=>{const bpm=Number($('bpm').value);if(!Numb
 window.addEventListener('keyup',e=>{if(codes.includes(e.code))end('keyboard:'+e.code);});
 window.addEventListener('blur',()=>interrupt());document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});window.addEventListener('pagehide',()=>interrupt());
 initLanguage();restore();restoreMelodyDescription();syncForm();buildKeys();drawTimeline();drawTable();update();requestAnimationFrame(frame);
+// 輸出 C：錄下自己的聲音（voice.js）
+voice=initVoice({audio,getNotes:()=>notes,getDuration:()=>duration,getVolume:()=>settings.volume,prepare:async midis=>{await prepare(midis);ready=true;update();},canStart:()=>mode==='idle'&&!busy,onBusy:b=>{busy=b;update();}});
 setInterval(()=>{if(mode==='recording')save();},2000);
 function syncScroll(){const el=$('piano-scroll'),max=el.scrollWidth-el.clientWidth;$('keyboard-position').hidden=max<2;$('key-position').value=max?el.scrollLeft/max*100:0;const visible=[...keys].filter(([,b])=>b.offsetLeft+b.offsetWidth>el.scrollLeft+1&&b.offsetLeft<el.scrollLeft+el.clientWidth-1).map(([m])=>m);write('visible-range',visible.length?'目前：{low} — {high}':'',{low:noteName(visible[0]),high:noteName(visible.at(-1))});}
 function rememberPosition(){const el=$('piano-scroll'),middle=el.scrollLeft+el.clientWidth/2;const nearest=[...keys].reduce((a,b)=>Math.abs(b[1].offsetLeft+b[1].offsetWidth/2-middle)<Math.abs(a[1].offsetLeft+a[1].offsetWidth/2-middle)?b:a);visibleCenter=nearest[0];syncScroll();}
