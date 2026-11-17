@@ -29,7 +29,7 @@ const EN = {
  '開始錄製':'Record','■ 停止錄製':'■ Stop recording','▶ 播放':'▶ Play','■ 停止播放':'■ Stop playback','清除':'Clear','等待演奏':'Ready to play','正在錄製':'Recording','正在播放':'Playing','播放餘音':'Playing tail','處理中':'Processing','錄製或播放時間':'Recording or playback time','速度':'Tempo','節拍器':'Metronome','BPM 用於節拍器與風格指令，不會改變已錄製的節奏。':'BPM controls the metronome and style prompt. It does not retime your recording.',
  '02 / 旋律紀錄':'02 / YOUR RECORDING','每一次按下，都留下時間':'Every note has its moment','尚無音符':'No notes yet','按下「開始錄製」，再彈幾個音。':'Press Record, then play a few notes.','休止、長音和同時按下的和弦，都會保留下來。':'Rests, held notes and chords are all preserved.','音符時間軸：橫軸為秒，縱軸為音高':'Note timeline: time in seconds horizontally, pitch vertically',
  '旋律暫存於這個瀏覽器':'Your melody stays in this browser','每段最長 2 分鐘 · 最多 2,000 個音符':'Up to 2 minutes · 2,000 notes per recording','查看音符資料':'View note data','音高':'Pitch','開始（秒）':'Start (s)','持續（秒）':'Duration (s)','力度':'Velocity',
- '輸出 A / 實際旋律':'OUTPUT A / YOUR MELODY','帶走你彈的聲音':'Take your music with you','WAV 會依音符資料重新渲染，保留節奏、音長與和弦，並留下自然餘音。':'WAV audio is rendered from your notes, preserving rhythm, durations and chords with a natural release tail.','↓ 下載 WAV 音檔':'↓ Download WAV','正在渲染音符與餘音…':'Rendering notes and release tails…','剛匯出的音檔':'Your exported audio','↓ 下載 JSON':'↓ Download JSON','↑ 匯入 JSON':'↑ Import JSON','JSON 可再次匯入繼續使用。音檔不含節拍器；工具不使用麥克風，也不會上傳你的旋律。':'Import JSON to continue working later. The metronome is excluded from exports. No microphone is used and your melody is not uploaded.',
+ '輸出 A / 實際旋律':'OUTPUT A / YOUR MELODY','帶走你彈的聲音':'Take your music with you','WAV 會依音符資料重新渲染，保留節奏、音長與和弦，並留下自然餘音。':'WAV audio is rendered from your notes, preserving rhythm, durations and chords with a natural release tail.','↓ 下載 WAV 音檔':'↓ Download WAV','正在渲染音符與餘音…':'Rendering notes and release tails…','剛匯出的音檔':'Your exported audio','↓ 下載 JSON':'↓ Download JSON','↑ 匯入 JSON':'↑ Import JSON','JSON 可再次匯入繼續使用。音檔不含節拍器；彈奏與匯出不使用麥克風，也不會上傳你的旋律。':'Import JSON to continue working later. The metronome is excluded from exports. Playing and exporting never use the microphone, and your melody is not uploaded.',
  '關於音色與授權':'Sound & license','採用 Alexander Holm 的 Salamander Grand Piano 鋼琴取樣，依':'Uses Salamander Grand Piano samples by Alexander Holm under ','使用。本版使用單層取樣、鄰近音移調、音量力度與合成殘響；不是完整多力度鋼琴音源。':'This edition uses one sample layer, nearest-note transposition, amplitude velocity and algorithmic reverb. It is not a full multi-velocity piano library.','匯出 WAV 內附來源註記。分享作品時，請一併保留':'WAV exports include a source credit. When sharing, also keep the ','音色署名文字':'sample attribution','。':'.',
  '輸出 B / 風格描述':'OUTPUT B / STYLE DIRECTION','給旋律一個方向':'Find a direction for your melody','選擇風格，整理成可貼到 Suno 的英文指令。':'Choose a style to create an English prompt you can paste into Suno.',
  '曲風':'Genre','情緒':'Mood','人聲':'Vocals','編曲':'Arrangement','鋼琴抒情':'Piano ballad','民謠':'Folk','流行':'Pop','搖滾':'Rock','溫暖':'Warm','悲傷':'Sad','療癒':'Soothing','熱血':'Energetic','神祕':'Mysterious','男聲':'Male','女聲':'Female','對唱':'Duet','純音樂':'Instrumental','簡約獨奏':'Minimal solo','加入弦樂':'Add strings','加入鼓組':'Add drums','逐漸堆疊':'Gradual build',
@@ -52,6 +52,36 @@ Object.assign(EN,{
   "在「設定」內點「依旋律產生指令」，再選擇曲風與情緒。": "In Settings, select Create prompt from melody, then choose a genre and mood.",
   "保存與帶走": "Save and take it with you",
   "下載 WAV 保存聲音、JSON 保存音符，再複製英文指令。到 Suno 的操作需自行完成。": "Download WAV for audio and JSON for note data, then copy the English prompt. Continue in Suno yourself."
+});
+
+Object.assign(EN,{
+  "輸出 C / 你的聲音": "OUTPUT C / YOUR VOICE",
+  "再錄一段你的聲音": "Add your own voice",
+  "用麥克風哼唱、唱歌或念一段旁白。可以一邊聽剛才彈的旋律一邊錄，最後和鋼琴合成一個 WAV。": "Hum, sing or narrate with your microphone. You can listen to the melody you just played while recording, then mix both into one WAV.",
+  "錄音時同時播放我彈的旋律": "Play my melody while recording",
+  "建議戴耳機，避免鋼琴聲被錄進去": "Headphones recommended so the piano isn't recorded",
+  "開始錄音": "Start recording",
+  "■ 停止錄音": "■ Stop recording",
+  "刪除錄音": "Delete recording",
+  "尚未錄音": "No recording yet",
+  "錄音時間": "Recording time",
+  "你的錄音": "Your recording",
+  "↓ 下載我的錄音": "↓ Download my recording",
+  "↓ 下載旋律＋人聲 WAV": "↓ Download melody + voice WAV",
+  "旋律＋人聲": "Melody + voice",
+  "只有按下「開始錄音」時才會使用麥克風；錄音只留在這個瀏覽器，不會上傳。重新整理頁面後錄音就會消失，記得先下載。每段最長 3 分鐘。": "The microphone is used only after you select Start recording. Your recording stays in this browser and is never uploaded. It disappears when you reload the page, so download it first. Up to 3 minutes per take.",
+  "正在開啟麥克風…": "Opening the microphone…",
+  "錄音中": "Recording",
+  "錄好了，可以試聽或下載": "Done. Listen back or download it",
+  "沒有錄到聲音，請再試一次。": "Nothing was recorded. Please try again.",
+  "沒有麥克風權限。請在瀏覽器網址列旁允許使用麥克風，再試一次。": "No microphone permission. Allow the microphone next to the address bar and try again.",
+  "找不到麥克風，請確認裝置已連接。": "No microphone found. Check that one is connected.",
+  "無法開啟麥克風。": "Couldn't open the microphone.",
+  "這個瀏覽器不支援錄音，請改用新版 Chrome、Edge 或 Safari。": "This browser can't record audio. Please use a recent Chrome, Edge or Safari.",
+  "正在合成旋律與人聲…": "Mixing melody and voice…",
+  "已下載旋律＋人聲 WAV": "Melody + voice WAV downloaded",
+  "合成失敗：{reason}": "Mixing failed: {reason}",
+  "合成失敗，請再試一次。": "Mixing failed. Please try again."
 });
 let language='zh';
 try { language=localStorage.getItem('yichi-language')==='en'?'en':'zh'; } catch {}
