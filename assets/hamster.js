@@ -267,7 +267,9 @@
     W = Math.max(1, r.width); H = Math.max(1, r.height);
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     buildBedding();
+    if (drawReady) draw();   // resizing clears the canvas; repaint now instead of waiting for the next frame
   }
+  let drawReady = false;
   new ResizeObserver(resize).observe(stage);
 
   let bedding = [];
@@ -306,6 +308,16 @@
     bowl(c, Math.min(W * .9, cx + R * 1.8), floorY, R);
     // shadow
     c.fillStyle = '#9b6a3a2a'; c.beginPath(); c.ellipse(cx, floorY + 4, R * .95, R * .12, 0, 0, 7); c.fill();
+    // 3D wheel + hamster (assets/hamster-3d.js) when the models have loaded; otherwise the 2D drawing below
+    const H3 = window.HamsterThree;
+    if (H3?.ready) {
+      hamsterFx(c, cx, cy, R, 'back');
+      const gl = H3.render({ W, H, DPR, cx, cy, R, G });
+      c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(gl, 0, 0, canvas.width, canvas.height); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+      hamsterFx(c, cx, cy, R, 'front');
+      speedLines(c, cx, cy, R);
+      return;
+    }
     // stand (back leg)
     c.strokeStyle = C.rimDark; c.lineWidth = Math.max(5, R * .06); c.lineCap = 'round';
     c.beginPath(); c.moveTo(cx + R * .08, cy - R * .04); c.lineTo(cx + R * .55, floorY + 2); c.stroke();
@@ -339,7 +351,10 @@
     c.beginPath(); c.moveTo(cx + off.x, cy + off.y); c.lineTo(cx - R * .55, floorY + 2); c.stroke();
     c.beginPath(); c.moveTo(cx - R * .75, floorY + 2); c.lineTo(cx - R * .35, floorY + 2); c.stroke();
     c.strokeStyle = C.rimDark; c.beginPath(); c.moveTo(cx + R * .35, floorY + 2); c.lineTo(cx + R * .75, floorY + 2); c.stroke();
-    // speed lines
+    speedLines(c, cx, cy, R);
+  }
+
+  function speedLines(c, cx, cy, R) {
     const sp = Math.min(G.v / 10, 1);
     if (sp > .35 && !reduced) {
       c.strokeStyle = G.turbo > 0 ? '#ff9a3c' : '#c28a5a'; c.lineCap = 'round';
@@ -441,6 +456,36 @@
       c.restore();
     }
   }
+  // 2D effects drawn around the 3D hamster: 'back' goes under the model, 'front' over it
+  function hamsterFx(c, cx, cy, R, layer) {
+    const s = R * .48, a = Math.PI / 2 - G.climb;
+    const fx = cx + Math.cos(a) * (R * .92), fy = cy + Math.sin(a) * (R * .92);
+    c.save(); c.translate(fx, fy); c.rotate(a - Math.PI / 2 + (G.fall > 0 ? -G.fall * .6 : 0));
+    if (layer === 'back') {
+      if (G.turbo > 0) { c.fillStyle = '#ffb34d3d'; c.beginPath(); c.ellipse(0, -s * .45, s * 1.05, s * .75, 0, 0, 7); c.fill(); }
+      c.restore(); return;
+    }
+    if (G.tired || G.stamina < .2) {
+      c.fillStyle = '#6ab7e6';
+      for (let i = 0; i < 2; i++) {
+        const k = (G.idle * 1.6 + i * .5) % 1;
+        c.globalAlpha = 1 - k; c.beginPath(); c.ellipse(s * (.05 - i * .2), -s * (1.05 + k * .25), s * .04, s * .06, 0, 0, 7); c.fill();
+      }
+      c.globalAlpha = 1;
+    }
+    if (G.fall > .1) {
+      c.fillStyle = '#f5b631';
+      for (let i = 0; i < 3; i++) { const a2 = G.idle * 6 + i * 2.1; star(c, s * .3 + Math.cos(a2) * s * .32, -s * 1.15 + Math.sin(a2) * s * .08, s * .07); }
+    }
+    c.restore();
+    if (G.seed) {
+      const k = G.seed.t, sx = cx + R * .9 * (1 - k), sy = cy - R * .9 + (R * .62) * k - Math.sin(k * Math.PI) * R * .4;
+      c.save(); c.translate(sx, sy); c.rotate(k * 9);
+      c.fillStyle = '#3d2b22'; c.beginPath(); c.ellipse(0, 0, s * .12, s * .06, 0, 0, 7); c.fill();
+      c.strokeStyle = '#efe2cf'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-s * .1, 0); c.lineTo(s * .1, 0); c.stroke();
+      c.restore();
+    }
+  }
   function paw(c, x, y, s) { c.fillStyle = '#f2b2a4'; c.beginPath(); c.ellipse(x, y - s * .03, s * .09, s * .05, 0, 0, 7); c.fill(); }
   function star(c, x, y, r) { c.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.closePath(); c.fill(); }
 
@@ -459,6 +504,6 @@
   // test hook (read-only state for automated checks)
   window.__hamster = { get state() { return { mode: G.mode, t: G.t, v: G.v, dist: G.dist, stamina: G.stamina, tired: G.tired, combo: G.combo, stumbles: G.stumbles, turbo: G.turbo }; } };
 
-  resize(); labels(); showReady(); renderSide(); hud();
+  resize(); labels(); showReady(); renderSide(); hud(); drawReady = true;
   requestAnimationFrame(frame);
 })();
