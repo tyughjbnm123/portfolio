@@ -1,0 +1,100 @@
+.hamster-page{--hm-warm:#e8954a;--hm-warm-ink:#3b2412;--hm-cream:#fff4e4}
+.hamster-layout{max-width:1120px;margin:40px auto 64px;display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:40px;align-items:start}
+.hamster-main{min-width:0}
+.hamster-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
+.hamster-heading h1{font-size:42px;font-weight:600;letter-spacing:-.04em;line-height:1.3;margin:0 0 8px}
+.hamster-heading p{margin:0;color:var(--yk-muted);font-size:15px}
+.hamster-badge{color:var(--yk-accent);border:1px solid var(--yk-line);font:10px ui-monospace,monospace;letter-spacing:.1em;white-space:nowrap;padding:10px 13px;border-radius:999px}
+.hamster-page button{font:inherit;cursor:pointer}
+.hamster-page button:focus-visible,.hamster-stage:focus-visible{outline:3px solid var(--yk-accent);outline-offset:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+
+.hamster-stage{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--yk-line);background:#f7e6cf;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;aspect-ratio:16/10;min-height:300px}
+.hamster-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+.hamster-hud{position:absolute;inset:0;pointer-events:none;color:var(--hm-warm-ink);font-variant-numeric:tabular-nums}
+.hud-chip{position:absolute;top:14px;display:flex;flex-direction:column;align-items:flex-start;gap:0;background:#fffaf2d9;border:1px solid #e5c9a6;border-radius:14px;padding:6px 13px 7px;box-shadow:0 4px 14px #7a4a1c14;backdrop-filter:blur(4px)}
+.hud-chip small{font:600 9px/1.4 ui-monospace,monospace;letter-spacing:.14em;color:#a06a3a}
+.hud-chip b{font:700 24px/1.15 var(--yk-font);letter-spacing:-.02em}
+.hud-time{left:14px}.hud-dist{right:14px;align-items:flex-end}
+.hud-time.low b{color:#d2452f}
+.hud-bottom{position:absolute;left:14px;right:14px;bottom:13px;display:flex;align-items:flex-end;gap:12px}
+.hud-speed{display:flex;align-items:baseline;gap:4px;background:#fffaf2d9;border:1px solid #e5c9a6;border-radius:14px;padding:4px 12px 6px}
+.hud-speed b{font:700 26px/1.1 var(--yk-font);min-width:2ch;text-align:right}
+.hud-speed small{font:600 10px ui-monospace,monospace;color:#a06a3a}
+.hud-stamina{flex:1;max-width:260px;display:flex;flex-direction:column;gap:4px;background:#fffaf2d9;border:1px solid #e5c9a6;border-radius:14px;padding:6px 12px 9px}
+.hud-stamina small{font:600 9px/1.3 ui-monospace,monospace;letter-spacing:.14em;color:#a06a3a}
+.stamina-track{display:block;height:9px;border-radius:9px;background:#ead6bd;overflow:hidden}
+.stamina-track i{display:block;height:100%;width:100%;border-radius:9px;background:linear-gradient(90deg,#78c25a,#a4d65b);transform-origin:left;transition:background .25s}
+.stamina-track i.mid{background:linear-gradient(90deg,#e9b13d,#f2cd5c)}
+.stamina-track i.low{background:linear-gradient(90deg,#df5a3c,#ee8a4b)}
+.hud-combo{margin-left:auto;font:800 17px/1.2 var(--yk-font);color:#c4602a;text-shadow:0 2px 0 #fffaf2;min-height:1.2em;transition:transform .12s}
+.hud-combo.pop{transform:scale(1.22)}
+
+.hamster-toast{position:absolute;left:50%;top:22%;transform:translate(-50%,0) scale(.8);opacity:0;pointer-events:none;font:800 22px/1.2 var(--yk-font);color:#fff;background:#e2762f;border-radius:99px;padding:8px 18px;box-shadow:0 8px 24px #b0501c40;transition:opacity .2s,transform .25s;white-space:nowrap}
+.hamster-toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.hamster-toast.bad{background:#5b4a63}
+
+.hamster-overlay{position:absolute;inset:0;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 45%,#fff6e8cc,#f3dcbccc 75%);backdrop-filter:blur(2px);transition:opacity .25s}
+.hamster-overlay[hidden]{display:none}
+.hamster-overlay.counting{background:transparent;backdrop-filter:none;pointer-events:none}
+.hamster-overlay.counting .overlay-card{background:none;border:0;box-shadow:none}
+.hamster-overlay.counting #ov-title{font-size:96px;color:#e2762f;text-shadow:0 4px 0 #fff4e4}
+.overlay-card{max-width:400px;width:100%;text-align:center;background:#fffaf3;border:1px solid #e5c9a6;border-radius:22px;padding:22px 24px 20px;color:var(--hm-warm-ink);box-shadow:0 18px 50px #7a4a1c26}
+.overlay-card .games-eyebrow{color:#c4602a;margin-bottom:6px}
+.overlay-card h2{font-size:30px;line-height:1.25;letter-spacing:-.03em;margin:0 0 6px}
+.overlay-card p{margin:0 0 14px;color:#76583d;font-size:14px;line-height:1.55}
+.ov-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 16px}
+.ov-stats div{background:#f8ead6;border-radius:12px;padding:8px 4px}
+.ov-stats span{display:block;font-size:10px;color:#9b7350}
+.ov-stats strong{font-size:19px;font-variant-numeric:tabular-nums}
+.ov-stats .new{color:#d0531f}
+.hamster-start{border:0;border-radius:99px;background:#e2762f;color:#fff;font-weight:700;font-size:16px;padding:12px 28px;min-height:46px;box-shadow:0 5px 0 #b65520;transition:transform .1s,box-shadow .1s}
+.hamster-start:active{transform:translateY(3px);box-shadow:0 2px 0 #b65520}
+.ov-hint{display:block;margin-top:12px;font:10px ui-monospace,monospace;letter-spacing:.1em;color:#a07c5c}
+
+.hamster-pads{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.hamster-pad{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;min-height:76px;border-radius:20px;border:1px solid var(--yk-line);background:var(--yk-surface);color:var(--yk-ink);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:0 5px 0 var(--yk-line);transition:transform .06s,box-shadow .06s,background .15s}
+.hamster-pad span{font-size:24px;line-height:1}
+.hamster-pad b{font-size:17px}
+.hamster-pad small{position:absolute;right:14px;bottom:9px;font:9px ui-monospace,monospace;letter-spacing:.08em;color:var(--yk-muted)}
+.hamster-pad.down{transform:translateY(4px);box-shadow:0 1px 0 var(--yk-line);background:var(--yk-soft)}
+.hamster-pad.next{border-color:#e2762f;box-shadow:0 5px 0 #e2762f66}
+.hamster-pad.next.down{box-shadow:0 1px 0 #e2762f66}
+.hamster-help{font-size:13px;color:var(--yk-muted);line-height:1.6;margin:16px 0 0}
+
+.hamster-side{border:1px solid var(--yk-line);border-radius:22px;padding:24px;background:var(--yk-surface)}
+.hamster-side h2{font-size:22px;margin:0 0 16px;letter-spacing:-.02em}
+.hamster-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.hamster-stats div{border:1px solid var(--yk-line);border-radius:14px;padding:10px 6px;text-align:center}
+.hamster-stats span{display:block;font-size:10px;color:var(--yk-muted)}
+.hamster-stats strong{font-size:18px;font-variant-numeric:tabular-nums}
+.hamster-ranks{list-style:none;margin:0 0 20px;padding:0;display:grid;gap:6px}
+.hamster-ranks li{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;padding:8px 12px;border-radius:12px;background:var(--yk-soft);color:var(--yk-muted)}
+.hamster-ranks li b{color:var(--yk-ink);font-weight:600}
+.hamster-ranks li.got{background:color-mix(in srgb,#e2762f 16%,var(--yk-surface));color:var(--yk-ink)}
+.hamster-ranks li.got b:before{content:'★ ';color:#e2762f}
+.hamster-how h3{font-size:14px;margin:0 0 8px}
+.hamster-how ol{margin:0;padding-left:18px;font-size:13px;color:var(--yk-muted);line-height:1.7}
+
+@media(max-width:850px){.hamster-layout{grid-template-columns:minmax(0,1fr);gap:26px;max-width:620px}}
+@media(max-width:500px){
+  .hamster-layout{margin:24px auto 40px}
+  .hamster-heading{margin-bottom:16px}
+  .hamster-heading h1{font-size:32px}
+  .hamster-heading p{font-size:13px}
+  .hamster-stage{aspect-ratio:auto;height:min(118vw,440px);border-radius:20px}
+  .hud-chip{top:10px;padding:4px 10px 5px}.hud-time{left:10px}.hud-dist{right:10px}
+  .hud-chip b{font-size:20px}
+  .hud-bottom{left:10px;right:10px;bottom:10px;gap:8px;flex-wrap:wrap}
+  .hud-speed b{font-size:21px}
+  .hud-stamina{order:3;flex-basis:100%;max-width:none}
+  .hud-combo{font-size:15px}
+  .overlay-card{padding:18px 16px}
+  .overlay-card h2{font-size:25px}
+  .hamster-pads{gap:10px}
+  .hamster-pad{min-height:88px;border-radius:18px}
+  .hamster-pad small{display:none}
+  .hamster-side{padding:20px}
+}
+@media(prefers-reduced-motion:reduce){.hamster-toast,.hud-combo,.hamster-pad{transition:none}}

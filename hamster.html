@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-Hant" class="games-document">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>倉鼠跑滾輪｜我的遊戲室 · YI-CHI KUO</title>
+  <meta name="description" content="左、右、左、右！交替按鍵讓倉鼠在滾輪上越跑越快，注意體力、吃瓜子加速，30 秒挑戰最遠距離。支援電腦鍵盤與手機觸控。">
+  <link rel="stylesheet" href="assets/site-theme.css?v=20260914-scale80">
+  <link rel="stylesheet" href="assets/games.css?v=20261119-hamster1">
+  <link rel="stylesheet" href="assets/hamster.css?v=20261119-hamster1">
+  <script src="assets/site-shell.js"></script>
+  <link rel="stylesheet" href="assets/site-language.css?v=20260927-en">
+  <script src="assets/site-english.js?v=20261002-brandnotes1"></script>
+  <script src="assets/reaction-language.js?v=20261001-themes2"></script>
+  <script src="assets/noodle-language.js?v=20261002-noodle1"></script>
+  <script src="assets/hamster-language.js?v=20261119-hamster1"></script><script src="assets/site-language.js?v=20260927-continue"></script>
+  <script defer src="assets/hamster.js?v=20261119-hamster1"></script>
+</head>
+<body class="games-page hamster-page">
+  <a class="yk-skip" href="#hamster-stage">跳到遊戲</a>
+  <header class="yk-site-nav games-header"><a class="yk-site-brand" href="index.html">YI-CHI KUO<span>PLAY A LITTLE.</span></a><div class="yk-site-nav-actions"><a class="yk-room-back" href="games.html">← 遊戲目錄</a><button class="yk-theme-toggle" type="button" aria-label="切換深淺色">◐</button></div></header>
+  <nav class="games-subnav" aria-label="遊戲目錄"><a href="games.html">全部遊戲</a><a href="2048.html"><span>01</span>2048</a><a href="reaction.html"><span>02</span>反應挑戰</a><a href="noodle-night.html"><span>03</span>凌晨牛肉麵</a><a href="hamster.html" aria-current="page"><span>04</span>倉鼠跑滾輪</a></nav>
+  <main class="hamster-layout">
+    <section class="hamster-main" aria-labelledby="hamster-title">
+      <p class="games-eyebrow">04 / HAMSTER DASH</p>
+      <div class="hamster-heading"><div><h1 id="hamster-title">倉鼠跑滾輪</h1><p>左、右、左、右，跑出你的最快速度。</p></div><span class="hamster-badge">30 SEC</span></div>
+
+      <div id="hamster-stage" class="hamster-stage" tabindex="0" aria-describedby="hamster-help">
+        <canvas id="hamster-canvas" aria-label="倉鼠在滾輪上奔跑的畫面"></canvas>
+        <div class="hamster-hud" aria-hidden="true" data-i18n-ignore>
+          <div class="hud-chip hud-time"><small id="hud-time-label"></small><b id="hud-time">30.0</b></div>
+          <div class="hud-chip hud-dist"><small id="hud-dist-label"></small><b id="hud-dist">0</b></div>
+          <div class="hud-bottom">
+            <div class="hud-speed"><b id="hud-speed">0</b><small>km/h</small></div>
+            <div class="hud-stamina"><small id="hud-stamina-label"></small><span class="stamina-track"><i id="hud-stamina"></i></span></div>
+            <div class="hud-combo" id="hud-combo"></div>
+          </div>
+        </div>
+        <div id="hamster-toast" class="hamster-toast" aria-hidden="true" data-i18n-ignore></div>
+        <div id="hamster-overlay" class="hamster-overlay" data-i18n-ignore>
+          <div class="overlay-card">
+            <p id="ov-kicker" class="games-eyebrow"></p>
+            <h2 id="ov-title"></h2>
+            <p id="ov-text"></p>
+            <div id="ov-stats" class="ov-stats" hidden></div>
+            <button id="ov-start" type="button" class="hamster-start"></button>
+            <small id="ov-hint" class="ov-hint"></small>
+          </div>
+        </div>
+      </div>
+
+      <div class="hamster-pads" data-i18n-ignore>
+        <button id="pad-left" type="button" class="hamster-pad" data-side="L"><span>←</span><b id="pad-left-label"></b><small>A / ←</small></button>
+        <button id="pad-right" type="button" class="hamster-pad" data-side="R"><span>→</span><b id="pad-right-label"></b><small>D / →</small></button>
+      </div>
+      <p id="hamster-help" class="hamster-help">左右交替按（鍵盤 ← → 或 A D，手機點左右兩顆按鈕）。同一邊連按兩次會絆倒；跑太快會沒體力，連續 40 步不失誤就有瓜子加速。</p>
+      <p id="hamster-live" class="sr-only" role="status" aria-live="polite" data-i18n-ignore></p>
+    </section>
+
+    <aside class="hamster-side" aria-labelledby="hamster-record-title">
+      <p class="games-eyebrow">YOUR RECORD</p>
+      <h2 id="hamster-record-title">跑步紀錄</h2>
+      <div class="hamster-stats" data-i18n-ignore>
+        <div><span id="st-last-label"></span><strong id="st-last">—</strong></div>
+        <div><span id="st-top-label"></span><strong id="st-top">—</strong></div>
+        <div><span id="st-best-label"></span><strong id="st-best">—</strong></div>
+      </div>
+      <ol class="hamster-ranks" aria-label="稱號表" data-i18n-ignore id="hamster-ranks"></ol>
+      <div class="hamster-how"><h3>怎麼玩？</h3><ol><li>左右交替按，節奏越穩跑越快。</li><li>同一邊連按兩次，倉鼠會絆倒減速。</li><li>速度太快會消耗體力，體力歸零要喘一下。</li><li>連續 40 步不失誤，吃到瓜子：補體力＋短暫加速。</li></ol></div>
+    </aside>
+  </main>
+  <footer class="games-directory-footer"><span>小小的腳，大大的夢想。</span><span>© 2026 YI-CHI KUO</span></footer>
+</body></html>
