@@ -7,7 +7,9 @@
 <meta name="theme-color" content="#536f35">
 <meta property="og:title" content="YI-CHI 作品島">
 <meta property="og:description" content="郭奕圻的互動作品島：五座小島，分別是我是誰、作品、工具房、實驗室與遊戲室。">
-<meta property="og:image" content="https://tyughjbnm123.github.io/portfolio/assets/profile.jpg">
+<meta property="og:image" content="https://tyughjbnm123.github.io/portfolio/assets/og-island.jpg">
+  <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+  <meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>YI-CHI 作品島</title>
 <meta name="description" content="郭奕圻的互動作品島：五座小島，分別是我是誰、作品、工具房、實驗室與遊戲室。">
@@ -1471,7 +1473,14 @@ function planVisit(k){
   const back=[...stroll].reverse().slice(1).map(p=>v3(p.x,p.z));
   return [...out,...stroll,...back,v3(d.x*(RING-R+2.4),d.z*(RING-R+2.4)),v3(d.x*(RING-R+.6),d.z*(RING-R+.6)),v3(d.x*7.6,d.z*7.6),v3(d.x*4.6,d.z*4.6)];
 }
-function nextLeg(){ me.path=planVisit(me.isl); me.isl=(me.isl+1)%D.length; }
+function nextLeg(){
+  // away from the hub (a stroll was cut short): walk back along this island's bridge first, never straight across the water
+  const p=ME.root.position, lead=[];
+  if(Math.hypot(p.x,p.z)>7){ let o=null, best=1e9; for(const k in islands){ const c=islands[k], d=Math.hypot(p.x-c.pos.x,p.z-c.pos.z); if(d<best){ best=d; o=c; } }
+    const d=o.dir, along=p.x*d.x+p.z*d.z, onBridge=Math.abs(-p.x*d.z+p.z*d.x)<=1.6 && along<RING-R+1;
+    if(!onBridge) lead.push(v3(d.x*(RING-R+2.4),d.z*(RING-R+2.4)));
+    lead.push(v3(d.x*(RING-R+.6),d.z*(RING-R+.6)), v3(d.x*7.6,d.z*7.6), v3(d.x*4.6,d.z*4.6)); }
+  me.path=[...lead,...planVisit(me.isl)]; me.isl=(me.isl+1)%D.length; }
 function meUnstick(p){ for(const k in islands){ const o=islands[k], G=WALK.grids.get(o.g); if(!G||Math.hypot(p.x-o.pos.x,p.z-o.pos.z)>=R) continue;
   _mw.set(p.x,o.g.position.y,p.z); o.g.worldToLocal(_mw); if(walkSnap(G,_mw)){ o.g.localToWorld(_mw); p.x=_mw.x; p.z=_mw.z; } return; } }
 
@@ -1858,7 +1867,8 @@ function walkUpdate(n){
 }
 // the island (and its grid) a world position stands on, for the avatar who walks in world space
 const _mw=new THREE.Vector3();
-function meWalk(x,z){ for(const k in islands){ const o=islands[k]; if(Math.hypot(x-o.pos.x,z-o.pos.z)<R){ const G=WALK.grids.get(o.g); if(!G) return 1; _mw.set(x,o.g.position.y,z); o.g.worldToLocal(_mw); return walkAt(G,_mw.x,_mw.z); } } return 1; }
+function meWalk(x,z){ if(!whereAt(x,z)) return 0;   // only the hub, the islands and the bridges are ground: never the lake
+  for(const k in islands){ const o=islands[k]; if(Math.hypot(x-o.pos.x,z-o.pos.z)<R){ const G=WALK.grids.get(o.g); if(!G) return 1; _mw.set(x,o.g.position.y,z); o.g.worldToLocal(_mw); return walkAt(G,_mw.x,_mw.z); } } return 1; }
 
 /* ---------- find-me game ---------- */
 const hunt={on:false,t0:0,found:false,hints:0};
@@ -2253,7 +2263,7 @@ function tick(){
         if(d<.15){ me.path.shift(); if(tg.say && !hunt.on){ if(Math.random()<.5) say(D.find(x=>x.key===tg.say).say); me.wait=1.2; } if(tg.pause) me.wait=tg.pause; if(!me.path.length) me.wait=1.5; }
         else { const st=Math.min(d,me.speed*dt), nx=p.x+dx/d*st, nz=p.z+dz/d*st;
           // a building in the way: drop this waypoint and head for the next one (after a few in a row, step out to open ground)
-          if(meWalk(nx,nz)===0){ me.path.shift(); if(++me.blocked>6){ me.blocked=0; meUnstick(p); } }
+          if(meWalk(nx,nz)===0 && whereAt(p.x,p.z)){ me.path.shift();   /* already off the ground (pushed): let it walk back */ if(++me.blocked>6){ me.blocked=0; meUnstick(p); } }
           else { me.blocked=0; p.x=nx; p.z=nz; }
           const want=Math.atan2(dx,dz); let df=want-ME.root.rotation.y; df=Math.atan2(Math.sin(df),Math.cos(df)); ME.root.rotation.y+=df*Math.min(1,dt*10); animPerson(ME,true,dt,1.05); } }
       let lift=0; for(const k in islands){ const o=islands[k]; if(Math.hypot(p.x-o.pos.x,p.z-o.pos.z)<R+.5) lift=o.lift; } p.y=2+lift;
