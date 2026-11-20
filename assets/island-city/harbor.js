@@ -3,7 +3,7 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Harbour sea and lighthouse (after the user's "new harbour" concept), for the island page.
-//  · sea: calm, clear water: clear shallows near land fading to deep teal, fine normal-mapped ripples, a soft blurred mirror on desktop.
+//  · sea: calm, clear water: clear shallows near land fading to deep teal, fine ripples, a soft blurred mirror on desktop.
 //  · lighthouse: the hub beacon becomes a slim steel lighthouse with a glass lantern; after dark two soft beams sweep the water.
 // Every pow() base in the shaders is kept strictly positive: pow(0.,y) is NaN on Direct3D GPUs (Windows, through ANGLE),
 // and one NaN pixel is enough for the night bloom to turn the whole frame black.
@@ -13,7 +13,7 @@ export function createHarbor({ scene, camera, renderer, water, hub, beacon, beam
   /* ---------------- sea ---------------- */
   // Calm, clear harbour water. Colour runs smoothly from clear shallows near land to deep teal in open water
   // (a top-down mask of everything above the waterline, rendered once, tells the shader where land is).
-  // Fine ripples come from a tiling water normal map (the three.js example texture); desktop adds a soft, blurred mirror,
+  // Fine ripples come from smooth procedural noise in the shader; desktop adds a soft, blurred mirror,
   // phones a sky tint. No foam or sparkle dots: the only highlight is a sun glint.
   const EXT = 112;                                                    // mask covers x,z in [-EXT, EXT]; the shore starts near r = 95
   const MR = mobile ? 512 : 1024;
@@ -21,13 +21,11 @@ export function createHarbor({ scene, camera, renderer, water, hub, beacon, beam
   const maskCam = new THREE.OrthographicCamera(-EXT, EXT, EXT, -EXT, 0, 40.25);
   maskCam.position.set(0, 40, 0); maskCam.up.set(0, 0, -1); maskCam.lookAt(0, 0, 0); maskCam.updateMatrixWorld(true);
   const maskMat = new THREE.Matrix4().multiplyMatrices(maskCam.projectionMatrix, maskCam.matrixWorldInverse);
-  const normals = new THREE.TextureLoader().load('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/textures/waternormals.jpg');
-  normals.wrapS = normals.wrapT = THREE.RepeatWrapping; normals.anisotropy = 4;
   const shader = {
     name: 'HarbourSea',
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       color: { value: new THREE.Color(0xffffff) }, tDiffuse: { value: null }, textureMatrix: { value: new THREE.Matrix4() },
-      uReflect: { value: 1 }, tMask: { value: null }, tNormal: { value: null }, uMaskMat: { value: new THREE.Matrix4() }, uTexel: { value: 2 / MR },
+      uReflect: { value: 1 }, tMask: { value: null }, uMaskMat: { value: new THREE.Matrix4() }, uTexel: { value: 2 / MR },
       uSun: { value: new THREE.Vector3() }, uEye: { value: new THREE.Vector3() }, uSky: { value: new THREE.Color() },
       time: { value: 0 }, n: { value: 0 },
     }]),
@@ -39,16 +37,20 @@ export function createHarbor({ scene, camera, renderer, water, hub, beacon, beam
         #include <fog_vertex>
       }`,
     fragmentShader: /* glsl */`
-      uniform sampler2D tDiffuse, tMask, tNormal; uniform mat4 uMaskMat; uniform float uReflect, uTexel, time, n; uniform vec3 uSun, uEye, uSky;
+      uniform sampler2D tDiffuse, tMask; uniform mat4 uMaskMat; uniform float uReflect, uTexel, time, n; uniform vec3 uSun, uEye, uSky;
       varying vec4 vUvR; varying vec3 vW;
       #include <fog_pars_fragment>
       float land(vec2 uv){ return (uv.x<0.||uv.y<0.||uv.x>1.||uv.y>1.) ? 0. : texture2D(tMask,uv).r; }
-      vec3 wn(vec2 uv){ return texture2D(tNormal,uv).rgb*2.-1.; }
+      // ripple slope from smooth value noise (analytic gradient), so no texture has to be loaded
+      float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      vec2 wn(vec2 p){ vec2 i=floor(p), f=fract(p), u=f*f*(3.-2.*f), du=6.*f*(1.-f);
+        float a=h2(i), b=h2(i+vec2(1,0)), c=h2(i+vec2(0,1)), d=h2(i+vec2(1,1));
+        return du*vec2((b-a)+(a-b-c+d)*u.y, (c-a)+(a-b-c+d)*u.x); }
       void main(){
         vec2 p=vW.xz; vec3 V=uEye-vW; float dist=length(V); V/=max(dist,1e-4);
         // ripples: two slow layers of the normal map, flattened with distance so far water stays calm
-        vec3 r=wn(p*.035+vec2(time*.010,time*.006))+wn(p*.091-vec2(time*.007,-time*.011))*.6;
-        float calm=mix(.55,.12,clamp(dist/260.,0.,1.));
+        vec2 r=wn(p*.42+vec2(time*.12,time*.07))*.5+wn(p*1.1-vec2(time*.09,-time*.13))*.3+wn(p*2.6+vec2(-time*.2,time*.15))*.15;
+        float calm=mix(.20,.05,clamp(dist/260.,0.,1.));
         vec3 N=normalize(vec3(r.x*calm,1.,r.y*calm));
         // how close the land is: a wide soft blur of the mask (no hard edges, so no rings)
         vec2 uv=(uMaskMat*vec4(vW,1.)).xy*.5+.5; float near=0., mid=0.;
@@ -84,7 +86,7 @@ export function createHarbor({ scene, camera, renderer, water, hub, beacon, beam
   let sea;
   if (mirror) { sea = new Reflector(geo, { shader, textureWidth: 1024, textureHeight: 1024, clipBias: .003 }); sea.material.fog = true; }
   else { sea = new THREE.Mesh(geo, new THREE.ShaderMaterial({ ...shader, uniforms: THREE.UniformsUtils.clone(shader.uniforms), fog: true })); sea.material.uniforms.uReflect.value = 0; }
-  const su = sea.material.uniforms; su.time = U.time; su.n = U.n; su.uMaskMat.value = maskMat; su.tMask.value = maskRT.texture; su.tNormal.value = normals;
+  const su = sea.material.uniforms; su.time = U.time; su.n = U.n; su.uMaskMat.value = maskMat; su.tMask.value = maskRT.texture;
   sea.rotation.x = -Math.PI / 2; sea.position.y = .02; sea.name = 'harbour sea';
   scene.add(sea); water.visible = false;
 
