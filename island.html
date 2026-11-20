@@ -461,7 +461,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 </script>
 <script type="module">
 import {createSoftClouds} from './assets/island-city/soft-clouds.js?v=20261109-2';
-import {createHarbor} from './assets/island-city/harbor.js?v=20261110-1';
+import {createHarbor} from './assets/island-city/harbor.js?v=20261120-water1';
 import {createArcadePark} from './assets/island-city/arcade-park.js?v=20261101-1';
 import {createDistrictLED,DISTRICT_TITLES} from './assets/island-city/city-signage.js?v=20261027-2';
 import {nightLook} from './assets/island-city/night-look.js?v=20261027-1';
@@ -1242,7 +1242,7 @@ const hubLight=new THREE.PointLight(0xffd27a,0,60,1.6); hubLight.position.set(0,
 const beam=new THREE.Mesh(new THREE.CylinderGeometry(5,.8,150,24,1,true),neonMat(NEONC.magenta,.07,{blending:THREE.AdditiveBlending,side:THREE.DoubleSide,boost:1}));
 beam.position.set(0,12+75,0); beam.scale.set(.6,1,.6); hub.add(neonObj(beam));
 // harbour sea and lighthouse (replace the plain water and the hub beacon; see harbor.js)
-const harbor=createHarbor({scene,camera,renderer,water,hub,beacon,beam,neonObjs:NEON_OBJ,sun,mobile,reduced});
+const harbor=createHarbor({scene,camera,renderer,water,hub,beacon,beam,neonObjs:NEON_OBJ,sun,mobile,reduced,maskSkip:()=>boats.flatMap(b=>[b.o,b.wake])});   // moving boats stay out of the shallow-water mask
 
 /* Facade-mounted LED signs, drawn locally on canvas and lit through bloom. */
 const SIGN_TXT={about:['我是誰','WHO AM I'],work:['作品集','WORKS'],tools:['工具房','TOOL ROOM'],lab:['實驗室','LAB'],games:['遊戲室','ARCADE']};
