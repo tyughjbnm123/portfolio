@@ -1,13 +1,13 @@
 // 3D web companion (小精靈): the KKS character exported as VRM 1.0, with motions baked to VRM Animation (.vrma).
 // The island loads this module after the scene is up; until it is ready (or if it fails) the drawn companion stays.
-// Motions: idle 等待 / welcome 輕揮手 / drag DGK Drag / dance 舞04 / yawn 伸懶腰 / bye 飛吻 / walk walk_fwd / run runNew_fwd.
+// Motions: idle 等待 / welcome 輕揮手 / drag DGK Drag / dance 舞04 / yawn 伸懶腰 / bye 飛吻 / walk walk_fwd / run runNew_fwd / jump Jump.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
 const DIR = new URL('./3d/', import.meta.url);
-const FILES = { idle: 'idle_waiting', welcome: 'welcome_wave', drag: 'drag_dgk', dance: 'dance_04', yawn: 'yawn_stretch', bye: 'bye_kiss', walk: 'walk_fwd', run: 'run_new' };
-const EXPR = { idle: null, welcome: 'happy', drag: 'surprised', dance: 'happy', yawn: 'aa', bye: 'relaxed', walk: null, run: null };
+const FILES = { idle: 'idle_waiting', welcome: 'welcome_wave', drag: 'drag_dgk', dance: 'dance_04', yawn: 'yawn_stretch', bye: 'bye_kiss', walk: 'walk_fwd', run: 'run_new', jump: 'jump' };
+const EXPR = { idle: null, welcome: 'happy', drag: 'surprised', dance: 'happy', yawn: 'aa', bye: 'relaxed', walk: null, run: null, jump: null };
 const LOOP = { idle: 1, drag: 1, walk: 1, run: 1 };
 // walk/run clips are in place; these are the ground speeds (in her own body heights per second) their steps match
 const STEP = { walk: .78, run: 2.3 };
@@ -84,17 +84,19 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
     a.play(); cur = a; curKind = kind; exprTarget = EXPR[kind];
     return c.duration;
   }
-  mixer.addEventListener('finished', e => { if (e.action === cur && !LOOP[curKind]) play('idle'); });
+  mixer.addEventListener('finished', e => { if (e.action === cur && !LOOP[curKind]) { want = null; play('idle'); } });
 
   // walking under control: speed in parent units per second picks idle / walk / run and sets the step rate
   let want = null;
   function locomote(speed) {
+    if (curKind === 'jump') return;   // the jump plays out, then walking picks up again
     const h = bodyH * root.scale.x, v = Math.abs(speed) / h;
     const kind = v < .12 ? 'idle' : v < 1.35 ? 'walk' : 'run';
     if (kind !== want) { want = kind; if (curKind !== kind) play(kind); }
     if (cur && (curKind === 'walk' || curKind === 'run')) cur.timeScale = Math.min(1.6, Math.max(.55, v / STEP[curKind])) * Math.sign(speed || 1);
   }
   const stopLocomote = () => { want = null; if (cur) cur.timeScale = 1; };
+  const jump = () => { if (curKind !== 'jump' && !fall) { want = 'jump'; play('jump'); } };
 
   // drag: lifted by the pointer, then dropped back onto the islet; the fall runs on the wall clock so a slow
   // frame rate can't leave her hanging in the air
@@ -151,7 +153,7 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
   vrm.update(0); if (sb) { sb.setInitState(); sb.reset(); }
   const api = {
     root, vrm, scale: k, heading: null,
-    play, update, drop, listen, place, locomote, stopLocomote, bodyH,
+    play, update, drop, listen, place, locomote, stopLocomote, jump, bodyH,
     preload: kind => clip(kind).catch(() => null),
     get kind() { return curKind; },
     get falling() { return !!fall; },

@@ -39,6 +39,8 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
   const sleeper = new THREE.MeshStandardMaterial({ color: 0x526569, metalness: .48, roughness: .78 });
   const glass = emissive(0x244f5a, 0x78d7df, .85);
   const carriageGlass=emissive(0x315865,0x8ae3ea,.3);carriageGlass.transparent=true;carriageGlass.opacity=.28;carriageGlass.depthWrite=false;
+  // the lift shafts are glass so the cab (and whoever rides it) shows on the way up
+  const shaftGlass=emissive(0x2c5560,0x78d7df,.35);shaftGlass.transparent=true;shaftGlass.opacity=.2;shaftGlass.depthWrite=false;
   const cyan = emissive(0x4f9f9d, 0x7ae2df, 1.1), warm = emissive(0xd5bb82, 0xffd58b, .9);
   const red = emissive(0xb15e56, 0xf08775, .65);
   const trackLight = emissive(0x5d9eaa, 0x62cde6, 1.6);
@@ -91,6 +93,7 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
   pauseButton.addEventListener('click',()=>{manualPause=!manualPause;pauseButton.textContent=manualPause?'繼續行駛':'暫停列車';pauseButton.setAttribute('aria-pressed',String(manualPause));});
   const status=summary.querySelector('.metro-status'), buttons=[], indicators=[], screenMaterials=[];
   let lastStatus='', lastFocus=undefined;
+  const lifts=[], stationGroups=[]; let doorNow=0;
 
   stops.forEach((stop,i)=>{
     const g=new THREE.Group(); g.position.set(Math.cos(stop.angle)*72.65,0,Math.sin(stop.angle)*72.65);
@@ -109,9 +112,14 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
     fixed.box(.6,.1,2,-.55,platformY+.45,5.2,metal,0,g);
     // An offshore lift and short gangway meet the island beyond the drivable ring.
     fixed.box(4.3,.2,1.45,-3.1,2.05,0,metal,0,g);
-    fixed.box(1.5,platformY-2,1.7,-1.9,2.1,0,dark,0,g);
-    fixed.box(.06,7.6,1.2,-2.68,2.55,0,glass,0,g);
-    fixed.box(.06,7.6,1.2,-1.12,2.55,0,glass,0,g);
+    fixed.box(1.5,platformY-2,1.7,-1.9,2.1,0,shaftGlass,0,g);
+    fixed.box(.06,7.6,1.2,-2.68,2.55,0,shaftGlass,0,g);
+    fixed.box(.06,7.6,1.2,-1.12,2.55,0,shaftGlass,0,g);
+    // lift cab: rests at the gangway; the island's walk mode moves it
+    const cab=new THREE.Group();cab.position.set(-1.9,2.25,0);g.add(cab);lifts.push(cab);
+    mesh(new THREE.BoxGeometry(1.3,.08,1.5),body,cab,0,-.04,0);mesh(new THREE.BoxGeometry(1.3,.05,1.5),metal,cab,0,1.75,0);
+    for(const x of [-.62,.62])for(const z of [-.72,.72])mesh(new THREE.BoxGeometry(.05,1.75,.05),metal,cab,x,.875,z);
+    stationGroups.push(g);
     fixed.box(1.4,.15,2,-1.8,platformY-.15,0,body,0,g);
     for(const sign of [-1,1]){
       fixed.box(4.1,.07,.07,-3.15,3.05,sign*.69,metal,0,g);
@@ -167,11 +175,14 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
     const a=path[segment],b=path[segment+1];pose(id,a.clone().lerp(b,fraction),Math.atan2(b.x-a.x,b.z-a.z),u>0&&u<1,dt);
   }
   let elapsed=0, lastNight=-1;
-  return {root, panel, stops, update(dt,n,{focus=null,paused=false}={}){
+  // read by the island's walk mode so the companion can ride: where the cars are and when the train next stops where
+  const now=()=>metroStateAt(elapsed,stops.length);
+  const secondsUntilStop=i=>{const period=17,loop=period*stops.length,t=((elapsed%loop)+loop)%loop;return ((i*period-t)%loop+loop)%loop;};
+  return {root, panel, stops, cars, radius, platformY, now, secondsUntilStop, lifts, stations:stationGroups, doorOpen:()=>doorNow, update(dt,n,{focus=null,paused=false}={}){
     const liveDt=!reduced&&!paused&&!manualPause?dt:0;elapsed+=liveDt;
     const state=metroStateAt(elapsed,stops.length), angle=stops[0].angle-(state.from+state.progress)*Math.PI*2/stops.length;
     cars.forEach((car,i)=>{const a=angle+(i-1)*4.75/radius;car.position.set(Math.cos(a)*radius,trackY+.22,Math.sin(a)*radius);car.rotation.y=Math.PI-a;});
-    const phase=elapsed%17, doorOpen=state.moving?0:smooth(Math.min(phase/.2,(3-phase)/.2));doors.forEach(door=>door.position.z=-.78*doorOpen);
+    const phase=elapsed%17, doorOpen=state.moving?0:smooth(Math.min(phase/.2,(3-phase)/.2));doorNow=doorOpen;doors.forEach(door=>door.position.z=-.78*doorOpen);
     if(passengers.length){
       const ex=schedule.at(elapsed), a=stops[ex.stop].angle, seat=point(a,radius-.15), threshold=point(a,72.7), queued=side=>point(a,72.45,side*2.7);
       ex.waiting.forEach((id,i)=>{if(id!==null)pose(id,point(stops[i].angle,72.45,ex.sides[i]*2.7),Math.PI/2-stops[i].angle,false,liveDt);});

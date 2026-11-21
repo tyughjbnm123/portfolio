@@ -744,8 +744,8 @@ controls.autoRotateSpeed=.35; controls.autoRotate=!reduced;
 let zoomTo=null;
 function onWheel(e){
   e.preventDefault(); e.stopImmediatePropagation();
-  if(typeof drive!=='undefined' && drive.on) return;
   const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?100:1); if(!dy) return;
+  if(typeof drive!=='undefined' && drive.on){ if(drive.walker) drive.zoom=THREE.MathUtils.clamp(drive.zoom*Math.exp(Math.max(-150,Math.min(150,dy))*.0015),.35,3); return; }   // walking: zoom on her
   const step=Math.max(-1,Math.min(1,dy/100));            // trackpads send many small deltas, mice one big one
   const cur=zoomTo??camera.position.distanceTo(controls.target);
   zoomTo=THREE.MathUtils.clamp(cur*Math.pow(1.13,step),controls.minDistance,controls.maxDistance);
@@ -1521,7 +1521,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-3')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-4')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
@@ -1608,7 +1608,7 @@ function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.a
 // half the windows glow magenta at night, the other half cyan
 { let i=0; scene.traverse(o=>{ if(o.isMesh && o.material===winMat && (i++%2)) o.material=winMat2; }); }
 /* ---------- drive mode: drive between the islands, park at a pin to open it ---------- */
-const drive={shake:0,knocked:0,on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0,run:0},bump:0,walker:false,joy:{on:false,x:0,y:0},look:0,looking:false};
+const drive={shake:0,knocked:0,on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0,run:0},bump:0,walker:false,pitch:.3,zoom:1,ride:null,mk:null,station:null,joy:{on:false,x:0,y:0},look:0,looking:false};
 const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
 const cyberVehicle=createCyberVehicle(dcar);
 const INR=R*Math.cos(Math.PI/6)-.7;
@@ -1642,20 +1642,20 @@ function stopDrive(){ endWalk();
 }
 $('#t-drive').addEventListener('click',()=>drive.on?stopDrive():startDrive());
 $('#drive-exit').addEventListener('click',stopDrive);
-$('#drive-prompt').addEventListener('click',()=>{ if(drive.near) openItem(drive.near.key,drive.near.i); });
+$('#drive-prompt').addEventListener('click',()=>{ if(drive.near && !drive.ride) openItem(drive.near.key,drive.near.i); else if(drive.walker) metroAct(); });
 document.querySelectorAll('.drive-pad [data-k]').forEach(b=>{ const k=b.dataset.k;
   b.addEventListener('pointerdown',e=>{e.preventDefault(); drive.input[k]=1; b.setAttribute('aria-pressed','true'); try{b.setPointerCapture(e.pointerId);}catch{}});
   for(const ev of ['pointerup','pointercancel','lostpointercapture']) b.addEventListener(ev,()=>{drive.input[k]=0; b.setAttribute('aria-pressed','false');});
   b.addEventListener('contextmenu',e=>e.preventDefault()); });
 // floating joystick (left half) and look-around drag (right half)
 const joyZone=$('#joy-zone'), joyEl=$('#joy'), joyKnob=$('#joy-knob'), JOY_R=46;
-let joyId=null, joyO=null, lookId=null, lookX=0;
+let joyId=null, joyO=null, lookId=null, lookX=0, lookY=0;
 function joyReset(){ joyId=null; lookId=null; drive.joy.on=false; drive.joy.x=drive.joy.y=0; drive.looking=false; joyEl.classList.remove('on'); joyKnob.style.transform=''; joyEl.style.left=''; joyEl.style.top=''; }
 joyZone.addEventListener('pointerdown',e=>{
   if(!drive.on) return; e.preventDefault(); const r=joyZone.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
   $('#joy-help').classList.add('off');
   if(x<r.width*.5 && joyId===null){ joyId=e.pointerId; joyO={x,y}; joyEl.style.left=x+'px'; joyEl.style.top=y+'px'; joyEl.classList.add('on'); drive.joy.on=true; }
-  else if(lookId===null){ lookId=e.pointerId; lookX=e.clientX; drive.looking=true; }
+  else if(lookId===null){ lookId=e.pointerId; lookX=e.clientX; lookY=e.clientY; drive.looking=true; }
   else return;
   try{ joyZone.setPointerCapture(e.pointerId); }catch{}
 });
@@ -1665,7 +1665,8 @@ joyZone.addEventListener('pointermove',e=>{
     joyKnob.style.transform=`translate(${dx}px,${dy}px)`;
     const dead=v=>Math.abs(v)<.12?0:(v-Math.sign(v)*.12)/.88;
     drive.joy.x=dead(dx/JOY_R); drive.joy.y=dead(-dy/JOY_R); }
-  else if(e.pointerId===lookId){ drive.look=THREE.MathUtils.clamp(drive.look-(e.clientX-lookX)*.008,-Math.PI*.95,Math.PI*.95); lookX=e.clientX; }
+  else if(e.pointerId===lookId){ drive.look=THREE.MathUtils.clamp(drive.look-(e.clientX-lookX)*.008,-Math.PI*.95,Math.PI*.95); lookX=e.clientX;
+    if(drive.walker){ drive.pitch=THREE.MathUtils.clamp(drive.pitch+(e.clientY-lookY)*.006,-.2,1.3); lookY=e.clientY; } }
 });
 for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addEventListener(ev,e=>{
   if(e.pointerId===joyId){ joyId=null; drive.joy.on=false; drive.joy.x=drive.joy.y=0; joyEl.classList.remove('on'); joyKnob.style.transform=''; }
@@ -1676,12 +1677,14 @@ if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dca
 const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake',ShiftLeft:'run',ShiftRight:'run'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
-  else if((e.code==='KeyE'||e.code==='Enter') && drive.near && !e.repeat){ e.preventDefault(); openItem(drive.near.key,drive.near.i); }
+  else if(e.code==='Space' && drive.walker){ e.preventDefault(); if(!e.repeat && F3) F3.jump(); }
+  else if((e.code==='KeyE'||e.code==='Enter') && drive.near && !e.repeat && !drive.ride){ e.preventDefault(); openItem(drive.near.key,drive.near.i); }
+  else if((e.code==='KeyE'||e.code==='Enter') && drive.walker && !e.repeat && metroAct()) e.preventDefault();
 });
 addEventListener('keyup',e=>{ if(DKEYS[e.code]) drive.input[DKEYS[e.code]]=0; });
 /* ---------- walk mode: drive mode with the companion instead of the car, at the island people's size ---------- */
 const WALK_H=1.3, WALK_V=1.3, RUN_V=4.2, WALK_BACK=.7;
-const WALK_UI={help:'↑↓←→／WASD 走路 · 按住 Shift 跑步 · 靠近標記按 E 打開 · Esc 結束', gas:'前進', brake:'後退', exit:'結束', joy:'左邊拖曳：走路（推到底跑步）'};
+const WALK_UI={help:'↑↓←→／WASD 走 · Shift 跑 · 空白鍵跳 · 右鍵拖曳轉視角 · 滾輪縮放 · E 打開標記／搭捷運 · Esc 結束', gas:'前進', brake:'後退', exit:'結束', joy:'左邊拖曳：走路（推到底跑步）'};
 let driveUI=null;
 function walkSpeed(dt,inp,J){
   let fwd, run;
@@ -1695,20 +1698,111 @@ async function startWalk(){
   if(!F3){ tipEl.textContent='等我一下，正在準備…'; compBubble.classList.add('on'); }
   const f=F3||await loadFairy3D(); if(!f){ showTip(); return; }
   showTip(); stopClip(); compBubble.classList.remove('on');
-  startDrive(); drive.walker=true; dcar.visible=false; dcar.userData.hl.intensity=0; fig.style.visibility='hidden';
+  startDrive(); drive.walker=true; drive.pitch=.3; drive.zoom=1; dcar.visible=false; dcar.userData.hl.intensity=0; fig.style.visibility='hidden';
   f.place(scene,WALK_H,dcar.position.set(drive.x,2,drive.z)); f.heading=drive.h+Math.PI; f.play('idle');
   const help=$('#drive-help'), gas=document.querySelector('.drive-pad [data-k="gas"]'), brake=document.querySelector('.drive-pad [data-k="brake"]'), ex=$('#drive-exit'), jh=$('#joy-help span');
   driveUI={help:help.textContent, gas:gas.textContent, brake:brake.textContent, exit:ex.textContent, joy:jh?.textContent};
   help.textContent=WALK_UI.help; gas.textContent=WALK_UI.gas; brake.textContent=WALK_UI.brake; ex.textContent=WALK_UI.exit; if(jh) jh.textContent=WALK_UI.joy;
 }
 function endWalk(){
-  if(!drive.walker) return; drive.walker=false; fig.style.visibility='';
+  if(!drive.walker) return; drive.walker=false; drive.ride=null; drive.mk=null; drive.station=null; fig.style.visibility='';
   if(F3){ F3.stopLocomote(); F3.heading=null; F3.place(comp,COMP_H,new THREE.Vector3(0,COMP_FEET,0)); F3.play('idle'); }
   if(driveUI){ $('#drive-help').textContent=driveUI.help; document.querySelector('.drive-pad [data-k="gas"]').textContent=driveUI.gas; document.querySelector('.drive-pad [data-k="brake"]').textContent=driveUI.brake; $('#drive-exit').textContent=driveUI.exit; const jh=$('#joy-help span'); if(jh&&driveUI.joy) jh.textContent=driveUI.joy; driveUI=null; }
 }
+// her chase camera orbits her: right-drag (or the right half on touch) turns it, the wheel zooms
+function walkCam(dt,ty,stiff=5){
+  const ch=drive.h+drive.look, cx=-Math.sin(ch), cz=-Math.cos(ch), dist=4.6*drive.zoom, cp=Math.cos(drive.pitch), sp=Math.sin(drive.pitch);
+  const back=new THREE.Vector3(drive.x-cx*dist*cp, Math.max(ty-.55, ty+dist*sp), drive.z-cz*dist*cp), look=new THREE.Vector3(drive.x,ty,drive.z);
+  const k=1-Math.exp(-dt*stiff); camera.position.lerp(back,k); controls.target.lerp(look,k); camera.lookAt(controls.target);
+}
+// riding the ring metro, step by step: gangway -> lift up -> wait on the platform -> doors open, walk in ->
+// ride (E: get off at the next stop) -> doors open, walk out -> lift down -> gangway back onto the island
+const kbd=()=>`<kbd>${matchMedia('(hover:hover)').matches?'E':'點一下'}</kbd>`;
+function walkPrompt(key,html){
+  if(key===drive.mk) return; drive.mk=key; const pr=$('#drive-prompt');
+  if(key==null){ if(!drive.near) pr.hidden=true; return; }
+  pr.style.setProperty('--c','var(--c-comp)'); pr.innerHTML=html; pr.hidden=false;
+}
+const _sv=new THREE.Vector3();
+const SP=(i,x,y,z)=>METRO.stations[i].localToWorld(_sv.set(x,y,z)).clone();   // station frame: x out to the track, z along it
+const PY=()=>METRO.platformY, GANG=2.25, LIFT_X=-1.9, GATE_X=-6.4;
+const stopName=i=>esc(METRO.stops[i].name);
+function metroNear(){
+  drive.station=null;
+  if(METRO && !drive.near) METRO.stations.forEach((g,i)=>{ const p=SP(i,GATE_X,2,0); if(Math.hypot(drive.x-p.x,drive.z-p.z)<3) drive.station=i; });
+  if(drive.station!=null) walkPrompt('gate'+drive.station,`${kbd()}在「${stopName(drive.station)}」站搭捷運`); else if(!drive.near) walkPrompt(null);
+  else drive.mk=null;
+}
+// script steps: each returns true when it is done
+function walkTo(get,speed=1.3){ return dt=>{ const p=get(), r=F3.root.position, dx=p.x-r.x, dz=p.z-r.z, d=Math.hypot(dx,dz);
+  if(d<.04){ r.x=p.x; r.z=p.z; r.y=p.y; return true; }
+  const s=Math.min(d,speed*dt); r.x+=dx/d*s; r.z+=dz/d*s; r.y+=(p.y-r.y)*Math.min(1,s/d); F3.heading=Math.atan2(dx,dz); F3.locomote(speed); return false; }; }
+function liftTo(i,y,carry){ return dt=>{ const cab=METRO.lifts[i], d=y-cab.position.y, s=Math.sign(d)*Math.min(Math.abs(d),3*dt);
+  cab.position.y+=s; if(carry) F3.root.position.y=cab.position.y; F3.locomote(0); return Math.abs(y-cab.position.y)<.001; }; }
+const faceOut=i=>()=>{ const a=METRO.stops[i].angle; F3.heading=Math.atan2(Math.cos(a),Math.sin(a)); F3.locomote(0); return true; };
+const then=fn=>()=>{ fn(); return true; };
+function upToPlatform(i){ return [ walkTo(()=>SP(i,-5.1,GANG,0)), liftTo(i,GANG,false), walkTo(()=>SP(i,LIFT_X,GANG,0)), liftTo(i,PY(),true), walkTo(()=>SP(i,.55,PY(),0)), faceOut(i) ]; }
+function downToIsland(i){ return [ liftTo(i,PY(),false), walkTo(()=>SP(i,LIFT_X,PY(),0)), liftTo(i,GANG,true), walkTo(()=>SP(i,-5.1,GANG,0)), walkTo(()=>SP(i,GATE_X,2,0)),
+  then(()=>{ const a=METRO.stops[i].angle, cam=drive.ride?.cam; drive.ride=null; drive.mk=null; if(cam) Object.assign(drive,cam);
+    drive.x=F3.root.position.x; drive.z=F3.root.position.z; drive.h=Math.PI/2-a; drive.v=0; F3.heading=drive.h+Math.PI; F3.locomote(0); }) ]; }
+const carPoint=()=>METRO.cars[1].localToWorld(_sv.set(0,.38,0)).clone();
+function board(i){
+  const a=METRO.stops[i].angle; drive.v=0; drive.h=Math.atan2(-Math.cos(a),-Math.sin(a)); drive.look=0;   // camera behind her, facing the station
+  drive.ride={phase:'up',stop:i,exit:null,cam:null,steps:[...upToPlatform(i), then(()=>{ drive.ride.phase='wait'; })]};
+}
+function metroAct(){
+  if(!METRO||!F3) return false;
+  const r=drive.ride;
+  if(!r){ if(drive.station==null) return false; board(drive.station); return true; }
+  if(r.phase==='wait'){ r.phase='down'; r.steps=downToIsland(r.stop); return true; }
+  if(r.phase==='on'){ const st=METRO.now(); r.exit = st.stop!=null && st.stop!==r.stop && METRO.doorOpen()>.5 ? st.stop : st.to; return true; }
+  return false;
+}
+function metroRideStep(dt){
+  const r=drive.ride, st=METRO.now();
+  // a script runs one step at a time
+  while(r.steps?.length && r.steps[0](dt)) r.steps.shift();
+  if(!drive.ride) return;   // the last step handed her back to walking
+  if(r.phase==='wait'){
+    const J=drive.joy.on&&(Math.abs(drive.joy.x)+Math.abs(drive.joy.y)>.3), moveKey=drive.input.gas||drive.input.brake||drive.input.left||drive.input.right;
+    if(moveKey||J){ metroAct(); }
+    else if(st.stop===r.stop && METRO.doorOpen()>.3){   // doors open: in she goes
+      r.phase='boarding'; r.cam={look:0,pitch:drive.pitch,zoom:drive.zoom};
+      r.steps=[ walkTo(()=>SP(r.stop,1.5,PY(),0),1.6), walkTo(carPoint,1.6), then(()=>{ r.phase='on'; drive.look=Math.PI/2; drive.pitch=.05; drive.zoom=1.4; hideDetail(); }) ];
+    }
+    else { const s=Math.ceil(METRO.secondsUntilStop(r.stop)); walkPrompt('wait'+s,`等車中，列車約 ${s} 秒後進站 · ${kbd()}取消`); }
+  }
+  if(r.phase==='boarding' && st.stop==null){ r.steps=[]; r.phase='on'; drive.look=Math.PI/2; drive.pitch=.05; drive.zoom=1.4; hideDetail(); }   // never left on the platform
+  if(r.phase==='on'){
+    const car=METRO.cars[1]; F3.root.position.copy(carPoint()); F3.heading=car.rotation.y; F3.locomote(0);
+    drive.h=car.rotation.y-Math.PI;
+    if(st.stop==null) r.stop=-1;   // once moving, the boarding station is a stop like any other
+    if(st.stop!=null && st.stop===r.exit && METRO.doorOpen()>.3){   // doors open at her stop: out, then down
+      const i=st.stop; r.phase='off'; r.stop=i; drive.look=0; drive.pitch=r.cam.pitch; drive.zoom=r.cam.zoom; drive.h=Math.atan2(Math.cos(METRO.stops[i].angle),Math.sin(METRO.stops[i].angle));
+      r.steps=[ walkTo(()=>SP(i,1.5,PY(),0),1.6), walkTo(()=>SP(i,.3,PY(),0),1.6), ...downToIsland(i) ];
+    }
+  }
+  const P=r.phase;
+  if(P==='up') walkPrompt('up',`搭電梯上月台…`);
+  else if(P==='boarding') walkPrompt('boarding',`車門開了，上車`);
+  else if(P==='on'){ if(r.exit!=null) walkPrompt('exit'+r.exit,`會在「${stopName(r.exit)}」站下車`);
+    else if(st.stop==null) walkPrompt('next'+st.to,`前往「${stopName(st.to)}」· ${kbd()}在這站下車`);
+    else if(r.stop===-1) walkPrompt('stop'+st.stop,`停靠「${stopName(st.stop)}」· ${kbd()}下車`);
+    else walkPrompt('dep','上車了，列車即將出發'); }
+  else if(P==='off'||P==='down') walkPrompt('down',`下車，搭電梯回到島上…`);
+  const p=F3.root.position; drive.x=p.x; drive.z=p.z;
+  walkCam(dt,p.y+.85,P==='on'?40:8);   // the train is quick: keep up with it
+}
 compEl.querySelector('#comp-walk').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); startWalk(); });
+const orbit={id:null,x:0,y:0};
+canvas.addEventListener('pointerdown',e=>{ if(!drive.walker||e.button!==2) return; e.preventDefault(); orbit.id=e.pointerId; orbit.x=e.clientX; orbit.y=e.clientY; drive.looking=true; try{canvas.setPointerCapture(e.pointerId);}catch{} });
+canvas.addEventListener('pointermove',e=>{ if(e.pointerId!==orbit.id) return;
+  drive.look-=(e.clientX-orbit.x)*.008; drive.pitch=THREE.MathUtils.clamp(drive.pitch+(e.clientY-orbit.y)*.006,-.2,1.3); orbit.x=e.clientX; orbit.y=e.clientY; });
+for(const ev of ['pointerup','pointercancel','lostpointercapture']) canvas.addEventListener(ev,e=>{ if(e.pointerId===orbit.id){ orbit.id=null; drive.looking=false; } });
+canvas.addEventListener('contextmenu',e=>{ if(drive.walker) e.preventDefault(); });
 const _pw=new THREE.Vector3();
 function driveStep(dt){
+  if(drive.walker && drive.ride){ metroRideStep(dt); return; }
   const inp=reader.hidden?drive.input:{left:0,right:0,gas:0,brake:0}, J=reader.hidden&&drive.joy.on?drive.joy:null;
   const steerIn=J?J.x:(inp.right?1:0)-(inp.left?1:0); drive.steer+=(steerIn-drive.steer)*Math.min(1,dt*10);
   if(drive.walker) walkSpeed(dt,inp,J); else {
@@ -1750,10 +1844,10 @@ function driveStep(dt){
     if(best){ const it=D.find(x=>x.key===best.key).items[best.i]; pr.style.setProperty('--c',`var(--c-${best.key})`); pr.innerHTML=`<kbd>${matchMedia('(hover:hover)').matches?'E':'點一下'}</kbd>打開「${esc(it.t)}」`; pr.hidden=false; if(typeof pulsePin==='function') pulsePin(best.key,best.i); }
     else pr.hidden=true; }
   // chase camera
-  if(!drive.looking) drive.look*=Math.exp(-dt*1.6);          // free look eases back behind the car
+  if(!drive.looking && !drive.walker) drive.look*=Math.exp(-dt*1.6);          // free look eases back behind the car (walking: it stays where you turned it)
   const ch=drive.h+drive.look, cx=-Math.sin(ch), cz=-Math.cos(ch);
-  const cb=drive.walker?5.6:9, chh=drive.walker?2.1:7.2, la=drive.walker?5:3.6, ly=drive.walker?3+lift:2.4;
-  const back=new THREE.Vector3(drive.x-cx*cb,2+lift+chh,drive.z-cz*cb), look=new THREE.Vector3(drive.x+cx*la,ly,drive.z+cz*la);
+  if(drive.walker){ metroNear(); walkCam(dt,2+lift+.85); return; }
+  const back=new THREE.Vector3(drive.x-cx*9,2+lift+7.2,drive.z-cz*9), look=new THREE.Vector3(drive.x+cx*3.6,2.4,drive.z+cz*3.6);
   const k=1-Math.exp(-dt*5); camera.position.lerp(back,k); controls.target.lerp(look,k); camera.lookAt(controls.target);
   if(drive.shake>0){ const a=drive.shake*.35; camera.position.x+=(Math.random()-.5)*a; camera.position.y+=(Math.random()-.5)*a; drive.shake=Math.max(0,drive.shake-dt*2.6); }
 }
@@ -2171,7 +2265,7 @@ function fitMetroOverview(){
   const distance=Math.min(530,Math.max(265,84*h/(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*Math.max(260,free))));
   HOME.look.set(0,5,0);HOME.pos.set(0,.63,.777).normalize().multiplyScalar(distance).add(HOME.look);
 }
-import('./assets/island-city/metro.js?v=20261031-1').then(m=>{
+import('./assets/island-city/metro.js?v=20261121-2').then(m=>{
   METRO=m.createMetro({scene,islands,host:$('#app'),reduced,crowd:INTERACT,onStation:goMetroStation,
     createPassenger:(parent,i)=>{const p=person(parent,{shirt:[0xe6c36e,0x87bbc5,0xc6a6d8,0xe6b39e,0x99c6a5,0xd7dcd1][i]});p.root.name='metro passenger '+i;p.root.scale.setScalar(.6);p.root.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;const original=o.material;if(!metroPassengerMaterials.has(original)){const material=original.clone();if(material.vertexColors){material.emissive.setScalar(.18);material.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n\ttotalEmissiveRadiance*=vColor.rgb;');};material.customProgramCacheKey=()=>'metro-passenger-glow';}else material.emissive.copy(material.color).multiplyScalar(.18);metroPassengerMaterials.set(original,material);}o.material=metroPassengerMaterials.get(original);});return {root:p.root,animate:(walking,dt)=>animPerson(p,walking,dt,.8),pose:(mode,dt,t)=>posePerson(p,mode,dt,t)};},
     onOverview:()=>{if(drive.on)stopDrive();if(hunt.on)endHunt();unfocus();},pick:(o,key)=>{o.userData.key=key;o.userData.metroStation=true;pickables.push(o);}});
