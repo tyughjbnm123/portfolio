@@ -34,7 +34,7 @@
   window.YKLanguage?.register(root);
   const $ = selector => root.querySelector(selector);
   const actor = $('.actor'), menu = $('.menu'), panel = $('.panel'), launcher = $('.launcher');
-  const player = new window.CompanionPlayer($('.sprite'), muted => {
+  const player = new (window.CompanionPlayer3D || window.CompanionPlayer)($('.sprite'), muted => {   // 3D when available
     $('.voice').setAttribute('aria-label', muted ? '開啟聲音' : '關閉聲音');
     $('.voice').title = muted ? '開啟聲音' : '關閉聲音';
     $('.voice').setAttribute('aria-pressed', String(muted));
@@ -203,7 +203,9 @@
   actor.addEventListener('click', event => {
     if (suppressClick && event.detail !== 0) { suppressClick = false; return; }
     motionRequested = true; remember();
-    if (state.mode === 'idle' && !state.busy && !player.current && !failedAction) returnToIdle();
+    const opening = !state.menu;
+    if (opening && state.ready && !state.closing && !state.busy && (state.mode === 'idle' || state.mode === 'yawn') && allowMotion()) { player.unlock(); run('welcome'); }   // she says hello first
+    else if (state.mode === 'idle' && !state.busy && !player.current && !failedAction) returnToIdle();
     state.menu = !state.menu; render();
   });
   actor.addEventListener('pointerdown', event => {

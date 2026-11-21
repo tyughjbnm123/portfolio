@@ -23,6 +23,10 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
   const vrm = gltf.userData.vrm;
   VRMUtils.combineSkeletons(gltf.scene);
   vrm.scene.traverse(o => { if (o.isMesh) { o.frustumCulled = false; o.castShadow = true; } });
+  // the eye layers are all transparent at one render order, so three.js sorts them by distance and, as the camera
+  // turns, sometimes draws the white over the iris (the eyes flash white). Fix the order: white, iris, then lines.
+  const EYE_LAYER = { cf_Ohitomi_L: 1, cf_Ohitomi_R: 1, cf_Ohitomi_L02: 2, cf_Ohitomi_R02: 2, cf_O_eyeline: 3, cf_O_eyeline_low: 3, cf_O_mayuge: 3, cf_O_noseline: 3 };
+  vrm.scene.traverse(o => { if (o.isMesh && EYE_LAYER[o.name]) o.renderOrder += EYE_LAYER[o.name]; });
   // a few hair vertices carry zero-length normals; normalising them gives NaN in the shader, and at night the bloom
   // pass smears that NaN into a flickering black box around her. Point them outward from the mesh centre instead.
   vrm.scene.traverse(o => {

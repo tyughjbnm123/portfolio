@@ -108,21 +108,21 @@ body.driving .metro-panel,body.reading .metro-panel{display:none}
 
 /* detail */
 .detail{position:absolute;top:calc(92px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));width:340px;max-height:calc(100% - 108px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;z-index:4;overflow:hidden;border-top:4px solid var(--c)}
-.detail-head{padding:18px 20px 12px;display:grid;gap:6px;position:relative}
+.detail-head{padding:12px 16px 8px;display:grid;gap:4px;position:relative}
 .detail-head .eyebrow{color:var(--c)}
-.detail h2{margin:0;font-size:24px;line-height:1.25}
+.detail h2{margin:0;font-size:20px;line-height:1.25}
 .detail .lede{margin:2px 0 0;font-size:13px;line-height:1.7;color:var(--muted)}
 .close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:0;background:transparent;font-size:20px;line-height:1;color:var(--muted)}
 .close:hover{background:var(--soft);color:var(--ink)}
 .detail-body{overflow:auto;padding:0 12px 8px;overscroll-behavior:contain}
-.item{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 8px;border-radius:12px;text-decoration:none}
+.item{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:7px 8px;border-radius:12px;text-decoration:none}
 .item:hover{background:var(--soft)}
 .item b{font-family:var(--mono);font-size:12px;color:var(--c);font-variant-numeric:tabular-nums}
 .item span{font-size:14px;line-height:1.4;min-width:0}
 .item small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
 .item i{font-style:normal;color:var(--muted)}
-.detail-foot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px 16px;border-top:1px solid var(--line)}
-.detail-foot button,.detail-foot a{flex:none;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:0 16px;height:42px;font-size:13px;line-height:1;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
+.detail-foot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 10px;border-top:1px solid var(--line)}
+.detail-foot button,.detail-foot a{flex:none;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:0 14px;height:36px;font-size:13px;line-height:1;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
 .detail-foot a{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 /* 3D labels */
@@ -315,6 +315,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .joy-help.off{opacity:0}
 @media (max-width:760px){.driving .toolbar{display:none}.drive-help{display:none}.drive-prompt{bottom:calc(92px + env(safe-area-inset-bottom,0px))}}
 .driving .hint{display:none}
+.driving .detail{max-height:32%}.driving .detail .lede,.driving .detail-foot{display:none}
 .driving .index,.driving .index-toggle{visibility:hidden}
 .hunt{position:absolute;top:calc(92px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 32px));padding:16px 18px;display:grid;gap:10px;z-index:6;border-top:4px solid var(--accent)}
 .hunt h3{margin:0;font-size:18px;line-height:1.35}
@@ -340,7 +341,8 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
   .index-toggle{display:flex;align-items:center;gap:6px;height:48px;padding:0 14px;font-size:14px}
   .switch [aria-current]{display:none}
   .switch>*{height:38px;padding:0 10px}
-  .detail{top:auto;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:auto;max-height:58%;z-index:7}
+  .detail{top:auto;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:auto;max-height:42%;z-index:7}
+  .detail .lede{display:none}
   .hint{display:none}
   .pin{font-size:10px}
 }
@@ -1486,26 +1488,21 @@ function nextLeg(){
 function meUnstick(p){ for(const k in islands){ const o=islands[k], G=WALK.grids.get(o.g); if(!G||Math.hypot(p.x-o.pos.x,p.z-o.pos.z)>=R) continue;
   _mw.set(p.x,o.g.position.y,p.z); o.g.worldToLocal(_mw); if(walkSnap(G,_mw)){ o.g.localToWorld(_mw); p.x=_mw.x; p.z=_mw.z; } return; } }
 
-/* ---------- companion islet ---------- */
-const comp=new THREE.Group(); const CA=Math.PI*.7, CR=RING+18;
+/* ---------- companion: stands on the lighthouse plaza, between the 'about' and 'work' bridges ---------- */
+const comp=new THREE.Group(); const CA=Math.PI*.3, CR=5;
 comp.position.set(Math.cos(CA)*CR,0,Math.sin(CA)*CR); scene.add(comp);
-cyl(4.8,6,5,10,mat(ROCK),0,-4.6,0,comp); cyl(4.6,4.9,1.6,10,mat(SAND),0,0,0,comp); cyl(4.1,4.3,.5,10,mat(0xb7cf8e),0,1.5,0,comp);
-for(let i=0;i<14;i++){ const a=i/14*6.28+.2, r=2.2+((i*7)%5)*.35; cyl(.03,.03,.5,4,mat(0x6f9850),Math.cos(a)*r,2,Math.sin(a)*r,comp); mk(new THREE.IcosahedronGeometry(.17,0),mat([0xf2a7c9,0xf7d36b,0xffffff,0xc9a7f2][i%4]),Math.cos(a)*r,2.55,Math.sin(a)*r,comp); }
-cyl(1.1,1.25,.25,12,mat(0xf1e6f0),0,2,0,comp);
-tree(comp,-2.6,-1.6,.75);
 comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
 const HOVER=matchMedia('(hover:hover)').matches;
 const COMP_TIPS=['點一座島，走進去看看。', HOVER?'滑到島上各區，名稱會跳出來。':'點島上各區，名稱會跳出來。', HOVER?'想直接找？右邊清單可以搜尋。':'想直接找？右上角「清單」可以搜尋。', '按「開車」，開著車逛島。', '天黑後，小島會變成夜城。'];
-compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-play">和我玩</a><a href="#" id="comp-walk">帶她逛島</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
-const compObj=new CSS2DObject(compEl); compObj.position.set(0,8.4,0); comp.add(compObj);
+compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-walk">帶她逛島</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
+const compObj=new CSS2DObject(compEl); compObj.position.set(0,3.9,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
 let tipI=0; const tipEl=compEl.querySelector('#comp-tip'); const showTip=()=>{ tipEl.textContent=COMP_TIPS[tipI%COMP_TIPS.length]; };
 showTip();
 compEl.querySelector('#comp-next').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); tipI++; showTip(); });
-compEl.querySelector('#comp-play').addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); openEntry('companion',{eyebrow:'✦ 湖邊小島',color:'comp'});});
 // The companion is drawn as an animated image that follows the 3D scene: point at her to wave, tap her to dance.
-const COMP_H=5.25, COMP_FEET=2.25;
+const COMP_H=1.3, COMP_FEET=2;   // the island people's size, on the plaza floor
 const CLIP_DIR='assets/companion/';
 const CLIPS={ welcome:{src:'welcome-v23.webp',audio:'welcome-v23.mp3'}, dance:{src:'dance-v23.webp',audio:'dance-v23.mp3'}, yawn:{src:'yawn-v23.webp',audio:'yawn-v23.mp3'}, bye:{src:'bye-v23.webp',audio:'bye-v23.mp3'} };
 const CLIP_MS=6150;
@@ -1521,7 +1518,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-6')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-7')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
@@ -1543,8 +1540,8 @@ fig.addEventListener('pointermove',e=>{
     if(compSound) loadVoice('drag').then(buf=>{ if(drag3.on) startVoice(buf,performance.now()); }); }
   if(!dragHit(e)) return;
   _dl.copy(_dp).add(drag3.off); comp.worldToLocal(_dl);
-  const rr=Math.hypot(_dl.x,_dl.z), RMAX=3.3; if(rr>RMAX){ _dl.x*=RMAX/rr; _dl.z*=RMAX/rr; }
-  F3.root.position.set(_dl.x, Math.min(COMP_FEET+6, Math.max(COMP_FEET, _dl.y)), _dl.z);
+  const rr=Math.hypot(_dl.x,_dl.z), RMAX=2; if(rr>RMAX){ _dl.x*=RMAX/rr; _dl.z*=RMAX/rr; }
+  F3.root.position.set(_dl.x, Math.min(COMP_FEET+3, Math.max(COMP_FEET, _dl.y)), _dl.z);
 });
 function dragEnd(e){ if(drag3.id!==e.pointerId) return; drag3.id=null; if(!drag3.on) return; e.stopPropagation();
   drag3.on=false; drag3.justEnded=true; setTimeout(()=>drag3.justEnded=false,0); fig.classList.remove('held'); playing=null; stopVoice(); F3.drop(); if(drag3.bubble) compBubble.classList.add('on'); }
@@ -1589,8 +1586,8 @@ async function playClip(name,withSound){
     voice.then(buf=>{ if(my===clipToken) startVoice(buf,t0); }); };
   if(curURL) URL.revokeObjectURL(curURL); curURL=u; figImg.src=u;
 }
-fig.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse'){ const order=['dance','yawn','bye','welcome']; loadClip(order[clickN%order.length]); if(!playing) playClip('welcome',false); } });
-fig.addEventListener('click',e=>{ e.stopPropagation(); if(drag3.justEnded) return; const order=['dance','yawn','bye','welcome']; playClip(order[clickN++%order.length],true); compBubble.classList.add('on'); if(state.focus!=='comp') focusComp(); });
+fig.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse'){ const order=['welcome','dance','yawn','bye']; loadClip(order[clickN%order.length]); if(!playing) playClip('welcome',false); } });
+fig.addEventListener('click',e=>{ e.stopPropagation(); if(drag3.justEnded) return; const order=['welcome','dance','yawn','bye']; playClip(order[clickN++%order.length],true); compBubble.classList.add('on'); if(state.focus!=='comp') focusComp(); });
 // keep the figure the same size as the scene around it
 const _ft=new THREE.Vector3(), _hd=new THREE.Vector3();
 function sizeFig(){
@@ -1601,7 +1598,7 @@ function sizeFig(){
   if(F3&&!drive.walker) figObj.position.set(F3.root.position.x,F3.root.position.y,F3.root.position.z);
   fig.style.width=Wd+'px'; fig.style.height=H+'px'; fig.style.left=(-GEO.cx*k)+'px'; fig.style.bottom=(-(GEO.h-GEO.feet)*k)+'px';
 }
-{ const el=document.createElement('button'); el.type='button'; el.className='isl'; el.style.setProperty('--c','var(--c-comp)'); el.innerHTML='<b>✦</b>小精靈'; el.addEventListener('click',e=>{e.stopPropagation(); focusComp();}); const o=new CSS2DObject(el); o.position.set(0,-1.2,0); comp.add(o); }
+{ const el=document.createElement('button'); el.type='button'; el.className='isl'; el.style.setProperty('--c','var(--c-comp)'); el.innerHTML='<b>✦</b>小精靈'; el.addEventListener('click',e=>{e.stopPropagation(); focusComp();}); const o=new CSS2DObject(el); o.position.set(0,1.5,0); comp.add(o); }
 const compDir=comp.position.clone().normalize();
 
 function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.animate?.([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:600,easing:'ease-out'}); }
@@ -1698,7 +1695,7 @@ async function startWalk(){
   if(!F3){ tipEl.textContent='等我一下，正在準備…'; compBubble.classList.add('on'); }
   const f=F3||await loadFairy3D(); if(!f){ showTip(); return; }
   showTip(); stopClip(); compBubble.classList.remove('on');
-  startDrive(); walkCam.on=false; drive.walker=true; drive.pitch=.3; drive.zoom=1; dcar.visible=false; dcar.userData.hl.intensity=0; fig.style.visibility='hidden';
+  startDrive(); walkCam.on=false; drive.walker=true; drive.x=comp.position.x; drive.z=comp.position.z; drive.h=Math.atan2(-compDir.x,-compDir.z); drive.pitch=.3; drive.zoom=1; dcar.visible=false; dcar.userData.hl.intensity=0; fig.style.visibility='hidden';
   f.place(scene,WALK_H,dcar.position.set(drive.x,2,drive.z)); f.heading=drive.h+Math.PI; f.play('idle');
   const help=$('#drive-help'), gas=document.querySelector('.drive-pad [data-k="gas"]'), brake=document.querySelector('.drive-pad [data-k="brake"]'), ex=$('#drive-exit'), jh=$('#joy-help span');
   driveUI={help:help.textContent, gas:gas.textContent, brake:brake.textContent, exit:ex.textContent, joy:jh?.textContent};
@@ -2191,9 +2188,9 @@ function focus(key){
 function focusComp(){
   if(state.focus && state.focus!=='comp') { hideDetail(); Object.values(islands).forEach(o=>{o.g.userData.pinsOn=false;}); }
   state.focus='comp'; controls.autoRotate=false; loadFairy3D();
-  const look=comp.position.clone().add(new THREE.Vector3(0,4,0));
-  // seen from the lake side: the ring-line track passes on her outer side and would cover the 3D figure
-  const pos=comp.position.clone().add(compDir.clone().multiplyScalar(mobile?-30:-26)).add(new THREE.Vector3(0,mobile?18:14,0));
+  const look=comp.position.clone().add(new THREE.Vector3(0,COMP_FEET+.35,0));
+  // from the outer side of the plaza, the lighthouse behind her
+  const pos=comp.position.clone().add(compDir.clone().multiplyScalar(mobile?9:7.5)).add(new THREE.Vector3(0,COMP_FEET+(mobile?2.3:1.9),0));
   flyTo(pos,look); updateOffset(); compBubble.classList.add('on'); $('#hint').hidden=true; if(!playing) setTimeout(()=>playClip('welcome',false),700);
 }
 function unfocus(){
@@ -2515,6 +2512,7 @@ function tick(){
   hoverPick();
   if(drive.on){} else if(fly){ const k=1-Math.exp(-dt*3.2); camera.position.lerp(fly.pos,k); controls.target.lerp(fly.look,k); if(camera.position.distanceTo(fly.pos)<.15 && controls.target.distanceTo(fly.look)<.15) fly=null; }
   state.idle+=dt; controls.autoRotate = state.spin && !state.focus && !fly && state.idle>2;
+  controls.minDistance=state.focus==='comp'?4:28;   // she is person-sized: let the camera come close when she is in focus
   if(!drive.on) controls.update();
   // keep target near the lake
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
