@@ -1521,7 +1521,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-5')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-6')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });

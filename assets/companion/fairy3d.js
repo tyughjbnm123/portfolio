@@ -23,6 +23,18 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
   const vrm = gltf.userData.vrm;
   VRMUtils.combineSkeletons(gltf.scene);
   vrm.scene.traverse(o => { if (o.isMesh) { o.frustumCulled = false; o.castShadow = true; } });
+  // a few hair vertices carry zero-length normals; normalising them gives NaN in the shader, and at night the bloom
+  // pass smears that NaN into a flickering black box around her. Point them outward from the mesh centre instead.
+  vrm.scene.traverse(o => {
+    const g = o.isMesh && o.geometry, n = g && g.attributes.normal, p = g && g.attributes.position; if (!n || !p) return;
+    if (!g.boundingBox) g.computeBoundingBox(); const c = g.boundingBox.getCenter(new THREE.Vector3()), v = new THREE.Vector3(); let fixed = 0;
+    for (let i = 0; i < n.count; i++) {
+      const x = n.getX(i), y = n.getY(i), z = n.getZ(i);
+      if (isFinite(x + y + z) && x * x + y * y + z * z > 1e-10) continue;
+      v.set(p.getX(i), p.getY(i), p.getZ(i)).sub(c); if (v.lengthSq() < 1e-10) v.set(0, 1, 0); v.normalize(); n.setXYZ(i, v.x, v.y, v.z); fixed++;
+    }
+    if (fixed) n.needsUpdate = true;
+  });
 
   // size: bind pose (T pose) height from feet to the top of the hair -> scene units
   vrm.scene.updateMatrixWorld(true);
