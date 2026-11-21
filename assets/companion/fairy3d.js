@@ -1,14 +1,14 @@
 // 3D web companion (小精靈): the KKS character exported as VRM 1.0, with motions baked to VRM Animation (.vrma).
 // The island loads this module after the scene is up; until it is ready (or if it fails) the drawn companion stays.
-// Motions: idle 等待 / welcome 輕揮手 / drag DGK Drag / dance 舞04 / yawn 伸懶腰 / bye 飛吻 / walk walk_fwd / run runNew_fwd / jump Jump.
+// Motions: idle 等待 / welcome 輕揮手 / drag DGK Drag / dance 舞04 / yawn 伸懶腰 / bye 飛吻 / walk walk_fwd / run runNew_fwd / jump Jump / sit KA_Sit_LookingAround / cheer Chair_Pose (rides).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
 const DIR = new URL('./3d/', import.meta.url);
-const FILES = { idle: 'idle_waiting', welcome: 'welcome_wave', drag: 'drag_dgk', dance: 'dance_04', yawn: 'yawn_stretch', bye: 'bye_kiss', walk: 'walk_fwd', run: 'run_new', jump: 'jump' };
-const EXPR = { idle: null, welcome: 'happy', drag: 'surprised', dance: 'happy', yawn: 'aa', bye: 'relaxed', walk: null, run: null, jump: null };
-const LOOP = { idle: 1, drag: 1, walk: 1, run: 1 };
+const FILES = { idle: 'idle_waiting', welcome: 'welcome_wave', drag: 'drag_dgk', dance: 'dance_04', yawn: 'yawn_stretch', bye: 'bye_kiss', walk: 'walk_fwd', run: 'run_new', jump: 'jump', sit: 'sit_lookaround', cheer: 'chair_pose' };
+const EXPR = { idle: null, welcome: 'happy', drag: 'surprised', dance: 'happy', yawn: 'aa', bye: 'relaxed', walk: null, run: null, jump: null, sit: 'relaxed', cheer: 'happy' };
+const LOOP = { idle: 1, drag: 1, walk: 1, run: 1, sit: 1, cheer: 1 };
 // walk/run clips are in place; these are the ground speeds (in her own body heights per second) their steps match
 const STEP = { walk: .78, run: 2.3 };
 const NO_BLINK = { happy: 1, surprised: 1, aa: 1 };

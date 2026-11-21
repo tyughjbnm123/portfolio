@@ -63,12 +63,13 @@ export function createArcadePark({parent,pick,reduced=false}){
   for(const x of [-.54,.54])for(const z of [-.44,.44])box(.09,.94,.09,x,-.6,z,plum,cabinShell);
   batch(cabinShell);const shellGeo=cabinShell.children[0].geometry;
   const cabinTrim=new THREE.Group();box(1.29,.07,1.1,0,1.26,0,cyan,cabinTrim);box(1.1,.06,.98,0,0,0,cyan,cabinTrim);for(const x of [-.56,.56])box(.05,.98,.05,x,.63,.52,cyan,cabinTrim);batch(cabinTrim);
-  const cabinCount=16,shells=new THREE.InstancedMesh(shellGeo,cabinPaint,cabinCount),windows=new THREE.InstancedMesh(new THREE.BoxGeometry(.99,.76,.82),glass,cabinCount),underlights=new THREE.InstancedMesh(cabinTrim.children[0].geometry,cyan,cabinCount);
+  // gondolas are drawn 1.6× wider and taller (not deeper: the rim rings run at z ±.68) so the companion fits seated
+  const CAB=1.6,cabinCount=16,shells=new THREE.InstancedMesh(shellGeo,cabinPaint,cabinCount),windows=new THREE.InstancedMesh(new THREE.BoxGeometry(.99,.76,.82),glass,cabinCount),underlights=new THREE.InstancedMesh(cabinTrim.children[0].geometry,cyan,cabinCount);
   for(const o of [shells,windows,underlights]){o.instanceMatrix.setUsage(THREE.DynamicDrawUsage);o.castShadow=true;o.frustumCulled=false;ferris.add(o);}
   // two seats per cabin; each cabin anchor follows its gondola and stays upright
   const cabins=[];const seats=[];
   for(let i=0;i<cabinCount;i++){const a=new THREE.Object3D();a.name='摩天輪車廂 '+(i+1);ferris.add(a);cabins.push(a);
-    for(const x of [-.25,.25]){const s=new THREE.Object3D();s.position.set(x,-1.22,0);a.add(s);seats.push({ride:'wheel',anchor:s,cabin:i,pose:'sit'});}}
+    for(const x of [-.25,.25]){const s=new THREE.Object3D();s.position.set(x*CAB,-1.0*CAB-.22,0);a.add(s);seats.push({ride:'wheel',anchor:s,cabin:i,pose:'sit'});}}
   box(5.8,.22,2.8,-1.6,2.2,-4.2,metal);
 
   // Compact coaster with a high bank and a low station return; the track is a closed 3D curve.
@@ -108,13 +109,13 @@ export function createArcadePark({parent,pick,reduced=false}){
   for(let i=0;i<5;i++)for(const z of [-.36,.36]){const s=new THREE.Object3D();s.position.set(-1.9+i*.95+.03,.22,z);s.rotation.y=Math.PI/2;boat.add(s);seats.push({ride:'ship',anchor:s,pose:'swing'});}
   box(8.4,.22,5.7,-6,2.2,5.3,dark);
 
-  const matrix=new THREE.Matrix4(),rot=new THREE.Matrix4();let time=0,lastNight=-1;
+  const matrix=new THREE.Matrix4(),rot=new THREE.Matrix4(),cabScale=new THREE.Vector3(1,1,1),cabPos=new THREE.Vector3(),noTurn=new THREE.Quaternion();let time=0,lastNight=-1;
   const update=(dt,night,{paused=false}={})=>{
     if(!reduced&&!paused)time+=Math.max(0,Math.min(dt,.05));
     const s=rideStateAt(time);wheel.rotation.z=s.wheel;pendulum.rotation.z=s.ship;
-    for(let i=0;i<cabinCount;i++){const a=i*Math.PI*2/cabinCount+s.wheel,x=Math.cos(a)*wheelRadius,y=Math.sin(a)*wheelRadius;matrix.makeTranslation(x,y,0);shells.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-.6,0);windows.setMatrixAt(i,matrix);matrix.makeTranslation(x,y-1.34,0);underlights.setMatrixAt(i,matrix);cabins[i].position.set(x,y,0);}
+    for(let i=0;i<cabinCount;i++){const a=i*Math.PI*2/cabinCount+s.wheel,x=Math.cos(a)*wheelRadius,y=Math.sin(a)*wheelRadius;cabScale.set(CAB,CAB,1);matrix.compose(cabPos.set(x,y,0),noTurn,cabScale);shells.setMatrixAt(i,matrix);matrix.compose(cabPos.set(x,y-.6*CAB,0),noTurn,cabScale);windows.setMatrixAt(i,matrix);matrix.compose(cabPos.set(x,y-1.34*CAB,0),noTurn,cabScale);underlights.setMatrixAt(i,matrix);cabins[i].position.set(x,y,0);}
     for(const o of [shells,windows,underlights])o.instanceMatrix.needsUpdate=true;
-    cars.forEach((car,i)=>{const f=curveFrames(s.train-i*1.43/length);car.position.copy(f.p).addScaledVector(f.up,.09);rot.makeBasis(f.side,f.up,f.t.clone().negate());car.quaternion.setFromRotationMatrix(rot);});
+    cars.forEach((car,i)=>{const f=curveFrames(s.train-i*1.43/length);car.position.copy(f.p).addScaledVector(f.up,.09);rot.makeBasis(f.side.clone().negate(),f.up,f.t);car.quaternion.setFromRotationMatrix(rot);});
     if(Math.abs(lastNight-night)>.004){lastNight=night;glowing.forEach(({m,k})=>m.emissiveIntensity=.22+night*k*1.12);glass.emissiveIntensity=.15+night*.32;districtSign.userData.update(night);}
   };
   update(0,0);park.traverse(o=>{if(o.isMesh)pick(o);});
