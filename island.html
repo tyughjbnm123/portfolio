@@ -364,7 +364,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
     <button class="tool" id="t-night" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>夜晚</button>
     <button class="tool" id="t-spin" aria-pressed="true" type="button"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>環繞</button>
     <button class="tool" id="t-drive" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 16V12l2-5h10l2 5v4"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/><path d="M7 12h10"/></svg>開車</button>
-    <button class="tool" id="t-hunt" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><circle cx="10.5" cy="9" r="1.8"/><path d="M7.6 13.4a3.2 3.2 0 0 1 5.8 0"/></svg>找我</button>
+    <button class="tool" id="t-hunt" aria-pressed="false" type="button" hidden><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><circle cx="10.5" cy="9" r="1.8"/><path d="M7.6 13.4a3.2 3.2 0 0 1 5.8 0"/></svg>找我</button>
   </nav>
 
   <div class="top-right">
@@ -1453,7 +1453,7 @@ const meBubbleEl=document.createElement('div'); meBubbleEl.className='bubble'; m
 const meBubble=new CSS2DObject(meBubbleEl); meBubble.position.set(0,3.75,0); ME.root.add(meBubble);
 let sayTimer=0;
 function say(text,ms=3400){ meBubbleEl.textContent=text; meBubbleEl.classList.add('on'); clearTimeout(sayTimer); sayTimer=setTimeout(()=>meBubbleEl.classList.remove('on'),ms); }
-const HELLO=['嗨，被你發現了！歡迎來我的島。','點任何一座島，都可以走進去看看。','我負責網站、CRM 和流程自動化專案。','右上角可以切回網頁版喔。','想玩捉迷藏？按上面的「找我」。'];
+const HELLO=['嗨，被你發現了！歡迎來我的島。','點任何一座島，都可以走進去看看。','我負責網站、CRM 和流程自動化專案。','右上角可以切回網頁版喔。'];
 let helloI=0;
 
 // walking route: hub → bridge → stroll around an island → back → next island
@@ -1496,7 +1496,7 @@ tree(comp,-2.6,-1.6,.75);
 comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
 const HOVER=matchMedia('(hover:hover)').matches;
-const COMP_TIPS=['點一座島，走進去看看。', HOVER?'滑到島上各區，名稱會跳出來。':'點島上各區，名稱會跳出來。', HOVER?'想直接找？右邊清單可以搜尋。':'想直接找？右上角「清單」可以搜尋。', '按「開車」，開著車逛島。', '我藏在人群裡，按「找我」抓我。', '天黑後，小島會變成夜城。'];
+const COMP_TIPS=['點一座島，走進去看看。', HOVER?'滑到島上各區，名稱會跳出來。':'點島上各區，名稱會跳出來。', HOVER?'想直接找？右邊清單可以搜尋。':'想直接找？右上角「清單」可以搜尋。', '按「開車」，開著車逛島。', '天黑後，小島會變成夜城。'];
 compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-play">和我玩</a><a href="#" id="comp-walk">帶她逛島</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
 const compObj=new CSS2DObject(compEl); compObj.position.set(0,8.4,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
