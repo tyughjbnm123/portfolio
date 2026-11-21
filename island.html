@@ -1520,7 +1520,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-1')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-2')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
@@ -1547,7 +1547,7 @@ fig.addEventListener('pointermove',e=>{
 });
 function dragEnd(e){ if(drag3.id!==e.pointerId) return; drag3.id=null; if(!drag3.on) return; e.stopPropagation();
   drag3.on=false; drag3.justEnded=true; setTimeout(()=>drag3.justEnded=false,0); fig.classList.remove('held'); playing=null; stopVoice(); F3.drop(); if(drag3.bubble) compBubble.classList.add('on'); }
-fig.addEventListener('pointerup',dragEnd); fig.addEventListener('pointercancel',dragEnd);
+fig.addEventListener('pointerup',dragEnd); fig.addEventListener('pointercancel',dragEnd); fig.addEventListener('lostpointercapture',dragEnd);
 const clipBlobs={}; let playing=null, playTimer=0, curURL='', clickN=0;
 // Her voice is decoded ahead of time and started on the frame the animation appears (same approach as the site's companion),
 // so sound and motion line up instead of the sound arriving a beat late.
@@ -1555,10 +1555,11 @@ let compCtx=null, compSrc=null; const voiceBufs={};
 function compAC(){ if(!compCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; compCtx=new AC(); } if(compCtx.state==='suspended') compCtx.resume().catch(()=>{}); return compCtx; }
 function loadVoice(name){ if(!ON_SITE||!CLIPS[name]?.audio) return Promise.resolve(null); const ac=compAC(); if(!ac) return Promise.resolve(null);
   return voiceBufs[name] ||= fetch(CLIP_DIR+CLIPS[name].audio).then(r=>r.ok?r.arrayBuffer():null).then(b=>b?ac.decodeAudioData(b):null).catch(()=>{ delete voiceBufs[name]; return null; }); }
-function stopVoice(){ if(!compSrc) return; try{ compSrc.stop(); }catch{} compSrc.disconnect(); compSrc=null; }
+function stopVoice(){ if(F3) F3.listen(null); if(!compSrc) return; try{ compSrc.stop(); }catch{} compSrc.disconnect(); compSrc=null; }
 function startVoice(buf,startedAt){ if(!buf||!compSound||!compCtx||compCtx.state!=='running') return;
   const off=(performance.now()-startedAt)/1000; if(off>=buf.duration-.05) return;   // if the sound arrives late, join at the same point as the motion
-  stopVoice(); const src=compCtx.createBufferSource(), g=compCtx.createGain(); g.gain.value=.8; src.buffer=buf; src.connect(g); g.connect(compCtx.destination); src.start(0,off); compSrc=src; }
+  stopVoice(); const src=compCtx.createBufferSource(), g=compCtx.createGain(); g.gain.value=.8; src.buffer=buf; src.connect(g); g.connect(compCtx.destination); src.start(0,off); compSrc=src; src.onended=()=>{ try{g.disconnect();}catch{} };
+  if(F3) F3.listen(g,buf.duration-off); }   // the 3D companion moves her mouth to it
 let compSound=true; try{ compSound=localStorage.getItem('yk-island-comp-sound')!=='off'; }catch{}
 const soundBtn=compEl.querySelector('#comp-sound');
 const renderSound=()=>{ soundBtn.textContent=compSound?'🔊 聲音開':'🔇 聲音關'; soundBtn.setAttribute('aria-pressed',String(compSound)); };
