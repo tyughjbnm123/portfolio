@@ -287,6 +287,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .comp-fig img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
 .comp-fig:focus-visible{outline:2px solid var(--c-comp);outline-offset:4px;border-radius:12px}
 .comp-fig.playing{animation:none}
+.comp-fig.is-3d{animation:none;filter:none;touch-action:none}.comp-fig.is-3d img{visibility:hidden}.comp-fig.is-3d.held{cursor:grabbing}
 .comp-sound{margin-left:10px;border:0;background:none;padding:0;font:inherit;font-size:12px;color:var(--muted);cursor:pointer}
 .comp-sound:hover{color:var(--ink)}
 .drive-ui{position:absolute;inset:0;pointer-events:none;z-index:6}
@@ -459,7 +460,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 </div>
 
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js","@pixiv/three-vrm":"https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.5.5/lib/three-vrm.module.min.js"}}
 </script>
 <script type="module">
 import {createSoftClouds} from './assets/island-city/soft-clouds.js?v=20261109-2';
@@ -1514,6 +1515,39 @@ const figAnchor=document.createElement('div'); figAnchor.className='comp-fig-anc
 figAnchor.innerHTML=`<button type="button" class="comp-fig" aria-label="網頁小精靈：指向她會揮手，點一下會跳舞"><img alt="" src="${STILL}" draggable="false"></button>`;
 const figObj=new CSS2DObject(figAnchor); figObj.position.set(0,COMP_FEET,0); comp.add(figObj);
 const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
+// 3D companion (VRM, assets/companion/3d): loads after the scene is up (on phones only once she is opened);
+// the drawn image stays until she is ready, and stays for good if the model can't load
+let F3=null, f3Loading=null;
+function loadFairy3D(){
+  if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-1')
+    .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
+    .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
+    .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
+  return f3Loading;
+}
+// drag her around the islet: she hangs from the pointer (DGK Drag) and drops back down on release
+const drag3={id:null,x:0,y:0,on:false,justEnded:false,off:new THREE.Vector3(),plane:new THREE.Plane()};
+const _dr=new THREE.Raycaster(), _dn=new THREE.Vector2(), _dp=new THREE.Vector3(), _dl=new THREE.Vector3();
+function dragHit(e){ const r=canvas.getBoundingClientRect(); _dn.set((e.clientX-r.left)/r.width*2-1, -(e.clientY-r.top)/r.height*2+1);
+  _dr.setFromCamera(_dn,camera); return _dr.ray.intersectPlane(drag3.plane,_dp); }
+fig.addEventListener('pointerdown',e=>{ if(!F3||e.button>0) return; e.stopPropagation(); drag3.id=e.pointerId; drag3.x=e.clientX; drag3.y=e.clientY; drag3.on=false; });
+fig.addEventListener('pointermove',e=>{
+  if(!F3||drag3.id!==e.pointerId) return; e.stopPropagation();
+  if(!drag3.on){ if(Math.hypot(e.clientX-drag3.x,e.clientY-drag3.y)<8) return;
+    drag3.on=true; try{fig.setPointerCapture(e.pointerId);}catch{} fig.classList.add('held'); drag3.bubble=compBubble.classList.contains('on'); compBubble.classList.remove('on'); ++clipToken; stopVoice(); playing='drag'; F3.play('drag');
+    // the drag plane faces the camera through her body; keep the grab offset so she doesn't jump to the pointer
+    const n=camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize(); F3.root.getWorldPosition(_dl); drag3.plane.setFromNormalAndCoplanarPoint(n,_dl);
+    if(dragHit(e)) drag3.off.copy(_dl).sub(_dp); else drag3.off.set(0,0,0);
+    if(compSound) loadVoice('drag').then(buf=>{ if(drag3.on) startVoice(buf,performance.now()); }); }
+  if(!dragHit(e)) return;
+  _dl.copy(_dp).add(drag3.off); comp.worldToLocal(_dl);
+  const rr=Math.hypot(_dl.x,_dl.z), RMAX=3.3; if(rr>RMAX){ _dl.x*=RMAX/rr; _dl.z*=RMAX/rr; }
+  F3.root.position.set(_dl.x, Math.min(COMP_FEET+6, Math.max(COMP_FEET, _dl.y)), _dl.z);
+});
+function dragEnd(e){ if(drag3.id!==e.pointerId) return; drag3.id=null; if(!drag3.on) return; e.stopPropagation();
+  drag3.on=false; drag3.justEnded=true; setTimeout(()=>drag3.justEnded=false,0); fig.classList.remove('held'); playing=null; stopVoice(); F3.drop(); if(drag3.bubble) compBubble.classList.add('on'); }
+fig.addEventListener('pointerup',dragEnd); fig.addEventListener('pointercancel',dragEnd);
 const clipBlobs={}; let playing=null, playTimer=0, curURL='', clickN=0;
 // Her voice is decoded ahead of time and started on the frame the animation appears (same approach as the site's companion),
 // so sound and motion line up instead of the sound arriving a beat late.
@@ -1531,10 +1565,16 @@ const renderSound=()=>{ soundBtn.textContent=compSound?'🔊 聲音開':'🔇 �
 renderSound();
 soundBtn.addEventListener('click',e=>{ e.stopPropagation(); compSound=!compSound; try{localStorage.setItem('yk-island-comp-sound',compSound?'on':'off');}catch{} if(!compSound) stopVoice(); renderSound(); });
 function loadClip(name){ if(!ON_SITE) return Promise.resolve(null); return clipBlobs[name] ||= fetch(CLIP_DIR+CLIPS[name].src).then(r=>r.ok?r.blob():null).catch(()=>null); }
-function stopClip(){ clearTimeout(playTimer); playing=null; stopVoice(); figImg.onload=null; fig.classList.remove('playing'); figImg.src=STILL; if(curURL){ URL.revokeObjectURL(curURL); curURL=''; } }
+function stopClip(){ clearTimeout(playTimer); playing=null; stopVoice(); figImg.onload=null; fig.classList.remove('playing'); if(F3&&!drag3.on&&!F3.falling&&F3.kind!=='idle') F3.play('idle'); figImg.src=STILL; if(curURL){ URL.revokeObjectURL(curURL); curURL=''; } }
 let clipToken=0;
 async function playClip(name,withSound){
   if(reduced) return;
+  if(!F3) loadFairy3D();
+  if(F3){ if(drag3.on||F3.falling) return; const my=++clipToken; clearTimeout(playTimer); stopVoice();
+    const voice = withSound && compSound ? loadVoice(name) : Promise.resolve(null);
+    const len=await F3.play(name).catch(()=>0); if(my!==clipToken) return; const t0=performance.now(); playing=name; fig.classList.add('playing');
+    playTimer=setTimeout(()=>{ if(my===clipToken){ playing=null; fig.classList.remove('playing'); } },Math.max(1,len)*1000);
+    voice.then(buf=>{ if(my===clipToken) startVoice(buf,t0); }); return; }
   const my=++clipToken; clearTimeout(playTimer); stopVoice();
   const voice = withSound && compSound ? loadVoice(name) : Promise.resolve(null);
   const blob=await loadClip(name); if(my!==clipToken) return;
@@ -1548,7 +1588,7 @@ async function playClip(name,withSound){
   if(curURL) URL.revokeObjectURL(curURL); curURL=u; figImg.src=u;
 }
 fig.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse'){ const order=['dance','yawn','bye','welcome']; loadClip(order[clickN%order.length]); if(!playing) playClip('welcome',false); } });
-fig.addEventListener('click',e=>{ e.stopPropagation(); const order=['dance','yawn','bye','welcome']; playClip(order[clickN++%order.length],true); compBubble.classList.add('on'); if(state.focus!=='comp') focusComp(); });
+fig.addEventListener('click',e=>{ e.stopPropagation(); if(drag3.justEnded) return; const order=['dance','yawn','bye','welcome']; playClip(order[clickN++%order.length],true); compBubble.classList.add('on'); if(state.focus!=='comp') focusComp(); });
 // keep the figure the same size as the scene around it
 const _ft=new THREE.Vector3(), _hd=new THREE.Vector3();
 function sizeFig(){
@@ -1556,6 +1596,7 @@ function sizeFig(){
   _ft.project(camera); _hd.project(camera);
   const px=Math.abs(_hd.y-_ft.y)/2*innerHeight; if(!isFinite(px)) return;
   const k=px/(GEO.feet-GEO.top), H=GEO.h*k, Wd=GEO.w*k;
+  if(F3) figObj.position.set(F3.root.position.x,F3.root.position.y,F3.root.position.z);
   fig.style.width=Wd+'px'; fig.style.height=H+'px'; fig.style.left=(-GEO.cx*k)+'px'; fig.style.bottom=(-(GEO.h-GEO.feet)*k)+'px';
 }
 { const el=document.createElement('button'); el.type='button'; el.className='isl'; el.style.setProperty('--c','var(--c-comp)'); el.innerHTML='<b>✦</b>小精靈'; el.addEventListener('click',e=>{e.stopPropagation(); focusComp();}); const o=new CSS2DObject(el); o.position.set(0,-1.2,0); comp.add(o); }
@@ -1969,9 +2010,10 @@ function focus(key){
 }
 function focusComp(){
   if(state.focus && state.focus!=='comp') { hideDetail(); Object.values(islands).forEach(o=>{o.g.userData.pinsOn=false;}); }
-  state.focus='comp'; controls.autoRotate=false;
+  state.focus='comp'; controls.autoRotate=false; loadFairy3D();
   const look=comp.position.clone().add(new THREE.Vector3(0,4,0));
-  const pos=comp.position.clone().add(compDir.clone().multiplyScalar(mobile?30:24)).add(new THREE.Vector3(0,mobile?20:14,0));
+  // seen from the lake side: the ring-line track passes on her outer side and would cover the 3D figure
+  const pos=comp.position.clone().add(compDir.clone().multiplyScalar(mobile?-30:-26)).add(new THREE.Vector3(0,mobile?18:14,0));
   flyTo(pos,look); updateOffset(); compBubble.classList.add('on'); $('#hint').hidden=true; if(!playing) setTimeout(()=>playClip('welcome',false),700);
 }
 function unfocus(){
@@ -2296,6 +2338,7 @@ function tick(){
   if(!drive.on) controls.update();
   // keep target near the lake
   const tg=controls.target; if(Math.hypot(tg.x,tg.z)>90){const s=90/Math.hypot(tg.x,tg.z); tg.x*=s; tg.z*=s;}
+  if(F3) F3.update(dt,camera,state.nightT);
   sizeFig();
   if(state.nightT>.015){ if(!bloom) loadBloom(); }
   if(STEAM){ let on=state.nightT>.6 && reader.hidden && !document.hidden;
@@ -2307,7 +2350,7 @@ function tick(){
 }
 // first frame then reveal
 renderer.compile(scene,camera);
-requestAnimationFrame(()=>{ tick(); setTimeout(loadAnnexes,600); setTimeout(()=>{$('#loading').classList.add('done'); let seen=false; try{seen=localStorage.getItem('yk-island-tour')==='1';}catch{}
+requestAnimationFrame(()=>{ tick(); setTimeout(loadAnnexes,600); if(!mobile) setTimeout(loadFairy3D,1500); setTimeout(()=>{$('#loading').classList.add('done'); let seen=false; try{seen=localStorage.getItem('yk-island-tour')==='1';}catch{}
   if(!seen){ setTimeout(()=>{ if(!state.focus){ compBubble.classList.add('on'); if(typeof playClip==='function') playClip('welcome',false); } try{localStorage.setItem('yk-island-tour','1');}catch{} },1200); } },250); });
 // open an island from #about / #work etc.
 const h=location.hash.slice(1); if(islands[h]) setTimeout(()=>focus(h),400);
