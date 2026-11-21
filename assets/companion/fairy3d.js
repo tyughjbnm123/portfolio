@@ -1,13 +1,16 @@
 // 3D web companion (小精靈): the KKS character exported as VRM 1.0, with motions baked to VRM Animation (.vrma).
 // The island loads this module after the scene is up; until it is ready (or if it fails) the drawn companion stays.
-// Motions: idle 等待 / welcome 輕揮手 / drag DGK Drag / dance 舞04 / yawn 伸懶腰 / bye 飛吻.
+// Motions: idle 等待 / welcome 輕揮手 / drag DGK Drag / dance 舞04 / yawn 伸懶腰 / bye 飛吻 / walk walk_fwd / run runNew_fwd.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 
 const DIR = new URL('./3d/', import.meta.url);
-const FILES = { idle: 'idle_waiting', welcome: 'welcome_wave', drag: 'drag_dgk', dance: 'dance_04', yawn: 'yawn_stretch', bye: 'bye_kiss' };
-const EXPR = { idle: null, welcome: 'happy', drag: 'surprised', dance: 'happy', yawn: 'aa', bye: 'relaxed' };
+const FILES = { idle: 'idle_waiting', welcome: 'welcome_wave', drag: 'drag_dgk', dance: 'dance_04', yawn: 'yawn_stretch', bye: 'bye_kiss', walk: 'walk_fwd', run: 'run_new' };
+const EXPR = { idle: null, welcome: 'happy', drag: 'surprised', dance: 'happy', yawn: 'aa', bye: 'relaxed', walk: null, run: null };
+const LOOP = { idle: 1, drag: 1, walk: 1, run: 1 };
+// walk/run clips are in place; these are the ground speeds (in her own body heights per second) their steps match
+const STEP = { walk: .78, run: 2.3 };
 const NO_BLINK = { happy: 1, surprised: 1, aa: 1 };
 // the .vrma tracks use Unity humanoid names; VRM 1.0 adds a thumb metacarpal, so the thumb shifts by one
 const THUMB = { LeftThumbProximal: 'leftThumbMetacarpal', LeftThumbIntermediate: 'leftThumbProximal', LeftThumbDistal: 'leftThumbDistal',
@@ -29,10 +32,19 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
 
   // three-vrm runs the springs in world units: bone lengths grow with the model, but stiffness, gravity and radii
   // do not, so scale those too or the hair turns soft and floats when she is drawn this large
-  const ws = root.getWorldScale(new THREE.Vector3()).x, sb = vrm.springBoneManager;
-  if (sb) {
-    for (const j of sb.joints) { j.settings.stiffness *= ws; j.settings.gravityPower *= ws; j.settings.hitRadius *= ws; }
-    for (const c of sb.colliders) if (c.shape && typeof c.shape.radius === 'number') c.shape.radius *= ws;
+  const sb = vrm.springBoneManager;
+  let ws = 1;
+  function scaleSprings() {
+    const w = root.getWorldScale(new THREE.Vector3()).x, r = w / ws; ws = w; if (!sb || Math.abs(r - 1) < 1e-6) return;
+    for (const j of sb.joints) { j.settings.stiffness *= r; j.settings.gravityPower *= r; j.settings.hitRadius *= r; }
+    for (const c of sb.colliders) if (c.shape && typeof c.shape.radius === 'number') c.shape.radius *= r;
+  }
+  scaleSprings();
+  const bodyH = Math.max(.1, box.max.y);   // her height in model units
+  // move her under another parent at another height (e.g. walking among the island's people); springs follow
+  function place(newParent, h, pos) {
+    newParent.add(root); root.scale.setScalar(h / bodyH); if (pos) root.position.copy(pos);
+    root.updateMatrixWorld(true); scaleSprings(); vrm.update(0); if (sb) { sb.setInitState(); sb.reset(); }
   }
 
   // night: the island goes dark blue; her own textures glow a little so her face stays readable (no extra scene light)
@@ -65,14 +77,24 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
   let cur = null, curKind = null, token = 0;
   async function play(kind) {
     const my = ++token, c = await clip(kind); if (my !== token) return c.duration;
-    const loop = kind === 'idle' || kind === 'drag', a = mixer.clipAction(c);
+    const loop = !!LOOP[kind], a = mixer.clipAction(c);
     a.reset(); a.enabled = true; a.setEffectiveTimeScale(1); a.setEffectiveWeight(1);
     a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity); a.clampWhenFinished = !loop;
     if (cur && cur !== a) a.crossFadeFrom(cur, .35, false);
     a.play(); cur = a; curKind = kind; exprTarget = EXPR[kind];
     return c.duration;
   }
-  mixer.addEventListener('finished', e => { if (e.action === cur && curKind !== 'idle' && curKind !== 'drag') play('idle'); });
+  mixer.addEventListener('finished', e => { if (e.action === cur && !LOOP[curKind]) play('idle'); });
+
+  // walking under control: speed in parent units per second picks idle / walk / run and sets the step rate
+  let want = null;
+  function locomote(speed) {
+    const h = bodyH * root.scale.x, v = Math.abs(speed) / h;
+    const kind = v < .12 ? 'idle' : v < 1.35 ? 'walk' : 'run';
+    if (kind !== want) { want = kind; if (curKind !== kind) play(kind); }
+    if (cur && (curKind === 'walk' || curKind === 'run')) cur.timeScale = Math.min(1.6, Math.max(.55, v / STEP[curKind])) * Math.sign(speed || 1);
+  }
+  const stopLocomote = () => { want = null; if (cur) cur.timeScale = 1; };
 
   // drag: lifted by the pointer, then dropped back onto the islet; the fall runs on the wall clock so a slow
   // frame rate can't leave her hanging in the air
@@ -100,8 +122,9 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
       const t = (performance.now() - fall.t0) / 1000; root.position.y = Math.max(feetY, fall.y0 - 15 * t * t);
       if (root.position.y <= feetY) { fall = null; play('idle'); }
     }
-    // turn to the camera, only around the vertical axis
-    if (camera) {
+    // under control she faces where she walks; otherwise she turns to the camera, only around the vertical axis
+    if (api.heading != null) { yaw = api.heading; root.rotation.y = yaw; }
+    else if (camera) {
       camera.getWorldPosition(_cam); root.parent.worldToLocal(_cam);
       const want = Math.atan2(_cam.x - root.position.x, _cam.z - root.position.z);
       let d = want - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * (1 - Math.exp(-dt * 4)); root.rotation.y = yaw;
@@ -126,11 +149,12 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
   }
 
   vrm.update(0); if (sb) { sb.setInitState(); sb.reset(); }
-  return {
-    root, vrm, scale: k,
-    play, update, drop, listen,
+  const api = {
+    root, vrm, scale: k, heading: null,
+    play, update, drop, listen, place, locomote, stopLocomote, bodyH,
     preload: kind => clip(kind).catch(() => null),
     get kind() { return curKind; },
     get falling() { return !!fall; },
   };
+  return api;
 }

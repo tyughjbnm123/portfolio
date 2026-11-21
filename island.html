@@ -282,6 +282,7 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
 .comp-row{display:flex;align-items:center;gap:12px;margin-top:6px}
 .comp-row a{margin-top:0}
 .comp-row .comp-sound{margin-left:auto}
+.comp-row{flex-wrap:wrap;gap:4px 10px}.comp-row a,.comp-row .comp-sound{white-space:nowrap}
 .comp-fig-anchor{width:0;height:0;position:relative}
 .comp-fig{position:absolute;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 6px 6px rgba(0,0,0,.18));animation:float 3.2s ease-in-out infinite;-webkit-tap-highlight-color:transparent}
 .comp-fig img{display:block;width:100%;height:100%;pointer-events:none;user-select:none}
@@ -1496,7 +1497,7 @@ comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
 const HOVER=matchMedia('(hover:hover)').matches;
 const COMP_TIPS=['點一座島，走進去看看。', HOVER?'滑到島上各區，名稱會跳出來。':'點島上各區，名稱會跳出來。', HOVER?'想直接找？右邊清單可以搜尋。':'想直接找？右上角「清單」可以搜尋。', '按「開車」，開著車逛島。', '我藏在人群裡，按「找我」抓我。', '天黑後，小島會變成夜城。'];
-compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-play">和我玩</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
+compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-play">和我玩</a><a href="#" id="comp-walk">帶她逛島</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
 const compObj=new CSS2DObject(compEl); compObj.position.set(0,8.4,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
 let tipI=0; const tipEl=compEl.querySelector('#comp-tip'); const showTip=()=>{ tipEl.textContent=COMP_TIPS[tipI%COMP_TIPS.length]; };
@@ -1520,7 +1521,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-2')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-3')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
@@ -1597,7 +1598,7 @@ function sizeFig(){
   _ft.project(camera); _hd.project(camera);
   const px=Math.abs(_hd.y-_ft.y)/2*innerHeight; if(!isFinite(px)) return;
   const k=px/(GEO.feet-GEO.top), H=GEO.h*k, Wd=GEO.w*k;
-  if(F3) figObj.position.set(F3.root.position.x,F3.root.position.y,F3.root.position.z);
+  if(F3&&!drive.walker) figObj.position.set(F3.root.position.x,F3.root.position.y,F3.root.position.z);
   fig.style.width=Wd+'px'; fig.style.height=H+'px'; fig.style.left=(-GEO.cx*k)+'px'; fig.style.bottom=(-(GEO.h-GEO.feet)*k)+'px';
 }
 { const el=document.createElement('button'); el.type='button'; el.className='isl'; el.style.setProperty('--c','var(--c-comp)'); el.innerHTML='<b>✦</b>小精靈'; el.addEventListener('click',e=>{e.stopPropagation(); focusComp();}); const o=new CSS2DObject(el); o.position.set(0,-1.2,0); comp.add(o); }
@@ -1607,7 +1608,7 @@ function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.a
 // half the windows glow magenta at night, the other half cyan
 { let i=0; scene.traverse(o=>{ if(o.isMesh && o.material===winMat && (i++%2)) o.material=winMat2; }); }
 /* ---------- drive mode: drive between the islands, park at a pin to open it ---------- */
-const drive={shake:0,knocked:0,on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0},bump:0,joy:{on:false,x:0,y:0},look:0,looking:false};
+const drive={shake:0,knocked:0,on:false,x:0,z:4,h:Math.PI,v:0,steer:0,at:null,near:null,input:{left:0,right:0,gas:0,brake:0,run:0},bump:0,walker:false,joy:{on:false,x:0,y:0},look:0,looking:false};
 const dcar=new THREE.Group(); dcar.visible=false; scene.add(dcar);
 const cyberVehicle=createCyberVehicle(dcar);
 const INR=R*Math.cos(Math.PI/6)-.7;
@@ -1634,7 +1635,7 @@ function startDrive(){
   dcar.userData.hl.intensity=12; canvas.focus({preventScroll:true});
   loadPhysics().then(()=>{ if(drive.on) resetProps(); });
 }
-function stopDrive(){
+function stopDrive(){ endWalk();
   drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0); joyReset(); drive.look=0; resetProps(); drive.shake=0;
   controls.enabled=true; document.body.classList.remove('driving'); $('#drive-ui').hidden=true; $('#t-drive').setAttribute('aria-pressed','false');
   dcar.userData.hl.intensity=0; hideDetail(); Object.values(islands).forEach(o=>o.g.userData.pinsOn=false); state.focus=null; flyTo(HOME.pos,HOME.look); updateOffset();
@@ -1672,16 +1673,45 @@ for(const ev of ['pointerup','pointercancel','lostpointercapture']) joyZone.addE
 });
 joyZone.addEventListener('contextmenu',e=>e.preventDefault());
 if(/[?&]debug\b/.test(location.search)){ window.__isl={drive,camera,controls,dcar,whereAt,islands,THREE,scene,walkers,hub,towers:TOWERS,people:{doors:HALL_DOORS,night:NIGHT_DOORS,park:()=>ARCADE_PARK,pickRide,pickDoor,hallPt,startAct}}; window.__renderer=renderer; }
-const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake'};
+const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'gas',KeyW:'gas',ArrowDown:'brake',KeyS:'brake',ShiftLeft:'run',ShiftRight:'run'};
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
   else if((e.code==='KeyE'||e.code==='Enter') && drive.near && !e.repeat){ e.preventDefault(); openItem(drive.near.key,drive.near.i); }
 });
 addEventListener('keyup',e=>{ if(DKEYS[e.code]) drive.input[DKEYS[e.code]]=0; });
+/* ---------- walk mode: drive mode with the companion instead of the car, at the island people's size ---------- */
+const WALK_H=1.3, WALK_V=1.3, RUN_V=4.2, WALK_BACK=.7;
+const WALK_UI={help:'↑↓←→／WASD 走路 · 按住 Shift 跑步 · 靠近標記按 E 打開 · Esc 結束', gas:'前進', brake:'後退', exit:'結束', joy:'左邊拖曳：走路（推到底跑步）'};
+let driveUI=null;
+function walkSpeed(dt,inp,J){
+  let fwd, run;
+  if(J){ fwd=J.y; run=J.y>.8; } else { fwd=(inp.gas?1:0)-(inp.brake?1:0); run=!!inp.run; }
+  const top = fwd>0 ? fwd*(run?RUN_V:WALK_V) : fwd*WALK_V*WALK_BACK;
+  drive.v += (top-drive.v)*Math.min(1,dt*(Math.abs(top)>Math.abs(drive.v)?5:9));
+  drive.h -= drive.steer*2.4*dt;   // she turns on the spot
+}
+async function startWalk(){
+  if(drive.on) return;
+  if(!F3){ tipEl.textContent='等我一下，正在準備…'; compBubble.classList.add('on'); }
+  const f=F3||await loadFairy3D(); if(!f){ showTip(); return; }
+  showTip(); stopClip(); compBubble.classList.remove('on');
+  startDrive(); drive.walker=true; dcar.visible=false; dcar.userData.hl.intensity=0; fig.style.visibility='hidden';
+  f.place(scene,WALK_H,dcar.position.set(drive.x,2,drive.z)); f.heading=drive.h+Math.PI; f.play('idle');
+  const help=$('#drive-help'), gas=document.querySelector('.drive-pad [data-k="gas"]'), brake=document.querySelector('.drive-pad [data-k="brake"]'), ex=$('#drive-exit'), jh=$('#joy-help span');
+  driveUI={help:help.textContent, gas:gas.textContent, brake:brake.textContent, exit:ex.textContent, joy:jh?.textContent};
+  help.textContent=WALK_UI.help; gas.textContent=WALK_UI.gas; brake.textContent=WALK_UI.brake; ex.textContent=WALK_UI.exit; if(jh) jh.textContent=WALK_UI.joy;
+}
+function endWalk(){
+  if(!drive.walker) return; drive.walker=false; fig.style.visibility='';
+  if(F3){ F3.stopLocomote(); F3.heading=null; F3.place(comp,COMP_H,new THREE.Vector3(0,COMP_FEET,0)); F3.play('idle'); }
+  if(driveUI){ $('#drive-help').textContent=driveUI.help; document.querySelector('.drive-pad [data-k="gas"]').textContent=driveUI.gas; document.querySelector('.drive-pad [data-k="brake"]').textContent=driveUI.brake; $('#drive-exit').textContent=driveUI.exit; const jh=$('#joy-help span'); if(jh&&driveUI.joy) jh.textContent=driveUI.joy; driveUI=null; }
+}
+compEl.querySelector('#comp-walk').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); startWalk(); });
 const _pw=new THREE.Vector3();
 function driveStep(dt){
   const inp=reader.hidden?drive.input:{left:0,right:0,gas:0,brake:0}, J=reader.hidden&&drive.joy.on?drive.joy:null;
   const steerIn=J?J.x:(inp.right?1:0)-(inp.left?1:0); drive.steer+=(steerIn-drive.steer)*Math.min(1,dt*10);
+  if(drive.walker) walkSpeed(dt,inp,J); else {
   if(J){ // analog: push further for more speed, pull back to brake then reverse
     if(J.y>0){ const top=9.5*Math.min(1,J.y*1.1); drive.v+= drive.v<top ? 8*dt : -Math.min(drive.v-top,4*dt); }
     else if(J.y<0) drive.v-=(drive.v>0?16:5)*dt*Math.min(1,-J.y*1.25);
@@ -1690,14 +1720,14 @@ function driveStep(dt){
   else if(inp.gas) drive.v+=8*dt; else if(inp.brake) drive.v-=(drive.v>0?16:5)*dt; else drive.v-=Math.sign(drive.v)*Math.min(Math.abs(drive.v),4*dt);
   drive.v=THREE.MathUtils.clamp(drive.v,-3.5,9.5);
   if(drive.offroad && drive.v>5.2) drive.v=Math.max(5.2,drive.v-14*dt);   // grass is slower than the road
-  drive.h-=drive.steer*THREE.MathUtils.clamp(Math.abs(drive.v)/3,0,1)*2.2*dt*Math.sign(drive.v||1);
+  drive.h-=drive.steer*THREE.MathUtils.clamp(Math.abs(drive.v)/3,0,1)*2.2*dt*Math.sign(drive.v||1); }
   const fx=-Math.sin(drive.h), fz=-Math.cos(drive.h), nx=drive.x+fx*drive.v*dt, nz=drive.z+fz*drive.v*dt;
   // stay on land: slide along edges, bounce off when blocked
   let w=whereAt(nx,nz);
   if(w){ drive.x=nx; drive.z=nz; }
   else if((w=whereAt(nx,drive.z))){ drive.x=nx; drive.v*=.92; }
   else if((w=whereAt(drive.x,nz))){ drive.z=nz; drive.v*=.92; }
-  else { if(Math.abs(drive.v)>2.5) drive.shake=Math.min(1,drive.shake+Math.abs(drive.v)*.07); drive.v*=-.25; w=whereAt(drive.x,drive.z); }
+  else { if(drive.walker) drive.v=0; else { if(Math.abs(drive.v)>2.5) drive.shake=Math.min(1,drive.shake+Math.abs(drive.v)*.07); drive.v*=-.25; } w=whereAt(drive.x,drive.z); }
   // arriving on an island opens its card and shows its pins
   const isl=w && !w.startsWith('bridge') && w!=='hub' ? w : (w==='hub'?'hub':drive.at);
   if(isl!==drive.at){ drive.at=isl;
@@ -1711,7 +1741,8 @@ function driveStep(dt){
     const hd=Math.hypot(dx,dz)*Math.cos(hexLocal(a)); drive.offroad = hd<ROAD_IN-.3 || hd>ROAD_OUT+.3; }
   if(islands[drive.at]){ const z=zoneAt(drive.at,new THREE.Vector3(drive.x,2,drive.z)); if(z && !sameZone(z,zoneState.sticky)) zoneState.sticky=z; }
   const lift=islands[drive.at]?.lift||0;
-  dcar.position.set(drive.x,2+(w&&w.startsWith('bridge')?0:lift),drive.z); dcar.rotation.y=drive.h; cyberVehicle.update(dt,drive.v,drive.steer);
+  dcar.position.set(drive.x,2+(w&&w.startsWith('bridge')?0:lift),drive.z); dcar.rotation.y=drive.h;
+  if(drive.walker){ if(F3){ F3.root.position.copy(dcar.position); F3.heading=drive.h+Math.PI; F3.locomote(drive.v); } } else cyberVehicle.update(dt,drive.v,drive.steer);
   // nearest pin within reach
   let best=null, bd=2.6;
   if(islands[drive.at]){ const o=islands[drive.at]; o.pinLocal.forEach((pl,i)=>{ _pw.copy(pl); o.g.localToWorld(_pw); const d=Math.hypot(_pw.x-drive.x,_pw.z-drive.z); if(d<bd){bd=d; best={key:o.data.key,i};} }); }
@@ -1721,7 +1752,8 @@ function driveStep(dt){
   // chase camera
   if(!drive.looking) drive.look*=Math.exp(-dt*1.6);          // free look eases back behind the car
   const ch=drive.h+drive.look, cx=-Math.sin(ch), cz=-Math.cos(ch);
-  const back=new THREE.Vector3(drive.x-cx*9,2+lift+7.2,drive.z-cz*9), look=new THREE.Vector3(drive.x+cx*3.6,2.4,drive.z+cz*3.6);
+  const cb=drive.walker?5.6:9, chh=drive.walker?2.1:7.2, la=drive.walker?5:3.6, ly=drive.walker?3+lift:2.4;
+  const back=new THREE.Vector3(drive.x-cx*cb,2+lift+chh,drive.z-cz*cb), look=new THREE.Vector3(drive.x+cx*la,ly,drive.z+cz*la);
   const k=1-Math.exp(-dt*5); camera.position.lerp(back,k); controls.target.lerp(look,k); camera.lookAt(controls.target);
   if(drive.shake>0){ const a=drive.shake*.35; camera.position.x+=(Math.random()-.5)*a; camera.position.y+=(Math.random()-.5)*a; drive.shake=Math.max(0,drive.shake-dt*2.6); }
 }
