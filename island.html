@@ -1571,7 +1571,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-7')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-8')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
@@ -1651,7 +1651,7 @@ function sizeFig(){
   if(F3&&!drive.walker) figObj.position.set(F3.root.position.x,F3.root.position.y,F3.root.position.z);
   fig.style.width=Wd+'px'; fig.style.height=H+'px'; fig.style.left=(-GEO.cx*k)+'px'; fig.style.bottom=(-(GEO.h-GEO.feet)*k)+'px';
 }
-{ const el=document.createElement('button'); el.type='button'; el.className='isl'; el.style.setProperty('--c','var(--c-comp)'); el.innerHTML='<b>✦</b>小精靈'; el.addEventListener('click',e=>{e.stopPropagation(); focusComp();}); const o=new CSS2DObject(el); o.position.set(0,1.5,0); comp.add(o); }
+// (no name tag at her feet: she is found by clicking her, or from the list)
 const compDir=comp.position.clone().normalize();
 
 function pulsePin(key,i){ const a=islands[key]?.pinLabels[i]; if(!a) return; a.animate?.([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:600,easing:'ease-out'}); }

@@ -1,7 +1,7 @@
 // The web page's floating companion drawn in 3D: a small transparent three.js stage holding the same VRM model
 // as the island (fairy3d.js). companion-player-3d.js mounts it inside the widget's sprite box.
 import * as THREE from 'three';
-import { createFairy3D } from './fairy3d.js?v=20261121-7';
+import { createFairy3D } from './fairy3d.js?v=20261121-8';
 
 export async function mountFairy(el) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });

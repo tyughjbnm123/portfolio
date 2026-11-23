@@ -27,6 +27,23 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
   // turns, sometimes draws the white over the iris (the eyes flash white). Fix the order: white, iris, then lines.
   const EYE_LAYER = { cf_Ohitomi_L: 1, cf_Ohitomi_R: 1, cf_Ohitomi_L02: 2, cf_Ohitomi_R02: 2, cf_O_eyeline: 3, cf_O_eyeline_low: 3, cf_O_mayuge: 3, cf_O_noseline: 3 };
   vrm.scene.traverse(o => { if (o.isMesh && EYE_LAYER[o.name]) o.renderOrder += EYE_LAYER[o.name]; });
+  // the converted boots don't hide the legs, so calf, heel and instep skin pokes through the lace gaps, the heel and
+  // the sole. Drop body triangles lying wholly inside the boots (from 10 cm under the boot top down, so the leg still
+  // shows in the boots' back notch).
+  {
+    let body = null, boots = null;
+    vrm.scene.traverse(o => { if (o.isMesh && o.name === 'o_body_a') body = o; if (o.isMesh && o.name === 'Boots') boots = o; });
+    if (body && boots && body.geometry.index) {
+      boots.geometry.computeBoundingBox();
+      const top = boots.geometry.boundingBox.max.y - .10, g = body.geometry, p = g.attributes.position, idx = g.index, keep = [];
+      for (let i = 0; i < idx.count; i += 3) {
+        const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
+        if (p.getY(a) < top && p.getY(b) < top && p.getY(c) < top) continue;
+        keep.push(a, b, c);
+      }
+      g.setIndex(keep); for (const gr of g.groups) gr.count = keep.length;
+    }
+  }
   // a few hair vertices carry zero-length normals; normalising them gives NaN in the shader, and at night the bloom
   // pass smears that NaN into a flickering black box around her. Point them outward from the mesh centre instead.
   vrm.scene.traverse(o => {

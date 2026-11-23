@@ -17,7 +17,7 @@
       const job = (async () => {
         this.clips = await this.fetchFile('clips-v28.json', 'json');
         if (!canModule) throw Error('no import maps');
-        const mod = await import(new URL('fairy3d-widget.js?v=20261121-1', base).href);
+        const mod = await import(new URL('fairy3d-widget.js?v=20261121-2', base).href);
         this.stage = await mod.mountFairy(this.element);
         this.f3 = this.stage.fairy;
         for (const k of ['welcome', 'dance', 'yawn', 'bye', 'drag']) this.f3.preload(k);
