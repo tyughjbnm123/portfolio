@@ -346,6 +346,39 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
   .hint{display:none}
   .pin{font-size:10px}
 }
+/* sprite-guided tour: a first-visit welcome card and a step bar */
+.tour-welcome{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:var(--scrim);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.tour-welcome[hidden],.tour-bar[hidden]{display:none}
+.tour-card{width:min(380px,100%);padding:22px 22px 18px;text-align:center}
+.tour-ava{display:block;border-radius:50%;background:color-mix(in srgb,var(--c-comp) 18%,var(--surface)) var(--sprite) 50% 6%/150% auto no-repeat;box-shadow:0 0 0 2px var(--c-comp);flex:none}
+.tour-card .tour-ava{width:72px;height:72px;margin:0 auto 12px}
+.tour-card h2{margin:0 0 6px;font-size:20px;letter-spacing:-.01em}
+.tour-card p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.6}
+.tour-card .tour-go{display:flex;width:100%;justify-content:center;align-items:baseline;gap:8px;min-height:48px;padding:12px 16px;border:0;border-radius:999px;background:var(--c-comp);color:var(--bg);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.tour-card .tour-go small{font-weight:500;font-size:12px;opacity:.85}
+.tour-card .tour-skip{margin-top:8px;min-height:44px;width:100%;border:0;background:none;color:var(--muted);font:inherit;font-size:14px;cursor:pointer}
+.tour-go:focus-visible,.tour-skip:focus-visible,.tour-bar button:focus-visible{outline:2px solid var(--c-comp);outline-offset:3px}
+.tour-bar{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(540px,calc(100% - 24px));display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;overflow:hidden}
+.tour-bar .tour-ava{width:46px;height:46px}
+.tour-text{flex:1;min-width:0}
+.tour-text small{display:block;font:600 10px/1.4 var(--mono);letter-spacing:.14em;color:var(--c-comp)}
+.tour-text b{display:block;font-size:15px;line-height:1.35}
+.tour-text span{display:block;font-size:13px;line-height:1.5;color:var(--muted)}
+.tour-btns{display:flex;gap:6px;flex:none}
+.tour-bar button{min-width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;cursor:pointer;padding:0 10px}
+.tour-bar button:disabled{opacity:.35;cursor:default}
+.tour-bar .tour-next{background:var(--c-comp);border-color:transparent;color:var(--bg);font-weight:700;padding:0 14px}
+.tour-prog{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--c-comp);transform-origin:left;transform:scaleX(0)}
+.tour-prog.run{animation:tourProg var(--dur,9s) linear forwards}
+.tour-bar.paused .tour-prog{animation-play-state:paused}
+@keyframes tourProg{to{transform:scaleX(1)}}
+body.touring .hint,body.touring .metro-panel{display:none}
+@media (max-width:760px){
+  .tour-bar{bottom:auto;top:calc(70px + env(safe-area-inset-top,0px));gap:10px;padding:10px}
+  .tour-bar .tour-ava{width:38px;height:38px}
+  .tour-text b{font-size:14px}.tour-text span{font-size:12px}
+  .tour-bar .tour-pause{display:none}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -456,6 +489,26 @@ button.pin{cursor:pointer;font:inherit;font-size:11px;color:inherit}
     </div>
   </div>
 
+  <div class="tour-welcome" id="tour-welcome" hidden role="dialog" aria-modal="true" aria-labelledby="tour-title">
+    <div class="tour-card panel">
+      <i class="tour-ava" aria-hidden="true"></i>
+      <h2 id="tour-title">歡迎來到我的作品島</h2>
+      <p>五座小島，放著我是誰、做過的專案、工具和實驗。<br>第一次來，讓小精靈帶你走一圈吧。</p>
+      <button type="button" class="tour-go" id="tour-go">讓小精靈帶我逛 <small>約 1 分鐘</small></button>
+      <button type="button" class="tour-skip" id="tour-skip">我自己逛逛</button>
+    </div>
+  </div>
+  <div class="tour-bar panel" id="tour-bar" hidden aria-live="polite">
+    <i class="tour-ava" aria-hidden="true"></i>
+    <div class="tour-text"><small id="tour-step"></small><b id="tour-name"></b><span id="tour-line"></span></div>
+    <div class="tour-btns">
+      <button type="button" id="tour-prev" aria-label="上一站">‹</button>
+      <button type="button" class="tour-pause" id="tour-pause" aria-label="暫停自動播放">❚❚</button>
+      <button type="button" class="tour-next" id="tour-next">下一站</button>
+      <button type="button" id="tour-end" aria-label="結束導覽">✕</button>
+    </div>
+    <i class="tour-prog" id="tour-prog"></i>
+  </div>
   <div class="hint" id="hint">拖曳轉動 · 滾輪縮放 · 點島嶼走進去</div>
 
 
@@ -1495,7 +1548,7 @@ comp.traverse(o=>{if(o.isMesh){o.userData.key='comp'; pickables.push(o);}});
 const compEl=document.createElement('div'); compEl.className='sprite-anchor';
 const HOVER=matchMedia('(hover:hover)').matches;
 const COMP_TIPS=['點一座島，走進去看看。', HOVER?'滑到島上各區，名稱會跳出來。':'點島上各區，名稱會跳出來。', HOVER?'想直接找？右邊清單可以搜尋。':'想直接找？右上角「清單」可以搜尋。', '按「開車」，開著車逛島。', '天黑後，小島會變成夜城。'];
-compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-walk">帶她逛島</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
+compEl.innerHTML=`<div class="bubble comp-bubble" id="comp-bubble"><b>嗨！我是小精靈</b><span class="comp-tip" id="comp-tip" aria-live="polite"></span><span class="comp-row"><a href="#" id="comp-tour">帶我逛</a><a href="#" id="comp-next">下一則 ›</a><a href="#" id="comp-walk">帶她逛島</a><button type="button" class="comp-sound" id="comp-sound"></button></span></div>`;
 const compObj=new CSS2DObject(compEl); compObj.position.set(0,3.9,0); comp.add(compObj);
 const compBubble=compEl.querySelector('#comp-bubble');
 let tipI=0; const tipEl=compEl.querySelector('#comp-tip'); const showTip=()=>{ tipEl.textContent=COMP_TIPS[tipI%COMP_TIPS.length]; };
@@ -2203,6 +2256,47 @@ addEventListener('keydown',e=>{
   if(!reader.hidden && rApp.hidden && cur?.ctx.key && !e.target.closest('input,textarea')){ if(e.key==='ArrowRight'&&!$('#r-next').disabled) openItem(cur.ctx.key,cur.ctx.index+1); if(e.key==='ArrowLeft'&&!$('#r-prev').disabled) openItem(cur.ctx.key,cur.ctx.index-1); }
 });
 
+/* Sprite-guided tour: she walks the visitor through the five islands, one stop every few seconds */
+const tour={on:false,i:0,auto:true,timer:0}, TOUR_MS=9000;
+const tourBar=$('#tour-bar'), tourWelcome=$('#tour-welcome'), tourProg=$('#tour-prog');
+document.documentElement.style.setProperty('--sprite',`url("${COMP.sprite}")`);
+function tourShow(){
+  const d=D[tour.i], last=tour.i===D.length-1;
+  $('#tour-step').textContent=`第 ${tour.i+1} 站 / 共 ${D.length} 站`;
+  $('#tour-name').textContent=`${d.no} ${d.name}`;
+  $('#tour-line').textContent=d.say;
+  $('#tour-prev').disabled=tour.i===0;
+  $('#tour-next').textContent=last?'逛完了':'下一站';
+  focus(d.key);
+  clearTimeout(tour.timer); tourProg.classList.remove('run'); void tourProg.offsetWidth;
+  if(tour.auto){ tourProg.style.setProperty('--dur',TOUR_MS+'ms'); tourProg.classList.add('run'); tour.timer=setTimeout(tourNext,TOUR_MS); }
+}
+function tourPause(p){ tour.auto=!p; tourBar.classList.toggle('paused',p);
+  const b=$('#tour-pause'); b.textContent=p?'▶':'❚❚'; b.setAttribute('aria-label',p?'繼續自動播放':'暫停自動播放');
+  if(p) clearTimeout(tour.timer); else tourShow(); }
+function tourNext(){ if(tour.i<D.length-1){ tour.i++; tourShow(); } else endTour(true); }
+function startTour(){
+  tourWelcome.hidden=true; if(drive.on) stopDrive(); if(hunt.on) endHunt();
+  compBubble.classList.remove('on'); tour.on=true; tour.i=0; tourBar.hidden=false; document.body.classList.add('touring');
+  tourPause(false); $('#tour-next').focus({preventScroll:true});
+}
+function endTour(done){
+  if(!tour.on) return; tour.on=false; clearTimeout(tour.timer); tourBar.hidden=true; tourBar.classList.remove('paused'); document.body.classList.remove('touring');
+  if(state.focus) unfocus();
+  if(done) setTimeout(()=>{ if(state.focus) return; tipEl.textContent='逛完了！想再看哪座島，點它就好。'; compBubble.classList.add('on'); if(typeof playClip==='function') playClip('bye',false); },900);
+}
+$('#tour-go').addEventListener('click',startTour);
+$('#tour-skip').addEventListener('click',()=>{ tourWelcome.hidden=true; compBubble.classList.add('on'); if(typeof playClip==='function') playClip('welcome',false); });
+$('#tour-next').addEventListener('click',()=>{ if(tour.i<D.length-1){ tour.i++; tourShow(); } else endTour(true); });
+$('#tour-prev').addEventListener('click',()=>{ if(tour.i>0){ tour.i--; tourShow(); } });
+$('#tour-pause').addEventListener('click',()=>tourPause(tour.auto));
+$('#tour-end').addEventListener('click',()=>endTour(false));
+compEl.querySelector('#comp-tour').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); startTour(); });
+// the visitor takes over: dragging or tapping the scene pauses the tour instead of pulling the camera away from them
+controls.addEventListener('start',()=>{ if(tour.on && tour.auto) tourPause(true); });
+for(const el of [canvas,$('#detail')]) el.addEventListener('pointerdown',()=>{ if(tour.on && tour.auto) tourPause(true); });   // reading an island's list also pauses
+addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(tour.on) endTour(false); else if(!tourWelcome.hidden) $('#tour-skip').click(); });
+
 /* Taiwan time: the island's day and night follow sunrise / sunset in Taipei */
 const TPE=(()=>{
   const fmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',hourCycle:'h23'});
@@ -2529,7 +2623,7 @@ function tick(){
 // first frame then reveal
 renderer.compile(scene,camera);
 requestAnimationFrame(()=>{ tick(); setTimeout(loadAnnexes,600); if(!mobile) setTimeout(loadFairy3D,1500); setTimeout(()=>{$('#loading').classList.add('done'); let seen=false; try{seen=localStorage.getItem('yk-island-tour')==='1';}catch{}
-  if(!seen){ setTimeout(()=>{ if(!state.focus){ compBubble.classList.add('on'); if(typeof playClip==='function') playClip('welcome',false); } try{localStorage.setItem('yk-island-tour','1');}catch{} },1200); } },250); });
+  if(!seen && !location.hash){ setTimeout(()=>{ if(!state.focus){ tourWelcome.hidden=false; $('#tour-go').focus({preventScroll:true}); } try{localStorage.setItem('yk-island-tour','1');}catch{} },900); } },250); });   // first visit: offer the guided tour
 // open an island from #about / #work etc.
 const h=location.hash.slice(1); if(islands[h]) setTimeout(()=>focus(h),400);
 </script>
