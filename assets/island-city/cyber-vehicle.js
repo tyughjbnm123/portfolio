@@ -3,7 +3,8 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Original compact coupe, kept inside the existing driving collider (1.24 x 2.36).
 // The car faces local -Z, exactly like the original steering and chase camera.
-export function createCyberVehicle(parent){
+// open: a convertible (no canopy), with two seats and a steering wheel for the companion to drive
+export function createCyberVehicle(parent,{open=false}={}){
   const shell=new THREE.Group();parent.add(shell);shell.name='霓虹街車';
   const paint=new THREE.MeshStandardMaterial({color:0x86a6a7,emissive:0x101d22,emissiveIntensity:.35,metalness:.62,roughness:.37});
   const dark=new THREE.MeshStandardMaterial({color:0x15202b,roughness:.58,metalness:.6});
@@ -18,10 +19,17 @@ export function createCyberVehicle(parent){
   function profile(points,width,material){const shape=new THREE.Shape();points.forEach(([z,y],i)=>i?shape.lineTo(z,y):shape.moveTo(z,y));shape.closePath();const g=new THREE.ExtrudeGeometry(shape,{depth:width,bevelEnabled:true,bevelSize:.025,bevelThickness:.015,bevelSegments:1,steps:1});g.translate(0,0,-width/2);g.rotateY(-Math.PI/2);return add(g,material,0,0,0);}
   profile([[-1.1,.27],[-1.12,.43],[-.85,.58],[.68,.57],[1.1,.43],[1.1,.27]],1.06,paint);
   box(1.1,.14,2.21,0,.22,0,dark);
-  profile([[-.61,.56],[-.29,.98],[.42,1.01],[.77,.57]],.84,glass);
-  box(.87,.065,.75,0,1.015,.075,paint);
+  if(!open){
+    profile([[-.61,.56],[-.29,.98],[.42,1.01],[.77,.57]],.84,glass);
+    box(.87,.065,.75,0,1.015,.075,paint);
+  }else{
+    // low raked windscreen, a dark cockpit tub, two seats; the driver sits on the left
+    const ws=box(.86,.24,.03,0,.7,-.5,glass);ws.rotation.x=-.5;
+    box(.9,.06,1.0,0,.4,.12,dark);
+    for(const x of [-.23,.23]){box(.34,.1,.36,x,.47,.16,dark);const back=box(.34,.22,.07,x,.6,.38,dark);back.rotation.x=.18;}
+  }
   for(const side of [-1,1]){
-    box(.055,.43,.06,side*.44,.78,.2,paint);
+    if(!open)box(.055,.43,.06,side*.44,.78,.2,paint);
     box(.065,.045,1.57,side*.553,.49,-.08,cyan);
     box(.075,.17,1.2,side*.55,.31,0,dark);
     box(.12,.08,.16,side*.56,.72,-.31,paint);
@@ -42,6 +50,11 @@ export function createCyberVehicle(parent){
   // Merge static panels by material; steering wheels stay separate.
   const batches=new Map();for(const m of [...shell.children])if(m.isMesh){m.updateMatrix();let g=m.geometry.clone().applyMatrix4(m.matrix);if(g.index){const indexed=g;g=g.toNonIndexed();indexed.dispose();}if(!batches.has(m.material))batches.set(m.material,[]);batches.get(m.material).push(g);shell.remove(m);m.geometry.dispose();}
   for(const [m,geos] of batches){const g=mergeGeometries(geos,false);add(g,m,0,0,0);geos.forEach(g=>g.dispose());}
+  let wheel=null;
+  if(open){wheel=new THREE.Group();wheel.position.set(-.23,.72,-.2);wheel.rotation.x=-1.0;shell.add(wheel);
+    add(new THREE.TorusGeometry(.12,.018,6,20),dark,0,0,0,wheel);add(new THREE.BoxGeometry(.2,.02,.02),dark,0,0,0,wheel);
+    add(new THREE.CylinderGeometry(.02,.02,.25,6),dark,0,-.11,.07,shell).rotation.x=.55;}
   const light=new THREE.SpotLight(0xc9f2ff,0,22,.6,.5,1.2),target=new THREE.Object3D();light.position.set(0,.57,-1.08);target.position.set(0,0,-8);parent.add(light,target);light.target=target;parent.userData.hl=light;
-  return {update(dt,speed,steer){tires.forEach(({axle,z,spoke})=>{if(z<0)axle.rotation.y=-steer*.3;spoke.rotation.x-=speed*dt/.23;});red.emissiveIntensity=speed<-.05?1.9:1.2;}};
+  return {seat:open?new THREE.Vector3(-.23,.2,.16):null,
+    update(dt,speed,steer){tires.forEach(({axle,z,spoke})=>{if(z<0)axle.rotation.y=-steer*.3;spoke.rotation.x-=speed*dt/.23;});red.emissiveIntensity=speed<-.05?1.9:1.2;if(wheel)wheel.rotation.z=-steer*.9;}};
 }
