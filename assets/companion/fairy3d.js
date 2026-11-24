@@ -129,6 +129,14 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
     if (cur && (curKind === 'walk' || curKind === 'run')) cur.timeScale = Math.min(1.6, Math.max(.55, v / STEP[curKind])) * Math.sign(speed || 1);
   }
   const stopLocomote = () => { want = null; if (cur) cur.timeScale = 1; };
+  // riding (train, lift, rides, car): the hair simulates in her own frame, so the vehicle's motion doesn't fling it
+  // back (no inertia from being carried); her own motions still sway it
+  let carried = false;
+  function carry(on) {
+    on = !!on; if (!sb || on === carried) return; carried = on;
+    for (const j of sb.joints) j.center = on ? root : null;
+    root.updateMatrixWorld(true); vrm.update(0); sb.reset();
+  }
   const jump = () => { if (curKind !== 'jump' && !fall) { want = 'jump'; play('jump'); } };
 
   // drag: lifted by the pointer, then dropped back onto the islet; the fall runs on the wall clock so a slow
@@ -180,13 +188,14 @@ export async function createFairy3D({ parent, feetY = 0, height = 5, onProgress 
       if (blinkK > 0) { blinkK -= dt; em.setValue('blink', Math.sin(Math.max(0, blinkK) / .16 * Math.PI)); }
     }
     mixer.update(dt);
+    if (carried) root.updateMatrixWorld(true);   // the springs read her frame this frame
     vrm.update(dt);
   }
 
   vrm.update(0); if (sb) { sb.setInitState(); sb.reset(); }
   const api = {
     root, vrm, scale: k, heading: null,
-    play, update, drop, listen, place, locomote, stopLocomote, jump, bodyH,
+    play, update, drop, listen, place, locomote, stopLocomote, jump, carry, bodyH,
     preload: kind => clip(kind).catch(() => null),
     get kind() { return curKind; },
     get falling() { return !!fall; },

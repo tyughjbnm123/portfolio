@@ -400,7 +400,7 @@ body.touring .hint,body.touring .metro-panel{display:none}
     <button class="tool" id="t-bird" type="button"><svg viewBox="0 0 24 24"><path d="M12 3 21 8l-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>鳥瞰</button>
     <button class="tool" id="t-night" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>夜晚</button>
     <button class="tool" id="t-spin" aria-pressed="true" type="button"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>環繞</button>
-    <button class="tool" id="t-drive" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 16V12l2-5h10l2 5v4"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/><path d="M7 12h10"/></svg>開車</button>
+    <button class="tool" id="t-drive" aria-pressed="false" type="button" hidden><svg viewBox="0 0 24 24"><path d="M5 16V12l2-5h10l2 5v4"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/><path d="M7 12h10"/></svg>開車</button>
     <button class="tool" id="t-walk" aria-pressed="false" type="button"><svg viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="2"/><path d="M11 21l2-6 3 3v3"/><path d="M8 12l3-4.5 4 2 2 3"/><path d="M11 7.5 10 14"/></svg>逛島</button>
     <button class="tool" id="t-hunt" aria-pressed="false" type="button" hidden><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><circle cx="10.5" cy="9" r="1.8"/><path d="M7.6 13.4a3.2 3.2 0 0 1 5.8 0"/></svg>找我</button>
   </nav>
@@ -489,6 +489,7 @@ body.touring .hint,body.touring .metro-panel{display:none}
       <div><button type="button" data-k="left" aria-label="左轉">←</button><button type="button" data-k="right" aria-label="右轉">→</button></div>
       <button type="button" class="drive-exit" id="drive-exit">下車</button>
       <button type="button" class="walk-jump" id="walk-jump" hidden aria-label="跳">跳</button>
+      <button type="button" class="drive-exit walk-car" id="walk-car" hidden>開車</button>
       <div><button type="button" data-k="brake" aria-label="煞車／倒車">煞車</button><button type="button" data-k="gas" class="gas" aria-label="油門">油門</button></div>
     </div>
   </div>
@@ -1575,7 +1576,7 @@ const fig=figAnchor.querySelector('.comp-fig'), figImg=fig.querySelector('img');
 let F3=null, f3Loading=null;
 function loadFairy3D(){
   if(F3||f3Loading||reduced||!ON_SITE) return f3Loading;
-  f3Loading=import('./assets/companion/fairy3d.js?v=20261121-8')
+  f3Loading=import('./assets/companion/fairy3d.js?v=20261124-1')
     .then(m=>m.createFairy3D({parent:comp, feetY:COMP_FEET, height:COMP_H}))
     .then(f=>{ F3=f; window.__fairy3d=f; fig.classList.add('is-3d'); stopClip(); f.play('idle'); ['welcome','dance','yawn','bye','drag'].forEach(k=>f.preload(k)); return f; })
     .catch(e=>{ console.warn('3D companion unavailable; the drawn one stays.',e); return null; });
@@ -1690,7 +1691,7 @@ function startDrive(walking=false){
   dcar.userData.hl.intensity=12; canvas.focus({preventScroll:true});
   loadPhysics().then(()=>{ if(drive.on) resetProps(); });
 }
-function stopDrive(){ endWalk(); unseatDriver();
+function stopDrive(){ endWalk(); unseatDriver(); restoreDriveUI(); $('#walk-car').hidden=true; $('#t-walk').setAttribute('aria-pressed','false');
   drive.on=false; dcar.visible=false; Object.keys(drive.input).forEach(k=>drive.input[k]=0); joyReset(); drive.look=0; resetProps(); drive.shake=0;
   controls.enabled=true; document.body.classList.remove('driving'); $('#drive-ui').hidden=true; $('#t-drive').setAttribute('aria-pressed','false');
   dcar.userData.hl.intensity=0; hideDetail(); Object.values(islands).forEach(o=>o.g.userData.pinsOn=false); state.focus=null; flyTo(HOME.pos,HOME.look); updateOffset();
@@ -1733,24 +1734,28 @@ const DKEYS={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowU
 addEventListener('keydown',e=>{ if(!drive.on||!reader.hidden||e.target.closest('input,textarea,select')) return;
   if(DKEYS[e.code]){ e.preventDefault(); drive.input[DKEYS[e.code]]=1; }
   else if(e.code==='Space' && drive.walker){ e.preventDefault(); if(!e.repeat && F3) F3.jump(); }
+  else if(e.code==='KeyF' && !e.repeat && !drive.ride){ e.preventDefault(); drive.walker?switchToCar():switchToWalk(); }
   else if((e.code==='KeyE'||e.code==='Enter') && drive.near && !e.repeat && !drive.ride){ e.preventDefault(); openItem(drive.near.key,drive.near.i); }
   else if((e.code==='KeyE'||e.code==='Enter') && drive.walker && !e.repeat && (metroAct()||parkAct())) e.preventDefault();
 });
 addEventListener('keyup',e=>{ if(DKEYS[e.code]) drive.input[DKEYS[e.code]]=0; });
 /* ---------- walk mode: drive mode with the companion instead of the car, at the island people's size ---------- */
 const WALK_H=1.3, WALK_V=1.3, RUN_V=4.2, WALK_BACK=.7;
-const WALK_UI={help:'↑↓←→／WASD 走 · Shift 跑 · 空白鍵跳 · 右鍵拖曳轉視角 · 滾輪縮放 · E 打開標記／搭捷運／坐遊樂設施 · Esc 結束', gas:'前進', brake:'後退', exit:'結束', joy:'左邊拖曳：走路（推到底跑步）'};
+const WALK_UI={help:'↑↓←→／WASD 走 · Shift 跑 · 空白鍵跳 · F 開車 · 右鍵拖曳轉視角 · 滾輪縮放 · E 打開標記／搭捷運／坐遊樂設施 · Esc 結束', gas:'前進', brake:'後退', exit:'結束', joy:'左邊拖曳：走路（推到底跑步）', car:'開車'};
+const CAR_UI={help:'↑↓←→／WASD 開車 · F 下車走路 · 靠近標記按 E 打開 · Esc 結束', gas:'油門', brake:'煞車', exit:'結束', joy:'左邊拖曳：開車', car:'下車走路'};
+function modeUI(m){ const help=$('#drive-help'), gas=document.querySelector('.drive-pad [data-k="gas"]'), brake=document.querySelector('.drive-pad [data-k="brake"]'), jh=$('#joy-help span');
+  help.textContent=m.help; gas.textContent=m.gas; brake.textContent=m.brake; $('#drive-exit').textContent=m.exit; if(jh) jh.textContent=m.joy; $('#walk-car').textContent=m.car; $('#walk-car').hidden=false; }
 let driveUI=null;
 // driving: she sits at the wheel of the convertible, at her walking size
 let driverSeated=false;
 function seatDriver(){
   if(!F3 || !cyberVehicle.seat || drive.walker) return;
   stopClip(); compBubble.classList.remove('on'); fig.style.visibility='hidden';
-  F3.place(dcar,WALK_H,cyberVehicle.seat); F3.heading=Math.PI; F3.play('sit'); driverSeated=true;   // the car faces -z
+  F3.place(dcar,WALK_H,cyberVehicle.seat); F3.heading=Math.PI; F3.stopLocomote(); F3.play('sit'); F3.carry(true); driverSeated=true;   // the car faces -z
 }
 function unseatDriver(){
   if(!driverSeated) return; driverSeated=false;
-  if(F3){ F3.heading=null; F3.place(comp,COMP_H,new THREE.Vector3(0,COMP_FEET,0)); F3.play('idle'); }
+  if(F3){ F3.carry(false); F3.heading=null; F3.place(comp,COMP_H,new THREE.Vector3(0,COMP_FEET,0)); F3.play('idle'); }
   fig.style.visibility='';
 }
 function walkSpeed(dt,inp,J){
@@ -1771,13 +1776,32 @@ async function startWalk(){
   const help=$('#drive-help'), gas=document.querySelector('.drive-pad [data-k="gas"]'), brake=document.querySelector('.drive-pad [data-k="brake"]'), ex=$('#drive-exit'), jh=$('#joy-help span');
   driveUI={help:help.textContent, gas:gas.textContent, brake:brake.textContent, exit:ex.textContent, joy:jh?.textContent};
   $('#walk-jump').hidden=false; $('#t-walk').setAttribute('aria-pressed','true'); $('#t-drive').setAttribute('aria-pressed','false');
-  help.textContent=WALK_UI.help; gas.textContent=WALK_UI.gas; brake.textContent=WALK_UI.brake; ex.textContent=WALK_UI.exit; if(jh) jh.textContent=WALK_UI.joy;
+  modeUI(WALK_UI);
 }
 function endWalk(){
   if(!drive.walker) return; drive.walker=false; $('#walk-jump').hidden=true; $('#t-walk').setAttribute('aria-pressed','false'); if(drive.ride?.seat) drive.ride.seat.taken=null; drive.ride=null; drive.mk=null; drive.station=null; fig.style.visibility='';
-  if(F3){ F3.stopLocomote(); F3.heading=null; F3.place(comp,COMP_H,new THREE.Vector3(0,COMP_FEET,0)); F3.play('idle'); }
+  if(F3){ F3.carry(false); F3.stopLocomote(); F3.heading=null; F3.place(comp,COMP_H,new THREE.Vector3(0,COMP_FEET,0)); F3.play('idle'); }
   if(driveUI){ $('#drive-help').textContent=driveUI.help; document.querySelector('.drive-pad [data-k="gas"]').textContent=driveUI.gas; document.querySelector('.drive-pad [data-k="brake"]').textContent=driveUI.brake; $('#drive-exit').textContent=driveUI.exit; const jh=$('#joy-help span'); if(jh&&driveUI.joy) jh.textContent=driveUI.joy; driveUI=null; }
 }
+function restoreDriveUI(){ if(!driveUI) return; $('#drive-help').textContent=driveUI.help; document.querySelector('.drive-pad [data-k="gas"]').textContent=driveUI.gas; document.querySelector('.drive-pad [data-k="brake"]').textContent=driveUI.brake; $('#drive-exit').textContent=driveUI.exit; const jh=$('#joy-help span'); if(jh&&driveUI.joy) jh.textContent=driveUI.joy; driveUI=null; }
+// one tour, two ways round: she gets into the convertible where she stands, and out on the driver's side
+function switchToCar(){
+  if(!drive.on || !drive.walker || drive.ride || !F3) return;
+  drive.walker=false; drive.mk=null; drive.station=null; drive.park=null; $('#drive-prompt').hidden=true; drive.near=null;
+  $('#walk-jump').hidden=true; F3.stopLocomote(); drive.v=0; drive.look=0;
+  dcar.visible=true; dcar.userData.hl.intensity=12; dcar.position.set(drive.x,2,drive.z); dcar.rotation.y=drive.h;
+  seatDriver(); modeUI(CAR_UI);
+}
+function switchToWalk(){
+  if(!drive.on || drive.walker || !F3) return;
+  const lx=-Math.cos(drive.h), lz=Math.sin(drive.h);   // the car's left: the driver's side
+  let x=drive.x+lx*1.1, z=drive.z+lz*1.1; if(!whereAt(x,z)){ x=drive.x; z=drive.z; }
+  driverSeated=false; drive.walker=true; drive.v=0; drive.x=x; drive.z=z; F3.carry(false);
+  F3.place(scene,WALK_H,new THREE.Vector3(x,2,z)); F3.heading=drive.h+Math.PI; F3.play('idle');
+  dcar.visible=false; dcar.userData.hl.intensity=0; walkCam.on=false; drive.pitch=.3; drive.zoom=1; drive.look=0;
+  $('#walk-jump').hidden=false; modeUI(WALK_UI);
+}
+$('#walk-car').addEventListener('click',e=>{ e.stopPropagation(); drive.walker?switchToCar():switchToWalk(); });
 // her chase camera orbits her: right-drag (or the right half on touch) turns it, the wheel zooms
 function walkCam(dt,ty,stiff=5){
   // the camera is locked to her position (any lag shows as jitter when frame times vary); only its angle eases
@@ -1818,10 +1842,16 @@ const then=fn=>()=>{ fn(); return true; };
 function upToPlatform(i){ return [ walkTo(()=>SP(i,-5.1,GANG,0)), liftTo(i,GANG,false), walkTo(()=>SP(i,LIFT_X,GANG,0)), liftTo(i,PY(),true), walkTo(()=>SP(i,.55,PY(),0)), faceOut(i) ]; }
 function downToIsland(i){ return [ liftTo(i,PY(),false), walkTo(()=>SP(i,LIFT_X,PY(),0)), liftTo(i,GANG,true), walkTo(()=>SP(i,-5.1,GANG,0)), walkTo(()=>SP(i,GATE_X,2,0)),
   then(()=>{ const a=METRO.stops[i].angle, cam=drive.ride?.cam; drive.ride=null; drive.mk=null; if(cam) Object.assign(drive,cam);
-    drive.x=F3.root.position.x; drive.z=F3.root.position.z; drive.h=Math.PI/2-a; drive.v=0; F3.heading=drive.h+Math.PI; F3.locomote(0); }) ]; }
-const carPoint=()=>METRO.cars[1].localToWorld(_sv.set(0,.38,0)).clone();
+    drive.x=F3.root.position.x; drive.z=F3.root.position.z; drive.h=Math.PI/2-a; drive.v=0; F3.heading=drive.h+Math.PI; F3.locomote(0); F3.carry(false); }) ]; }
+// the car moved this frame: refresh its matrix first, or she trails it by one frame and jitters inside it
+const carNow=()=>{ const c=METRO.cars[1]; c.updateWorldMatrix(true,false); return c; };
+const carPoint=()=>carNow().localToWorld(_sv.set(0,.38,0)).clone();
+// her seat: the inner bench, behind the doors, facing out across the aisle to the lake windows
+const seatPoint=()=>carNow().localToWorld(_sv.set(.46,.38,-1.1)).clone();
+const seatYaw=()=>METRO.cars[1].rotation.y-Math.PI/2;
 function board(i){
   const a=METRO.stops[i].angle; drive.v=0; drive.h=Math.atan2(-Math.cos(a),-Math.sin(a)); drive.look=0;   // camera behind her, facing the station
+  F3.carry(true);   // lift and train: no hair flung by the ride
   drive.ride={phase:'up',stop:i,exit:null,cam:null,steps:[...upToPlatform(i), then(()=>{ drive.ride.phase='wait'; })]};
 }
 function metroAct(){
@@ -1842,18 +1872,18 @@ function metroRideStep(dt){
     if(moveKey||J){ metroAct(); }
     else if(st.stop===r.stop && METRO.doorOpen()>.3){   // doors open: in she goes
       r.phase='boarding'; r.cam={look:0,pitch:drive.pitch,zoom:drive.zoom};
-      r.steps=[ walkTo(()=>SP(r.stop,1.5,PY(),0),1.6), walkTo(carPoint,1.6), then(()=>{ r.phase='on'; drive.look=Math.PI/2; drive.pitch=.05; drive.zoom=1.4; hideDetail(); }) ];
+      r.steps=[ walkTo(()=>SP(r.stop,1.5,PY(),0),1.6), walkTo(carPoint,1.6), walkTo(seatPoint,1.2), then(()=>{ r.phase='on'; F3.stopLocomote(); F3.play('sit'); drive.look=Math.PI/2; drive.pitch=.05; drive.zoom=1.4; hideDetail(); }) ];
     }
     else { const s=Math.ceil(METRO.secondsUntilStop(r.stop)); walkPrompt('wait'+s,`等車中，列車約 ${s} 秒後進站 · ${kbd()}取消`); }
   }
-  if(r.phase==='boarding' && st.stop==null){ r.steps=[]; r.phase='on'; drive.look=Math.PI/2; drive.pitch=.05; drive.zoom=1.4; hideDetail(); }   // never left on the platform
+  if(r.phase==='boarding' && st.stop==null){ r.steps=[]; r.phase='on'; F3.stopLocomote(); F3.play('sit'); drive.look=Math.PI/2; drive.pitch=.05; drive.zoom=1.4; hideDetail(); }   // never left on the platform
   if(r.phase==='on'){
-    const car=METRO.cars[1]; F3.root.position.copy(carPoint()); F3.heading=car.rotation.y; F3.locomote(0);
+    const car=METRO.cars[1]; F3.root.position.copy(seatPoint()); F3.heading=seatYaw();   // seated (the sit motion plays)
     drive.h=car.rotation.y-Math.PI;
     if(st.stop==null) r.stop=-1;   // once moving, the boarding station is a stop like any other
     if(st.stop!=null && st.stop===r.exit && METRO.doorOpen()>.3){   // doors open at her stop: out, then down
       const i=st.stop; r.phase='off'; r.stop=i; drive.look=0; drive.pitch=r.cam.pitch; drive.zoom=r.cam.zoom; drive.h=Math.atan2(Math.cos(METRO.stops[i].angle),Math.sin(METRO.stops[i].angle));
-      r.steps=[ walkTo(()=>SP(i,1.5,PY(),0),1.6), walkTo(()=>SP(i,.3,PY(),0),1.6), ...downToIsland(i) ];
+      r.steps=[ walkTo(carPoint,1.2), walkTo(()=>SP(i,1.5,PY(),0),1.6), walkTo(()=>SP(i,.3,PY(),0),1.6), ...downToIsland(i) ];
     }
   }
   const P=r.phase;
@@ -1891,7 +1921,7 @@ function parkAct(){
 }
 function leaveRide(){
   const r=drive.ride; if(r.seat) r.seat.taken=null;
-  F3.place(scene,WALK_H,r.from); F3.heading=r.h+Math.PI; F3.play('idle');
+  F3.carry(false); F3.place(scene,WALK_H,r.from); F3.heading=r.h+Math.PI; F3.play('idle');
   drive.x=r.from.x; drive.z=r.from.z; drive.h=r.h; drive.v=0; Object.assign(drive,r.cam); drive.ride=null; drive.mk=null;
 }
 function parkRideStep(dt){
@@ -1902,7 +1932,7 @@ function parkRideStep(dt){
     F3.locomote(0);
     const seat=ARCADE_PARK.seats.find(s=>s.ride===r.ride && !s.taken && atStation(s));
     if(seat){ seat.taken='fairy'; r.seat=seat; r.phase='on';
-      F3.place(seat.anchor,RIDE_H,new THREE.Vector3(0,RIDE_FEET[r.ride],0)); F3.heading=0; F3.play(RIDE_POSE[r.ride]);
+      F3.place(seat.anchor,RIDE_H,new THREE.Vector3(0,RIDE_FEET[r.ride],0)); F3.heading=0; F3.stopLocomote(); F3.play(RIDE_POSE[r.ride]); F3.carry(true);
       drive.zoom=Math.max(drive.zoom,RIDE_ZOOM[r.ride]); drive.pitch=Math.max(drive.pitch,.3); hideDetail(); }
     else walkPrompt('pwait'+r.ride,`等${RIDE_NAME[r.ride]}的空位過來… · ${kbd()}取消`);
   }
@@ -1916,7 +1946,7 @@ function parkRideStep(dt){
   walkCam(dt,_pk.y+.7,r.phase==='on'?40:8);
 }
 compEl.querySelector('#comp-walk').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); startWalk(); });
-$('#t-walk').addEventListener('click',()=>drive.walker?stopDrive():(drive.on?(stopDrive(),startWalk()):startWalk()));
+$('#t-walk').addEventListener('click',()=>drive.on?stopDrive():startWalk());
 $('#walk-jump').addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); if(drive.walker&&!drive.ride&&F3) F3.jump(); });
 const orbit={id:null,x:0,y:0};
 canvas.addEventListener('pointerdown',e=>{ if(!drive.walker||e.button!==2) return; e.preventDefault(); orbit.id=e.pointerId; orbit.x=e.clientX; orbit.y=e.clientY; drive.looking=true; try{canvas.setPointerCapture(e.pointerId);}catch{} });
@@ -2430,7 +2460,7 @@ function fitMetroOverview(){
   const distance=Math.min(530,Math.max(265,84*h/(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*Math.max(260,free))));
   HOME.look.set(0,5,0);HOME.pos.set(0,.63,.777).normalize().multiplyScalar(distance).add(HOME.look);
 }
-import('./assets/island-city/metro.js?v=20261121-2').then(m=>{
+import('./assets/island-city/metro.js?v=20261124-1').then(m=>{
   METRO=m.createMetro({scene,islands,host:$('#app'),reduced,crowd:INTERACT,onStation:goMetroStation,
     createPassenger:(parent,i)=>{const p=person(parent,{shirt:[0xe6c36e,0x87bbc5,0xc6a6d8,0xe6b39e,0x99c6a5,0xd7dcd1][i]});p.root.name='metro passenger '+i;p.root.scale.setScalar(.6);p.root.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;const original=o.material;if(!metroPassengerMaterials.has(original)){const material=original.clone();if(material.vertexColors){material.emissive.setScalar(.18);material.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n\ttotalEmissiveRadiance*=vColor.rgb;');};material.customProgramCacheKey=()=>'metro-passenger-glow';}else material.emissive.copy(material.color).multiplyScalar(.18);metroPassengerMaterials.set(original,material);}o.material=metroPassengerMaterials.get(original);});return {root:p.root,animate:(walking,dt)=>animPerson(p,walking,dt,.8),pose:(mode,dt,t)=>posePerson(p,mode,dt,t)};},
     onOverview:()=>{if(drive.on)stopDrive();if(hunt.on)endHunt();unfocus();},pick:(o,key)=>{o.userData.key=key;o.userData.metroStation=true;pickables.push(o);}});

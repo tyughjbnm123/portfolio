@@ -162,6 +162,8 @@ export function createMetro({ scene, islands, host, onStation, onOverview, pick,
       b.box(.22,.14,.06,s*.55,.7,2.08,i===0?warm:dark);
       b.box(.22,.14,.06,s*.55,.7,-2.08,i===2?red:dark);
     }
+    // longitudinal benches along both walls, clear of the centre doors (the companion sits on one)
+    for(const s of [-1,1])for(const z of [-1.2,1.2]){b.box(.36,.3,1.3,s*.68,.38,z,dark);b.box(.36,.05,1.3,s*.68,.68,z,metal);b.box(.06,.36,1.3,s*.87,.73,z,dark);}
     b.finish();cars.push(g);
   }
   const passengers=createPassenger?Array.from({length:6},(_,i)=>createPassenger(root,i)):[];
